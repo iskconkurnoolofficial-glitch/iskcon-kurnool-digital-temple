@@ -11,15 +11,7 @@ export default function ThemeSettings() {
     { name: "Rose Lotus", primary: "#9f1239", secondary: "#fde047", accent: "#7e22ce" },
   ];
 
-  const ColorField = ({ k, label }: { k: "primary" | "secondary" | "accent"; label: string }) => (
-    <div>
-      <label className="text-sm font-medium text-foreground/80 mb-1 block">{label}</label>
-      <div className="flex items-center gap-3">
-        <input type="color" className="h-12 w-16 rounded cursor-pointer border" value={theme[k]} onChange={(e) => setTheme({ ...theme, [k]: e.target.value })} />
-        <input type="text" className="flex-1 px-3 py-2 border rounded-lg font-mono text-sm" value={theme[k]} onChange={(e) => setTheme({ ...theme, [k]: e.target.value })} />
-      </div>
-    </div>
-  );
+  const update = (k: "primary" | "secondary" | "accent", v: string) => setTheme({ ...theme, [k]: v });
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -28,9 +20,9 @@ export default function ThemeSettings() {
         <p className="text-sm text-muted-foreground mb-6">Changes apply to the live site instantly.</p>
 
         <div className="grid md:grid-cols-3 gap-4">
-          <ColorField k="primary" label="Primary Color" />
-          <ColorField k="secondary" label="Secondary Color" />
-          <ColorField k="accent" label="Accent Color" />
+          <ColorField label="Primary Color" value={theme.primary} onChange={(v) => update("primary", v)} />
+          <ColorField label="Secondary Color" value={theme.secondary} onChange={(v) => update("secondary", v)} />
+          <ColorField label="Accent Color" value={theme.accent} onChange={(v) => update("accent", v)} />
         </div>
 
         <div className="mt-8">
