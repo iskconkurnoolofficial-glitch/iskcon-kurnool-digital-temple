@@ -1,26 +1,34 @@
 import { createFileRoute } from "@tanstack/react-router";
+import Navbar from "@/components/Navbar";
+import HeroCarousel from "@/components/HeroCarousel";
+import WelcomeSection from "@/components/WelcomeSection";
+import GallerySection from "@/components/GallerySection";
+import ConnectSection from "@/components/ConnectSection";
+import Footer from "@/components/Footer";
 
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "ISKCON Kurnool — Sri Sri Jagannath Baladev Subhadra Temple" },
+      { name: "description", content: "Welcome to ISKCON Kurnool, the abode of Sri Sri Jagannath, Baladev and Subhadra. Join our temple programs, festivals, and spiritual community." },
+      { property: "og:title", content: "ISKCON Kurnool — Hare Krishna" },
+      { property: "og:description", content: "International Society for Krishna Consciousness, Kurnool. Visit, learn, and serve." },
+    ],
+  }),
+  component: Home,
 });
 
-// IMPORTANT: Replace this placeholder. For sites with multiple pages (About, Services, Contact, etc.),
-// create separate route files (about.tsx, services.tsx, contact.tsx) — don't put all pages in this file.
-function PlaceholderIndex() {
+function Home() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <main>
+        <HeroCarousel />
+        <WelcomeSection />
+        <GallerySection />
+        <ConnectSection />
+      </main>
+      <Footer />
     </div>
   );
-}
-
-function Index() {
-  return <PlaceholderIndex />;
 }
