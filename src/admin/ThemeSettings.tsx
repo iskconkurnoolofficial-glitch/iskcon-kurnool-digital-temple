@@ -11,7 +11,7 @@ export default function ThemeSettings() {
     { name: "Rose Lotus", primary: "#9f1239", secondary: "#fde047", accent: "#7e22ce" },
   ];
 
-  const Field = ({ k, label }: { k: "primary" | "secondary" | "accent"; label: string }) => (
+  const ColorField = ({ k, label }: { k: "primary" | "secondary" | "accent"; label: string }) => (
     <div>
       <label className="text-sm font-medium text-foreground/80 mb-1 block">{label}</label>
       <div className="flex items-center gap-3">
@@ -28,9 +28,9 @@ export default function ThemeSettings() {
         <p className="text-sm text-muted-foreground mb-6">Changes apply to the live site instantly.</p>
 
         <div className="grid md:grid-cols-3 gap-4">
-          <Field k="primary" label="Primary Color" />
-          <Field k="secondary" label="Secondary Color" />
-          <Field k="accent" label="Accent Color" />
+          <ColorField k="primary" label="Primary Color" />
+          <ColorField k="secondary" label="Secondary Color" />
+          <ColorField k="accent" label="Accent Color" />
         </div>
 
         <div className="mt-8">
