@@ -6,33 +6,33 @@ import { useAdmin } from "@/context/AdminContext";
 type NavItem = { label: string; href?: string; children?: { label: string; href: string }[] };
 
 const NAV: NavItem[] = [
-  { label: "Home", href: "/#home" },
+  { label: "Home", href: "/" },
   { label: "About", children: [
-    { label: "About ISKCON", href: "/#about" },
-    { label: "ISKCON Kurnool", href: "/#about" },
-    { label: "Our Mission", href: "/#about" },
-    { label: "Founder Acharya", href: "/#about" },
+    { label: "About ISKCON", href: "/about/iskcon" },
+    { label: "ISKCON Kurnool", href: "/about/kurnool" },
+    { label: "Our Mission", href: "/about/mission" },
+    { label: "Founder Acharya", href: "/about/founder" },
   ]},
   { label: "Temple", children: [
-    { label: "Temple Timings", href: "/#welcome" },
-    { label: "Sunday Program", href: "/#welcome" },
-    { label: "Festival", href: "/#gallery" },
-    { label: "Shop", href: "/#welcome" },
-    { label: "Volunteer", href: "/#connect" },
+    { label: "Temple Timings", href: "/temple" },
+    { label: "Sunday Program", href: "/temple" },
+    { label: "Festival", href: "/temple" },
+    { label: "Shop", href: "/temple" },
+    { label: "Volunteer", href: "/temple" },
   ]},
   { label: "Media", children: [
-    { label: "Gallery", href: "/#gallery" },
-    { label: "Social Media", href: "/#connect" },
+    { label: "Gallery", href: "/gallery" },
+    { label: "Social Media", href: "/connect" },
   ]},
   { label: "Activities", children: [
-    { label: "Youth Program", href: "/#welcome" },
+    { label: "Youth Program", href: "/courses" },
   ]},
   { label: "Courses", children: [
-    { label: "Bhagavad Gita", href: "/#welcome" },
-    { label: "Daily Classes", href: "/#welcome" },
+    { label: "Bhagavad Gita", href: "/courses" },
+    { label: "Daily Classes", href: "/courses" },
   ]},
-  { label: "Goshala", href: "/#welcome" },
-  { label: "Connect", href: "/#connect" },
+  { label: "Goshala", href: "/goshala" },
+  { label: "Connect", href: "/connect" },
 ];
 
 export default function Navbar() {
@@ -50,7 +50,7 @@ export default function Navbar() {
   return (
     <header
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        scrolled ? "bg-glass shadow-elegant border-b border-border/60" : "bg-background"
+        scrolled ? "bg-white/90 backdrop-blur-md shadow-elegant border-b border-border/60" : "bg-white"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 lg:px-8 flex items-center justify-between h-20">
@@ -84,21 +84,26 @@ export default function Navbar() {
                   <ChevronDown className="h-3.5 w-3.5" />
                 </button>
               ) : (
-                <a href={item.href} className="px-3 py-2 text-sm font-medium text-primary hover:text-accent transition">
+                <Link
+                  to={item.href!}
+                  className="px-3 py-2 text-sm font-medium text-primary hover:text-accent transition relative"
+                  activeProps={{ className: "px-3 py-2 text-sm font-medium text-accent relative after:absolute after:left-3 after:right-3 after:-bottom-0.5 after:h-0.5 after:bg-secondary" }}
+                  activeOptions={{ exact: true }}
+                >
                   {item.label}
-                </a>
+                </Link>
               )}
               {item.children && openDrop === item.label && (
                 <div className="absolute top-full left-0 pt-2 min-w-56">
                   <div className="bg-card rounded-xl shadow-elegant border border-border overflow-hidden animate-fade-in border-t-2 border-t-secondary">
                     {item.children.map((c) => (
-                      <a
+                      <Link
                         key={c.label}
-                        href={c.href}
+                        to={c.href}
                         className="block px-4 py-2.5 text-sm text-foreground hover:bg-surface hover:text-primary transition"
                       >
                         {c.label}
-                      </a>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -106,12 +111,12 @@ export default function Navbar() {
             </div>
           ))}
 
-          <a
-            href="/#donate"
+          <Link
+            to="/donate"
             className="ml-3 inline-flex items-center px-6 py-2.5 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:scale-105 hover:shadow-gold transition-all"
           >
-            Donate
-          </a>
+            DONATE
+          </Link>
         </nav>
 
         <button
@@ -123,7 +128,6 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
@@ -143,26 +147,26 @@ export default function Navbar() {
                       </summary>
                       <div className="pl-4 pb-2">
                         {item.children.map((c) => (
-                          <a key={c.label} href={c.href} onClick={() => setMobileOpen(false)} className="block px-3 py-2 text-sm text-muted-foreground hover:text-accent">
+                          <Link key={c.label} to={c.href} onClick={() => setMobileOpen(false)} className="block px-3 py-2 text-sm text-muted-foreground hover:text-accent">
                             {c.label}
-                          </a>
+                          </Link>
                         ))}
                       </div>
                     </>
                   ) : (
-                    <a href={item.href} onClick={() => setMobileOpen(false)} className="block px-3 py-3 text-primary font-medium">
+                    <Link to={item.href!} onClick={() => setMobileOpen(false)} className="block px-3 py-3 text-primary font-medium">
                       {item.label}
-                    </a>
+                    </Link>
                   )}
                 </details>
               ))}
-              <a
-                href="/#donate"
+              <Link
+                to="/donate"
                 onClick={() => setMobileOpen(false)}
                 className="mt-4 block text-center px-6 py-3 rounded-full bg-primary text-primary-foreground font-semibold"
               >
-                Donate
-              </a>
+                DONATE
+              </Link>
             </div>
           </div>
         </div>
