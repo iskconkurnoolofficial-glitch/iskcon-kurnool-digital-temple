@@ -54,3 +54,15 @@ export default function ThemeSettings() {
     </div>
   );
 }
+
+function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div>
+      <label className="text-sm font-medium text-foreground/80 mb-1 block">{label}</label>
+      <div className="flex items-center gap-3">
+        <input type="color" className="h-12 w-16 rounded cursor-pointer border" value={value} onChange={(e) => onChange(e.target.value)} />
+        <input type="text" className="flex-1 px-3 py-2 border rounded-lg font-mono text-sm" value={value} onChange={(e) => onChange(e.target.value)} />
+      </div>
+    </div>
+  );
+}
