@@ -9,9 +9,49 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TempleRouteImport } from './routes/temple'
+import { Route as GoshalaRouteImport } from './routes/goshala'
+import { Route as GalleryRouteImport } from './routes/gallery'
+import { Route as DonateRouteImport } from './routes/donate'
+import { Route as CoursesRouteImport } from './routes/courses'
+import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutMissionRouteImport } from './routes/about.mission'
+import { Route as AboutKurnoolRouteImport } from './routes/about.kurnool'
+import { Route as AboutIskconRouteImport } from './routes/about.iskcon'
+import { Route as AboutFounderRouteImport } from './routes/about.founder'
 
+const TempleRoute = TempleRouteImport.update({
+  id: '/temple',
+  path: '/temple',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GoshalaRoute = GoshalaRouteImport.update({
+  id: '/goshala',
+  path: '/goshala',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GalleryRoute = GalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DonateRoute = DonateRouteImport.update({
+  id: '/donate',
+  path: '/donate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoursesRoute = CoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnectRoute = ConnectRouteImport.update({
+  id: '/connect',
+  path: '/connect',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -22,35 +62,174 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AboutMissionRoute = AboutMissionRouteImport.update({
+  id: '/about/mission',
+  path: '/about/mission',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutKurnoolRoute = AboutKurnoolRouteImport.update({
+  id: '/about/kurnool',
+  path: '/about/kurnool',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutIskconRoute = AboutIskconRouteImport.update({
+  id: '/about/iskcon',
+  path: '/about/iskcon',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutFounderRoute = AboutFounderRouteImport.update({
+  id: '/about/founder',
+  path: '/about/founder',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/connect': typeof ConnectRoute
+  '/courses': typeof CoursesRoute
+  '/donate': typeof DonateRoute
+  '/gallery': typeof GalleryRoute
+  '/goshala': typeof GoshalaRoute
+  '/temple': typeof TempleRoute
+  '/about/founder': typeof AboutFounderRoute
+  '/about/iskcon': typeof AboutIskconRoute
+  '/about/kurnool': typeof AboutKurnoolRoute
+  '/about/mission': typeof AboutMissionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/connect': typeof ConnectRoute
+  '/courses': typeof CoursesRoute
+  '/donate': typeof DonateRoute
+  '/gallery': typeof GalleryRoute
+  '/goshala': typeof GoshalaRoute
+  '/temple': typeof TempleRoute
+  '/about/founder': typeof AboutFounderRoute
+  '/about/iskcon': typeof AboutIskconRoute
+  '/about/kurnool': typeof AboutKurnoolRoute
+  '/about/mission': typeof AboutMissionRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/connect': typeof ConnectRoute
+  '/courses': typeof CoursesRoute
+  '/donate': typeof DonateRoute
+  '/gallery': typeof GalleryRoute
+  '/goshala': typeof GoshalaRoute
+  '/temple': typeof TempleRoute
+  '/about/founder': typeof AboutFounderRoute
+  '/about/iskcon': typeof AboutIskconRoute
+  '/about/kurnool': typeof AboutKurnoolRoute
+  '/about/mission': typeof AboutMissionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/connect'
+    | '/courses'
+    | '/donate'
+    | '/gallery'
+    | '/goshala'
+    | '/temple'
+    | '/about/founder'
+    | '/about/iskcon'
+    | '/about/kurnool'
+    | '/about/mission'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin'
-  id: '__root__' | '/' | '/admin'
+  to:
+    | '/'
+    | '/admin'
+    | '/connect'
+    | '/courses'
+    | '/donate'
+    | '/gallery'
+    | '/goshala'
+    | '/temple'
+    | '/about/founder'
+    | '/about/iskcon'
+    | '/about/kurnool'
+    | '/about/mission'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/connect'
+    | '/courses'
+    | '/donate'
+    | '/gallery'
+    | '/goshala'
+    | '/temple'
+    | '/about/founder'
+    | '/about/iskcon'
+    | '/about/kurnool'
+    | '/about/mission'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  ConnectRoute: typeof ConnectRoute
+  CoursesRoute: typeof CoursesRoute
+  DonateRoute: typeof DonateRoute
+  GalleryRoute: typeof GalleryRoute
+  GoshalaRoute: typeof GoshalaRoute
+  TempleRoute: typeof TempleRoute
+  AboutFounderRoute: typeof AboutFounderRoute
+  AboutIskconRoute: typeof AboutIskconRoute
+  AboutKurnoolRoute: typeof AboutKurnoolRoute
+  AboutMissionRoute: typeof AboutMissionRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/temple': {
+      id: '/temple'
+      path: '/temple'
+      fullPath: '/temple'
+      preLoaderRoute: typeof TempleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/goshala': {
+      id: '/goshala'
+      path: '/goshala'
+      fullPath: '/goshala'
+      preLoaderRoute: typeof GoshalaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gallery': {
+      id: '/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/donate': {
+      id: '/donate'
+      path: '/donate'
+      fullPath: '/donate'
+      preLoaderRoute: typeof DonateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/courses': {
+      id: '/courses'
+      path: '/courses'
+      fullPath: '/courses'
+      preLoaderRoute: typeof CoursesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connect': {
+      id: '/connect'
+      path: '/connect'
+      fullPath: '/connect'
+      preLoaderRoute: typeof ConnectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -65,12 +244,50 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/about/mission': {
+      id: '/about/mission'
+      path: '/about/mission'
+      fullPath: '/about/mission'
+      preLoaderRoute: typeof AboutMissionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about/kurnool': {
+      id: '/about/kurnool'
+      path: '/about/kurnool'
+      fullPath: '/about/kurnool'
+      preLoaderRoute: typeof AboutKurnoolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about/iskcon': {
+      id: '/about/iskcon'
+      path: '/about/iskcon'
+      fullPath: '/about/iskcon'
+      preLoaderRoute: typeof AboutIskconRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about/founder': {
+      id: '/about/founder'
+      path: '/about/founder'
+      fullPath: '/about/founder'
+      preLoaderRoute: typeof AboutFounderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  ConnectRoute: ConnectRoute,
+  CoursesRoute: CoursesRoute,
+  DonateRoute: DonateRoute,
+  GalleryRoute: GalleryRoute,
+  GoshalaRoute: GoshalaRoute,
+  TempleRoute: TempleRoute,
+  AboutFounderRoute: AboutFounderRoute,
+  AboutIskconRoute: AboutIskconRoute,
+  AboutKurnoolRoute: AboutKurnoolRoute,
+  AboutMissionRoute: AboutMissionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
