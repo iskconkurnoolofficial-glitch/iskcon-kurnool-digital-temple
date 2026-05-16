@@ -16,6 +16,19 @@ export type GalleryPhoto = {
   category: string;
 };
 
+export type DailyClass = {
+  id: string;
+  thumbnail: string;
+  title: string;
+  /** ISO datetime — class start (interpreted as IST when entered) */
+  startAt: string;
+  /** Duration minutes */
+  durationMin: number;
+  language: string;
+  joinUrl: string;
+  active: boolean;
+};
+
 export type SiteSettings = {
   phone: string;
   whatsapp: string;
@@ -41,6 +54,8 @@ type AdminState = {
   setPhotos: (p: GalleryPhoto[]) => void;
   categories: string[];
   setCategories: (c: string[]) => void;
+  classes: DailyClass[];
+  setClasses: (c: DailyClass[]) => void;
   settings: SiteSettings;
   setSettings: (s: SiteSettings) => void;
   theme: ThemeSettings;
@@ -113,6 +128,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [slides, setSlides] = useLocal<Slide[]>("iskcon_slides", defaultSlides);
   const [photos, setPhotos] = useLocal<GalleryPhoto[]>("iskcon_photos", []);
   const [categories, setCategories] = useLocal<string[]>("iskcon_categories", defaultCategories);
+  const [classes, setClasses] = useLocal<DailyClass[]>("iskcon_classes", []);
   const [settings, setSettings] = useLocal<SiteSettings>("iskcon_settings", defaultSettings);
   const [theme, setTheme] = useLocal<ThemeSettings>("iskcon_theme", defaultTheme);
   const [authed, setAuthed] = useLocal<boolean>("iskcon_authed", false);
@@ -131,7 +147,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const logout = () => setAuthed(false);
 
   return (
-    <Ctx.Provider value={{ slides, setSlides, photos, setPhotos, categories, setCategories, settings, setSettings, theme, setTheme, authed, login, logout }}>
+    <Ctx.Provider value={{ slides, setSlides, photos, setPhotos, categories, setCategories, classes, setClasses, settings, setSettings, theme, setTheme, authed, login, logout }}>
       {children}
     </Ctx.Provider>
   );
