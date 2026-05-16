@@ -5,14 +5,15 @@ import CarouselManager from "@/admin/CarouselManager";
 import GalleryManager from "@/admin/GalleryManager";
 import SiteSettingsForm from "@/admin/SiteSettings";
 import ThemeSettings from "@/admin/ThemeSettings";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home } from "lucide-react";
+import DailyClassesManager from "@/admin/DailyClassesManager";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
 
-type Tab = "carousel" | "gallery" | "settings" | "theme";
+type Tab = "carousel" | "gallery" | "classes" | "settings" | "theme";
 
 function AdminPage() {
   const { authed, login, logout } = useAdmin();
@@ -49,6 +50,7 @@ function AdminPage() {
 
   const tabs: { id: Tab; label: string; icon: any }[] = [
     { id: "carousel", label: "Carousel", icon: Image },
+    { id: "classes", label: "Daily Classes", icon: Radio },
     { id: "gallery", label: "Gallery", icon: Images },
     { id: "settings", label: "Site Settings", icon: Settings },
     { id: "theme", label: "Theme", icon: Palette },
@@ -56,7 +58,7 @@ function AdminPage() {
 
   return (
     <div className="min-h-screen flex bg-surface">
-      <aside className="w-64 bg-primary text-primary-foreground flex flex-col">
+      <aside className="w-64 bg-gradient-to-b from-primary to-[#3d1a6a] text-primary-foreground flex flex-col">
         <div className="p-6 border-b border-white/10">
           <div className="flex items-center gap-2">
             <LayoutDashboard className="h-5 w-5" />
@@ -70,7 +72,7 @@ function AdminPage() {
               key={t.id}
               onClick={() => setTab(t.id)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition ${
-                tab === t.id ? "bg-white/15 text-white" : "hover:bg-white/10 text-white/80"
+                tab === t.id ? "bg-white text-primary shadow-sm font-semibold" : "hover:bg-white/10 text-white/80"
               }`}
             >
               <t.icon className="h-4 w-4" /> {t.label}
@@ -84,8 +86,12 @@ function AdminPage() {
       </aside>
 
       <main className="flex-1 p-6 lg:p-10 overflow-auto">
-        <h1 className="font-display text-3xl font-bold text-primary mb-6 capitalize">{tab}</h1>
+        <div className="mb-6">
+          <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Manage</div>
+          <h1 className="font-display text-3xl font-bold text-primary capitalize">{tabs.find(t => t.id === tab)?.label}</h1>
+        </div>
         {tab === "carousel" && <CarouselManager />}
+        {tab === "classes" && <DailyClassesManager />}
         {tab === "gallery" && <GalleryManager />}
         {tab === "settings" && <SiteSettingsForm />}
         {tab === "theme" && <ThemeSettings />}
