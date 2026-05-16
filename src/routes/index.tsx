@@ -18,9 +18,7 @@ export const Route = createFileRoute("/")({
 function Home() {
   return (
     <SiteLayout>
-      <div className="-mt-20">
-        <HeroCarousel />
-      </div>
+      <HeroCarousel />
       <WelcomeSection />
       <GallerySection />
       <ConnectSection />

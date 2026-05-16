@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
+import LiveClassBanner from "@/components/LiveClassBanner";
 
 type NavItem = { label: string; href?: string; children?: { label: string; href: string }[] };
 
@@ -17,8 +18,6 @@ const NAV: NavItem[] = [
     { label: "Temple Timings", href: "/temple" },
     { label: "Sunday Program", href: "/temple" },
     { label: "Festival", href: "/temple" },
-    { label: "Shop", href: "/temple" },
-    { label: "Volunteer", href: "/temple" },
   ]},
   { label: "Media", children: [
     { label: "Gallery", href: "/gallery" },
@@ -37,34 +36,24 @@ const NAV: NavItem[] = [
 
 export default function Navbar() {
   const { settings } = useAdmin();
-  const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDrop, setOpenDrop] = useState<string | null>(null);
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   return (
-    <header
-      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        scrolled ? "bg-white/90 backdrop-blur-md shadow-elegant border-b border-border/60" : "bg-white"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 flex items-center justify-between h-20">
+    <header className="fixed top-0 inset-x-0 z-50 bg-white shadow-[0_2px_12px_rgba(91,44,155,0.08)] border-b border-border/60">
+      <LiveClassBanner />
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 flex items-center justify-between h-20 md:h-24">
         <Link to="/" className="flex items-center gap-3 shrink-0">
           {settings.logo ? (
-            <img src={settings.logo} alt="ISKCON Kurnool" className="h-12 w-12 rounded-full object-cover ring-2 ring-secondary/60" />
+            <img src={settings.logo} alt="ISKCON Kurnool" className="h-14 w-14 md:h-16 md:w-16 rounded-full object-cover ring-2 ring-secondary/60" />
           ) : (
-            <div className="h-12 w-12 rounded-full bg-gradient-hero grid place-items-center text-primary-foreground font-display font-bold shadow-glow">
+            <div className="h-14 w-14 md:h-16 md:w-16 rounded-full bg-gradient-hero grid place-items-center text-primary-foreground font-display font-bold text-lg shadow-glow">
               IK
             </div>
           )}
-          <div className="hidden sm:block leading-tight">
-            <div className="font-display font-bold text-primary text-lg">ISKCON Kurnool</div>
-            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          <div className="leading-tight">
+            <div className="font-display font-bold text-primary text-base sm:text-lg md:text-xl">ISKCON Kurnool</div>
+            <div className="text-[9px] sm:text-[10px] uppercase tracking-wider text-muted-foreground">
               International Society for Krishna Consciousness
             </div>
           </div>
@@ -95,7 +84,7 @@ export default function Navbar() {
               )}
               {item.children && openDrop === item.label && (
                 <div className="absolute top-full left-0 pt-2 min-w-56">
-                  <div className="bg-card rounded-xl shadow-elegant border border-border overflow-hidden animate-fade-in border-t-2 border-t-secondary">
+                  <div className="bg-card rounded-xl shadow-elegant border border-border overflow-hidden border-t-2 border-t-secondary">
                     {item.children.map((c) => (
                       <Link
                         key={c.label}
@@ -113,25 +102,33 @@ export default function Navbar() {
 
           <Link
             to="/donate"
-            className="ml-3 inline-flex items-center px-6 py-2.5 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:scale-105 hover:shadow-gold transition-all"
+            className="ml-3 inline-flex items-center px-6 py-2.5 rounded-full bg-accent text-white font-semibold text-sm hover:scale-105 hover:shadow-lg transition-all"
           >
             DONATE
           </Link>
         </nav>
 
-        <button
-          className="lg:hidden p-2 text-primary"
-          onClick={() => setMobileOpen(true)}
-          aria-label="Open menu"
-        >
-          <Menu className="h-6 w-6" />
-        </button>
+        <div className="lg:hidden flex items-center gap-2">
+          <Link
+            to="/donate"
+            className="hidden sm:inline-flex items-center px-4 py-2 rounded-full bg-accent text-white font-semibold text-xs"
+          >
+            DONATE
+          </Link>
+          <button
+            className="p-2 text-primary"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Open menu"
+          >
+            <Menu className="h-7 w-7" />
+          </button>
+        </div>
       </div>
 
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
-          <div className="absolute right-0 top-0 h-full w-80 max-w-[85vw] bg-background shadow-elegant overflow-y-auto animate-fade-in">
+          <div className="absolute right-0 top-0 h-full w-80 max-w-[85vw] bg-background shadow-elegant overflow-y-auto">
             <div className="flex justify-between items-center p-4 border-b">
               <span className="font-display font-bold text-primary">Menu</span>
               <button onClick={() => setMobileOpen(false)} aria-label="Close"><X className="h-5 w-5" /></button>
@@ -163,7 +160,7 @@ export default function Navbar() {
               <Link
                 to="/donate"
                 onClick={() => setMobileOpen(false)}
-                className="mt-4 block text-center px-6 py-3 rounded-full bg-primary text-primary-foreground font-semibold"
+                className="mt-4 block text-center px-6 py-3 rounded-full bg-accent text-white font-semibold"
               >
                 DONATE
               </Link>
