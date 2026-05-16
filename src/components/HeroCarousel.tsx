@@ -18,8 +18,8 @@ export default function HeroCarousel() {
 
   if (active.length === 0) {
     return (
-      <section id="home" className="pt-20">
-        <div className="aspect-[4917/1750] md:aspect-[4917/1750] aspect-[1080/1350] bg-gradient-hero grid place-items-center">
+      <section id="home">
+        <div className="aspect-[1080/1350] md:aspect-[4917/1750] bg-gradient-hero grid place-items-center">
           <div className="text-center text-primary-foreground p-8">
             <h1 className="font-display text-5xl md:text-7xl font-bold mb-4">Hare Krishna</h1>
             <p className="opacity-90">Add slides from Admin Panel</p>
@@ -32,7 +32,7 @@ export default function HeroCarousel() {
   return (
     <section
       id="home"
-      className="relative pt-20 overflow-hidden bg-background"
+      className="relative overflow-hidden bg-surface"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -46,12 +46,11 @@ export default function HeroCarousel() {
               <source media="(min-width: 768px)" srcSet={s.desktop} />
               <img src={s.mobile || s.desktop} alt={s.title || `Slide ${idx + 1}`} className="w-full h-full object-cover" />
             </picture>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             {(s.title || s.subtitle) && (
-              <div className="absolute inset-x-0 bottom-0 p-6 md:p-16 text-primary-foreground">
-                <div className="max-w-4xl mx-auto text-center md:text-left animate-fade-up">
-                  {s.title && <h2 className="font-display text-3xl md:text-6xl font-bold mb-3 drop-shadow-lg">{s.title}</h2>}
-                  {s.subtitle && <p className="text-base md:text-xl opacity-95 max-w-2xl drop-shadow">{s.subtitle}</p>}
+              <div className="absolute inset-x-0 bottom-0 p-6 md:p-16">
+                <div className="max-w-4xl mx-auto text-center md:text-left">
+                  {s.title && <h2 className="font-display text-3xl md:text-6xl font-bold mb-3 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">{s.title}</h2>}
+                  {s.subtitle && <p className="text-base md:text-xl text-white/95 max-w-2xl drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">{s.subtitle}</p>}
                 </div>
               </div>
             )}
