@@ -67,6 +67,8 @@ type AdminState = {
   setCategories: (c: string[]) => void;
   classes: DailyClass[];
   setClasses: (c: DailyClass[]) => void;
+  festivals: Festival[];
+  setFestivals: (f: Festival[]) => void;
   settings: SiteSettings;
   setSettings: (s: SiteSettings) => void;
   theme: ThemeSettings;
