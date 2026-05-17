@@ -52,6 +52,10 @@ function AdminPage() {
   const tabs: { id: Tab; label: string; icon: any }[] = [
     { id: "carousel", label: "Carousel", icon: Image },
     { id: "classes", label: "Daily Classes", icon: Radio },
+  const tabs: { id: Tab; label: string; icon: any }[] = [
+    { id: "carousel", label: "Carousel", icon: Image },
+    { id: "festivals", label: "Upcoming Festivals", icon: Sparkles },
+    { id: "classes", label: "Daily Classes", icon: Radio },
     { id: "gallery", label: "Gallery", icon: Images },
     { id: "settings", label: "Site Settings", icon: Settings },
     { id: "theme", label: "Theme", icon: Palette },
