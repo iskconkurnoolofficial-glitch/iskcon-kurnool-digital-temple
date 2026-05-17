@@ -21,6 +21,7 @@ function Home() {
     <SiteLayout>
       <HeroCarousel />
       <WelcomeSection />
+      <UpcomingFestivals />
       <GallerySection />
       <ConnectSection />
     </SiteLayout>
