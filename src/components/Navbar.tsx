@@ -51,9 +51,9 @@ export default function Navbar() {
               IK
             </div>
           )}
-          <div className="leading-tight">
-            <div className="font-display font-bold text-primary text-base sm:text-lg md:text-xl">ISKCON Kurnool</div>
-            <div className="text-[9px] sm:text-[10px] uppercase tracking-wider text-muted-foreground">
+          <div className="leading-tight min-w-0">
+            <div className="font-display font-bold text-primary text-sm sm:text-lg md:text-xl truncate">ISKCON Kurnool</div>
+            <div className="hidden sm:block text-[9px] sm:text-[10px] uppercase tracking-wider text-muted-foreground truncate">
               International Society for Krishna Consciousness
             </div>
           </div>
