@@ -111,7 +111,7 @@ export default function Navbar() {
         <div className="lg:hidden flex items-center gap-2">
           <Link
             to="/donate"
-            className="hidden sm:inline-flex items-center px-4 py-2 rounded-full bg-accent text-white font-semibold text-xs"
+            className="inline-flex items-center px-3.5 py-2 rounded-full bg-accent text-white font-semibold text-xs shadow-sm"
           >
             DONATE
           </Link>
