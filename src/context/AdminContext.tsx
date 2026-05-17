@@ -212,6 +212,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setPhotos = (v: GalleryPhoto[]) => { setPhotosState(v); persist(KEYS.photos, v); };
   const setCategories = (v: string[]) => { setCategoriesState(v); persist(KEYS.categories, v); };
   const setClasses = (v: DailyClass[]) => { setClassesState(v); persist(KEYS.classes, v); };
+  const setFestivals = (v: Festival[]) => { setFestivalsState(v); persist(KEYS.festivals, v); };
   const setSettings = (v: SiteSettings) => { setSettingsState(v); persist(KEYS.settings, v); };
   const setTheme = (v: ThemeSettings) => { setThemeState(v); persist(KEYS.theme, v); };
 
