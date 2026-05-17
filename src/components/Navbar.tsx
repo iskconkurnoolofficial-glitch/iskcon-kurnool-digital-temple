@@ -51,9 +51,9 @@ export default function Navbar() {
               IK
             </div>
           )}
-          <div className="leading-tight">
-            <div className="font-display font-bold text-primary text-base sm:text-lg md:text-xl">ISKCON Kurnool</div>
-            <div className="text-[9px] sm:text-[10px] uppercase tracking-wider text-muted-foreground">
+          <div className="leading-tight min-w-0">
+            <div className="font-display font-bold text-primary text-sm sm:text-lg md:text-xl truncate">ISKCON Kurnool</div>
+            <div className="hidden sm:block text-[9px] sm:text-[10px] uppercase tracking-wider text-muted-foreground truncate">
               International Society for Krishna Consciousness
             </div>
           </div>
@@ -111,7 +111,7 @@ export default function Navbar() {
         <div className="lg:hidden flex items-center gap-2">
           <Link
             to="/donate"
-            className="hidden sm:inline-flex items-center px-4 py-2 rounded-full bg-accent text-white font-semibold text-xs"
+            className="inline-flex items-center px-3.5 py-2 rounded-full bg-accent text-white font-semibold text-xs shadow-sm"
           >
             DONATE
           </Link>
@@ -133,29 +133,20 @@ export default function Navbar() {
               <span className="font-display font-bold text-primary">Menu</span>
               <button onClick={() => setMobileOpen(false)} aria-label="Close"><X className="h-5 w-5" /></button>
             </div>
-            <div className="p-2">
-              {NAV.map((item) => (
-                <details key={item.label} className="group border-b border-border/50">
-                  {item.children ? (
-                    <>
-                      <summary className="flex justify-between items-center px-3 py-3 text-primary font-medium cursor-pointer list-none">
-                        {item.label}
-                        <ChevronDown className="h-4 w-4 group-open:rotate-180 transition" />
-                      </summary>
-                      <div className="pl-4 pb-2">
-                        {item.children.map((c) => (
-                          <Link key={c.label} to={c.href} onClick={() => setMobileOpen(false)} className="block px-3 py-2 text-sm text-muted-foreground hover:text-accent">
-                            {c.label}
-                          </Link>
-                        ))}
-                      </div>
-                    </>
-                  ) : (
-                    <Link to={item.href!} onClick={() => setMobileOpen(false)} className="block px-3 py-3 text-primary font-medium">
-                      {item.label}
-                    </Link>
-                  )}
-                </details>
+            <nav className="p-2">
+              {NAV.flatMap((item) =>
+                item.children
+                  ? item.children.map((c) => ({ label: c.label, href: c.href }))
+                  : [{ label: item.label, href: item.href! }],
+              ).map((link) => (
+                <Link
+                  key={link.label + link.href}
+                  to={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-4 py-3 text-primary font-medium border-b border-border/50 hover:bg-surface hover:text-accent transition"
+                >
+                  {link.label}
+                </Link>
               ))}
               <Link
                 to="/donate"
@@ -164,7 +155,7 @@ export default function Navbar() {
               >
                 DONATE
               </Link>
-            </div>
+            </nav>
           </div>
         </div>
       )}

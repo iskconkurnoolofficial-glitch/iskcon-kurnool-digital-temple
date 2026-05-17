@@ -6,14 +6,15 @@ import GalleryManager from "@/admin/GalleryManager";
 import SiteSettingsForm from "@/admin/SiteSettings";
 import ThemeSettings from "@/admin/ThemeSettings";
 import DailyClassesManager from "@/admin/DailyClassesManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio } from "lucide-react";
+import FestivalsManager from "@/admin/FestivalsManager";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
 
-type Tab = "carousel" | "gallery" | "classes" | "settings" | "theme";
+type Tab = "carousel" | "festivals" | "classes" | "gallery" | "settings" | "theme";
 
 function AdminPage() {
   const { authed, login, logout } = useAdmin();
@@ -50,6 +51,7 @@ function AdminPage() {
 
   const tabs: { id: Tab; label: string; icon: any }[] = [
     { id: "carousel", label: "Carousel", icon: Image },
+    { id: "festivals", label: "Upcoming Festivals", icon: Sparkles },
     { id: "classes", label: "Daily Classes", icon: Radio },
     { id: "gallery", label: "Gallery", icon: Images },
     { id: "settings", label: "Site Settings", icon: Settings },
@@ -91,6 +93,7 @@ function AdminPage() {
           <h1 className="font-display text-3xl font-bold text-primary capitalize">{tabs.find(t => t.id === tab)?.label}</h1>
         </div>
         {tab === "carousel" && <CarouselManager />}
+        {tab === "festivals" && <FestivalsManager />}
         {tab === "classes" && <DailyClassesManager />}
         {tab === "gallery" && <GalleryManager />}
         {tab === "settings" && <SiteSettingsForm />}

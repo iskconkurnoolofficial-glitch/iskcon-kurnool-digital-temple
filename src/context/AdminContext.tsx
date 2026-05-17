@@ -17,6 +17,16 @@ export type GalleryPhoto = {
   category: string;
 };
 
+export type Festival = {
+  id: string;
+  thumbnail: string;
+  title: string;
+  /** ISO date (YYYY-MM-DD) */
+  date: string;
+  donateUrl: string;
+  active: boolean;
+};
+
 export type DailyClass = {
   id: string;
   thumbnail: string;
@@ -57,6 +67,8 @@ type AdminState = {
   setCategories: (c: string[]) => void;
   classes: DailyClass[];
   setClasses: (c: DailyClass[]) => void;
+  festivals: Festival[];
+  setFestivals: (f: Festival[]) => void;
   settings: SiteSettings;
   setSettings: (s: SiteSettings) => void;
   theme: ThemeSettings;
@@ -115,6 +127,7 @@ const KEYS = {
   photos: "photos",
   categories: "categories",
   classes: "classes",
+  festivals: "festivals",
   settings: "settings",
   theme: "theme",
 } as const;
@@ -126,6 +139,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [photos, setPhotosState] = useState<GalleryPhoto[]>([]);
   const [categories, setCategoriesState] = useState<string[]>(defaultCategories);
   const [classes, setClassesState] = useState<DailyClass[]>([]);
+  const [festivals, setFestivalsState] = useState<Festival[]>([]);
   const [settings, setSettingsState] = useState<SiteSettings>(defaultSettings);
   const [theme, setThemeState] = useState<ThemeSettings>(defaultTheme);
   const [authed, setAuthed] = useState<boolean>(() => {
@@ -180,6 +194,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.photos: setPhotosState(value); break;
       case KEYS.categories: setCategoriesState(value); break;
       case KEYS.classes: setClassesState(value); break;
+      case KEYS.festivals: setFestivalsState(value); break;
       case KEYS.settings: setSettingsState(value); break;
       case KEYS.theme: setThemeState(value); break;
     }
@@ -197,6 +212,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setPhotos = (v: GalleryPhoto[]) => { setPhotosState(v); persist(KEYS.photos, v); };
   const setCategories = (v: string[]) => { setCategoriesState(v); persist(KEYS.categories, v); };
   const setClasses = (v: DailyClass[]) => { setClassesState(v); persist(KEYS.classes, v); };
+  const setFestivals = (v: Festival[]) => { setFestivalsState(v); persist(KEYS.festivals, v); };
   const setSettings = (v: SiteSettings) => { setSettingsState(v); persist(KEYS.settings, v); };
   const setTheme = (v: ThemeSettings) => { setThemeState(v); persist(KEYS.theme, v); };
 
@@ -229,6 +245,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         photos, setPhotos,
         categories, setCategories,
         classes, setClasses,
+        festivals, setFestivals,
         settings, setSettings,
         theme, setTheme,
         authed, login, logout, ready,
