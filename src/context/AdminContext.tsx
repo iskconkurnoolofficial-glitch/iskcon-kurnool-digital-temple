@@ -17,6 +17,16 @@ export type GalleryPhoto = {
   category: string;
 };
 
+export type Festival = {
+  id: string;
+  thumbnail: string;
+  title: string;
+  /** ISO date (YYYY-MM-DD) */
+  date: string;
+  donateUrl: string;
+  active: boolean;
+};
+
 export type DailyClass = {
   id: string;
   thumbnail: string;
