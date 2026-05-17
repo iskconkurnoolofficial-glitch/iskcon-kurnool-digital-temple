@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export type Slide = {
   id: string;
@@ -63,6 +64,7 @@ type AdminState = {
   authed: boolean;
   login: (pw: string) => boolean;
   logout: () => void;
+  ready: boolean;
 };
 
 const ADMIN_PASSWORD = "iskcon2025";
@@ -73,7 +75,8 @@ const defaultSettings: SiteSettings = {
   email: "info@iskconkurnool.org",
   instagram: "https://instagram.com/iskconkurnool",
   youtube: "https://youtube.com/@iskconkurnool",
-  mapEmbed: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3849.123!2d78.0373!3d15.8281!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTXCsDQ5JzQxLjIiTiA3OMKwMDInMTQuMyJF!5e0!3m2!1sen!2sin!4v1700000000000",
+  mapEmbed:
+    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3849.123!2d78.0373!3d15.8281!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTXCsDQ5JzQxLjIiTiA3OMKwMDInMTQuMyJF!5e0!3m2!1sen!2sin!4v1700000000000",
   address: "ISKCON Kurnool\nSri Sri Jagannath Baladev Subhadra Temple\nKurnool, Andhra Pradesh\nIndia",
   footer: "© 2025 ISKCON Kurnool. All Rights Reserved.",
   logo: "",
@@ -106,34 +109,100 @@ const defaultSlides: Slide[] = [
   },
 ];
 
-function useLocal<T>(key: string, initial: T): [T, (v: T) => void] {
-  const [val, setVal] = useState<T>(() => {
-    if (typeof window === "undefined") return initial;
-    try {
-      const raw = window.localStorage.getItem(key);
-      return raw ? (JSON.parse(raw) as T) : initial;
-    } catch {
-      return initial;
-    }
-  });
-  useEffect(() => {
-    try { window.localStorage.setItem(key, JSON.stringify(val)); } catch {}
-  }, [key, val]);
-  return [val, setVal];
-}
+// Keys used in the site_data table
+const KEYS = {
+  slides: "slides",
+  photos: "photos",
+  categories: "categories",
+  classes: "classes",
+  settings: "settings",
+  theme: "theme",
+} as const;
 
 const Ctx = createContext<AdminState | null>(null);
 
 export function AdminProvider({ children }: { children: ReactNode }) {
-  const [slides, setSlides] = useLocal<Slide[]>("iskcon_slides", defaultSlides);
-  const [photos, setPhotos] = useLocal<GalleryPhoto[]>("iskcon_photos", []);
-  const [categories, setCategories] = useLocal<string[]>("iskcon_categories", defaultCategories);
-  const [classes, setClasses] = useLocal<DailyClass[]>("iskcon_classes", []);
-  const [settings, setSettings] = useLocal<SiteSettings>("iskcon_settings", defaultSettings);
-  const [theme, setTheme] = useLocal<ThemeSettings>("iskcon_theme", defaultTheme);
-  const [authed, setAuthed] = useLocal<boolean>("iskcon_authed", false);
+  const [slides, setSlidesState] = useState<Slide[]>(defaultSlides);
+  const [photos, setPhotosState] = useState<GalleryPhoto[]>([]);
+  const [categories, setCategoriesState] = useState<string[]>(defaultCategories);
+  const [classes, setClassesState] = useState<DailyClass[]>([]);
+  const [settings, setSettingsState] = useState<SiteSettings>(defaultSettings);
+  const [theme, setThemeState] = useState<ThemeSettings>(defaultTheme);
+  const [authed, setAuthed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try { return window.localStorage.getItem("iskcon_authed") === "1"; } catch { return false; }
+  });
+  const [ready, setReady] = useState(false);
 
+  // Tracks keys we just wrote locally so realtime echo doesn't overwrite optimistic state.
+  const pendingWrites = useRef<Map<string, number>>(new Map());
+
+  // Initial load + realtime subscribe
   useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      const { data, error } = await supabase.from("site_data").select("key,value");
+      if (!mounted) return;
+      if (!error && data) {
+        for (const row of data) applyRow(row.key, row.value);
+      }
+      setReady(true);
+    })();
+
+    const channel = supabase
+      .channel("site_data_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "site_data" },
+        (payload) => {
+          const row: any = payload.new ?? payload.old;
+          if (!row?.key) return;
+          // Skip echo from our own recent write
+          const pendingAt = pendingWrites.current.get(row.key);
+          if (pendingAt && Date.now() - pendingAt < 1500) return;
+          applyRow(row.key, (payload.new as any)?.value);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      mounted = false;
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function applyRow(key: string, value: any) {
+    if (value == null) return;
+    switch (key) {
+      case KEYS.slides: setSlidesState(value); break;
+      case KEYS.photos: setPhotosState(value); break;
+      case KEYS.categories: setCategoriesState(value); break;
+      case KEYS.classes: setClassesState(value); break;
+      case KEYS.settings: setSettingsState(value); break;
+      case KEYS.theme: setThemeState(value); break;
+    }
+  }
+
+  async function persist(key: string, value: any) {
+    pendingWrites.current.set(key, Date.now());
+    const { error } = await supabase
+      .from("site_data")
+      .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
+    if (error) console.error("[site_data] upsert failed", key, error);
+  }
+
+  const setSlides = (v: Slide[]) => { setSlidesState(v); persist(KEYS.slides, v); };
+  const setPhotos = (v: GalleryPhoto[]) => { setPhotosState(v); persist(KEYS.photos, v); };
+  const setCategories = (v: string[]) => { setCategoriesState(v); persist(KEYS.categories, v); };
+  const setClasses = (v: DailyClass[]) => { setClassesState(v); persist(KEYS.classes, v); };
+  const setSettings = (v: SiteSettings) => { setSettingsState(v); persist(KEYS.settings, v); };
+  const setTheme = (v: ThemeSettings) => { setThemeState(v); persist(KEYS.theme, v); };
+
+  // Apply theme to CSS variables
+  useEffect(() => {
+    if (typeof document === "undefined") return;
     const r = document.documentElement;
     r.style.setProperty("--primary-hex", theme.primary);
     r.style.setProperty("--secondary-hex", theme.secondary);
@@ -141,13 +210,30 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   }, [theme]);
 
   const login = (pw: string) => {
-    if (pw === ADMIN_PASSWORD) { setAuthed(true); return true; }
+    if (pw === ADMIN_PASSWORD) {
+      setAuthed(true);
+      try { window.localStorage.setItem("iskcon_authed", "1"); } catch {}
+      return true;
+    }
     return false;
   };
-  const logout = () => setAuthed(false);
+  const logout = () => {
+    setAuthed(false);
+    try { window.localStorage.removeItem("iskcon_authed"); } catch {}
+  };
 
   return (
-    <Ctx.Provider value={{ slides, setSlides, photos, setPhotos, categories, setCategories, classes, setClasses, settings, setSettings, theme, setTheme, authed, login, logout }}>
+    <Ctx.Provider
+      value={{
+        slides, setSlides,
+        photos, setPhotos,
+        categories, setCategories,
+        classes, setClasses,
+        settings, setSettings,
+        theme, setTheme,
+        authed, login, logout, ready,
+      }}
+    >
       {children}
     </Ctx.Provider>
   );
