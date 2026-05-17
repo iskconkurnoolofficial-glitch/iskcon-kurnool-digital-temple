@@ -6,7 +6,8 @@ import GalleryManager from "@/admin/GalleryManager";
 import SiteSettingsForm from "@/admin/SiteSettings";
 import ThemeSettings from "@/admin/ThemeSettings";
 import DailyClassesManager from "@/admin/DailyClassesManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio } from "lucide-react";
+import FestivalsManager from "@/admin/FestivalsManager";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
