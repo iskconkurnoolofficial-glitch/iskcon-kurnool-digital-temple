@@ -93,6 +93,7 @@ function AdminPage() {
           <h1 className="font-display text-3xl font-bold text-primary capitalize">{tabs.find(t => t.id === tab)?.label}</h1>
         </div>
         {tab === "carousel" && <CarouselManager />}
+        {tab === "festivals" && <FestivalsManager />}
         {tab === "classes" && <DailyClassesManager />}
         {tab === "gallery" && <GalleryManager />}
         {tab === "settings" && <SiteSettingsForm />}
