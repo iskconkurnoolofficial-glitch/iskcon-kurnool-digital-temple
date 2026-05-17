@@ -127,6 +127,7 @@ const KEYS = {
   photos: "photos",
   categories: "categories",
   classes: "classes",
+  festivals: "festivals",
   settings: "settings",
   theme: "theme",
 } as const;
@@ -138,6 +139,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [photos, setPhotosState] = useState<GalleryPhoto[]>([]);
   const [categories, setCategoriesState] = useState<string[]>(defaultCategories);
   const [classes, setClassesState] = useState<DailyClass[]>([]);
+  const [festivals, setFestivalsState] = useState<Festival[]>([]);
   const [settings, setSettingsState] = useState<SiteSettings>(defaultSettings);
   const [theme, setThemeState] = useState<ThemeSettings>(defaultTheme);
   const [authed, setAuthed] = useState<boolean>(() => {
