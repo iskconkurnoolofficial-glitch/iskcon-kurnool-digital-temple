@@ -14,7 +14,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "carousel" | "gallery" | "classes" | "settings" | "theme";
+type Tab = "carousel" | "festivals" | "classes" | "gallery" | "settings" | "theme";
 
 function AdminPage() {
   const { authed, login, logout } = useAdmin();
