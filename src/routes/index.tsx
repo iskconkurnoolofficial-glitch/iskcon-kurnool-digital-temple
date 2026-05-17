@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import SiteLayout from "@/components/SiteLayout";
 import HeroCarousel from "@/components/HeroCarousel";
 import WelcomeSection from "@/components/WelcomeSection";
+import UpcomingFestivals from "@/components/UpcomingFestivals";
 import GallerySection from "@/components/GallerySection";
 import ConnectSection from "@/components/ConnectSection";
 
