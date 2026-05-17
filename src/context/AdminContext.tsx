@@ -194,6 +194,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.photos: setPhotosState(value); break;
       case KEYS.categories: setCategoriesState(value); break;
       case KEYS.classes: setClassesState(value); break;
+      case KEYS.festivals: setFestivalsState(value); break;
       case KEYS.settings: setSettingsState(value); break;
       case KEYS.theme: setThemeState(value); break;
     }
