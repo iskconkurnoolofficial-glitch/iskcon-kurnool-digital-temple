@@ -245,6 +245,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         photos, setPhotos,
         categories, setCategories,
         classes, setClasses,
+        festivals, setFestivals,
         settings, setSettings,
         theme, setTheme,
         authed, login, logout, ready,
