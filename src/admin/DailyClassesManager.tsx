@@ -68,9 +68,14 @@ export default function DailyClassesManager() {
   return (
     <div className="space-y-8">
       <div className="bg-white rounded-2xl shadow-elegant p-6 border">
-        <h3 className="font-display text-xl font-bold text-primary mb-4 flex items-center gap-2">
-          <Radio className="h-5 w-5 text-accent" /> Schedule a Daily Class
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-display text-xl font-bold text-primary flex items-center gap-2">
+            <Radio className="h-5 w-5 text-accent" /> {editingId ? "Edit Class" : "Schedule a Daily Class"}
+          </h3>
+          {editingId && (
+            <button onClick={resetForm} className="text-sm text-muted-foreground hover:text-primary inline-flex items-center gap-1"><X className="h-4 w-4" /> Cancel</button>
+          )}
+        </div>
 
         <div className="grid lg:grid-cols-[260px,1fr] gap-6">
           <label className="block cursor-pointer">
