@@ -164,7 +164,8 @@ export default function DailyClassesManager() {
                       <button onClick={() => setClasses(classes.map((x) => x.id === c.id ? { ...x, active: !x.active } : x))} className="p-2 rounded hover:bg-muted" aria-label="Toggle">
                         {c.active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
                       </button>
-                      <button onClick={() => setClasses(classes.filter((x) => x.id !== c.id))} className="p-2 rounded hover:bg-destructive/10 text-destructive ml-auto"><Trash2 className="h-4 w-4" /></button>
+                      <button onClick={() => startEdit(c)} className="p-2 rounded hover:bg-accent/10 text-accent" aria-label="Edit"><Pencil className="h-4 w-4" /></button>
+                      <button onClick={() => setClasses(classes.filter((x) => x.id !== c.id))} className="p-2 rounded hover:bg-destructive/10 text-destructive ml-auto" aria-label="Delete"><Trash2 className="h-4 w-4" /></button>
                     </div>
                   </div>
                 </div>
