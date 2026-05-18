@@ -23,6 +23,7 @@ export default function DailyClassesManager() {
   const { classes, setClasses } = useAdmin();
   const [draft, setDraft] = useState<Partial<DailyClass>>(emptyDraft());
   const [busy, setBusy] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const upload = async (file: File) => {
     setBusy(true);
@@ -33,20 +34,32 @@ export default function DailyClassesManager() {
     setBusy(false);
   };
 
-  const add = () => {
+  const resetForm = () => { setDraft(emptyDraft()); setEditingId(null); };
+
+  const save = () => {
     if (!draft.title || !draft.startAt) { alert("Title and Start time are required"); return; }
-    const item: DailyClass = {
-      id: Date.now().toString(),
-      thumbnail: draft.thumbnail || "",
-      title: draft.title!,
-      startAt: draft.startAt!,
-      durationMin: Number(draft.durationMin) || 60,
-      language: draft.language || "Telugu",
-      joinUrl: draft.joinUrl || "",
-      active: draft.active ?? true,
-    };
-    setClasses([item, ...classes]);
-    setDraft(emptyDraft());
+    if (editingId) {
+      setClasses(classes.map((c) => c.id === editingId ? { ...c, ...draft, durationMin: Number(draft.durationMin) || 60 } as DailyClass : c));
+    } else {
+      const item: DailyClass = {
+        id: Date.now().toString(),
+        thumbnail: draft.thumbnail || "",
+        title: draft.title!,
+        startAt: draft.startAt!,
+        durationMin: Number(draft.durationMin) || 60,
+        language: draft.language || "Telugu",
+        joinUrl: draft.joinUrl || "",
+        active: draft.active ?? true,
+      };
+      setClasses([item, ...classes]);
+    }
+    resetForm();
+  };
+
+  const startEdit = (c: DailyClass) => {
+    setEditingId(c.id);
+    setDraft({ ...c });
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const now = Date.now();
