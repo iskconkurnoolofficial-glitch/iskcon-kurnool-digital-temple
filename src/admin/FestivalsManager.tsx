@@ -17,6 +17,7 @@ export default function FestivalsManager() {
   const { festivals, setFestivals } = useAdmin();
   const [draft, setDraft] = useState<Partial<Festival>>(emptyDraft());
   const [busy, setBusy] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const upload = async (file: File) => {
     setBusy(true);
@@ -27,18 +28,30 @@ export default function FestivalsManager() {
     setBusy(false);
   };
 
-  const add = () => {
+  const resetForm = () => { setDraft(emptyDraft()); setEditingId(null); };
+
+  const save = () => {
     if (!draft.title || !draft.date) { alert("Title and Date are required"); return; }
-    const item: Festival = {
-      id: Date.now().toString(),
-      thumbnail: draft.thumbnail || "",
-      title: draft.title!,
-      date: draft.date!,
-      donateUrl: draft.donateUrl || "/donate",
-      active: draft.active ?? true,
-    };
-    setFestivals([item, ...festivals]);
-    setDraft(emptyDraft());
+    if (editingId) {
+      setFestivals(festivals.map((f) => f.id === editingId ? { ...f, ...draft } as Festival : f));
+    } else {
+      const item: Festival = {
+        id: Date.now().toString(),
+        thumbnail: draft.thumbnail || "",
+        title: draft.title!,
+        date: draft.date!,
+        donateUrl: draft.donateUrl || "/donate",
+        active: draft.active ?? true,
+      };
+      setFestivals([item, ...festivals]);
+    }
+    resetForm();
+  };
+
+  const startEdit = (f: Festival) => {
+    setEditingId(f.id);
+    setDraft({ ...f });
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const sorted = [...festivals].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
