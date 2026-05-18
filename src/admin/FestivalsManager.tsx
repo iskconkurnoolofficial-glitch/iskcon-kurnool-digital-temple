@@ -95,8 +95,8 @@ export default function FestivalsManager() {
               <input className="w-full px-3 py-2.5 border rounded-lg" value={draft.donateUrl || ""} onChange={(e) => setDraft({ ...draft, donateUrl: e.target.value })} placeholder="/donate or https://..." />
             </Field>
             <div className="sm:col-span-2 flex justify-end">
-              <button disabled={busy} onClick={add} className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium disabled:opacity-50">
-                {busy ? "Uploading..." : "Add Festival"}
+              <button disabled={busy} onClick={save} className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium disabled:opacity-50">
+                {busy ? "Uploading..." : editingId ? "Update Festival" : "Add Festival"}
               </button>
             </div>
           </div>
