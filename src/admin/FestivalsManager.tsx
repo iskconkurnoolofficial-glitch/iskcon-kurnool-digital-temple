@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAdmin, uploadToCloudinary, Festival } from "@/context/AdminContext";
-import { Trash2, Eye, EyeOff, Upload, Sparkles, Calendar, Link as LinkIcon } from "lucide-react";
+import { Trash2, Eye, EyeOff, Upload, Sparkles, Calendar, Link as LinkIcon, Pencil, X } from "lucide-react";
 
 function emptyDraft(): Partial<Festival> {
   return { title: "", date: "", donateUrl: "", active: true };
@@ -17,6 +17,7 @@ export default function FestivalsManager() {
   const { festivals, setFestivals } = useAdmin();
   const [draft, setDraft] = useState<Partial<Festival>>(emptyDraft());
   const [busy, setBusy] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const upload = async (file: File) => {
     setBusy(true);
@@ -27,18 +28,30 @@ export default function FestivalsManager() {
     setBusy(false);
   };
 
-  const add = () => {
+  const resetForm = () => { setDraft(emptyDraft()); setEditingId(null); };
+
+  const save = () => {
     if (!draft.title || !draft.date) { alert("Title and Date are required"); return; }
-    const item: Festival = {
-      id: Date.now().toString(),
-      thumbnail: draft.thumbnail || "",
-      title: draft.title!,
-      date: draft.date!,
-      donateUrl: draft.donateUrl || "/donate",
-      active: draft.active ?? true,
-    };
-    setFestivals([item, ...festivals]);
-    setDraft(emptyDraft());
+    if (editingId) {
+      setFestivals(festivals.map((f) => f.id === editingId ? { ...f, ...draft } as Festival : f));
+    } else {
+      const item: Festival = {
+        id: Date.now().toString(),
+        thumbnail: draft.thumbnail || "",
+        title: draft.title!,
+        date: draft.date!,
+        donateUrl: draft.donateUrl || "/donate",
+        active: draft.active ?? true,
+      };
+      setFestivals([item, ...festivals]);
+    }
+    resetForm();
+  };
+
+  const startEdit = (f: Festival) => {
+    setEditingId(f.id);
+    setDraft({ ...f });
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const sorted = [...festivals].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -46,9 +59,14 @@ export default function FestivalsManager() {
   return (
     <div className="space-y-8">
       <div className="bg-white rounded-2xl shadow-elegant p-6 border">
-        <h3 className="font-display text-xl font-bold text-primary mb-4 flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-accent" /> Add Upcoming Festival
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-display text-xl font-bold text-primary flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-accent" /> {editingId ? "Edit Festival" : "Add Upcoming Festival"}
+          </h3>
+          {editingId && (
+            <button onClick={resetForm} className="text-sm text-muted-foreground hover:text-primary inline-flex items-center gap-1"><X className="h-4 w-4" /> Cancel</button>
+          )}
+        </div>
 
         <div className="grid lg:grid-cols-[320px,1fr] gap-6">
           <label className="block cursor-pointer">
@@ -77,8 +95,8 @@ export default function FestivalsManager() {
               <input className="w-full px-3 py-2.5 border rounded-lg" value={draft.donateUrl || ""} onChange={(e) => setDraft({ ...draft, donateUrl: e.target.value })} placeholder="/donate or https://..." />
             </Field>
             <div className="sm:col-span-2 flex justify-end">
-              <button disabled={busy} onClick={add} className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium disabled:opacity-50">
-                {busy ? "Uploading..." : "Add Festival"}
+              <button disabled={busy} onClick={save} className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium disabled:opacity-50">
+                {busy ? "Uploading..." : editingId ? "Update Festival" : "Add Festival"}
               </button>
             </div>
           </div>
@@ -110,7 +128,8 @@ export default function FestivalsManager() {
                     <button onClick={() => setFestivals(festivals.map((x) => x.id === f.id ? { ...x, active: !x.active } : x))} className="p-2 rounded hover:bg-muted" aria-label="Toggle">
                       {f.active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
                     </button>
-                    <button onClick={() => setFestivals(festivals.filter((x) => x.id !== f.id))} className="p-2 rounded hover:bg-destructive/10 text-destructive ml-auto"><Trash2 className="h-4 w-4" /></button>
+                    <button onClick={() => startEdit(f)} className="p-2 rounded hover:bg-accent/10 text-accent" aria-label="Edit"><Pencil className="h-4 w-4" /></button>
+                    <button onClick={() => setFestivals(festivals.filter((x) => x.id !== f.id))} className="p-2 rounded hover:bg-destructive/10 text-destructive ml-auto" aria-label="Delete"><Trash2 className="h-4 w-4" /></button>
                   </div>
                 </div>
               </div>
