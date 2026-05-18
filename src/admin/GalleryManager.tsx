@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAdmin, uploadToCloudinary } from "@/context/AdminContext";
-import { Trash2, Plus, X } from "lucide-react";
+import { Trash2, Plus, X, Pencil, Check } from "lucide-react";
 import { UploadBox } from "./CarouselManager";
 
 export default function GalleryManager() {
@@ -10,6 +10,9 @@ export default function GalleryManager() {
   const [title, setTitle] = useState("");
   const [cat, setCat] = useState(categories[0] || "Temple");
   const [newCat, setNewCat] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editCat, setEditCat] = useState("");
 
   const onPick = async (f: File) => {
     setBusy(true);
@@ -21,6 +24,15 @@ export default function GalleryManager() {
     if (!url || !title) return alert("Upload image and enter title");
     setPhotos([...photos, { id: Date.now().toString(), url, title, category: cat }]);
     setUrl(""); setTitle("");
+  };
+
+  const startEdit = (id: string, t: string, c: string) => {
+    setEditingId(id); setEditTitle(t); setEditCat(c);
+  };
+  const saveEdit = () => {
+    if (!editingId) return;
+    setPhotos(photos.map((p) => p.id === editingId ? { ...p, title: editTitle, category: editCat } : p));
+    setEditingId(null);
   };
 
   return (
@@ -61,15 +73,31 @@ export default function GalleryManager() {
         <h3 className="font-display text-xl font-bold text-primary mb-4">Photos ({photos.length})</h3>
         <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {photos.map((p) => (
-            <div key={p.id} className="bg-white rounded-xl shadow border overflow-hidden group relative">
+            <div key={p.id} className={`bg-white rounded-xl shadow border overflow-hidden group relative ${editingId === p.id ? "ring-2 ring-accent" : ""}`}>
               <img src={p.url} alt={p.title} className="w-full aspect-square object-cover" />
-              <div className="p-3">
-                <div className="text-sm font-medium truncate">{p.title}</div>
-                <div className="text-xs text-muted-foreground">{p.category}</div>
+              <div className="p-3 space-y-2">
+                {editingId === p.id ? (
+                  <>
+                    <input className="w-full px-2 py-1.5 border rounded text-sm" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} placeholder="Title" />
+                    <select className="w-full px-2 py-1.5 border rounded text-sm" value={editCat} onChange={(e) => setEditCat(e.target.value)}>
+                      {categories.map((c) => <option key={c}>{c}</option>)}
+                    </select>
+                    <div className="flex gap-1">
+                      <button onClick={saveEdit} className="flex-1 px-2 py-1.5 rounded bg-primary text-primary-foreground text-xs inline-flex items-center justify-center gap-1"><Check className="h-3 w-3" /> Save</button>
+                      <button onClick={() => setEditingId(null)} className="px-2 py-1.5 rounded border text-xs">Cancel</button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-sm font-medium truncate">{p.title}</div>
+                    <div className="text-xs text-muted-foreground">{p.category}</div>
+                    <div className="flex gap-1">
+                      <button onClick={() => startEdit(p.id, p.title, p.category)} className="p-1.5 rounded hover:bg-accent/10 text-accent" aria-label="Edit"><Pencil className="h-3.5 w-3.5" /></button>
+                      <button onClick={() => setPhotos(photos.filter((x) => x.id !== p.id))} className="p-1.5 rounded hover:bg-destructive/10 text-destructive ml-auto" aria-label="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
+                    </div>
+                  </>
+                )}
               </div>
-              <button onClick={() => setPhotos(photos.filter((x) => x.id !== p.id))} className="absolute top-2 right-2 p-2 bg-white/90 rounded-full opacity-0 group-hover:opacity-100 text-destructive">
-                <Trash2 className="h-4 w-4" />
-              </button>
             </div>
           ))}
         </div>
