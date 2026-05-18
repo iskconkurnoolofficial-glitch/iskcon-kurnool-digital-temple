@@ -43,7 +43,7 @@ export default function Navbar() {
     <header className="fixed top-0 inset-x-0 z-50 bg-white shadow-[0_2px_12px_rgba(91,44,155,0.08)] border-b border-border/60">
       <LiveClassBanner />
       <div className="max-w-7xl mx-auto px-4 lg:px-8 flex items-center justify-between h-20 md:h-24">
-        <Link to="/" className="flex items-center gap-3 shrink-0">
+        <Link to="/" className="flex items-center gap-3 shrink-0" aria-label="ISKCON Kurnool home">
           {settings.logo ? (
             <img src={settings.logo} alt="ISKCON Kurnool" className="h-14 w-14 md:h-16 md:w-16 rounded-full object-cover ring-2 ring-secondary/60" />
           ) : (
@@ -51,12 +51,6 @@ export default function Navbar() {
               IK
             </div>
           )}
-          <div className="leading-tight min-w-0">
-            <div className="font-display font-bold text-primary text-sm sm:text-lg md:text-xl truncate">ISKCON Kurnool</div>
-            <div className="hidden sm:block text-[9px] sm:text-[10px] uppercase tracking-wider text-muted-foreground truncate">
-              International Society for Krishna Consciousness
-            </div>
-          </div>
         </Link>
 
         <nav className="hidden lg:flex items-center gap-1">
