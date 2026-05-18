@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAdmin, uploadToCloudinary, Festival } from "@/context/AdminContext";
-import { Trash2, Eye, EyeOff, Upload, Sparkles, Calendar, Link as LinkIcon } from "lucide-react";
+import { Trash2, Eye, EyeOff, Upload, Sparkles, Calendar, Link as LinkIcon, Pencil, X } from "lucide-react";
 
 function emptyDraft(): Partial<Festival> {
   return { title: "", date: "", donateUrl: "", active: true };
