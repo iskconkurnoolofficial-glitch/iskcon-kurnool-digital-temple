@@ -17,7 +17,7 @@ export const Route = createFileRoute("/admin")({
 type Tab = "carousel" | "festivals" | "classes" | "gallery" | "settings" | "theme";
 
 function AdminPage() {
-  const { authed, login, logout } = useAdmin();
+  const { authed, login, logout, settings } = useAdmin();
   const [pw, setPw] = useState("");
   const [err, setErr] = useState("");
   const [tab, setTab] = useState<Tab>("carousel");
@@ -27,7 +27,11 @@ function AdminPage() {
       <div className="min-h-screen bg-gradient-soft grid place-items-center px-4">
         <div className="bg-white rounded-2xl shadow-elegant p-8 w-full max-w-md border">
           <div className="text-center mb-6">
-            <div className="h-14 w-14 rounded-full bg-gradient-hero grid place-items-center text-primary-foreground font-display font-bold text-xl mx-auto mb-3 shadow-glow">IK</div>
+            {settings.logo ? (
+              <img src={settings.logo} alt="ISKCON Kurnool" className="h-20 w-20 rounded-full object-cover mx-auto mb-3 ring-2 ring-secondary/60 shadow-glow" />
+            ) : (
+              <div className="h-20 w-20 rounded-full bg-gradient-hero grid place-items-center text-primary-foreground font-display font-bold text-2xl mx-auto mb-3 shadow-glow">IK</div>
+            )}
             <h1 className="font-display text-2xl font-bold text-primary">Admin Login</h1>
             <p className="text-sm text-muted-foreground">ISKCON Kurnool</p>
           </div>
