@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAdmin, uploadToCloudinary, DailyClass } from "@/context/AdminContext";
-import { Trash2, Eye, EyeOff, Upload, Radio, Calendar, Clock, Globe2, Link as LinkIcon } from "lucide-react";
+import { Trash2, Eye, EyeOff, Upload, Radio, Calendar, Clock, Globe2, Link as LinkIcon, Pencil, X } from "lucide-react";
 
 const LANGUAGES = ["Telugu", "English", "Hindi", "Sanskrit", "Tamil", "Kannada"];
 
