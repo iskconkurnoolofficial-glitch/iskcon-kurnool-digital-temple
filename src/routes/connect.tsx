@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import SiteLayout, { PageHero } from "@/components/SiteLayout";
 import ConnectSection from "@/components/ConnectSection";
+import SocialMediaSection from "@/components/SocialMediaSection";
 
 export const Route = createFileRoute("/connect")({
   head: () => ({ meta: [
@@ -14,6 +15,7 @@ function Page() {
   return (
     <SiteLayout>
       <PageHero eyebrow="Get in Touch" title="Connect With Us" subtitle="Visit, call or follow — we welcome you with open arms" />
+      <SocialMediaSection />
       <ConnectSection />
     </SiteLayout>
   );
