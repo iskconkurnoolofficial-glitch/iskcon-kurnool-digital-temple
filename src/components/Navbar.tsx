@@ -51,6 +51,10 @@ export default function Navbar() {
               IK
             </div>
           )}
+          <div className="hidden lg:block leading-tight">
+            <div className="font-display font-bold text-lg xl:text-xl text-primary tracking-tight">ISKCON Kurnool</div>
+            <div className="text-[10px] xl:text-xs text-muted-foreground tracking-wide uppercase">Sri Sri Puri Jagannath Temple</div>
+          </div>
         </Link>
 
         <nav className="hidden lg:flex items-center gap-1">
