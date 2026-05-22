@@ -1,84 +1,76 @@
-import { useRef } from "react";
 import { Link } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 import { useAdmin } from "@/context/AdminContext";
 import { ChevronRight, ImageIcon } from "lucide-react";
 
 export default function HomeGallery() {
   const { photos } = useAdmin();
   const list = photos.slice(0, 6);
-  const trackRef = useRef<HTMLDivElement | null>(null);
+  const marqueeImages = [...list, ...list];
 
   return (
-    <section className="py-16 md:py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10 md:mb-12">
-          <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-secondary font-semibold">
-            <span className="h-px w-8 bg-secondary" /> Memories <span className="h-px w-8 bg-secondary" />
-          </span>
-          <h2 className="font-display font-extrabold text-3xl sm:text-4xl md:text-5xl text-primary mt-4">
+    <motion.section
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.9, ease: "easeOut" }}
+      className="relative overflow-hidden py-20 sm:py-24 bg-white"
+    >
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <span className="inline-flex items-center justify-center gap-3 text-xs uppercase tracking-[0.34em] text-slate-500/70 font-semibold">
+            <span className="h-px w-10 bg-slate-300/40" />
             Temple Gallery
+            <span className="h-px w-10 bg-slate-300/40" />
+          </span>
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold text-slate-950 mt-5 tracking-tight">
+            Cinematic Devotion
           </h2>
-          <p className="text-muted-foreground mt-3 max-w-2xl mx-auto">
-            Glimpses of devotion, festivals, and divine moments.
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
+            A graceful scroll of sacred imagery in a premium dark temple aesthetic.
           </p>
         </div>
 
         {list.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground border-2 border-dashed border-border rounded-2xl">
-            <ImageIcon className="h-10 w-10 mx-auto mb-2 opacity-50" />
-            No photos yet.
+          <div className="rounded-[32px] border border-white/10 bg-slate-950/80 p-14 text-center text-slate-300 shadow-[0_32px_120px_-70px_rgba(0,0,0,0.8)]">
+            <ImageIcon className="mx-auto h-12 w-12 opacity-60" />
+            <p className="mt-4 text-lg font-medium">No photos available.</p>
           </div>
         ) : (
           <>
-            {/* Desktop / tablet grid */}
-            <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-              {list.map((p) => (
-                <figure key={p.id} className="group relative overflow-hidden rounded-2xl aspect-[4/3] shadow-sm">
-                  <img
-                    src={p.url}
-                    alt={p.title}
-                    loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-primary/85 via-primary/30 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
-                  <figcaption className="absolute bottom-0 inset-x-0 p-4 text-white font-display font-semibold text-lg translate-y-2 group-hover:translate-y-0 transition-transform">
-                    {p.title}
-                  </figcaption>
-                </figure>
-              ))}
+            <div className="group overflow-hidden rounded-[32px] border border-white/10 bg-slate-950/80 shadow-[0_35px_120px_-65px_rgba(0,0,0,0.65)]">
+              <div className="relative overflow-hidden">
+                <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/95 to-transparent pointer-events-none" />
+                <div className="flex min-w-full animate-[marquee_10s_linear_infinite] gap-4 px-2 py-8 sm:gap-5 sm:px-4 sm:py-10 md:px-6 group-hover:[animation-play-state:paused] will-change-transform">
+                  {marqueeImages.map((photo, index) => (
+                    <article
+                      key={`${photo.id}-${index}`}
+                      className="relative min-w-[220px] sm:min-w-[280px] md:min-w-[320px] lg:min-w-[360px] overflow-hidden rounded-2xl shadow-[0_18px_60px_-30px_rgba(0,0,0,0.7)]"
+                    >
+                      <img
+                        src={photo.url}
+                        alt={photo.title}
+                        loading="lazy"
+                        className="h-[240px] w-full object-cover transition-transform duration-700 ease-out hover:scale-105 sm:h-[300px] md:h-[340px] lg:h-[360px]"
+                      />
+                    </article>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            {/* Mobile horizontal scroll */}
-            <div
-              ref={trackRef}
-              className="sm:hidden -mx-4 px-4 flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 scrollbar-none"
-              style={{ scrollbarWidth: "none" }}
-            >
-              {list.map((p) => (
-                <figure
-                  key={p.id}
-                  className="relative shrink-0 w-[78%] snap-center overflow-hidden rounded-2xl aspect-[4/5] shadow-md"
-                >
-                  <img src={p.url} alt={p.title} loading="lazy" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-primary/85 via-primary/20 to-transparent" />
-                  <figcaption className="absolute bottom-0 inset-x-0 p-4 text-white font-display font-semibold text-base">
-                    {p.title}
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-
-            <div className="text-center mt-10">
+            <div className="mt-12 flex justify-center">
               <Link
                 to="/gallery"
-                className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-accent text-white font-semibold text-sm shadow-lg hover:scale-105 hover:shadow-[0_15px_30px_-10px_rgba(232,103,12,0.6)] transition-all"
+                className="inline-flex items-center justify-center gap-3 rounded-full bg-[#e8670c] px-10 py-3.5 text-sm font-semibold uppercase tracking-[0.24em] text-white shadow-[0_22px_90px_-24px_rgba(232,103,12,0.75)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_26px_100px_-24px_rgba(232,103,12,0.95)]"
               >
-                View More <ChevronRight className="h-4 w-4" />
+                View More
+                <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
           </>
         )}
       </div>
-    </section>
+    </motion.section>
   );
 }
