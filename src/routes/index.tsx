@@ -4,7 +4,6 @@ import HeroCarousel from "@/components/HeroCarousel";
 import WelcomeSection from "@/components/WelcomeSection";
 import UpcomingFestivals from "@/components/UpcomingFestivals";
 import HomeGallery from "@/components/HomeGallery";
-import SocialMediaSection from "@/components/SocialMediaSection";
 import ConnectSection from "@/components/ConnectSection";
 
 export const Route = createFileRoute("/")({
@@ -24,7 +23,6 @@ function Home() {
       <WelcomeSection />
       <UpcomingFestivals />
       <HomeGallery />
-      <SocialMediaSection />
       <ConnectSection />
     </SiteLayout>
   );
