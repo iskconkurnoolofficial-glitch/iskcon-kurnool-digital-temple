@@ -18,12 +18,12 @@ export default function HomeGallery() {
     >
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <span className="inline-flex items-center justify-center gap-3 text-xs uppercase tracking-[0.34em] text-[#E8670C] font-semibold">
+          <span className="inline-flex items-center justify-center gap-3 text-xs uppercase tracking-[0.34em] text-slate-500/70 font-semibold">
             <span className="h-px w-10 bg-slate-300/40" />
             Temple Gallery
             <span className="h-px w-10 bg-slate-300/40" />
           </span>
-          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold text-[#5B2C9B] mt-5 tracking-tight">
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold text-slate-950 mt-5 tracking-tight">
             Cinematic Devotion
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
@@ -38,14 +38,13 @@ export default function HomeGallery() {
           </div>
         ) : (
           <>
-            <div className="group overflow-hidden rounded-[32px] border border-white/10 bg-slate-950/80 shadow-[0_35px_120px_-65px_rgba(0,0,0,0.65)]">
+            <div className="group overflow-hidden rounded-[32px] border border-white/10 bg-white shadow-[0_35px_120px_-65px_rgba(0,0,0,0.15)]">
               <div className="relative overflow-hidden">
-                <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/95 to-transparent pointer-events-none" />
-                <div className="flex min-w-full animate-[marquee_10s_linear_infinite] gap-4 px-2 py-8 sm:gap-5 sm:px-4 sm:py-10 md:px-6 group-hover:[animation-play-state:paused] will-change-transform">
+                <div className="flex w-max animate-[marquee_30s_linear_infinite] gap-4 px-2 py-8 sm:gap-5 sm:px-4 sm:py-10 md:px-6 group-hover:[animation-play-state:paused] will-change-transform">
                   {marqueeImages.map((photo, index) => (
                     <article
                       key={`${photo.id}-${index}`}
-                      className="relative min-w-[220px] sm:min-w-[280px] md:min-w-[320px] lg:min-w-[360px] overflow-hidden rounded-2xl shadow-[0_18px_60px_-30px_rgba(0,0,0,0.7)]"
+                      className="relative min-w-[220px] sm:min-w-[280px] md:min-w-[320px] lg:min-w-[360px] flex-shrink-0 overflow-hidden rounded-2xl shadow-[0_18px_60px_-30px_rgba(0,0,0,0.7)]"
                     >
                       <img
                         src={photo.url}
