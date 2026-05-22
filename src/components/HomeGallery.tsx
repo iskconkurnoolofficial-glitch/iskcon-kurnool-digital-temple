@@ -18,12 +18,12 @@ export default function HomeGallery() {
     >
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <span className="inline-flex items-center justify-center gap-3 text-xs uppercase tracking-[0.34em] text-slate-500/70 font-semibold">
+          <span className="inline-flex items-center justify-center gap-3 text-xs uppercase tracking-[0.34em] text-[#E8670C] font-semibold">
             <span className="h-px w-10 bg-slate-300/40" />
             Temple Gallery
             <span className="h-px w-10 bg-slate-300/40" />
           </span>
-          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold text-slate-950 mt-5 tracking-tight">
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold text-[#5B2C9B] mt-5 tracking-tight">
             Cinematic Devotion
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
