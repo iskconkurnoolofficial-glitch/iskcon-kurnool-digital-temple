@@ -38,7 +38,7 @@ export default function Navbar() {
   const { settings } = useAdmin();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDrop, setOpenDrop] = useState<string | null>(null);
-  const [mobileDropOpen, setMobileDropOpen] = useState<string | null>(null);
+  const [mobileGroupOpen, setMobileGroupOpen] = useState<string | null>(null);
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 bg-white shadow-[0_2px_12px_rgba(91,44,155,0.08)] border-b border-border/60">
@@ -171,40 +171,40 @@ export default function Navbar() {
             {/* Navigation */}
             <nav className="py-2 px-3">
               {NAV.map((item) => (
-                <div key={item.label}>
+                <div key={item.label} className="mb-1 rounded-2xl overflow-hidden border border-border bg-white">
                   {item.children ? (
-                    <div>
+                    <>
                       <button
-                        onClick={() => setMobileDropOpen(mobileDropOpen === item.label ? null : item.label)}
-                        className="w-full flex items-center justify-between px-4 py-3 my-1 text-gray-700 font-medium rounded-lg hover:bg-gradient-to-r hover:from-purple-50 hover:to-transparent transition-all duration-200"
+                        type="button"
+                        onClick={() => setMobileGroupOpen((open) => (open === item.label ? null : item.label))}
+                        className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-700 font-medium hover:bg-purple-50 transition-colors duration-200"
                       >
                         <span>{item.label}</span>
-                        <ChevronDown 
-                          className={`h-5 w-5 transition-transform duration-300 ${
-                            mobileDropOpen === item.label ? 'rotate-180' : ''
-                          }`}
+                        <ChevronDown
+                          className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${mobileGroupOpen === item.label ? "rotate-180" : ""}`}
                         />
                       </button>
-                      {mobileDropOpen === item.label && (
-                        <div className="bg-gray-50/50 rounded-lg ml-4 my-1">
-                          {item.children.map((child) => (
-                            <Link
-                              key={child.label}
-                              to={child.href}
-                              onClick={() => setMobileOpen(false)}
-                              className="block px-4 py-2.5 text-sm text-gray-600 font-medium border-b border-gray-100 last:border-b-0 hover:text-accent transition-colors"
-                            >
-                              {child.label}
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                      <div className={`overflow-hidden transition-[max-height,opacity] duration-300 ${mobileGroupOpen === item.label ? "max-h-60 opacity-100" : "max-h-0 opacity-0"}`}>
+                        {item.children.map((child) => (
+                          <Link
+                            key={child.label + child.href}
+                            to={child.href}
+                            onClick={() => {
+                              setMobileOpen(false);
+                              setMobileGroupOpen(null);
+                            }}
+                            className="block px-5 py-3 text-sm text-gray-600 hover:text-primary hover:bg-purple-50 transition-colors duration-200"
+                          >
+                            {child.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </>
                   ) : (
                     <Link
                       to={item.href!}
                       onClick={() => setMobileOpen(false)}
-                      className="block px-4 py-3 my-1 text-gray-700 font-medium rounded-lg hover:bg-gradient-to-r hover:from-purple-50 hover:to-transparent hover:text-accent transition-all duration-200"
+                      className="block px-4 py-3 text-gray-700 font-medium rounded-lg hover:bg-gradient-to-r hover:from-purple-50 hover:to-transparent hover:text-accent transition-all duration-200"
                     >
                       {item.label}
                     </Link>
