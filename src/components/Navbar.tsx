@@ -38,26 +38,28 @@ export default function Navbar() {
   const { settings } = useAdmin();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDrop, setOpenDrop] = useState<string | null>(null);
+  const [mobileDropOpen, setMobileDropOpen] = useState<string | null>(null);
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 bg-white shadow-[0_2px_12px_rgba(91,44,155,0.08)] border-b border-border/60">
       <LiveClassBanner />
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 flex items-center justify-between h-20 md:h-24">
+      {/* Desktop Layout */}
+      <div className="hidden lg:flex max-w-7xl mx-auto px-8 items-center justify-between h-24">
         <Link to="/" className="flex items-center gap-3 shrink-0" aria-label="ISKCON Kurnool home">
           {settings.logo ? (
-            <img src={settings.logo} alt="ISKCON Kurnool" className="h-14 w-14 md:h-16 md:w-16 rounded-full object-cover ring-2 ring-secondary/60" />
+            <img src={settings.logo} alt="ISKCON Kurnool" className="h-16 w-16 rounded-full object-cover ring-2 ring-secondary/60" />
           ) : (
-            <div className="h-14 w-14 md:h-16 md:w-16 rounded-full bg-gradient-hero grid place-items-center text-primary-foreground font-display font-bold text-lg shadow-glow">
+            <div className="h-16 w-16 rounded-full bg-gradient-hero grid place-items-center text-primary-foreground font-display font-bold text-lg shadow-glow">
               IK
             </div>
           )}
-          <div className="hidden lg:block leading-tight">
+          <div className="leading-tight">
             <div className="font-display font-bold text-lg xl:text-xl text-primary tracking-tight">ISKCON Kurnool</div>
             <div className="text-[10px] xl:text-xs text-muted-foreground tracking-wide uppercase">Sri Sri Puri Jagannath Temple</div>
           </div>
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-1">
+        <nav className="flex items-center gap-1">
           {NAV.map((item) => (
             <div
               key={item.label}
@@ -105,55 +107,125 @@ export default function Navbar() {
             DONATE
           </Link>
         </nav>
+      </div>
 
-        <div className="lg:hidden flex items-center gap-2">
-          <Link
-            to="/donate"
-            className="inline-flex items-center px-3.5 py-2 rounded-full bg-accent text-white font-semibold text-xs shadow-sm"
-          >
-            DONATE
-          </Link>
-          <button
-            className="p-2 text-primary"
-            onClick={() => setMobileOpen(true)}
-            aria-label="Open menu"
-          >
-            <Menu className="h-7 w-7" />
-          </button>
-        </div>
+      {/* Mobile/Tablet Layout */}
+      <div className="lg:hidden max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between h-20 md:h-24">
+        <button
+          className="p-2 text-primary"
+          onClick={() => setMobileOpen(true)}
+          aria-label="Open menu"
+        >
+          <Menu className="h-7 w-7" />
+        </button>
+
+        <Link to="/" className="flex-1 flex items-center justify-center" aria-label="ISKCON Kurnool home">
+          {settings.logo ? (
+            <img src={settings.logo} alt="ISKCON Kurnool" className="h-14 w-14 md:h-16 md:w-16 rounded-full object-cover ring-2 ring-secondary/60" />
+          ) : (
+            <div className="h-14 w-14 md:h-16 md:w-16 rounded-full bg-gradient-hero grid place-items-center text-primary-foreground font-display font-bold text-lg shadow-glow">
+              IK
+            </div>
+          )}
+        </Link>
+
+        <Link
+          to="/donate"
+          className="inline-flex items-center px-3.5 py-2 rounded-full bg-accent text-white font-semibold text-xs shadow-sm"
+        >
+          DONATE
+        </Link>
       </div>
 
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
-          <div className="absolute right-0 top-0 h-full w-80 max-w-[85vw] bg-background shadow-elegant overflow-y-auto">
-            <div className="flex justify-between items-center p-4 border-b">
-              <span className="font-display font-bold text-primary">Menu</span>
-              <button onClick={() => setMobileOpen(false)} aria-label="Close"><X className="h-5 w-5" /></button>
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300" 
+            onClick={() => setMobileOpen(false)} 
+          />
+          
+          {/* Sidebar */}
+          <div className="absolute left-0 top-0 h-full w-72 max-w-[85vw] bg-white shadow-2xl overflow-y-auto transform transition-transform duration-300 ease-out">
+            {/* Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-purple-600/5 to-transparent px-6 py-5 flex justify-between items-center border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                {settings.logo ? (
+                  <img src={settings.logo} alt="ISKCON Kurnool" className="h-10 w-10 rounded-full object-cover ring-2 ring-secondary/40" />
+                ) : (
+                  <div className="h-10 w-10 rounded-full bg-gradient-hero grid place-items-center text-white font-display font-bold text-sm">
+                    IK
+                  </div>
+                )}
+                <span className="font-display font-bold text-gray-800">Menu</span>
+              </div>
+              <button 
+                onClick={() => setMobileOpen(false)} 
+                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                aria-label="Close menu"
+              >
+                <X className="h-6 w-6 text-gray-600" />
+              </button>
             </div>
-            <nav className="p-2">
-              {NAV.flatMap((item) =>
-                item.children
-                  ? item.children.map((c) => ({ label: c.label, href: c.href }))
-                  : [{ label: item.label, href: item.href! }],
-              ).map((link) => (
-                <Link
-                  key={link.label + link.href}
-                  to={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="block px-4 py-3 text-primary font-medium border-b border-border/50 hover:bg-surface hover:text-accent transition"
-                >
-                  {link.label}
-                </Link>
+
+            {/* Navigation */}
+            <nav className="py-2 px-3">
+              {NAV.map((item) => (
+                <div key={item.label}>
+                  {item.children ? (
+                    <div>
+                      <button
+                        onClick={() => setMobileDropOpen(mobileDropOpen === item.label ? null : item.label)}
+                        className="w-full flex items-center justify-between px-4 py-3 my-1 text-gray-700 font-medium rounded-lg hover:bg-gradient-to-r hover:from-purple-50 hover:to-transparent transition-all duration-200"
+                      >
+                        <span>{item.label}</span>
+                        <ChevronDown 
+                          className={`h-5 w-5 transition-transform duration-300 ${
+                            mobileDropOpen === item.label ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </button>
+                      {mobileDropOpen === item.label && (
+                        <div className="bg-gray-50/50 rounded-lg ml-4 my-1">
+                          {item.children.map((child) => (
+                            <Link
+                              key={child.label}
+                              to={child.href}
+                              onClick={() => setMobileOpen(false)}
+                              className="block px-4 py-2.5 text-sm text-gray-600 font-medium border-b border-gray-100 last:border-b-0 hover:text-accent transition-colors"
+                            >
+                              {child.label}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <Link
+                      to={item.href!}
+                      onClick={() => setMobileOpen(false)}
+                      className="block px-4 py-3 my-1 text-gray-700 font-medium rounded-lg hover:bg-gradient-to-r hover:from-purple-50 hover:to-transparent hover:text-accent transition-all duration-200"
+                    >
+                      {item.label}
+                    </Link>
+                  )}
+                </div>
               ))}
+            </nav>
+
+            {/* Divider */}
+            <div className="my-4 mx-4 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
+
+            {/* Donate Button */}
+            <div className="px-4 pb-6">
               <Link
                 to="/donate"
                 onClick={() => setMobileOpen(false)}
-                className="mt-4 block text-center px-6 py-3 rounded-full bg-accent text-white font-semibold"
+                className="block w-full text-center px-6 py-3.5 rounded-xl bg-gradient-to-r from-accent to-accent/90 text-white font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
               >
-                DONATE
+                DONATE NOW
               </Link>
-            </nav>
+            </div>
           </div>
         </div>
       )}
