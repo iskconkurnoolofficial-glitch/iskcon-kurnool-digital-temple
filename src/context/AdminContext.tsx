@@ -84,6 +84,8 @@ type AdminState = {
   setClasses: (c: DailyClass[]) => void;
   festivals: Festival[];
   setFestivals: (f: Festival[]) => void;
+  sevas: Seva[];
+  setSevas: (s: Seva[]) => void;
   settings: SiteSettings;
   setSettings: (s: SiteSettings) => void;
   theme: ThemeSettings;
