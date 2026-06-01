@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import SiteLayout, { PageHero } from "@/components/SiteLayout";
+import SiteLayout from "@/components/SiteLayout";
 import { useAdmin, Seva } from "@/context/AdminContext";
 import { Heart, Search, HandHeart, IndianRupee, Sparkles } from "lucide-react";
 
