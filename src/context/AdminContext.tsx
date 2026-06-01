@@ -27,6 +27,21 @@ export type Festival = {
   active: boolean;
 };
 
+export type SevaPrice = {
+  label: string;
+  amount: number;
+};
+
+export type Seva = {
+  id: string;
+  thumbnail: string;
+  title: string;
+  description: string;
+  prices: SevaPrice[];
+  order: number;
+  active: boolean;
+};
+
 export type DailyClass = {
   id: string;
   thumbnail: string;
@@ -69,6 +84,8 @@ type AdminState = {
   setClasses: (c: DailyClass[]) => void;
   festivals: Festival[];
   setFestivals: (f: Festival[]) => void;
+  sevas: Seva[];
+  setSevas: (s: Seva[]) => void;
   settings: SiteSettings;
   setSettings: (s: SiteSettings) => void;
   theme: ThemeSettings;
@@ -128,6 +145,7 @@ const KEYS = {
   categories: "categories",
   classes: "classes",
   festivals: "festivals",
+  sevas: "sevas",
   settings: "settings",
   theme: "theme",
 } as const;
@@ -140,6 +158,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [categories, setCategoriesState] = useState<string[]>(defaultCategories);
   const [classes, setClassesState] = useState<DailyClass[]>([]);
   const [festivals, setFestivalsState] = useState<Festival[]>([]);
+  const [sevas, setSevasState] = useState<Seva[]>([]);
   const [settings, setSettingsState] = useState<SiteSettings>(defaultSettings);
   const [theme, setThemeState] = useState<ThemeSettings>(defaultTheme);
   const [authed, setAuthed] = useState<boolean>(() => {
@@ -195,6 +214,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.categories: setCategoriesState(value); break;
       case KEYS.classes: setClassesState(value); break;
       case KEYS.festivals: setFestivalsState(value); break;
+      case KEYS.sevas: setSevasState(value); break;
       case KEYS.settings: setSettingsState(value); break;
       case KEYS.theme: setThemeState(value); break;
     }
@@ -213,6 +233,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setCategories = (v: string[]) => { setCategoriesState(v); persist(KEYS.categories, v); };
   const setClasses = (v: DailyClass[]) => { setClassesState(v); persist(KEYS.classes, v); };
   const setFestivals = (v: Festival[]) => { setFestivalsState(v); persist(KEYS.festivals, v); };
+  const setSevas = (v: Seva[]) => { setSevasState(v); persist(KEYS.sevas, v); };
   const setSettings = (v: SiteSettings) => { setSettingsState(v); persist(KEYS.settings, v); };
   const setTheme = (v: ThemeSettings) => { setThemeState(v); persist(KEYS.theme, v); };
 
@@ -246,6 +267,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         categories, setCategories,
         classes, setClasses,
         festivals, setFestivals,
+        sevas, setSevas,
         settings, setSettings,
         theme, setTheme,
         authed, login, logout, ready,

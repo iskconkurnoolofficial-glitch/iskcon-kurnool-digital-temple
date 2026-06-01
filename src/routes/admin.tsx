@@ -7,14 +7,15 @@ import SiteSettingsForm from "@/admin/SiteSettings";
 import ThemeSettings from "@/admin/ThemeSettings";
 import DailyClassesManager from "@/admin/DailyClassesManager";
 import FestivalsManager from "@/admin/FestivalsManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles } from "lucide-react";
+import SevasManager from "@/admin/SevasManager";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
 
-type Tab = "carousel" | "festivals" | "classes" | "gallery" | "settings" | "theme";
+type Tab = "carousel" | "festivals" | "sevas" | "classes" | "gallery" | "settings" | "theme";
 
 function AdminPage() {
   const { authed, login, logout, settings } = useAdmin();
@@ -56,6 +57,7 @@ function AdminPage() {
   const tabs: { id: Tab; label: string; icon: any }[] = [
     { id: "carousel", label: "Carousel", icon: Image },
     { id: "festivals", label: "Upcoming Festivals", icon: Sparkles },
+    { id: "sevas", label: "Jagannath Sevas", icon: HandHeart },
     { id: "classes", label: "Daily Classes", icon: Radio },
     { id: "gallery", label: "Gallery", icon: Images },
     { id: "settings", label: "Site Settings", icon: Settings },
@@ -98,6 +100,7 @@ function AdminPage() {
         </div>
         {tab === "carousel" && <CarouselManager />}
         {tab === "festivals" && <FestivalsManager />}
+        {tab === "sevas" && <SevasManager />}
         {tab === "classes" && <DailyClassesManager />}
         {tab === "gallery" && <GalleryManager />}
         {tab === "settings" && <SiteSettingsForm />}
