@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import LiveClassBanner from "@/components/LiveClassBanner";
+import LanguageToggle from "@/components/LanguageToggle";
 
 type NavItem = { label: string; href?: string; children?: { label: string; href: string }[] };
 
