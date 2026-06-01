@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import SiteLayout, { PageHero } from "@/components/SiteLayout";
+import SiteLayout from "@/components/SiteLayout";
 import { useAdmin, Seva } from "@/context/AdminContext";
 import { Heart, Search, HandHeart, IndianRupee, Sparkles } from "lucide-react";
 
@@ -64,9 +64,7 @@ function Page() {
 
   return (
     <SiteLayout>
-      <PageHero eyebrow="Sacred Service" title="Donate" subtitle="Be part of the divine mission of Sri Sri Puri Jagannath Temple" />
-
-      <section className="py-16 md:py-24 bg-background">
+      <section className="pt-10 md:pt-16 pb-16 md:pb-24 bg-background">
         <div className="max-w-6xl mx-auto px-5 sm:px-6">
           {/* Heading */}
           <div className="text-center max-w-2xl mx-auto mb-8">

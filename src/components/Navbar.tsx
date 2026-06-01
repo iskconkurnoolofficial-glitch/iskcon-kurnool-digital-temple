@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import LiveClassBanner from "@/components/LiveClassBanner";
+import LanguageToggle from "@/components/LanguageToggle";
 
 type NavItem = { label: string; href?: string; children?: { label: string; href: string }[] };
 
@@ -99,6 +100,8 @@ export default function Navbar() {
               )}
             </div>
           ))}
+
+          <LanguageToggle className="ml-3" />
 
           <Link
             to="/donate"
@@ -215,6 +218,11 @@ export default function Navbar() {
 
             {/* Divider */}
             <div className="my-4 mx-4 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
+
+            {/* Language toggle */}
+            <div className="px-4 pb-2">
+              <LanguageToggle className="w-full justify-center" />
+            </div>
 
             {/* Donate Button */}
             <div className="px-4 pb-6">
