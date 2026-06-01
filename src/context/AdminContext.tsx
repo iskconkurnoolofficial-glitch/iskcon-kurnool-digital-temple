@@ -27,6 +27,21 @@ export type Festival = {
   active: boolean;
 };
 
+export type SevaPrice = {
+  label: string;
+  amount: number;
+};
+
+export type Seva = {
+  id: string;
+  thumbnail: string;
+  title: string;
+  description: string;
+  prices: SevaPrice[];
+  order: number;
+  active: boolean;
+};
+
 export type DailyClass = {
   id: string;
   thumbnail: string;
