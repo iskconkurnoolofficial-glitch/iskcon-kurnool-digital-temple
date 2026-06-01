@@ -101,6 +101,8 @@ export default function Navbar() {
             </div>
           ))}
 
+          <LanguageToggle className="ml-3" />
+
           <Link
             to="/donate"
             className="ml-3 inline-flex items-center px-6 py-2.5 rounded-full bg-accent text-white font-semibold text-sm hover:scale-105 hover:shadow-lg transition-all"
