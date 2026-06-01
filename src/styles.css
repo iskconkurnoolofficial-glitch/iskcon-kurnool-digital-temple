@@ -127,3 +127,12 @@
 @keyframes fadeUp { from { opacity: 0; transform: translateY(20px) } to { opacity: 1; transform: none } }
 @keyframes scaleIn { from { opacity: 0; transform: scale(.96) } to { opacity: 1; transform: none } }
 @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* Google Translate widget — hide default banner & keep layout intact */
+.goog-te-banner-frame.skiptranslate,
+.goog-te-gadget-icon,
+#goog-gt-tt,
+.goog-te-balloon-frame { display: none !important; }
+.goog-te-gadget { font-size: 0 !important; }
+body { top: 0 !important; position: static !important; }
+.skiptranslate iframe { visibility: hidden !important; height: 0 !important; }
