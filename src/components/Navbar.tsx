@@ -219,6 +219,11 @@ export default function Navbar() {
             {/* Divider */}
             <div className="my-4 mx-4 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
 
+            {/* Language toggle */}
+            <div className="px-4 pb-2">
+              <LanguageToggle className="w-full justify-center" />
+            </div>
+
             {/* Donate Button */}
             <div className="px-4 pb-6">
               <Link
