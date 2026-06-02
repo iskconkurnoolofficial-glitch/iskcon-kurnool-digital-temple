@@ -17,6 +17,7 @@ import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FestivalSlugRouteImport } from './routes/festival.$slug'
 import { Route as AboutMissionRouteImport } from './routes/about.mission'
 import { Route as AboutKurnoolRouteImport } from './routes/about.kurnool'
 import { Route as AboutIskconRouteImport } from './routes/about.iskcon'
@@ -62,6 +63,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FestivalSlugRoute = FestivalSlugRouteImport.update({
+  id: '/festival/$slug',
+  path: '/festival/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutMissionRoute = AboutMissionRouteImport.update({
   id: '/about/mission',
   path: '/about/mission',
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
   '/about/mission': typeof AboutMissionRoute
+  '/festival/$slug': typeof FestivalSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
   '/about/mission': typeof AboutMissionRoute
+  '/festival/$slug': typeof FestivalSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
   '/about/mission': typeof AboutMissionRoute
+  '/festival/$slug': typeof FestivalSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/about/iskcon'
     | '/about/kurnool'
     | '/about/mission'
+    | '/festival/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
     | '/about/iskcon'
     | '/about/kurnool'
     | '/about/mission'
+    | '/festival/$slug'
   id:
     | '__root__'
     | '/'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
     | '/about/iskcon'
     | '/about/kurnool'
     | '/about/mission'
+    | '/festival/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -184,6 +196,7 @@ export interface RootRouteChildren {
   AboutIskconRoute: typeof AboutIskconRoute
   AboutKurnoolRoute: typeof AboutKurnoolRoute
   AboutMissionRoute: typeof AboutMissionRoute
+  FestivalSlugRoute: typeof FestivalSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -244,6 +257,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/festival/$slug': {
+      id: '/festival/$slug'
+      path: '/festival/$slug'
+      fullPath: '/festival/$slug'
+      preLoaderRoute: typeof FestivalSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about/mission': {
       id: '/about/mission'
       path: '/about/mission'
@@ -288,6 +308,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutIskconRoute: AboutIskconRoute,
   AboutKurnoolRoute: AboutKurnoolRoute,
   AboutMissionRoute: AboutMissionRoute,
+  FestivalSlugRoute: FestivalSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

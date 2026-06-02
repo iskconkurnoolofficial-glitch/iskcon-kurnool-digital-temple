@@ -136,3 +136,26 @@
 .goog-te-gadget { font-size: 0 !important; }
 body { top: 0 !important; position: static !important; }
 .skiptranslate iframe { visibility: hidden !important; height: 0 !important; }
+
+/* Admin input utility */
+.inp {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: #fff;
+  font-size: 0.875rem;
+  outline: none;
+}
+.inp:focus { border-color: var(--primary); box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 25%, transparent); }
+
+/* Rich text editor + rendered festival description */
+.rte-content:empty::before { content: attr(data-placeholder); color: var(--muted-foreground); }
+.prose-festival h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; color: var(--primary); margin: 0.75rem 0 0.5rem; }
+.prose-festival h3 { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--primary); margin: 0.75rem 0 0.5rem; }
+.prose-festival p { margin: 0.5rem 0; line-height: 1.7; }
+.prose-festival ul { list-style: disc; padding-left: 1.5rem; margin: 0.5rem 0; }
+.prose-festival ol { list-style: decimal; padding-left: 1.5rem; margin: 0.5rem 0; }
+.prose-festival a { color: var(--accent); text-decoration: underline; }
+.prose-festival strong { font-weight: 700; }
+

@@ -17,16 +17,6 @@ export type GalleryPhoto = {
   category: string;
 };
 
-export type Festival = {
-  id: string;
-  thumbnail: string;
-  title: string;
-  /** ISO date (YYYY-MM-DD) */
-  date: string;
-  donateUrl: string;
-  active: boolean;
-};
-
 export type SevaPrice = {
   label: string;
   amount: number;
@@ -41,6 +31,76 @@ export type Seva = {
   order: number;
   active: boolean;
 };
+
+export type Festival = {
+  id: string;
+  title: string;
+  slug: string;
+  /** ISO date (YYYY-MM-DD) */
+  date: string;
+  /** Card thumbnail 1280x720 */
+  thumbnail: string;
+  /** Desktop banner 4917x1750 */
+  desktopBanner: string;
+  /** Mobile banner 1080x1080 */
+  mobileBanner: string;
+  /** Rich text HTML */
+  description: string;
+  shortDescription: string;
+  sevas: Seva[];
+  status: "draft" | "published";
+  hidden: boolean;
+  /** ISO datetime — auto publish */
+  publishAt?: string;
+  /** ISO datetime — auto unpublish */
+  unpublishAt?: string;
+  order: number;
+  // legacy
+  donateUrl?: string;
+  active?: boolean;
+};
+
+/** Generate a URL-safe slug from a title */
+export function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+/** Normalize a festival (handles legacy records) */
+export function normalizeFestival(f: any): Festival {
+  return {
+    id: f.id,
+    title: f.title ?? "",
+    slug: f.slug || slugify(f.title ?? "") || f.id,
+    date: f.date ?? "",
+    thumbnail: f.thumbnail ?? "",
+    desktopBanner: f.desktopBanner ?? f.thumbnail ?? "",
+    mobileBanner: f.mobileBanner ?? f.thumbnail ?? "",
+    description: f.description ?? "",
+    shortDescription: f.shortDescription ?? "",
+    sevas: Array.isArray(f.sevas) ? f.sevas : [],
+    status: f.status ?? (f.active === false ? "draft" : "published"),
+    hidden: f.hidden ?? false,
+    publishAt: f.publishAt || undefined,
+    unpublishAt: f.unpublishAt || undefined,
+    order: typeof f.order === "number" ? f.order : 0,
+    donateUrl: f.donateUrl,
+    active: f.active,
+  };
+}
+
+/** Whether a festival is publicly live, accounting for status, hidden flag and schedule */
+export function isFestivalLive(f: Festival, now: number = Date.now()): boolean {
+  if (f.hidden) return false;
+  if (f.publishAt && new Date(f.publishAt).getTime() > now) return false;
+  if (f.unpublishAt && new Date(f.unpublishAt).getTime() <= now) return false;
+  return f.status === "published";
+}
 
 export type DailyClass = {
   id: string;
