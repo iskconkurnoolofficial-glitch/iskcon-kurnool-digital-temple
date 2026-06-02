@@ -1,17 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
-import { useAdmin, Festival } from "@/context/AdminContext";
-import { Calendar, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { useAdmin, normalizeFestival, isFestivalLive, Festival } from "@/context/AdminContext";
+import { Calendar, Sparkles, ArrowRight } from "lucide-react";
 
 function fmt(d: string) {
   if (!d) return "";
   try {
-    return new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+    return new Date(d + "T00:00:00").toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
   } catch { return d; }
 }
 
 function FestivalCard({ f }: { f: Festival }) {
-  const isExternal = f.donateUrl?.startsWith("http");
   return (
     <article className="group bg-white rounded-2xl overflow-hidden border border-border shadow-sm hover:shadow-elegant transition-all duration-300 flex flex-col h-full">
       <div className="relative aspect-video bg-muted overflow-hidden">
@@ -25,16 +24,11 @@ function FestivalCard({ f }: { f: Festival }) {
         </div>
       </div>
       <div className="p-5 flex-1 flex flex-col">
-        <h3 className="font-display font-bold text-lg text-primary leading-snug line-clamp-2 mb-4">{f.title}</h3>
-        {isExternal ? (
-          <a href={f.donateUrl} target="_blank" rel="noopener noreferrer" className="mt-auto inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-accent text-white font-semibold text-sm hover:scale-[1.02] hover:shadow-lg transition-all">
-            Donate Now
-          </a>
-        ) : (
-          <Link to={f.donateUrl || "/donate"} className="mt-auto inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-accent text-white font-semibold text-sm hover:scale-[1.02] hover:shadow-lg transition-all">
-            Donate Now
-          </Link>
-        )}
+        <h3 className="font-display font-bold text-lg text-primary leading-snug line-clamp-2 mb-1.5">{f.title}</h3>
+        {f.shortDescription && <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{f.shortDescription}</p>}
+        <Link to="/festival/$slug" params={{ slug: f.slug }} className="mt-auto inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-accent text-white font-semibold text-sm hover:scale-[1.02] hover:shadow-lg transition-all">
+          Donate Now <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
     </article>
   );
@@ -42,25 +36,10 @@ function FestivalCard({ f }: { f: Festival }) {
 
 export default function UpcomingFestivals() {
   const { festivals } = useAdmin();
-  const list = festivals.filter((f) => f.active);
-  const trackRef = useRef<HTMLDivElement | null>(null);
-  const [page, setPage] = useState(0);
-
-  const needsCarousel = list.length > 4;
-  const perPage = 4;
-  const pageCount = needsCarousel ? Math.ceil(list.length / perPage) : 1;
-
-  // Auto-advance
-  useEffect(() => {
-    if (!needsCarousel) return;
-    const id = setInterval(() => setPage((p) => (p + 1) % pageCount), 5000);
-    return () => clearInterval(id);
-  }, [needsCarousel, pageCount]);
-
-  useEffect(() => {
-    if (!trackRef.current) return;
-    trackRef.current.scrollTo({ left: trackRef.current.clientWidth * page, behavior: "smooth" });
-  }, [page]);
+  const list = useMemo(
+    () => festivals.map(normalizeFestival).filter((f) => isFestivalLive(f)).sort((a, b) => a.order - b.order),
+    [festivals],
+  );
 
   if (list.length === 0) return null;
 
@@ -75,41 +54,14 @@ export default function UpcomingFestivals() {
           <p className="text-muted-foreground mt-3 max-w-2xl mx-auto">Join us in celebrating the divine pastimes of the Lord through these sacred occasions.</p>
         </div>
 
-        {!needsCarousel ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {list.map((f) => <FestivalCard key={f.id} f={f} />)}
-          </div>
-        ) : (
-          <div className="relative">
-            <div
-              ref={trackRef}
-              className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none gap-0 -mx-2"
-              style={{ scrollbarWidth: "none" }}
-            >
-              {Array.from({ length: pageCount }).map((_, i) => (
-                <div key={i} className="shrink-0 w-full snap-start px-2">
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {list.slice(i * perPage, i * perPage + perPage).map((f) => <FestivalCard key={f.id} f={f} />)}
-                  </div>
-                </div>
-              ))}
+        {/* Horizontally scrollable cards */}
+        <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-4 -mx-4 px-4 sm:mx-0 sm:px-0" style={{ scrollbarWidth: "none" }}>
+          {list.map((f) => (
+            <div key={f.id} className="snap-start shrink-0 w-[280px] sm:w-[320px] lg:w-[calc(25%-0.9375rem)]">
+              <FestivalCard f={f} />
             </div>
-
-            <div className="flex items-center justify-center gap-3 mt-8">
-              <button onClick={() => setPage((p) => (p - 1 + pageCount) % pageCount)} className="h-10 w-10 rounded-full border border-border bg-white grid place-items-center text-primary hover:bg-surface transition" aria-label="Previous">
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <div className="flex items-center gap-1.5">
-                {Array.from({ length: pageCount }).map((_, i) => (
-                  <button key={i} onClick={() => setPage(i)} aria-label={`Page ${i + 1}`} className={`h-2 rounded-full transition-all ${i === page ? "w-8 bg-primary" : "w-2 bg-border"}`} />
-                ))}
-              </div>
-              <button onClick={() => setPage((p) => (p + 1) % pageCount)} className="h-10 w-10 rounded-full border border-border bg-white grid place-items-center text-primary hover:bg-surface transition" aria-label="Next">
-                <ChevronRight className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-        )}
+          ))}
+        </div>
       </div>
     </section>
   );
