@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as YouthRouteImport } from './routes/youth'
 import { Route as TempleRouteImport } from './routes/temple'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as PrahladaRouteImport } from './routes/prahlada'
@@ -26,6 +27,11 @@ import { Route as AboutKurnoolRouteImport } from './routes/about.kurnool'
 import { Route as AboutIskconRouteImport } from './routes/about.iskcon'
 import { Route as AboutFounderRouteImport } from './routes/about.founder'
 
+const YouthRoute = YouthRouteImport.update({
+  id: '/youth',
+  path: '/youth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TempleRoute = TempleRouteImport.update({
   id: '/temple',
   path: '/temple',
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/prahlada': typeof PrahladaRoute
   '/shop': typeof ShopRoute
   '/temple': typeof TempleRoute
+  '/youth': typeof YouthRoute
   '/about/founder': typeof AboutFounderRoute
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/prahlada': typeof PrahladaRoute
   '/shop': typeof ShopRoute
   '/temple': typeof TempleRoute
+  '/youth': typeof YouthRoute
   '/about/founder': typeof AboutFounderRoute
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/prahlada': typeof PrahladaRoute
   '/shop': typeof ShopRoute
   '/temple': typeof TempleRoute
+  '/youth': typeof YouthRoute
   '/about/founder': typeof AboutFounderRoute
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
@@ -176,6 +185,7 @@ export interface FileRouteTypes {
     | '/prahlada'
     | '/shop'
     | '/temple'
+    | '/youth'
     | '/about/founder'
     | '/about/iskcon'
     | '/about/kurnool'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
     | '/prahlada'
     | '/shop'
     | '/temple'
+    | '/youth'
     | '/about/founder'
     | '/about/iskcon'
     | '/about/kurnool'
@@ -212,6 +223,7 @@ export interface FileRouteTypes {
     | '/prahlada'
     | '/shop'
     | '/temple'
+    | '/youth'
     | '/about/founder'
     | '/about/iskcon'
     | '/about/kurnool'
@@ -231,6 +243,7 @@ export interface RootRouteChildren {
   PrahladaRoute: typeof PrahladaRoute
   ShopRoute: typeof ShopRoute
   TempleRoute: typeof TempleRoute
+  YouthRoute: typeof YouthRoute
   AboutFounderRoute: typeof AboutFounderRoute
   AboutIskconRoute: typeof AboutIskconRoute
   AboutKurnoolRoute: typeof AboutKurnoolRoute
@@ -240,6 +253,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/youth': {
+      id: '/youth'
+      path: '/youth'
+      fullPath: '/youth'
+      preLoaderRoute: typeof YouthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/temple': {
       id: '/temple'
       path: '/temple'
@@ -367,6 +387,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrahladaRoute: PrahladaRoute,
   ShopRoute: ShopRoute,
   TempleRoute: TempleRoute,
+  YouthRoute: YouthRoute,
   AboutFounderRoute: AboutFounderRoute,
   AboutIskconRoute: AboutIskconRoute,
   AboutKurnoolRoute: AboutKurnoolRoute,
