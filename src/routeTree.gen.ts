@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TempleRouteImport } from './routes/temple'
+import { Route as ShopRouteImport } from './routes/shop'
+import { Route as PrahladaRouteImport } from './routes/prahlada'
 import { Route as GoshalaRouteImport } from './routes/goshala'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as FestivalsRouteImport } from './routes/festivals'
@@ -27,6 +29,16 @@ import { Route as AboutFounderRouteImport } from './routes/about.founder'
 const TempleRoute = TempleRouteImport.update({
   id: '/temple',
   path: '/temple',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShopRoute = ShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrahladaRoute = PrahladaRouteImport.update({
+  id: '/prahlada',
+  path: '/prahlada',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GoshalaRoute = GoshalaRouteImport.update({
@@ -104,6 +116,8 @@ export interface FileRoutesByFullPath {
   '/festivals': typeof FestivalsRoute
   '/gallery': typeof GalleryRoute
   '/goshala': typeof GoshalaRoute
+  '/prahlada': typeof PrahladaRoute
+  '/shop': typeof ShopRoute
   '/temple': typeof TempleRoute
   '/about/founder': typeof AboutFounderRoute
   '/about/iskcon': typeof AboutIskconRoute
@@ -120,6 +134,8 @@ export interface FileRoutesByTo {
   '/festivals': typeof FestivalsRoute
   '/gallery': typeof GalleryRoute
   '/goshala': typeof GoshalaRoute
+  '/prahlada': typeof PrahladaRoute
+  '/shop': typeof ShopRoute
   '/temple': typeof TempleRoute
   '/about/founder': typeof AboutFounderRoute
   '/about/iskcon': typeof AboutIskconRoute
@@ -137,6 +153,8 @@ export interface FileRoutesById {
   '/festivals': typeof FestivalsRoute
   '/gallery': typeof GalleryRoute
   '/goshala': typeof GoshalaRoute
+  '/prahlada': typeof PrahladaRoute
+  '/shop': typeof ShopRoute
   '/temple': typeof TempleRoute
   '/about/founder': typeof AboutFounderRoute
   '/about/iskcon': typeof AboutIskconRoute
@@ -155,6 +173,8 @@ export interface FileRouteTypes {
     | '/festivals'
     | '/gallery'
     | '/goshala'
+    | '/prahlada'
+    | '/shop'
     | '/temple'
     | '/about/founder'
     | '/about/iskcon'
@@ -171,6 +191,8 @@ export interface FileRouteTypes {
     | '/festivals'
     | '/gallery'
     | '/goshala'
+    | '/prahlada'
+    | '/shop'
     | '/temple'
     | '/about/founder'
     | '/about/iskcon'
@@ -187,6 +209,8 @@ export interface FileRouteTypes {
     | '/festivals'
     | '/gallery'
     | '/goshala'
+    | '/prahlada'
+    | '/shop'
     | '/temple'
     | '/about/founder'
     | '/about/iskcon'
@@ -204,6 +228,8 @@ export interface RootRouteChildren {
   FestivalsRoute: typeof FestivalsRoute
   GalleryRoute: typeof GalleryRoute
   GoshalaRoute: typeof GoshalaRoute
+  PrahladaRoute: typeof PrahladaRoute
+  ShopRoute: typeof ShopRoute
   TempleRoute: typeof TempleRoute
   AboutFounderRoute: typeof AboutFounderRoute
   AboutIskconRoute: typeof AboutIskconRoute
@@ -219,6 +245,20 @@ declare module '@tanstack/react-router' {
       path: '/temple'
       fullPath: '/temple'
       preLoaderRoute: typeof TempleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shop': {
+      id: '/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof ShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/prahlada': {
+      id: '/prahlada'
+      path: '/prahlada'
+      fullPath: '/prahlada'
+      preLoaderRoute: typeof PrahladaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/goshala': {
@@ -324,6 +364,8 @@ const rootRouteChildren: RootRouteChildren = {
   FestivalsRoute: FestivalsRoute,
   GalleryRoute: GalleryRoute,
   GoshalaRoute: GoshalaRoute,
+  PrahladaRoute: PrahladaRoute,
+  ShopRoute: ShopRoute,
   TempleRoute: TempleRoute,
   AboutFounderRoute: AboutFounderRoute,
   AboutIskconRoute: AboutIskconRoute,
