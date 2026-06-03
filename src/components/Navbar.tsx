@@ -18,22 +18,20 @@ const NAV: NavItem[] = [
   { label: "Temple", children: [
     { label: "Temple Timings", href: "/temple" },
     { label: "Sunday Program", href: "/temple" },
-    { label: "Upcoming Festivals", href: "/festivals" },
-    { label: "Goshala", href: "/goshala" },
-    { label: "Shop", href: "/shop" },
+    { label: "Festival", href: "/temple" },
   ]},
   { label: "Media", children: [
     { label: "Gallery", href: "/gallery" },
     { label: "Social Media", href: "/connect" },
   ]},
   { label: "Activities", children: [
-    { label: "Youth Program", href: "/youth" },
-    { label: "Prahlada Badi", href: "/prahlada" },
+    { label: "Youth Program", href: "/courses" },
   ]},
   { label: "Courses", children: [
     { label: "Bhagavad Gita", href: "/courses" },
     { label: "Daily Classes", href: "/courses" },
   ]},
+  { label: "Goshala", href: "/goshala" },
   { label: "Connect", href: "/connect" },
 ];
 

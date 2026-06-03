@@ -9,13 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as YouthRouteImport } from './routes/youth'
 import { Route as TempleRouteImport } from './routes/temple'
-import { Route as ShopRouteImport } from './routes/shop'
-import { Route as PrahladaRouteImport } from './routes/prahlada'
 import { Route as GoshalaRouteImport } from './routes/goshala'
 import { Route as GalleryRouteImport } from './routes/gallery'
-import { Route as FestivalsRouteImport } from './routes/festivals'
 import { Route as DonateRouteImport } from './routes/donate'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as ConnectRouteImport } from './routes/connect'
@@ -27,24 +23,9 @@ import { Route as AboutKurnoolRouteImport } from './routes/about.kurnool'
 import { Route as AboutIskconRouteImport } from './routes/about.iskcon'
 import { Route as AboutFounderRouteImport } from './routes/about.founder'
 
-const YouthRoute = YouthRouteImport.update({
-  id: '/youth',
-  path: '/youth',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TempleRoute = TempleRouteImport.update({
   id: '/temple',
   path: '/temple',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ShopRoute = ShopRouteImport.update({
-  id: '/shop',
-  path: '/shop',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrahladaRoute = PrahladaRouteImport.update({
-  id: '/prahlada',
-  path: '/prahlada',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GoshalaRoute = GoshalaRouteImport.update({
@@ -55,11 +36,6 @@ const GoshalaRoute = GoshalaRouteImport.update({
 const GalleryRoute = GalleryRouteImport.update({
   id: '/gallery',
   path: '/gallery',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FestivalsRoute = FestivalsRouteImport.update({
-  id: '/festivals',
-  path: '/festivals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DonateRoute = DonateRouteImport.update({
@@ -119,13 +95,9 @@ export interface FileRoutesByFullPath {
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
   '/donate': typeof DonateRoute
-  '/festivals': typeof FestivalsRoute
   '/gallery': typeof GalleryRoute
   '/goshala': typeof GoshalaRoute
-  '/prahlada': typeof PrahladaRoute
-  '/shop': typeof ShopRoute
   '/temple': typeof TempleRoute
-  '/youth': typeof YouthRoute
   '/about/founder': typeof AboutFounderRoute
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
@@ -138,13 +110,9 @@ export interface FileRoutesByTo {
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
   '/donate': typeof DonateRoute
-  '/festivals': typeof FestivalsRoute
   '/gallery': typeof GalleryRoute
   '/goshala': typeof GoshalaRoute
-  '/prahlada': typeof PrahladaRoute
-  '/shop': typeof ShopRoute
   '/temple': typeof TempleRoute
-  '/youth': typeof YouthRoute
   '/about/founder': typeof AboutFounderRoute
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
@@ -158,13 +126,9 @@ export interface FileRoutesById {
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
   '/donate': typeof DonateRoute
-  '/festivals': typeof FestivalsRoute
   '/gallery': typeof GalleryRoute
   '/goshala': typeof GoshalaRoute
-  '/prahlada': typeof PrahladaRoute
-  '/shop': typeof ShopRoute
   '/temple': typeof TempleRoute
-  '/youth': typeof YouthRoute
   '/about/founder': typeof AboutFounderRoute
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
@@ -179,13 +143,9 @@ export interface FileRouteTypes {
     | '/connect'
     | '/courses'
     | '/donate'
-    | '/festivals'
     | '/gallery'
     | '/goshala'
-    | '/prahlada'
-    | '/shop'
     | '/temple'
-    | '/youth'
     | '/about/founder'
     | '/about/iskcon'
     | '/about/kurnool'
@@ -198,13 +158,9 @@ export interface FileRouteTypes {
     | '/connect'
     | '/courses'
     | '/donate'
-    | '/festivals'
     | '/gallery'
     | '/goshala'
-    | '/prahlada'
-    | '/shop'
     | '/temple'
-    | '/youth'
     | '/about/founder'
     | '/about/iskcon'
     | '/about/kurnool'
@@ -217,13 +173,9 @@ export interface FileRouteTypes {
     | '/connect'
     | '/courses'
     | '/donate'
-    | '/festivals'
     | '/gallery'
     | '/goshala'
-    | '/prahlada'
-    | '/shop'
     | '/temple'
-    | '/youth'
     | '/about/founder'
     | '/about/iskcon'
     | '/about/kurnool'
@@ -237,13 +189,9 @@ export interface RootRouteChildren {
   ConnectRoute: typeof ConnectRoute
   CoursesRoute: typeof CoursesRoute
   DonateRoute: typeof DonateRoute
-  FestivalsRoute: typeof FestivalsRoute
   GalleryRoute: typeof GalleryRoute
   GoshalaRoute: typeof GoshalaRoute
-  PrahladaRoute: typeof PrahladaRoute
-  ShopRoute: typeof ShopRoute
   TempleRoute: typeof TempleRoute
-  YouthRoute: typeof YouthRoute
   AboutFounderRoute: typeof AboutFounderRoute
   AboutIskconRoute: typeof AboutIskconRoute
   AboutKurnoolRoute: typeof AboutKurnoolRoute
@@ -253,32 +201,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/youth': {
-      id: '/youth'
-      path: '/youth'
-      fullPath: '/youth'
-      preLoaderRoute: typeof YouthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/temple': {
       id: '/temple'
       path: '/temple'
       fullPath: '/temple'
       preLoaderRoute: typeof TempleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/shop': {
-      id: '/shop'
-      path: '/shop'
-      fullPath: '/shop'
-      preLoaderRoute: typeof ShopRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/prahlada': {
-      id: '/prahlada'
-      path: '/prahlada'
-      fullPath: '/prahlada'
-      preLoaderRoute: typeof PrahladaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/goshala': {
@@ -293,13 +220,6 @@ declare module '@tanstack/react-router' {
       path: '/gallery'
       fullPath: '/gallery'
       preLoaderRoute: typeof GalleryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/festivals': {
-      id: '/festivals'
-      path: '/festivals'
-      fullPath: '/festivals'
-      preLoaderRoute: typeof FestivalsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/donate': {
@@ -381,13 +301,9 @@ const rootRouteChildren: RootRouteChildren = {
   ConnectRoute: ConnectRoute,
   CoursesRoute: CoursesRoute,
   DonateRoute: DonateRoute,
-  FestivalsRoute: FestivalsRoute,
   GalleryRoute: GalleryRoute,
   GoshalaRoute: GoshalaRoute,
-  PrahladaRoute: PrahladaRoute,
-  ShopRoute: ShopRoute,
   TempleRoute: TempleRoute,
-  YouthRoute: YouthRoute,
   AboutFounderRoute: AboutFounderRoute,
   AboutIskconRoute: AboutIskconRoute,
   AboutKurnoolRoute: AboutKurnoolRoute,
