@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TempleRouteImport } from './routes/temple'
 import { Route as GoshalaRouteImport } from './routes/goshala'
 import { Route as GalleryRouteImport } from './routes/gallery'
+import { Route as FestivalsRouteImport } from './routes/festivals'
 import { Route as DonateRouteImport } from './routes/donate'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as ConnectRouteImport } from './routes/connect'
@@ -36,6 +37,11 @@ const GoshalaRoute = GoshalaRouteImport.update({
 const GalleryRoute = GalleryRouteImport.update({
   id: '/gallery',
   path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FestivalsRoute = FestivalsRouteImport.update({
+  id: '/festivals',
+  path: '/festivals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DonateRoute = DonateRouteImport.update({
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
   '/donate': typeof DonateRoute
+  '/festivals': typeof FestivalsRoute
   '/gallery': typeof GalleryRoute
   '/goshala': typeof GoshalaRoute
   '/temple': typeof TempleRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
   '/donate': typeof DonateRoute
+  '/festivals': typeof FestivalsRoute
   '/gallery': typeof GalleryRoute
   '/goshala': typeof GoshalaRoute
   '/temple': typeof TempleRoute
@@ -126,6 +134,7 @@ export interface FileRoutesById {
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
   '/donate': typeof DonateRoute
+  '/festivals': typeof FestivalsRoute
   '/gallery': typeof GalleryRoute
   '/goshala': typeof GoshalaRoute
   '/temple': typeof TempleRoute
@@ -143,6 +152,7 @@ export interface FileRouteTypes {
     | '/connect'
     | '/courses'
     | '/donate'
+    | '/festivals'
     | '/gallery'
     | '/goshala'
     | '/temple'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/connect'
     | '/courses'
     | '/donate'
+    | '/festivals'
     | '/gallery'
     | '/goshala'
     | '/temple'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/connect'
     | '/courses'
     | '/donate'
+    | '/festivals'
     | '/gallery'
     | '/goshala'
     | '/temple'
@@ -189,6 +201,7 @@ export interface RootRouteChildren {
   ConnectRoute: typeof ConnectRoute
   CoursesRoute: typeof CoursesRoute
   DonateRoute: typeof DonateRoute
+  FestivalsRoute: typeof FestivalsRoute
   GalleryRoute: typeof GalleryRoute
   GoshalaRoute: typeof GoshalaRoute
   TempleRoute: typeof TempleRoute
@@ -220,6 +233,13 @@ declare module '@tanstack/react-router' {
       path: '/gallery'
       fullPath: '/gallery'
       preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/festivals': {
+      id: '/festivals'
+      path: '/festivals'
+      fullPath: '/festivals'
+      preLoaderRoute: typeof FestivalsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/donate': {
@@ -301,6 +321,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConnectRoute: ConnectRoute,
   CoursesRoute: CoursesRoute,
   DonateRoute: DonateRoute,
+  FestivalsRoute: FestivalsRoute,
   GalleryRoute: GalleryRoute,
   GoshalaRoute: GoshalaRoute,
   TempleRoute: TempleRoute,
@@ -313,3 +334,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
