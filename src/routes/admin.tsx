@@ -16,7 +16,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "carousel" | "festivals" | "sevas" | "classes" | "gallery" | "settings" | "theme";
+type Tab = "carousel" | "festivals" | "sevas" | "youth" | "classes" | "gallery" | "settings" | "theme";
 
 function AdminPage() {
   const { authed, login, logout, settings } = useAdmin();
@@ -59,6 +59,7 @@ function AdminPage() {
     { id: "carousel", label: "Carousel", icon: Image },
     { id: "festivals", label: "Upcoming Festivals", icon: Sparkles },
     { id: "sevas", label: "Jagannath Sevas", icon: HandHeart },
+    { id: "youth", label: "Youth Festival", icon: Users },
     { id: "classes", label: "Daily Classes", icon: Radio },
     { id: "gallery", label: "Gallery", icon: Images },
     { id: "settings", label: "Site Settings", icon: Settings },
@@ -102,6 +103,7 @@ function AdminPage() {
         {tab === "carousel" && <CarouselManager />}
         {tab === "festivals" && <FestivalsManager />}
         {tab === "sevas" && <SevasManager />}
+        {tab === "youth" && <YouthManager />}
         {tab === "classes" && <DailyClassesManager />}
         {tab === "gallery" && <GalleryManager />}
         {tab === "settings" && <SiteSettingsForm />}
