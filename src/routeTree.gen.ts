@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as YouthRouteImport } from './routes/youth'
 import { Route as TempleRouteImport } from './routes/temple'
 import { Route as GoshalaRouteImport } from './routes/goshala'
 import { Route as GalleryRouteImport } from './routes/gallery'
@@ -23,6 +24,11 @@ import { Route as AboutKurnoolRouteImport } from './routes/about.kurnool'
 import { Route as AboutIskconRouteImport } from './routes/about.iskcon'
 import { Route as AboutFounderRouteImport } from './routes/about.founder'
 
+const YouthRoute = YouthRouteImport.update({
+  id: '/youth',
+  path: '/youth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TempleRoute = TempleRouteImport.update({
   id: '/temple',
   path: '/temple',
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/gallery': typeof GalleryRoute
   '/goshala': typeof GoshalaRoute
   '/temple': typeof TempleRoute
+  '/youth': typeof YouthRoute
   '/about/founder': typeof AboutFounderRoute
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
@@ -113,6 +120,7 @@ export interface FileRoutesByTo {
   '/gallery': typeof GalleryRoute
   '/goshala': typeof GoshalaRoute
   '/temple': typeof TempleRoute
+  '/youth': typeof YouthRoute
   '/about/founder': typeof AboutFounderRoute
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
@@ -129,6 +137,7 @@ export interface FileRoutesById {
   '/gallery': typeof GalleryRoute
   '/goshala': typeof GoshalaRoute
   '/temple': typeof TempleRoute
+  '/youth': typeof YouthRoute
   '/about/founder': typeof AboutFounderRoute
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/goshala'
     | '/temple'
+    | '/youth'
     | '/about/founder'
     | '/about/iskcon'
     | '/about/kurnool'
@@ -161,6 +171,7 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/goshala'
     | '/temple'
+    | '/youth'
     | '/about/founder'
     | '/about/iskcon'
     | '/about/kurnool'
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/goshala'
     | '/temple'
+    | '/youth'
     | '/about/founder'
     | '/about/iskcon'
     | '/about/kurnool'
@@ -192,6 +204,7 @@ export interface RootRouteChildren {
   GalleryRoute: typeof GalleryRoute
   GoshalaRoute: typeof GoshalaRoute
   TempleRoute: typeof TempleRoute
+  YouthRoute: typeof YouthRoute
   AboutFounderRoute: typeof AboutFounderRoute
   AboutIskconRoute: typeof AboutIskconRoute
   AboutKurnoolRoute: typeof AboutKurnoolRoute
@@ -201,6 +214,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/youth': {
+      id: '/youth'
+      path: '/youth'
+      fullPath: '/youth'
+      preLoaderRoute: typeof YouthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/temple': {
       id: '/temple'
       path: '/temple'
@@ -304,6 +324,7 @@ const rootRouteChildren: RootRouteChildren = {
   GalleryRoute: GalleryRoute,
   GoshalaRoute: GoshalaRoute,
   TempleRoute: TempleRoute,
+  YouthRoute: YouthRoute,
   AboutFounderRoute: AboutFounderRoute,
   AboutIskconRoute: AboutIskconRoute,
   AboutKurnoolRoute: AboutKurnoolRoute,
@@ -313,3 +334,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
