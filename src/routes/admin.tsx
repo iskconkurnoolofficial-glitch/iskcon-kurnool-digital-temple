@@ -8,7 +8,8 @@ import ThemeSettings from "@/admin/ThemeSettings";
 import DailyClassesManager from "@/admin/DailyClassesManager";
 import FestivalsManager from "@/admin/FestivalsManager";
 import SevasManager from "@/admin/SevasManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart } from "lucide-react";
+import YouthManager from "@/admin/YouthManager";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
