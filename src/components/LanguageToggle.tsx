@@ -4,6 +4,7 @@ import { Languages } from "lucide-react";
 const LANGS = [
   { code: "en", label: "EN", name: "English" },
   { code: "te", label: "తెలుగు", name: "Telugu" },
+  { code: "hi", label: "हिंदी", name: "Hindi" },
 ] as const;
 
 function getCookie(name: string) {
