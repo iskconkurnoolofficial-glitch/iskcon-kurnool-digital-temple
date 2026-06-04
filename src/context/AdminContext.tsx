@@ -102,6 +102,40 @@ export function isFestivalLive(f: Festival, now: number = Date.now()): boolean {
   return f.status === "published";
 }
 
+export type YouthFeature = { title: string; image: string };
+export type YouthGalleryItem = { id: string; url: string; label: string };
+export type YouthReview = { id: string; name: string; text: string; rating: number; visible: boolean };
+export type YouthData = {
+  logo: string;
+  whatsappUrl: string;
+  instagramHandle: string;
+  features: YouthFeature[];
+  venue: string;
+  schedule: string;
+  gallery: YouthGalleryItem[];
+  reviews: YouthReview[];
+};
+
+export const defaultYouth: YouthData = {
+  logo: "",
+  whatsappUrl: "https://chat.whatsapp.com/",
+  instagramHandle: "Gaura_Bhaktas_Official",
+  features: [
+    { title: "Bhagavad Gita", image: "" },
+    { title: "Music & Dance", image: "" },
+    { title: "Kirtan Beats", image: "" },
+    { title: "Delicious Prasadam", image: "" },
+  ],
+  venue: "ISKCON Kurnool\nSri Sri Jagannath Baladev Subhadra Temple\nKurnool, Andhra Pradesh",
+  schedule: "Every Saturday · 6:30 PM – 8:30 PM",
+  gallery: [],
+  reviews: [
+    { id: "r1", name: "Arjun", text: "The kirtans and prasadam are amazing. I look forward to every Saturday!", rating: 5, visible: true },
+    { id: "r2", name: "Rohit", text: "Learned so much from the Bhagavad Gita sessions. Truly life-changing.", rating: 5, visible: true },
+    { id: "r3", name: "Karthik", text: "Great association of devotees. Music and dance fill you with joy.", rating: 5, visible: true },
+  ],
+};
+
 export type DailyClass = {
   id: string;
   thumbnail: string;
