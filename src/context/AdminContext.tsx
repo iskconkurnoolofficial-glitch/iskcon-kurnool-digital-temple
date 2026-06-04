@@ -180,6 +180,8 @@ type AdminState = {
   setFestivals: (f: Festival[]) => void;
   sevas: Seva[];
   setSevas: (s: Seva[]) => void;
+  youth: YouthData;
+  setYouth: (y: YouthData) => void;
   settings: SiteSettings;
   setSettings: (s: SiteSettings) => void;
   theme: ThemeSettings;
