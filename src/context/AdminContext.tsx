@@ -102,6 +102,40 @@ export function isFestivalLive(f: Festival, now: number = Date.now()): boolean {
   return f.status === "published";
 }
 
+export type YouthFeature = { title: string; image: string };
+export type YouthGalleryItem = { id: string; url: string; label: string };
+export type YouthReview = { id: string; name: string; text: string; rating: number; visible: boolean };
+export type YouthData = {
+  logo: string;
+  whatsappUrl: string;
+  instagramHandle: string;
+  features: YouthFeature[];
+  venue: string;
+  schedule: string;
+  gallery: YouthGalleryItem[];
+  reviews: YouthReview[];
+};
+
+export const defaultYouth: YouthData = {
+  logo: "",
+  whatsappUrl: "https://chat.whatsapp.com/",
+  instagramHandle: "Gaura_Bhaktas_Official",
+  features: [
+    { title: "Bhagavad Gita", image: "" },
+    { title: "Music & Dance", image: "" },
+    { title: "Kirtan Beats", image: "" },
+    { title: "Delicious Prasadam", image: "" },
+  ],
+  venue: "ISKCON Kurnool\nSri Sri Jagannath Baladev Subhadra Temple\nKurnool, Andhra Pradesh",
+  schedule: "Every Saturday · 6:30 PM – 8:30 PM",
+  gallery: [],
+  reviews: [
+    { id: "r1", name: "Arjun", text: "The kirtans and prasadam are amazing. I look forward to every Saturday!", rating: 5, visible: true },
+    { id: "r2", name: "Rohit", text: "Learned so much from the Bhagavad Gita sessions. Truly life-changing.", rating: 5, visible: true },
+    { id: "r3", name: "Karthik", text: "Great association of devotees. Music and dance fill you with joy.", rating: 5, visible: true },
+  ],
+};
+
 export type DailyClass = {
   id: string;
   thumbnail: string;
@@ -146,6 +180,8 @@ type AdminState = {
   setFestivals: (f: Festival[]) => void;
   sevas: Seva[];
   setSevas: (s: Seva[]) => void;
+  youth: YouthData;
+  setYouth: (y: YouthData) => void;
   settings: SiteSettings;
   setSettings: (s: SiteSettings) => void;
   theme: ThemeSettings;
@@ -206,6 +242,7 @@ const KEYS = {
   classes: "classes",
   festivals: "festivals",
   sevas: "sevas",
+  youth: "youth",
   settings: "settings",
   theme: "theme",
 } as const;
@@ -219,6 +256,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [classes, setClassesState] = useState<DailyClass[]>([]);
   const [festivals, setFestivalsState] = useState<Festival[]>([]);
   const [sevas, setSevasState] = useState<Seva[]>([]);
+  const [youth, setYouthState] = useState<YouthData>(defaultYouth);
   const [settings, setSettingsState] = useState<SiteSettings>(defaultSettings);
   const [theme, setThemeState] = useState<ThemeSettings>(defaultTheme);
   const [authed, setAuthed] = useState<boolean>(() => {
@@ -275,6 +313,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.classes: setClassesState(value); break;
       case KEYS.festivals: setFestivalsState(value); break;
       case KEYS.sevas: setSevasState(value); break;
+      case KEYS.youth: setYouthState({ ...defaultYouth, ...value }); break;
       case KEYS.settings: setSettingsState(value); break;
       case KEYS.theme: setThemeState(value); break;
     }
@@ -294,6 +333,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setClasses = (v: DailyClass[]) => { setClassesState(v); persist(KEYS.classes, v); };
   const setFestivals = (v: Festival[]) => { setFestivalsState(v); persist(KEYS.festivals, v); };
   const setSevas = (v: Seva[]) => { setSevasState(v); persist(KEYS.sevas, v); };
+  const setYouth = (v: YouthData) => { setYouthState(v); persist(KEYS.youth, v); };
   const setSettings = (v: SiteSettings) => { setSettingsState(v); persist(KEYS.settings, v); };
   const setTheme = (v: ThemeSettings) => { setThemeState(v); persist(KEYS.theme, v); };
 
@@ -328,6 +368,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         classes, setClasses,
         festivals, setFestivals,
         sevas, setSevas,
+        youth, setYouth,
         settings, setSettings,
         theme, setTheme,
         authed, login, logout, ready,
