@@ -256,6 +256,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [classes, setClassesState] = useState<DailyClass[]>([]);
   const [festivals, setFestivalsState] = useState<Festival[]>([]);
   const [sevas, setSevasState] = useState<Seva[]>([]);
+  const [youth, setYouthState] = useState<YouthData>(defaultYouth);
   const [settings, setSettingsState] = useState<SiteSettings>(defaultSettings);
   const [theme, setThemeState] = useState<ThemeSettings>(defaultTheme);
   const [authed, setAuthed] = useState<boolean>(() => {
@@ -312,6 +313,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.classes: setClassesState(value); break;
       case KEYS.festivals: setFestivalsState(value); break;
       case KEYS.sevas: setSevasState(value); break;
+      case KEYS.youth: setYouthState({ ...defaultYouth, ...value }); break;
       case KEYS.settings: setSettingsState(value); break;
       case KEYS.theme: setThemeState(value); break;
     }
@@ -331,6 +333,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setClasses = (v: DailyClass[]) => { setClassesState(v); persist(KEYS.classes, v); };
   const setFestivals = (v: Festival[]) => { setFestivalsState(v); persist(KEYS.festivals, v); };
   const setSevas = (v: Seva[]) => { setSevasState(v); persist(KEYS.sevas, v); };
+  const setYouth = (v: YouthData) => { setYouthState(v); persist(KEYS.youth, v); };
   const setSettings = (v: SiteSettings) => { setSettingsState(v); persist(KEYS.settings, v); };
   const setTheme = (v: ThemeSettings) => { setThemeState(v); persist(KEYS.theme, v); };
 
