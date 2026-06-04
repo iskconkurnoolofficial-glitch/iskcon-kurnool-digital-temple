@@ -61,6 +61,7 @@ export default function LanguageToggle({ className = "" }: { className?: string 
     loadGoogleTranslate();
     const current = getCookie("googtrans");
     if (current && current.includes("/te")) setLang("te");
+    else if (current && current.includes("/hi")) setLang("hi");
   }, []);
 
   const switchTo = (code: string) => {
