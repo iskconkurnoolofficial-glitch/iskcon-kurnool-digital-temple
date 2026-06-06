@@ -26,7 +26,7 @@ export default function LiveClassBanner() {
         </div>
         {live.joinUrl && (
           <a
-            href={live.joinUrl}
+            href={safeUrl(live.joinUrl, "#")}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 bg-white text-accent font-bold text-xs md:text-sm px-4 py-1.5 rounded-full hover:scale-105 transition shadow"
