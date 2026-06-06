@@ -63,6 +63,9 @@ export default function CarouselManager() {
           <UploadBox label="Desktop Image (4917×1750)" url={draft.desktop} onPick={(f) => upload(f, "desktop")} />
           <UploadBox label="Mobile Image (1080×1350)" url={draft.mobile} onPick={(f) => upload(f, "mobile")} />
         </div>
+        <div className="mt-4">
+          <VideoUploadBox label="Video (optional — plays instead of image)" url={draft.video} onPick={(f) => upload(f, "video")} onClear={() => setDraft((d) => ({ ...d, video: undefined }))} />
+        </div>
         <div className="grid md:grid-cols-2 gap-4 mt-4">
           <input className="px-4 py-2.5 border rounded-lg" placeholder="Title (optional)" value={draft.title || ""} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
           <input className="px-4 py-2.5 border rounded-lg" placeholder="Subtitle (optional)" value={draft.subtitle || ""} onChange={(e) => setDraft({ ...draft, subtitle: e.target.value })} />
