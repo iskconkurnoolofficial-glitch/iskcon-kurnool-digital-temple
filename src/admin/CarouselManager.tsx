@@ -80,7 +80,11 @@ export default function CarouselManager() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {slides.map((s, i) => (
             <div key={s.id} className={`bg-white rounded-xl shadow border overflow-hidden ${editingId === s.id ? "ring-2 ring-accent" : ""}`}>
-              <img src={s.desktop} alt="" className="w-full aspect-video object-cover" />
+              {s.video ? (
+                <video src={s.video} className="w-full aspect-video object-cover" muted loop playsInline />
+              ) : (
+                <img src={s.desktop} alt="" className="w-full aspect-video object-cover" />
+              )}
               <div className="p-3 space-y-2">
                 <div className="text-sm font-medium truncate">{s.title || "(no title)"}</div>
                 <div className="text-xs text-muted-foreground truncate">{s.subtitle}</div>
