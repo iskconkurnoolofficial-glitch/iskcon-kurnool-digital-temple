@@ -20,14 +20,15 @@ export default function CarouselManager() {
   const resetForm = () => { setDraft({ title: "", subtitle: "", active: true }); setEditingId(null); };
 
   const save = () => {
-    if (!draft.desktop) { alert("Upload desktop image first"); return; }
+    if (!draft.desktop && !draft.video) { alert("Upload a desktop image or a video first"); return; }
     if (editingId) {
-      setSlides(slides.map((s) => s.id === editingId ? { ...s, ...draft, mobile: draft.mobile || draft.desktop! } as Slide : s));
+      setSlides(slides.map((s) => s.id === editingId ? { ...s, ...draft, desktop: draft.desktop || "", mobile: draft.mobile || draft.desktop || "" } as Slide : s));
     } else {
       setSlides([...slides, {
         id: Date.now().toString(),
-        desktop: draft.desktop!,
-        mobile: draft.mobile || draft.desktop!,
+        desktop: draft.desktop || "",
+        mobile: draft.mobile || draft.desktop || "",
+        video: draft.video,
         title: draft.title, subtitle: draft.subtitle,
         active: true,
       }]);
