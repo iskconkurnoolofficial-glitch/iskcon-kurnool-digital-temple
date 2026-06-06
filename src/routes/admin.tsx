@@ -20,8 +20,10 @@ type Tab = "carousel" | "festivals" | "sevas" | "youth" | "classes" | "gallery" 
 
 function AdminPage() {
   const { authed, login, logout, settings } = useAdmin();
+  const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState<Tab>("carousel");
 
   if (!authed) {
@@ -37,17 +39,35 @@ function AdminPage() {
             <h1 className="font-display text-2xl font-bold text-primary">Admin Login</h1>
             <p className="text-sm text-muted-foreground">ISKCON Kurnool</p>
           </div>
-          <form onSubmit={(e) => { e.preventDefault(); if (!login(pw)) setErr("Wrong password"); }}>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setBusy(true);
+              setErr("");
+              const res = await login(email, pw);
+              setBusy(false);
+              if (!res.ok) setErr(res.error || "Invalid credentials");
+            }}
+          >
+            <input
+              type="email"
+              autoFocus
+              placeholder="Email"
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setErr(""); }}
+              className="w-full px-4 py-3 border rounded-lg mb-3"
+            />
             <input
               type="password"
-              autoFocus
               placeholder="Password"
               value={pw}
               onChange={(e) => { setPw(e.target.value); setErr(""); }}
               className="w-full px-4 py-3 border rounded-lg mb-3"
             />
             {err && <p className="text-destructive text-sm mb-3">{err}</p>}
-            <button className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-medium">Sign In</button>
+            <button disabled={busy} className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-medium disabled:opacity-60">
+              {busy ? "Signing in…" : "Sign In"}
+            </button>
           </form>
           <Link to="/" className="block text-center mt-4 text-sm text-muted-foreground hover:text-primary">← Back to site</Link>
         </div>
