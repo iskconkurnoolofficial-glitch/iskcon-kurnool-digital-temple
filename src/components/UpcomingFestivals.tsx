@@ -13,19 +13,19 @@ function fmt(d: string) {
 function FestivalCard({ f }: { f: Festival }) {
   return (
     <article className="group bg-white rounded-2xl overflow-hidden border border-border shadow-sm hover:shadow-elegant transition-all duration-300 flex flex-col h-full">
-      <div className="relative aspect-video bg-muted overflow-hidden">
+      <div className="relative aspect-[4/3] bg-muted overflow-hidden">
         {f.thumbnail ? (
           <img src={f.thumbnail} alt={f.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         ) : (
           <div className="w-full h-full grid place-items-center text-muted-foreground"><Sparkles className="h-10 w-10" /></div>
         )}
-        <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 bg-white/95 backdrop-blur text-primary text-xs font-semibold px-3 py-1.5 rounded-full shadow">
-          <Calendar className="h-3.5 w-3.5" /> {fmt(f.date)}
-        </div>
       </div>
       <div className="p-5 flex-1 flex flex-col">
+        <div className="inline-flex items-center gap-1.5 text-accent text-xs font-semibold mb-2">
+          <Calendar className="h-3.5 w-3.5" /> {fmt(f.date)}
+        </div>
         <h3 className="font-display font-bold text-lg text-primary leading-snug line-clamp-2 mb-1.5">{f.title}</h3>
-        {f.shortDescription && <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{f.shortDescription}</p>}
+        {f.shortDescription && <p className="text-sm text-muted-foreground line-clamp-3 mb-4">{f.shortDescription}</p>}
         <Link to="/festival/$slug" params={{ slug: f.slug }} className="mt-auto inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-accent text-white font-semibold text-sm hover:scale-[1.02] hover:shadow-lg transition-all">
           Donate Now <ArrowRight className="h-4 w-4" />
         </Link>
