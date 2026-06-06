@@ -54,7 +54,7 @@ export default function ConnectSection() {
 
           <div className="rounded-2xl overflow-hidden shadow-elegant border-2 border-secondary/40 min-h-[420px]">
             <iframe
-              src={settings.mapEmbed}
+              src={safeMapEmbed(settings.mapEmbed)}
               title="ISKCON Kurnool Location"
               className="w-full h-full min-h-[420px]"
               loading="lazy"
