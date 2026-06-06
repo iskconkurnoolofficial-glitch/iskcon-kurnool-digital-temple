@@ -1,5 +1,6 @@
 import { Radio, ExternalLink } from "lucide-react";
 import { useLiveClass } from "@/hooks/useLiveClass";
+import { safeUrl } from "@/lib/utils";
 
 export default function LiveClassBanner() {
   const live = useLiveClass();
