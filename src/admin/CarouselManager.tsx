@@ -8,7 +8,7 @@ export default function CarouselManager() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Partial<Slide>>({ title: "", subtitle: "", active: true });
 
-  const upload = async (file: File, key: "desktop" | "mobile") => {
+  const upload = async (file: File, key: "desktop" | "mobile" | "video") => {
     setBusy(true);
     try {
       const url = await uploadToCloudinary(file);
