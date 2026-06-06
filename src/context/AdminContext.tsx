@@ -359,17 +359,18 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     r.style.setProperty("--accent-hex", theme.accent);
   }, [theme]);
 
-  const login = (pw: string) => {
-    if (pw === ADMIN_PASSWORD) {
-      setAuthed(true);
-      try { window.localStorage.setItem("iskcon_authed", "1"); } catch {}
-      return true;
-    }
-    return false;
+  const login = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    if (error) return { ok: false, error: error.message };
+    setAuthed(true);
+    return { ok: true };
   };
   const logout = () => {
+    supabase.auth.signOut();
     setAuthed(false);
-    try { window.localStorage.removeItem("iskcon_authed"); } catch {}
   };
 
   return (
