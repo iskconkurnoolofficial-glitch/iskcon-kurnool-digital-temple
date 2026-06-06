@@ -8,7 +8,7 @@ export default function CarouselManager() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Partial<Slide>>({ title: "", subtitle: "", active: true });
 
-  const upload = async (file: File, key: "desktop" | "mobile") => {
+  const upload = async (file: File, key: "desktop" | "mobile" | "video") => {
     setBusy(true);
     try {
       const url = await uploadToCloudinary(file);
@@ -20,14 +20,15 @@ export default function CarouselManager() {
   const resetForm = () => { setDraft({ title: "", subtitle: "", active: true }); setEditingId(null); };
 
   const save = () => {
-    if (!draft.desktop) { alert("Upload desktop image first"); return; }
+    if (!draft.desktop && !draft.video) { alert("Upload a desktop image or a video first"); return; }
     if (editingId) {
-      setSlides(slides.map((s) => s.id === editingId ? { ...s, ...draft, mobile: draft.mobile || draft.desktop! } as Slide : s));
+      setSlides(slides.map((s) => s.id === editingId ? { ...s, ...draft, desktop: draft.desktop || "", mobile: draft.mobile || draft.desktop || "" } as Slide : s));
     } else {
       setSlides([...slides, {
         id: Date.now().toString(),
-        desktop: draft.desktop!,
-        mobile: draft.mobile || draft.desktop!,
+        desktop: draft.desktop || "",
+        mobile: draft.mobile || draft.desktop || "",
+        video: draft.video,
         title: draft.title, subtitle: draft.subtitle,
         active: true,
       }]);
@@ -62,6 +63,9 @@ export default function CarouselManager() {
           <UploadBox label="Desktop Image (4917×1750)" url={draft.desktop} onPick={(f) => upload(f, "desktop")} />
           <UploadBox label="Mobile Image (1080×1350)" url={draft.mobile} onPick={(f) => upload(f, "mobile")} />
         </div>
+        <div className="mt-4">
+          <VideoUploadBox label="Video (optional — plays instead of image)" url={draft.video} onPick={(f) => upload(f, "video")} onClear={() => setDraft((d) => ({ ...d, video: undefined }))} />
+        </div>
         <div className="grid md:grid-cols-2 gap-4 mt-4">
           <input className="px-4 py-2.5 border rounded-lg" placeholder="Title (optional)" value={draft.title || ""} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
           <input className="px-4 py-2.5 border rounded-lg" placeholder="Subtitle (optional)" value={draft.subtitle || ""} onChange={(e) => setDraft({ ...draft, subtitle: e.target.value })} />
@@ -76,7 +80,11 @@ export default function CarouselManager() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {slides.map((s, i) => (
             <div key={s.id} className={`bg-white rounded-xl shadow border overflow-hidden ${editingId === s.id ? "ring-2 ring-accent" : ""}`}>
-              <img src={s.desktop} alt="" className="w-full aspect-video object-cover" />
+              {s.video ? (
+                <video src={s.video} className="w-full aspect-video object-cover" muted loop playsInline />
+              ) : (
+                <img src={s.desktop} alt="" className="w-full aspect-video object-cover" />
+              )}
               <div className="p-3 space-y-2">
                 <div className="text-sm font-medium truncate">{s.title || "(no title)"}</div>
                 <div className="text-xs text-muted-foreground truncate">{s.subtitle}</div>
@@ -112,5 +120,35 @@ export function UploadBox({ label, url, onPick }: { label: string; url?: string;
         <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && onPick(e.target.files[0])} />
       </div>
     </label>
+  );
+}
+
+export function VideoUploadBox({ label, url, onPick, onClear }: { label: string; url?: string; onPick: (f: File) => void; onClear: () => void }) {
+  return (
+    <div>
+      <span className="text-sm font-medium text-foreground/80 mb-1 block">{label}</span>
+      <div className="relative aspect-video bg-muted rounded-lg border-2 border-dashed border-border overflow-hidden grid place-items-center hover:border-primary transition">
+        {url ? (
+          <>
+            <video src={url} className="absolute inset-0 w-full h-full object-cover" muted loop playsInline autoPlay />
+            <button
+              type="button"
+              onClick={onClear}
+              className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-destructive shadow"
+            >
+              <X className="h-3.5 w-3.5" /> Remove
+            </button>
+          </>
+        ) : (
+          <label className="absolute inset-0 grid place-items-center cursor-pointer">
+            <div className="text-center text-muted-foreground">
+              <Upload className="h-6 w-6 mx-auto mb-1" />
+              <span className="text-xs">Click to upload video</span>
+            </div>
+            <input type="file" accept="video/*" className="hidden" onChange={(e) => e.target.files?.[0] && onPick(e.target.files[0])} />
+          </label>
+        )}
+      </div>
+    </div>
   );
 }

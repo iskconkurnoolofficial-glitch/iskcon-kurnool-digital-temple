@@ -42,10 +42,23 @@ export default function HeroCarousel() {
             key={s.id}
             className={`absolute inset-0 transition-opacity duration-1000 ${idx === i ? "opacity-100" : "opacity-0 pointer-events-none"}`}
           >
-            <picture>
-              <source media="(min-width: 768px)" srcSet={s.desktop} />
-              <img src={s.mobile || s.desktop} alt={s.title || `Slide ${idx + 1}`} className="w-full h-full object-cover" />
-            </picture>
+            {s.video ? (
+              <video
+                src={s.video}
+                className="w-full h-full object-cover"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                poster={s.mobile || s.desktop}
+              />
+            ) : (
+              <picture>
+                <source media="(min-width: 768px)" srcSet={s.desktop} />
+                <img src={s.mobile || s.desktop} alt={s.title || `Slide ${idx + 1}`} className="w-full h-full object-cover" />
+              </picture>
+            )}
             {(s.title || s.subtitle) && (
               <div className="absolute inset-x-0 bottom-0 p-6 md:p-16">
                 <div className="max-w-4xl mx-auto text-center md:text-left">
