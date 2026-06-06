@@ -41,8 +41,8 @@ export default function ConnectSection() {
             <div className="pt-4 border-t border-secondary/40">
               <h4 className="font-display font-bold text-primary text-lg mb-3">Follow Us</h4>
               <div className="flex gap-3">
-                <a href={settings.instagram} target="_blank" rel="noreferrer" aria-label="Instagram" className="h-11 w-11 rounded-full bg-secondary text-primary grid place-items-center hover:bg-accent hover:text-white hover:scale-110 transition"><Instagram className="h-5 w-5" /></a>
-                <a href={settings.youtube} target="_blank" rel="noreferrer" aria-label="YouTube" className="h-11 w-11 rounded-full bg-secondary text-primary grid place-items-center hover:bg-accent hover:text-white hover:scale-110 transition"><Youtube className="h-5 w-5" /></a>
+                <a href={safeUrl(settings.instagram, "https://instagram.com")} target="_blank" rel="noreferrer" aria-label="Instagram" className="h-11 w-11 rounded-full bg-secondary text-primary grid place-items-center hover:bg-accent hover:text-white hover:scale-110 transition"><Instagram className="h-5 w-5" /></a>
+                <a href={safeUrl(settings.youtube, "https://youtube.com")} target="_blank" rel="noreferrer" aria-label="YouTube" className="h-11 w-11 rounded-full bg-secondary text-primary grid place-items-center hover:bg-accent hover:text-white hover:scale-110 transition"><Youtube className="h-5 w-5" /></a>
                 <a href={`https://wa.me/${settings.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="h-11 w-11 rounded-full bg-secondary text-primary grid place-items-center hover:bg-accent hover:text-white hover:scale-110 transition"><MessageCircle className="h-5 w-5" /></a>
               </div>
             </div>
