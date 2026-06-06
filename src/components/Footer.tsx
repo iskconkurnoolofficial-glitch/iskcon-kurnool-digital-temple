@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Instagram, Youtube, Facebook, MessageCircle } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
+import { safeUrl } from "@/lib/utils";
 
 export default function Footer() {
   const { settings } = useAdmin();
@@ -53,9 +54,9 @@ export default function Footer() {
         <div>
           <h4 className="font-display font-bold text-secondary mb-4">Connect With Us</h4>
           <div className="flex gap-3 mb-5">
-            <a href={settings.youtube || "https://youtube.com"} target="_blank" rel="noreferrer" aria-label="YouTube" className="h-10 w-10 rounded-full bg-white/10 hover:bg-secondary hover:text-primary grid place-items-center transition"><Youtube className="h-4 w-4" /></a>
+            <a href={safeUrl(settings.youtube, "https://youtube.com")} target="_blank" rel="noreferrer" aria-label="YouTube" className="h-10 w-10 rounded-full bg-white/10 hover:bg-secondary hover:text-primary grid place-items-center transition"><Youtube className="h-4 w-4" /></a>
             <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook" className="h-10 w-10 rounded-full bg-white/10 hover:bg-secondary hover:text-primary grid place-items-center transition"><Facebook className="h-4 w-4" /></a>
-            <a href={settings.instagram || "https://instagram.com"} target="_blank" rel="noreferrer" aria-label="Instagram" className="h-10 w-10 rounded-full bg-white/10 hover:bg-secondary hover:text-primary grid place-items-center transition"><Instagram className="h-4 w-4" /></a>
+            <a href={safeUrl(settings.instagram, "https://instagram.com")} target="_blank" rel="noreferrer" aria-label="Instagram" className="h-10 w-10 rounded-full bg-white/10 hover:bg-secondary hover:text-primary grid place-items-center transition"><Instagram className="h-4 w-4" /></a>
             <a href={`https://wa.me/${(settings.whatsapp || "919505377520").replace(/\D/g, "")}`} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="h-10 w-10 rounded-full bg-white/10 hover:bg-secondary hover:text-primary grid place-items-center transition"><MessageCircle className="h-4 w-4" /></a>
           </div>
           <p className="text-sm opacity-80">ISKCON Kurnool, Andhra Pradesh, India</p>

@@ -1,5 +1,6 @@
 import { Phone, Mail, MapPin, Instagram, Youtube, MessageCircle } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
+import { safeUrl, safeMapEmbed } from "@/lib/utils";
 
 export default function ConnectSection() {
   const { settings } = useAdmin();
@@ -40,8 +41,8 @@ export default function ConnectSection() {
             <div className="pt-4 border-t border-secondary/40">
               <h4 className="font-display font-bold text-primary text-lg mb-3">Follow Us</h4>
               <div className="flex gap-3">
-                <a href={settings.instagram} target="_blank" rel="noreferrer" aria-label="Instagram" className="h-11 w-11 rounded-full bg-secondary text-primary grid place-items-center hover:bg-accent hover:text-white hover:scale-110 transition"><Instagram className="h-5 w-5" /></a>
-                <a href={settings.youtube} target="_blank" rel="noreferrer" aria-label="YouTube" className="h-11 w-11 rounded-full bg-secondary text-primary grid place-items-center hover:bg-accent hover:text-white hover:scale-110 transition"><Youtube className="h-5 w-5" /></a>
+                <a href={safeUrl(settings.instagram, "https://instagram.com")} target="_blank" rel="noreferrer" aria-label="Instagram" className="h-11 w-11 rounded-full bg-secondary text-primary grid place-items-center hover:bg-accent hover:text-white hover:scale-110 transition"><Instagram className="h-5 w-5" /></a>
+                <a href={safeUrl(settings.youtube, "https://youtube.com")} target="_blank" rel="noreferrer" aria-label="YouTube" className="h-11 w-11 rounded-full bg-secondary text-primary grid place-items-center hover:bg-accent hover:text-white hover:scale-110 transition"><Youtube className="h-5 w-5" /></a>
                 <a href={`https://wa.me/${settings.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="h-11 w-11 rounded-full bg-secondary text-primary grid place-items-center hover:bg-accent hover:text-white hover:scale-110 transition"><MessageCircle className="h-5 w-5" /></a>
               </div>
             </div>
@@ -53,7 +54,7 @@ export default function ConnectSection() {
 
           <div className="rounded-2xl overflow-hidden shadow-elegant border-2 border-secondary/40 min-h-[420px]">
             <iframe
-              src={settings.mapEmbed}
+              src={safeMapEmbed(settings.mapEmbed)}
               title="ISKCON Kurnool Location"
               className="w-full h-full min-h-[420px]"
               loading="lazy"
