@@ -1,5 +1,6 @@
 import { Phone, Mail, MapPin, Instagram, Youtube, MessageCircle } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
+import { safeUrl, safeMapEmbed } from "@/lib/utils";
 
 export default function ConnectSection() {
   const { settings } = useAdmin();
