@@ -8,6 +8,8 @@ export type Slide = {
   title?: string;
   subtitle?: string;
   active: boolean;
+  /** Optional video URL — when set, the slide plays a looping muted video instead of the image */
+  video?: string;
 };
 
 export type GalleryPhoto = {
