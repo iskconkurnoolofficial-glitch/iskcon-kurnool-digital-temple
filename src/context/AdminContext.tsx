@@ -187,12 +187,13 @@ type AdminState = {
   theme: ThemeSettings;
   setTheme: (t: ThemeSettings) => void;
   authed: boolean;
-  login: (pw: string) => boolean;
+  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
   ready: boolean;
 };
 
-const ADMIN_PASSWORD = "iskcon2025";
+
+
 
 const defaultSettings: SiteSettings = {
   phone: "+91 98765 43210",
@@ -259,10 +260,22 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [youth, setYouthState] = useState<YouthData>(defaultYouth);
   const [settings, setSettingsState] = useState<SiteSettings>(defaultSettings);
   const [theme, setThemeState] = useState<ThemeSettings>(defaultTheme);
-  const [authed, setAuthed] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    try { return window.localStorage.getItem("iskcon_authed") === "1"; } catch { return false; }
-  });
+  const [authed, setAuthed] = useState<boolean>(false);
+
+  // Track Supabase auth session for admin access
+  useEffect(() => {
+    let mounted = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (mounted) setAuthed(!!data.session);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthed(!!session);
+    });
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
   const [ready, setReady] = useState(false);
 
   // Tracks keys we just wrote locally so realtime echo doesn't overwrite optimistic state.
@@ -346,17 +359,18 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     r.style.setProperty("--accent-hex", theme.accent);
   }, [theme]);
 
-  const login = (pw: string) => {
-    if (pw === ADMIN_PASSWORD) {
-      setAuthed(true);
-      try { window.localStorage.setItem("iskcon_authed", "1"); } catch {}
-      return true;
-    }
-    return false;
+  const login = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    if (error) return { ok: false, error: error.message };
+    setAuthed(true);
+    return { ok: true };
   };
   const logout = () => {
+    supabase.auth.signOut();
     setAuthed(false);
-    try { window.localStorage.removeItem("iskcon_authed"); } catch {}
   };
 
   return (
