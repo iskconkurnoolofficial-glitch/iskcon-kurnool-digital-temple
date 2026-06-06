@@ -192,7 +192,8 @@ type AdminState = {
   ready: boolean;
 };
 
-const ADMIN_PASSWORD = "iskcon2025";
+
+
 
 const defaultSettings: SiteSettings = {
   phone: "+91 98765 43210",
