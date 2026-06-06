@@ -122,3 +122,33 @@ export function UploadBox({ label, url, onPick }: { label: string; url?: string;
     </label>
   );
 }
+
+export function VideoUploadBox({ label, url, onPick, onClear }: { label: string; url?: string; onPick: (f: File) => void; onClear: () => void }) {
+  return (
+    <div>
+      <span className="text-sm font-medium text-foreground/80 mb-1 block">{label}</span>
+      <div className="relative aspect-video bg-muted rounded-lg border-2 border-dashed border-border overflow-hidden grid place-items-center hover:border-primary transition">
+        {url ? (
+          <>
+            <video src={url} className="absolute inset-0 w-full h-full object-cover" muted loop playsInline autoPlay />
+            <button
+              type="button"
+              onClick={onClear}
+              className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-destructive shadow"
+            >
+              <X className="h-3.5 w-3.5" /> Remove
+            </button>
+          </>
+        ) : (
+          <label className="absolute inset-0 grid place-items-center cursor-pointer">
+            <div className="text-center text-muted-foreground">
+              <Upload className="h-6 w-6 mx-auto mb-1" />
+              <span className="text-xs">Click to upload video</span>
+            </div>
+            <input type="file" accept="video/*" className="hidden" onChange={(e) => e.target.files?.[0] && onPick(e.target.files[0])} />
+          </label>
+        )}
+      </div>
+    </div>
+  );
+}
