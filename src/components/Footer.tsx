@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Instagram, Youtube, Facebook, MessageCircle } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
+import { safeUrl } from "@/lib/utils";
 
 export default function Footer() {
   const { settings } = useAdmin();
