@@ -187,7 +187,7 @@ type AdminState = {
   theme: ThemeSettings;
   setTheme: (t: ThemeSettings) => void;
   authed: boolean;
-  login: (pw: string) => boolean;
+  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
   ready: boolean;
 };
