@@ -260,10 +260,22 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [youth, setYouthState] = useState<YouthData>(defaultYouth);
   const [settings, setSettingsState] = useState<SiteSettings>(defaultSettings);
   const [theme, setThemeState] = useState<ThemeSettings>(defaultTheme);
-  const [authed, setAuthed] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    try { return window.localStorage.getItem("iskcon_authed") === "1"; } catch { return false; }
-  });
+  const [authed, setAuthed] = useState<boolean>(false);
+
+  // Track Supabase auth session for admin access
+  useEffect(() => {
+    let mounted = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (mounted) setAuthed(!!data.session);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthed(!!session);
+    });
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
   const [ready, setReady] = useState(false);
 
   // Tracks keys we just wrote locally so realtime echo doesn't overwrite optimistic state.
