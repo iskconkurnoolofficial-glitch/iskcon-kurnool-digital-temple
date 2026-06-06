@@ -57,7 +57,7 @@ export default function UpcomingFestivals() {
         {/* Horizontally scrollable cards */}
         <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-4 -mx-4 px-4 sm:mx-0 sm:px-0" style={{ scrollbarWidth: "none" }}>
           {list.map((f) => (
-            <div key={f.id} className="snap-start shrink-0 w-[280px] sm:w-[320px] lg:w-[calc(25%-0.9375rem)]">
+            <div key={f.id} className="snap-center sm:snap-start shrink-0 w-[85vw] sm:w-[320px] lg:w-[calc(25%-0.9375rem)]">
               <FestivalCard f={f} />
             </div>
           ))}
