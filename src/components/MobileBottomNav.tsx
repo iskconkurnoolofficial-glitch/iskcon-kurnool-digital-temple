@@ -1,13 +1,15 @@
 import { Link } from "@tanstack/react-router";
-import { Home, Image, Heart, BookOpen, Users } from "lucide-react";
+import { Home, Image, Heart, BookOpen, Users, type LucideIcon } from "lucide-react";
 
-const items = [
+type NavItem = { label: string; href: string; icon: LucideIcon; center?: boolean };
+
+const items: NavItem[] = [
   { label: "Home", href: "/", icon: Home },
   { label: "Gallery", href: "/gallery", icon: Image },
   { label: "Donate", href: "/donate", icon: Heart, center: true },
   { label: "Courses", href: "/courses", icon: BookOpen },
   { label: "Connect", href: "/connect", icon: Users },
-] as const;
+];
 
 export default function MobileBottomNav() {
   return (
