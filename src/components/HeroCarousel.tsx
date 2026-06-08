@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 
 export default function HeroCarousel() {
-  const { slides } = useAdmin();
+  const { slides, ready } = useAdmin();
   const active = slides.filter((s) => s.active);
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -15,6 +15,15 @@ export default function HeroCarousel() {
     const t = setInterval(() => setI((p) => (p + 1) % active.length), 5000);
     return () => clearInterval(t);
   }, [paused, active.length]);
+
+  // While loading from the backend, show a neutral surface — no placeholder image flash on reload
+  if (!ready) {
+    return (
+      <section id="home">
+        <div className="aspect-[1080/1350] md:aspect-[4917/1750] bg-surface" />
+      </section>
+    );
+  }
 
   if (active.length === 0) {
     return (
