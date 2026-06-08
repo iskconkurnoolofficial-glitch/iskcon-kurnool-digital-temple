@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { useAdmin, normalizeFestival, isFestivalLive, Festival } from "@/context/AdminContext";
 import { Calendar, Sparkles, ArrowRight } from "lucide-react";
