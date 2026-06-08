@@ -218,24 +218,7 @@ const defaultTheme: ThemeSettings = {
 
 const defaultCategories = ["Temple", "Festival", "Programs", "Deity"];
 
-const defaultSlides: Slide[] = [
-  {
-    id: "s1",
-    desktop: "https://images.unsplash.com/photo-1518002171953-a080ee817e1f?w=2400&q=80",
-    mobile: "https://images.unsplash.com/photo-1518002171953-a080ee817e1f?w=1080&q=80",
-    title: "Hare Krishna",
-    subtitle: "Welcome to the abode of Sri Sri Jagannath Baladev Subhadra",
-    active: true,
-  },
-  {
-    id: "s2",
-    desktop: "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=2400&q=80",
-    mobile: "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=1080&q=80",
-    title: "Divine Grace",
-    subtitle: "Experience the spiritual heritage of Bhakti",
-    active: true,
-  },
-];
+const defaultSlides: Slide[] = [];
 
 // Keys used in the site_data table
 const KEYS = {
