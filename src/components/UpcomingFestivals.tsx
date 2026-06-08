@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { useAdmin, normalizeFestival, isFestivalLive, Festival } from "@/context/AdminContext";
 import { Calendar, Sparkles, ArrowRight } from "lucide-react";
@@ -41,6 +41,44 @@ export default function UpcomingFestivals() {
     [festivals],
   );
 
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll one card after another, looping back to the start
+  useEffect(() => {
+    if (list.length < 2) return;
+    const el = scrollerRef.current;
+    if (!el) return;
+    let paused = false;
+    const pause = () => { paused = true; };
+    const resume = () => { paused = false; };
+    el.addEventListener("pointerdown", pause);
+    el.addEventListener("pointerup", resume);
+    el.addEventListener("mouseenter", pause);
+    el.addEventListener("mouseleave", resume);
+
+    const t = setInterval(() => {
+      if (paused) return;
+      const cards = Array.from(el.querySelectorAll<HTMLElement>("[data-fcard]"));
+      if (!cards.length) return;
+      const left = el.scrollLeft;
+      // find first card whose start is clearly ahead of current position
+      const next = cards.find((c) => c.offsetLeft > left + 8);
+      if (next && next.offsetLeft + next.offsetWidth <= el.scrollWidth - 4) {
+        el.scrollTo({ left: next.offsetLeft, behavior: "smooth" });
+      } else {
+        el.scrollTo({ left: 0, behavior: "smooth" });
+      }
+    }, 3500);
+
+    return () => {
+      clearInterval(t);
+      el.removeEventListener("pointerdown", pause);
+      el.removeEventListener("pointerup", resume);
+      el.removeEventListener("mouseenter", pause);
+      el.removeEventListener("mouseleave", resume);
+    };
+  }, [list.length]);
+
   if (list.length === 0) return null;
 
   return (
@@ -54,10 +92,10 @@ export default function UpcomingFestivals() {
           <p className="text-muted-foreground mt-3 max-w-2xl mx-auto">Join us in celebrating the divine pastimes of the Lord through these sacred occasions.</p>
         </div>
 
-        {/* Horizontally scrollable cards */}
-        <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-4 -mx-4 px-4 sm:mx-0 sm:px-0" style={{ scrollbarWidth: "none" }}>
+        {/* Horizontally scrollable cards — auto-scrolls one after another */}
+        <div ref={scrollerRef} className="flex gap-5 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-4 -mx-4 px-4 sm:mx-0 sm:px-0" style={{ scrollbarWidth: "none" }}>
           {list.map((f) => (
-            <div key={f.id} className="snap-center sm:snap-start shrink-0 w-[85vw] sm:w-[320px] lg:w-[calc(25%-0.9375rem)]">
+            <div key={f.id} data-fcard className="snap-center sm:snap-start shrink-0 w-[85vw] sm:w-[320px] lg:w-[calc(25%-0.9375rem)]">
               <FestivalCard f={f} />
             </div>
           ))}

@@ -2,14 +2,16 @@ import { ReactNode } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
+import MobileBottomNav from "@/components/MobileBottomNav";
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      <main className="flex-1 pt-20 md:pt-24">{children}</main>
+      <main className="flex-1 pt-20 md:pt-24 pb-20 lg:pb-0">{children}</main>
       <Footer />
       <FloatingWhatsApp />
+      <MobileBottomNav />
     </div>
   );
 }
