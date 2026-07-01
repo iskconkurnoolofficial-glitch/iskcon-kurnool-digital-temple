@@ -81,6 +81,7 @@ function AdminPage() {
     { id: "festivals", label: "Upcoming Festivals", icon: Sparkles },
     { id: "sevas", label: "Jagannath Sevas", icon: HandHeart },
     { id: "youth", label: "Youth Festival", icon: Users },
+    { id: "ekadashi", label: "Ekadashi Vratam", icon: Leaf },
     { id: "classes", label: "Daily Classes", icon: Radio },
     { id: "gallery", label: "Gallery", icon: Images },
     { id: "settings", label: "Site Settings", icon: Settings },
