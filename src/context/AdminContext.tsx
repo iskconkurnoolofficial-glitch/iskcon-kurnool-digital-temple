@@ -138,6 +138,29 @@ export const defaultYouth: YouthData = {
   ],
 };
 
+export type HarinamaGalleryItem = { id: string; url: string; label: string };
+export type HarinamaData = {
+  whatsappUrl: string;
+  instagramHandle: string;
+  scheduleDay: string;
+  scheduleTime: string;
+  meetingPoint: string;
+  aboutText: string;
+  aboutImage: string;
+  gallery: HarinamaGalleryItem[];
+};
+
+export const defaultHarinama: HarinamaData = {
+  whatsappUrl: "https://chat.whatsapp.com/LhB20hR5J1T7xVvH7Hk9y3",
+  instagramHandle: "iskconkurnool",
+  scheduleDay: "Every Saturday",
+  scheduleTime: "5:00 PM onwards",
+  meetingPoint: "ISKCON Kurnool Temple, Sri Sri Puri Jagannath Temple",
+  aboutText: "Hari Nama Sankeerthana is the congregational chanting of the holy names of Krishna — Hare Krishna Hare Krishna, Krishna Krishna Hare Hare, Hare Rama Hare Rama, Rama Rama Hare Hare — carried out loudly, joyfully, and publicly, usually while walking through streets, markets, and neighborhoods.\n\nThis practice was given special emphasis by Sri Chaitanya Mahaprabhu, who taught that in this age, chanting the names of God together, in public, is the easiest and most powerful way to purify the heart and connect with the Divine. It doesn't require Sanskrit knowledge, ritual expertise, or any qualification — anyone who joins, chants, or even simply hears, benefits.\n\nAt ISKCON Kurnool, Hari Nama Sankeerthana is not a performance — it's an offering. Devotees walk together with mridangam and karatalas, singing, dancing, and inviting the whole town to taste a moment of transcendence in the middle of an ordinary day.",
+  aboutImage: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
+  gallery: [],
+};
+
 export type EkadashiData = {
   badge: string;
   title: string;
@@ -251,6 +274,8 @@ type AdminState = {
   setSevas: (s: Seva[]) => void;
   youth: YouthData;
   setYouth: (y: YouthData) => void;
+  harinama: HarinamaData;
+  setHarinama: (h: HarinamaData) => void;
   ekadashi: EkadashiData;
   setEkadashi: (e: EkadashiData) => void;
   settings: SiteSettings;
@@ -298,6 +323,7 @@ const KEYS = {
   festivals: "festivals",
   sevas: "sevas",
   youth: "youth",
+  harinama: "harinama",
   ekadashi: "ekadashi",
   settings: "settings",
   theme: "theme",
@@ -313,6 +339,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [festivals, setFestivalsState] = useState<Festival[]>([]);
   const [sevas, setSevasState] = useState<Seva[]>([]);
   const [youth, setYouthState] = useState<YouthData>(defaultYouth);
+  const [harinama, setHarinamaState] = useState<HarinamaData>(defaultHarinama);
   const [ekadashi, setEkadashiState] = useState<EkadashiData>(defaultEkadashi);
   const [settings, setSettingsState] = useState<SiteSettings>(defaultSettings);
   const [theme, setThemeState] = useState<ThemeSettings>(defaultTheme);
@@ -383,6 +410,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.festivals: setFestivalsState(value); break;
       case KEYS.sevas: setSevasState(value); break;
       case KEYS.youth: setYouthState({ ...defaultYouth, ...value }); break;
+      case KEYS.harinama: setHarinamaState({ ...defaultHarinama, ...value }); break;
       case KEYS.ekadashi: setEkadashiState({ ...defaultEkadashi, ...value }); break;
       case KEYS.settings: setSettingsState(value); break;
       case KEYS.theme: setThemeState(value); break;
@@ -404,6 +432,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setFestivals = (v: Festival[]) => { setFestivalsState(v); persist(KEYS.festivals, v); };
   const setSevas = (v: Seva[]) => { setSevasState(v); persist(KEYS.sevas, v); };
   const setYouth = (v: YouthData) => { setYouthState(v); persist(KEYS.youth, v); };
+  const setHarinama = (v: HarinamaData) => { setHarinamaState(v); persist(KEYS.harinama, v); };
   const setEkadashi = (v: EkadashiData) => { setEkadashiState(v); persist(KEYS.ekadashi, v); };
   const setSettings = (v: SiteSettings) => { setSettingsState(v); persist(KEYS.settings, v); };
   const setTheme = (v: ThemeSettings) => { setThemeState(v); persist(KEYS.theme, v); };
@@ -441,6 +470,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         festivals, setFestivals,
         sevas, setSevas,
         youth, setYouth,
+        harinama, setHarinama,
         ekadashi, setEkadashi,
         settings, setSettings,
         theme, setTheme,

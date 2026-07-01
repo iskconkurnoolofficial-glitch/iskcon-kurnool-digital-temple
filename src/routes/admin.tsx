@@ -9,15 +9,16 @@ import DailyClassesManager from "@/admin/DailyClassesManager";
 import FestivalsManager from "@/admin/FestivalsManager";
 import SevasManager from "@/admin/SevasManager";
 import YouthManager from "@/admin/YouthManager";
+import HarinamaManager from "@/admin/HarinamaManager";
 import EkadashiManager from "@/admin/EkadashiManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf } from "lucide-react";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
 
-type Tab = "carousel" | "festivals" | "sevas" | "youth" | "ekadashi" | "classes" | "gallery" | "settings" | "theme";
+type Tab = "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "classes" | "gallery" | "settings" | "theme";
 
 function AdminPage() {
   const { authed, login, logout, settings } = useAdmin();
@@ -81,6 +82,7 @@ function AdminPage() {
     { id: "festivals", label: "Upcoming Festivals", icon: Sparkles },
     { id: "sevas", label: "Jagannath Sevas", icon: HandHeart },
     { id: "youth", label: "Youth Festival", icon: Users },
+    { id: "harinama", label: "Harinama Sankeerthan", icon: Music },
     { id: "ekadashi", label: "Ekadashi Vratam", icon: Leaf },
     { id: "classes", label: "Daily Classes", icon: Radio },
     { id: "gallery", label: "Gallery", icon: Images },
@@ -126,6 +128,7 @@ function AdminPage() {
         {tab === "festivals" && <FestivalsManager />}
         {tab === "sevas" && <SevasManager />}
         {tab === "youth" && <YouthManager />}
+        {tab === "harinama" && <HarinamaManager />}
         {tab === "ekadashi" && <EkadashiManager />}
         {tab === "classes" && <DailyClassesManager />}
         {tab === "gallery" && <GalleryManager />}
