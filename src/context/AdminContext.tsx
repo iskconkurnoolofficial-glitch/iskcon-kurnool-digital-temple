@@ -313,6 +313,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [festivals, setFestivalsState] = useState<Festival[]>([]);
   const [sevas, setSevasState] = useState<Seva[]>([]);
   const [youth, setYouthState] = useState<YouthData>(defaultYouth);
+  const [ekadashi, setEkadashiState] = useState<EkadashiData>(defaultEkadashi);
   const [settings, setSettingsState] = useState<SiteSettings>(defaultSettings);
   const [theme, setThemeState] = useState<ThemeSettings>(defaultTheme);
   const [authed, setAuthed] = useState<boolean>(false);
