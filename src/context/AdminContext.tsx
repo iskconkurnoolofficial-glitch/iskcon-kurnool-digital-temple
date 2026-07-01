@@ -404,6 +404,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setFestivals = (v: Festival[]) => { setFestivalsState(v); persist(KEYS.festivals, v); };
   const setSevas = (v: Seva[]) => { setSevasState(v); persist(KEYS.sevas, v); };
   const setYouth = (v: YouthData) => { setYouthState(v); persist(KEYS.youth, v); };
+  const setEkadashi = (v: EkadashiData) => { setEkadashiState(v); persist(KEYS.ekadashi, v); };
   const setSettings = (v: SiteSettings) => { setSettingsState(v); persist(KEYS.settings, v); };
   const setTheme = (v: ThemeSettings) => { setThemeState(v); persist(KEYS.theme, v); };
 
