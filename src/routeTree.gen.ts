@@ -16,6 +16,7 @@ import { Route as PrahladaBadiRouteImport } from './routes/prahlada-badi'
 import { Route as HarinamaRouteImport } from './routes/harinama'
 import { Route as GoshalaRouteImport } from './routes/goshala'
 import { Route as GalleryRouteImport } from './routes/gallery'
+import { Route as FestivalsRouteImport } from './routes/festivals'
 import { Route as EkadashiRouteImport } from './routes/ekadashi'
 import { Route as DonateRouteImport } from './routes/donate'
 import { Route as CoursesRouteImport } from './routes/courses'
@@ -61,6 +62,11 @@ const GoshalaRoute = GoshalaRouteImport.update({
 const GalleryRoute = GalleryRouteImport.update({
   id: '/gallery',
   path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FestivalsRoute = FestivalsRouteImport.update({
+  id: '/festivals',
+  path: '/festivals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EkadashiRoute = EkadashiRouteImport.update({
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/courses': typeof CoursesRoute
   '/donate': typeof DonateRoute
   '/ekadashi': typeof EkadashiRoute
+  '/festivals': typeof FestivalsRoute
   '/gallery': typeof GalleryRoute
   '/goshala': typeof GoshalaRoute
   '/harinama': typeof HarinamaRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByTo {
   '/courses': typeof CoursesRoute
   '/donate': typeof DonateRoute
   '/ekadashi': typeof EkadashiRoute
+  '/festivals': typeof FestivalsRoute
   '/gallery': typeof GalleryRoute
   '/goshala': typeof GoshalaRoute
   '/harinama': typeof HarinamaRoute
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/courses': typeof CoursesRoute
   '/donate': typeof DonateRoute
   '/ekadashi': typeof EkadashiRoute
+  '/festivals': typeof FestivalsRoute
   '/gallery': typeof GalleryRoute
   '/goshala': typeof GoshalaRoute
   '/harinama': typeof HarinamaRoute
@@ -189,6 +198,7 @@ export interface FileRouteTypes {
     | '/courses'
     | '/donate'
     | '/ekadashi'
+    | '/festivals'
     | '/gallery'
     | '/goshala'
     | '/harinama'
@@ -209,6 +219,7 @@ export interface FileRouteTypes {
     | '/courses'
     | '/donate'
     | '/ekadashi'
+    | '/festivals'
     | '/gallery'
     | '/goshala'
     | '/harinama'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/courses'
     | '/donate'
     | '/ekadashi'
+    | '/festivals'
     | '/gallery'
     | '/goshala'
     | '/harinama'
@@ -250,6 +262,7 @@ export interface RootRouteChildren {
   CoursesRoute: typeof CoursesRoute
   DonateRoute: typeof DonateRoute
   EkadashiRoute: typeof EkadashiRoute
+  FestivalsRoute: typeof FestivalsRoute
   GalleryRoute: typeof GalleryRoute
   GoshalaRoute: typeof GoshalaRoute
   HarinamaRoute: typeof HarinamaRoute
@@ -313,6 +326,13 @@ declare module '@tanstack/react-router' {
       path: '/gallery'
       fullPath: '/gallery'
       preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/festivals': {
+      id: '/festivals'
+      path: '/festivals'
+      fullPath: '/festivals'
+      preLoaderRoute: typeof FestivalsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ekadashi': {
@@ -402,6 +422,7 @@ const rootRouteChildren: RootRouteChildren = {
   CoursesRoute: CoursesRoute,
   DonateRoute: DonateRoute,
   EkadashiRoute: EkadashiRoute,
+  FestivalsRoute: FestivalsRoute,
   GalleryRoute: GalleryRoute,
   GoshalaRoute: GoshalaRoute,
   HarinamaRoute: HarinamaRoute,
