@@ -9,7 +9,8 @@ import DailyClassesManager from "@/admin/DailyClassesManager";
 import FestivalsManager from "@/admin/FestivalsManager";
 import SevasManager from "@/admin/SevasManager";
 import YouthManager from "@/admin/YouthManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users } from "lucide-react";
+import EkadashiManager from "@/admin/EkadashiManager";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
