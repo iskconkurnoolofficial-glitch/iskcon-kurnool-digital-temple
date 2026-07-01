@@ -298,6 +298,7 @@ const KEYS = {
   festivals: "festivals",
   sevas: "sevas",
   youth: "youth",
+  ekadashi: "ekadashi",
   settings: "settings",
   theme: "theme",
 } as const;
