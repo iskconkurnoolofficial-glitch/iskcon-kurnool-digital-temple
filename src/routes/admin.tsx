@@ -126,6 +126,7 @@ function AdminPage() {
         {tab === "festivals" && <FestivalsManager />}
         {tab === "sevas" && <SevasManager />}
         {tab === "youth" && <YouthManager />}
+        {tab === "ekadashi" && <EkadashiManager />}
         {tab === "classes" && <DailyClassesManager />}
         {tab === "gallery" && <GalleryManager />}
         {tab === "settings" && <SiteSettingsForm />}
