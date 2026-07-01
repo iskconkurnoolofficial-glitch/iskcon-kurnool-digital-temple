@@ -138,6 +138,73 @@ export const defaultYouth: YouthData = {
   ],
 };
 
+export type EkadashiData = {
+  badge: string;
+  title: string;
+  subtitle: string;
+  image: string;
+  imageQuote: string;
+  avoidTitle: string;
+  avoidItems: string[];
+  permitTitle: string;
+  permitItems: string[];
+  tulsiTitle: string;
+  tulsiBody: string;
+  purposeTitle: string;
+  purposeBody: string;
+  morningTitle: string;
+  morningSteps: string[];
+  mantra: string;
+  warningTitle: string;
+  warningBody: string;
+  dwadashiTitle: string;
+  dwadashiBody: string;
+  dwadashiNote: string;
+};
+
+export const defaultEkadashi: EkadashiData = {
+  badge: "Sacred Observance",
+  title: "Ekadashi — The Mother of Devotion",
+  subtitle: "Rules and Guidelines for Observance",
+  image: "",
+  imageQuote: "Fasting on Ekadashi is dear to Lord Vishnu.",
+  avoidTitle: "Avoid on Ekadashi",
+  avoidItems: [
+    "Grains, lentils / pulses, chickpeas, corn",
+    "Certain vegetables (ridge gourd, beans)",
+    "Peas",
+  ],
+  permitTitle: "Permitted on Ekadashi",
+  permitItems: [
+    "Fruits, milk",
+    "Dry fruits (cashew, almond, pistachio, raisins)",
+    "Root vegetables / tubers",
+    "Sabudana (sago), Samalu (barnyard millet)",
+  ],
+  tulsiTitle: "About Tulsi",
+  tulsiBody:
+    "Do not pluck Tulsi leaves on Ekadashi or on Dwadashi (the day after). If Tulsi is needed for worship, it should be picked the day before.",
+  purposeTitle: "Purpose of Ekadashi",
+  purposeBody:
+    "Ekadashi is a day to minimize our bodily needs and instead increase our hearing, chanting, and remembrance of the Holy Name of the Lord. By simplifying eating and daily activity, the mind becomes free to absorb itself in devotional service and the glories of Krishna.",
+  morningTitle: "Morning Practice",
+  morningSteps: [
+    "Worship the deity of Krishna with devotion.",
+    "Offer incense, a lamp, Tulsi (picked the day before), fruits, and flowers.",
+    "Pray sincerely for the mercy of Lord Vishnu.",
+  ],
+  mantra:
+    "Hare Krishna Hare Krishna, Krishna Krishna Hare Hare\nHare Rama Hare Rama, Rama Rama Hare Hare",
+  warningTitle: "Strictly Avoid",
+  warningBody:
+    "Meat, fish, eggs, mushrooms, alcohol, onion, garlic, intoxicants (cigarettes, tobacco), and other tamasic substances should be strictly avoided — not only on Ekadashi, but as a practice of pure devotional life.",
+  dwadashiTitle: "Dwadashi — Breaking the Fast",
+  dwadashiBody:
+    "On Dwadashi (the day after Ekadashi), wake early, bathe, and worship Lord Vishnu. Break the fast at the prescribed Parana time.",
+  dwadashiNote:
+    "Note: The Parana timing changes for every Ekadashi — always check the calendar for the correct window.",
+};
+
 export type DailyClass = {
   id: string;
   thumbnail: string;
@@ -184,6 +251,8 @@ type AdminState = {
   setSevas: (s: Seva[]) => void;
   youth: YouthData;
   setYouth: (y: YouthData) => void;
+  ekadashi: EkadashiData;
+  setEkadashi: (e: EkadashiData) => void;
   settings: SiteSettings;
   setSettings: (s: SiteSettings) => void;
   theme: ThemeSettings;
@@ -229,6 +298,7 @@ const KEYS = {
   festivals: "festivals",
   sevas: "sevas",
   youth: "youth",
+  ekadashi: "ekadashi",
   settings: "settings",
   theme: "theme",
 } as const;
@@ -243,6 +313,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [festivals, setFestivalsState] = useState<Festival[]>([]);
   const [sevas, setSevasState] = useState<Seva[]>([]);
   const [youth, setYouthState] = useState<YouthData>(defaultYouth);
+  const [ekadashi, setEkadashiState] = useState<EkadashiData>(defaultEkadashi);
   const [settings, setSettingsState] = useState<SiteSettings>(defaultSettings);
   const [theme, setThemeState] = useState<ThemeSettings>(defaultTheme);
   const [authed, setAuthed] = useState<boolean>(false);
@@ -312,6 +383,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.festivals: setFestivalsState(value); break;
       case KEYS.sevas: setSevasState(value); break;
       case KEYS.youth: setYouthState({ ...defaultYouth, ...value }); break;
+      case KEYS.ekadashi: setEkadashiState({ ...defaultEkadashi, ...value }); break;
       case KEYS.settings: setSettingsState(value); break;
       case KEYS.theme: setThemeState(value); break;
     }
@@ -332,6 +404,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setFestivals = (v: Festival[]) => { setFestivalsState(v); persist(KEYS.festivals, v); };
   const setSevas = (v: Seva[]) => { setSevasState(v); persist(KEYS.sevas, v); };
   const setYouth = (v: YouthData) => { setYouthState(v); persist(KEYS.youth, v); };
+  const setEkadashi = (v: EkadashiData) => { setEkadashiState(v); persist(KEYS.ekadashi, v); };
   const setSettings = (v: SiteSettings) => { setSettingsState(v); persist(KEYS.settings, v); };
   const setTheme = (v: ThemeSettings) => { setThemeState(v); persist(KEYS.theme, v); };
 
@@ -368,6 +441,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         festivals, setFestivals,
         sevas, setSevas,
         youth, setYouth,
+        ekadashi, setEkadashi,
         settings, setSettings,
         theme, setTheme,
         authed, login, logout, ready,
