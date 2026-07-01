@@ -441,6 +441,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         festivals, setFestivals,
         sevas, setSevas,
         youth, setYouth,
+        ekadashi, setEkadashi,
         settings, setSettings,
         theme, setTheme,
         authed, login, logout, ready,
