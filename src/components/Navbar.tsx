@@ -29,7 +29,7 @@ const NAV: NavItem[] = [
   { label: "Activities", children: [
     { label: "Youth Program", href: "/youth" },
     { label: "Prahlada Badi", href: "/prahlada-badi" },
-    { label: "Ekadashi", href: "/ekadashi" },
+    { label: "Ekadashi Vratam", href: "/ekadashi" },
     { label: "Hari Nama Sankeerthana", href: "/harinama" },
   ]},
   { label: "Courses", children: [
