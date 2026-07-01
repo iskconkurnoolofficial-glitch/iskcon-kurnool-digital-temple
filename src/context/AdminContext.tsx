@@ -383,6 +383,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.festivals: setFestivalsState(value); break;
       case KEYS.sevas: setSevasState(value); break;
       case KEYS.youth: setYouthState({ ...defaultYouth, ...value }); break;
+      case KEYS.ekadashi: setEkadashiState({ ...defaultEkadashi, ...value }); break;
       case KEYS.settings: setSettingsState(value); break;
       case KEYS.theme: setThemeState(value); break;
     }
