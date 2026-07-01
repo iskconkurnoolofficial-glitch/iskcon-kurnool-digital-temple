@@ -251,6 +251,8 @@ type AdminState = {
   setSevas: (s: Seva[]) => void;
   youth: YouthData;
   setYouth: (y: YouthData) => void;
+  ekadashi: EkadashiData;
+  setEkadashi: (e: EkadashiData) => void;
   settings: SiteSettings;
   setSettings: (s: SiteSettings) => void;
   theme: ThemeSettings;
