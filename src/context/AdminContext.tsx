@@ -161,6 +161,56 @@ export const defaultHarinama: HarinamaData = {
   gallery: [],
 };
 
+export type SundayScheduleItem = {
+  id: string;
+  time: string;
+  program: string;
+};
+
+export type SundayGalleryItem = {
+  id: string;
+  url: string;
+  label: string;
+};
+
+export type SundayLinkButton = {
+  id: string;
+  label: string;
+  url: string;
+};
+
+export type SundayData = {
+  description: string;
+  scheduleTitle: string;
+  schedule: SundayScheduleItem[];
+  gallery: SundayGalleryItem[];
+  visitTitle: string;
+  visitDescription: string;
+  address: string;
+  directionsUrl: string;
+  logo: string;
+  buttons: SundayLinkButton[];
+};
+
+export const defaultSunday: SundayData = {
+  description: "Experience a spiritually uplifting Sunday at ISKCON Kurnool. Join devotees for devotional chanting, enlightening Bhagavad Gita discourse, darshan, and delicious prasadam. Everyone is welcome.",
+  scheduleTitle: "Weekly Schedule (Every Sunday)",
+  schedule: [
+    { id: "s1", time: "11:00 AM – 11:30 AM", program: "Hari Nama Sankirtana" },
+    { id: "s2", time: "11:30 AM – 12:30 PM", program: "Bhagavad Gita Pravachanam" },
+    { id: "s3", time: "After 12:30 PM", program: "Raja Bhoga Arati" },
+    { id: "s4", time: "After 12:30 PM", program: "Sudarshana Ashirvadam" },
+    { id: "s5", time: "After 12:30 PM", program: "Prasada Vitarana" }
+  ],
+  gallery: [],
+  visitTitle: "Visit ISKCON Kurnool",
+  visitDescription: "Experience peace, devotion, and spiritual happiness. We warmly welcome you and your family every Sunday.",
+  address: "ISKCON Kurnool\nSri Sri Puri Jagannath Temple\nKurnool, Andhra Pradesh\nIndia",
+  directionsUrl: "https://maps.app.goo.gl/yJpP11F8Q8ZqT76W9",
+  logo: "",
+  buttons: []
+};
+
 export type EkadashiData = {
   badge: string;
   title: string;
@@ -312,6 +362,8 @@ type AdminState = {
   setEkadashi: (e: EkadashiData) => void;
   gitaCourse: GitaCourseData;
   setGitaCourse: (g: GitaCourseData) => void;
+  sunday: SundayData;
+  setSunday: (s: SundayData) => void;
   settings: SiteSettings;
   setSettings: (s: SiteSettings) => void;
   theme: ThemeSettings;
@@ -360,6 +412,7 @@ const KEYS = {
   harinama: "harinama",
   ekadashi: "ekadashi",
   gitaCourse: "gitaCourse",
+  sunday: "sunday",
   settings: "settings",
   theme: "theme",
 } as const;
@@ -377,6 +430,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [harinama, setHarinamaState] = useState<HarinamaData>(defaultHarinama);
   const [ekadashi, setEkadashiState] = useState<EkadashiData>(defaultEkadashi);
   const [gitaCourse, setGitaCourseState] = useState<GitaCourseData>(defaultGitaCourse);
+  const [sunday, setSundayState] = useState<SundayData>(defaultSunday);
   const [settings, setSettingsState] = useState<SiteSettings>(defaultSettings);
   const [theme, setThemeState] = useState<ThemeSettings>(defaultTheme);
   const [authed, setAuthed] = useState<boolean>(false);
@@ -449,6 +503,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.harinama: setHarinamaState({ ...defaultHarinama, ...value }); break;
       case KEYS.ekadashi: setEkadashiState({ ...defaultEkadashi, ...value }); break;
       case KEYS.gitaCourse: setGitaCourseState({ ...defaultGitaCourse, ...value }); break;
+      case KEYS.sunday: setSundayState({ ...defaultSunday, ...value }); break;
       case KEYS.settings: setSettingsState(value); break;
       case KEYS.theme: setThemeState(value); break;
     }
@@ -472,6 +527,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setHarinama = (v: HarinamaData) => { setHarinamaState(v); persist(KEYS.harinama, v); };
   const setEkadashi = (v: EkadashiData) => { setEkadashiState(v); persist(KEYS.ekadashi, v); };
   const setGitaCourse = (v: GitaCourseData) => { setGitaCourseState(v); persist(KEYS.gitaCourse, v); };
+  const setSunday = (v: SundayData) => { setSundayState(v); persist(KEYS.sunday, v); };
   const setSettings = (v: SiteSettings) => { setSettingsState(v); persist(KEYS.settings, v); };
   const setTheme = (v: ThemeSettings) => { setThemeState(v); persist(KEYS.theme, v); };
 
@@ -511,6 +567,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         harinama, setHarinama,
         ekadashi, setEkadashi,
         gitaCourse, setGitaCourse,
+        sunday, setSunday,
         settings, setSettings,
         theme, setTheme,
         authed, login, logout, ready,

@@ -24,6 +24,8 @@ import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TempleIndexRouteImport } from './routes/temple.index'
+import { Route as TempleSundayRouteImport } from './routes/temple.sunday'
 import { Route as FestivalSlugRouteImport } from './routes/festival.$slug'
 import { Route as AboutMissionRouteImport } from './routes/about.mission'
 import { Route as AboutKurnoolRouteImport } from './routes/about.kurnool'
@@ -105,6 +107,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TempleIndexRoute = TempleIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => TempleRoute,
+} as any)
+const TempleSundayRoute = TempleSundayRouteImport.update({
+  id: '/sunday',
+  path: '/sunday',
+  getParentRoute: () => TempleRoute,
+} as any)
 const FestivalSlugRoute = FestivalSlugRouteImport.update({
   id: '/festival/$slug',
   path: '/festival/$slug',
@@ -145,13 +157,15 @@ export interface FileRoutesByFullPath {
   '/harinama': typeof HarinamaRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/shop': typeof ShopRoute
-  '/temple': typeof TempleRoute
+  '/temple': typeof TempleRouteWithChildren
   '/youth': typeof YouthRoute
   '/about/founder': typeof AboutFounderRoute
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
   '/about/mission': typeof AboutMissionRoute
   '/festival/$slug': typeof FestivalSlugRoute
+  '/temple/sunday': typeof TempleSundayRoute
+  '/temple/': typeof TempleIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -167,13 +181,14 @@ export interface FileRoutesByTo {
   '/harinama': typeof HarinamaRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/shop': typeof ShopRoute
-  '/temple': typeof TempleRoute
   '/youth': typeof YouthRoute
   '/about/founder': typeof AboutFounderRoute
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
   '/about/mission': typeof AboutMissionRoute
   '/festival/$slug': typeof FestivalSlugRoute
+  '/temple/sunday': typeof TempleSundayRoute
+  '/temple': typeof TempleIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -190,13 +205,15 @@ export interface FileRoutesById {
   '/harinama': typeof HarinamaRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/shop': typeof ShopRoute
-  '/temple': typeof TempleRoute
+  '/temple': typeof TempleRouteWithChildren
   '/youth': typeof YouthRoute
   '/about/founder': typeof AboutFounderRoute
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
   '/about/mission': typeof AboutMissionRoute
   '/festival/$slug': typeof FestivalSlugRoute
+  '/temple/sunday': typeof TempleSundayRoute
+  '/temple/': typeof TempleIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -221,6 +238,8 @@ export interface FileRouteTypes {
     | '/about/kurnool'
     | '/about/mission'
     | '/festival/$slug'
+    | '/temple/sunday'
+    | '/temple/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -236,13 +255,14 @@ export interface FileRouteTypes {
     | '/harinama'
     | '/prahlada-badi'
     | '/shop'
-    | '/temple'
     | '/youth'
     | '/about/founder'
     | '/about/iskcon'
     | '/about/kurnool'
     | '/about/mission'
     | '/festival/$slug'
+    | '/temple/sunday'
+    | '/temple'
   id:
     | '__root__'
     | '/'
@@ -265,6 +285,8 @@ export interface FileRouteTypes {
     | '/about/kurnool'
     | '/about/mission'
     | '/festival/$slug'
+    | '/temple/sunday'
+    | '/temple/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -281,7 +303,7 @@ export interface RootRouteChildren {
   HarinamaRoute: typeof HarinamaRoute
   PrahladaBadiRoute: typeof PrahladaBadiRoute
   ShopRoute: typeof ShopRoute
-  TempleRoute: typeof TempleRoute
+  TempleRoute: typeof TempleRouteWithChildren
   YouthRoute: typeof YouthRoute
   AboutFounderRoute: typeof AboutFounderRoute
   AboutIskconRoute: typeof AboutIskconRoute
@@ -397,6 +419,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/temple/': {
+      id: '/temple/'
+      path: '/'
+      fullPath: '/temple/'
+      preLoaderRoute: typeof TempleIndexRouteImport
+      parentRoute: typeof TempleRoute
+    }
+    '/temple/sunday': {
+      id: '/temple/sunday'
+      path: '/sunday'
+      fullPath: '/temple/sunday'
+      preLoaderRoute: typeof TempleSundayRouteImport
+      parentRoute: typeof TempleRoute
+    }
     '/festival/$slug': {
       id: '/festival/$slug'
       path: '/festival/$slug'
@@ -435,6 +471,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface TempleRouteChildren {
+  TempleSundayRoute: typeof TempleSundayRoute
+  TempleIndexRoute: typeof TempleIndexRoute
+}
+
+const TempleRouteChildren: TempleRouteChildren = {
+  TempleSundayRoute: TempleSundayRoute,
+  TempleIndexRoute: TempleIndexRoute,
+}
+
+const TempleRouteWithChildren =
+  TempleRoute._addFileChildren(TempleRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
@@ -449,7 +498,7 @@ const rootRouteChildren: RootRouteChildren = {
   HarinamaRoute: HarinamaRoute,
   PrahladaBadiRoute: PrahladaBadiRoute,
   ShopRoute: ShopRoute,
-  TempleRoute: TempleRoute,
+  TempleRoute: TempleRouteWithChildren,
   YouthRoute: YouthRoute,
   AboutFounderRoute: AboutFounderRoute,
   AboutIskconRoute: AboutIskconRoute,
@@ -460,3 +509,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

@@ -17,7 +17,7 @@ const NAV: NavItem[] = [
   ]},
   { label: "Temple", children: [
     { label: "Temple Timings", href: "/temple" },
-    { label: "Sunday Program", href: "/temple" },
+    { label: "Sunday Program", href: "/temple/sunday" },
     { label: "Upcoming Festivals", href: "/festivals" },
     { label: "Goshala", href: "/goshala" },
     { label: "Shop", href: "/shop" },
