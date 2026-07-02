@@ -170,20 +170,12 @@ function Page() {
           <div className="text-center max-w-2xl mx-auto">
             <span className="text-accent font-medium uppercase text-xs tracking-[0.25em]">The Journey</span>
             <h2 className="font-display font-bold text-3xl md:text-4xl text-primary mt-3">Eighteen Chapters, Eighteen Nights</h2>
+            <p className="mt-3 text-muted-foreground">Hover or tap a mark on the wheel to reveal that night's chapter.</p>
           </div>
-          <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {CHAPTERS.map((c, i) => (
-              <div key={i} className="flex gap-4 p-5 rounded-2xl bg-surface border border-border hover:border-secondary transition">
-                <div className="h-10 w-10 shrink-0 rounded-full bg-gradient-hero text-primary-foreground grid place-items-center font-display font-bold">
-                  {i + 1}
-                </div>
-                <div>
-                  <div className="font-display font-semibold text-primary leading-tight">{c.sanskrit}</div>
-                  <div className="text-sm text-muted-foreground mt-0.5">{c.english}</div>
-                </div>
-              </div>
-            ))}
+          <div className="mt-12">
+            <ChapterWheel chapters={CHAPTERS} />
           </div>
+
         </div>
       </section>
 
