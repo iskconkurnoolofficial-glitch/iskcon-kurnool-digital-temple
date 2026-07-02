@@ -24,11 +24,11 @@ export default function ChapterWheel({ chapters }: { chapters: WheelChapter[] })
       <div className="relative mx-auto w-full max-w-[min(80vw,420px)] aspect-square">
         <svg viewBox="0 0 100 100" className="w-full h-full">
           {/* guide ring */}
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="0.4" className="opacity-60" />
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--border)" strokeWidth="0.4" className="opacity-60" />
           {/* connector to active */}
           {(() => {
             const p = pos(active);
-            return <line x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="hsl(var(--secondary))" strokeWidth="0.6" className="opacity-70" />;
+            return <line x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="var(--secondary)" strokeWidth="0.6" className="opacity-70" />;
           })()}
           {/* marks */}
           {chapters.map((c, i) => {
@@ -53,8 +53,8 @@ export default function ChapterWheel({ chapters }: { chapters: WheelChapter[] })
                   cy={p.y}
                   r={isActive ? 3.4 : 2.1}
                   className="transition-all"
-                  fill={isActive ? "hsl(var(--secondary))" : "hsl(var(--primary))"}
-                  stroke={isActive ? "hsl(var(--secondary))" : "transparent"}
+                  fill={isActive ? "var(--secondary)" : "var(--primary)"}
+                  stroke={isActive ? "var(--secondary)" : "transparent"}
                   strokeWidth={isActive ? 1.6 : 0}
                   strokeOpacity={0.35}
                 />
@@ -64,7 +64,7 @@ export default function ChapterWheel({ chapters }: { chapters: WheelChapter[] })
                   textAnchor="middle"
                   fontSize={isActive ? 3.4 : 2.4}
                   fontWeight="700"
-                  fill="hsl(var(--primary-foreground))"
+                  fill="var(--primary-foreground)"
                   className="pointer-events-none select-none"
                 >
                   {i + 1}
