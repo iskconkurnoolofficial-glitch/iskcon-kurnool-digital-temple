@@ -39,7 +39,7 @@ export function PageHero({
   
   if (resolvedImage) {
     return (
-      <section className="relative bg-gradient-hero text-primary-foreground py-16 md:py-20 overflow-hidden">
+      <section className="relative bg-gradient-hero text-primary-foreground py-10 md:py-12 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-soft opacity-40 animate-fade-in" />
         {/* decorative glow orbs */}
         <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-secondary/20 blur-3xl" />
@@ -49,7 +49,7 @@ export function PageHero({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 md:gap-14 items-center">
             
             {/* Left Column: Text Content */}
-            <div className="lg:col-span-7 text-center lg:text-left space-y-4">
+            <div className="lg:col-span-6 text-center lg:text-left space-y-4">
               {eyebrow && (
                 <span className="text-secondary font-semibold uppercase text-xs tracking-[0.3em] block mb-1">
                   {eyebrow}
@@ -71,8 +71,8 @@ export function PageHero({
             </div>
 
             {/* Right Column: Hero Image (1350px * 1080px) */}
-            <div className="lg:col-span-5 flex justify-center w-full">
-              <div className="relative w-full max-w-md lg:max-w-none aspect-[4/3] rounded-3xl overflow-hidden border-4 border-white/95 shadow-elegant bg-white/10 group">
+            <div className="lg:col-span-6 flex justify-center w-full">
+              <div className="relative w-full rounded-3xl overflow-hidden group">
                 <img 
                   src={resolvedImage} 
                   alt={title} 
@@ -89,7 +89,7 @@ export function PageHero({
   }
 
   return (
-    <section className="relative bg-gradient-hero text-primary-foreground py-20 md:py-28 overflow-hidden">
+    <section className="relative bg-gradient-hero text-primary-foreground py-12 md:py-16 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-soft opacity-40 animate-fade-in" />
       <div className="relative max-w-5xl mx-auto px-6 text-center animate-fade-up">
         {eyebrow && <span className="text-secondary font-medium uppercase text-xs tracking-[0.3em]">{eyebrow}</span>}
