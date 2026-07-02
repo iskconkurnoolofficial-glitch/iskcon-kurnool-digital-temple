@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import SiteLayout from "@/components/SiteLayout";
+import ChapterWheel from "@/components/ChapterWheel";
 import { useAdmin } from "@/context/AdminContext";
 import { Calendar, Clock, Monitor, IndianRupee, Check, BookOpen, Languages, Timer, Sparkles, Phone } from "lucide-react";
 
