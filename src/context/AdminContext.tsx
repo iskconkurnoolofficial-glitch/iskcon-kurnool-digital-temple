@@ -228,6 +228,38 @@ export const defaultEkadashi: EkadashiData = {
     "Note: The Parana timing changes for every Ekadashi — always check the calendar for the correct window.",
 };
 
+export type GitaCourseData = {
+  heroImage: string;
+  eyebrow: string;
+  title: string;
+  tagline: string;
+  badges: string[];
+  registerUrl: string;
+  dateRange: string;
+  time: string;
+  mode: string;
+  fee: string;
+  contact: string;
+  startLabel: string;
+  endLabel: string;
+};
+
+export const defaultGitaCourse: GitaCourseData = {
+  heroImage: "",
+  eyebrow: "ISKCON Kurnool — Bhagavad Gita Course",
+  title: "18 Days, 18 Chapters",
+  tagline: "A complete journey through the Bhagavad Gita, one chapter at a time",
+  badges: ["Free", "Online", "Daily"],
+  registerUrl: "",
+  dateRange: "July 14 – 31, 2026",
+  time: "7:30 PM Daily",
+  mode: "Online",
+  fee: "Free",
+  contact: "+91 8500789687",
+  startLabel: "July 14, 2026",
+  endLabel: "July 31, 2026",
+};
+
 export type DailyClass = {
   id: string;
   thumbnail: string;
