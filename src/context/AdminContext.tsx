@@ -190,6 +190,7 @@ export type SundayData = {
   directionsUrl: string;
   logo: string;
   buttons: SundayLinkButton[];
+  timingsImage?: string;
 };
 
 export const defaultSunday: SundayData = {
@@ -208,7 +209,8 @@ export const defaultSunday: SundayData = {
   address: "ISKCON Kurnool\nSri Sri Puri Jagannath Temple\nKurnool, Andhra Pradesh\nIndia",
   directionsUrl: "https://maps.app.goo.gl/yJpP11F8Q8ZqT76W9",
   logo: "",
-  buttons: []
+  buttons: [],
+  timingsImage: ""
 };
 
 export type EkadashiData = {

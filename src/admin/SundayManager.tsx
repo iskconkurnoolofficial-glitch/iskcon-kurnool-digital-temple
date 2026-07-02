@@ -49,24 +49,45 @@ function SettingsTab({ sunday, update }: { sunday: SundayData; update: (p: Parti
     setBusy(false);
   };
 
+  const pickTimingsImage = async (f: File) => {
+    setBusy(true);
+    try {
+      const url = await uploadToCloudinary(f);
+      update({ timingsImage: url });
+    } catch {
+      alert("Upload failed");
+    }
+    setBusy(false);
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow p-6 border space-y-4">
       <h3 className="font-display text-xl font-bold text-primary mb-2">Sunday Program Settings</h3>
       <div className="grid md:grid-cols-2 gap-6">
         <div className="space-y-4">
           <UploadBox label="Sunday Program Logo (Optional — defaults to main logo)" url={sunday.logo} onPick={pickImage} />
-          {busy && <p className="text-xs text-muted-foreground animate-pulse">Uploading logo…</p>}
           {sunday.logo && (
             <button
               onClick={() => update({ logo: "" })}
-              className="text-xs text-destructive hover:underline flex items-center gap-1"
+              className="text-xs text-destructive hover:underline flex items-center gap-1 mb-2"
             >
               <X className="h-3.5 w-3.5" /> Remove Custom Logo
             </button>
           )}
 
+          <UploadBox label="Timings Section Image (Optional)" url={sunday.timingsImage} onPick={pickTimingsImage} />
+          {sunday.timingsImage && (
+            <button
+              onClick={() => update({ timingsImage: "" })}
+              className="text-xs text-destructive hover:underline flex items-center gap-1"
+            >
+              <X className="h-3.5 w-3.5" /> Remove Timings Image
+            </button>
+          )}
+          {busy && <p className="text-xs text-muted-foreground animate-pulse mt-2">Uploading image…</p>}
+
           <div>
-            <label className="block text-sm font-medium mb-1">Visit Title</label>
+            <label className="block text-sm font-medium mb-1 mt-4">Visit Title</label>
             <input 
               className="w-full px-4 py-2.5 border rounded-lg" 
               value={sunday.visitTitle || ""} 

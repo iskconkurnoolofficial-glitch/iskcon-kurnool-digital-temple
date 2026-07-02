@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import SiteLayout, { PageHero } from "@/components/SiteLayout";
 import { useAdmin } from "@/context/AdminContext";
-import { Calendar, Clock, MapPin, Sparkles, Navigation, Link as LinkIcon, Heart, Sunrise, Sun, Sunset, Music, BookOpen, Soup } from "lucide-react";
+import { Calendar, Clock, MapPin, Sparkles, Navigation, Link as LinkIcon, Heart, Sunrise, Sun, Sunset, Music, BookOpen, Soup, Flame, Utensils } from "lucide-react";
 
 function getProgramIcon(program: string) {
   const name = program.toLowerCase();
@@ -54,6 +54,34 @@ const defaultGallery = [
   }
 ];
 
+const programCards = [
+  {
+    title: "Hari Nama Sankirtana",
+    description: "Congregational chanting of the holy names of Krishna, creating a joyful and purifying spiritual atmosphere.",
+    icon: Music,
+  },
+  {
+    title: "Bhagavad Gita Pravachanam",
+    description: "Enlightening discourse on the timeless teachings of Bhagavad Gita and their practical application in daily life.",
+    icon: BookOpen,
+  },
+  {
+    title: "Raja Bhoga Arati",
+    description: "A grand midday arati offering with beautiful lamps, incense, flowers, and ecstatic congregational kirtan.",
+    icon: Flame,
+  },
+  {
+    title: "Sudarshana Ashirvadam",
+    description: "Sacred prayers and blessings of Lord Sudarshana for protection, health, and spiritual well-being.",
+    icon: Sparkles,
+  },
+  {
+    title: "Prasada Vitarana",
+    description: "A sumptuous, sanctified vegetarian feast (prasadam) served with love to all visiting guests and devotees.",
+    icon: Utensils,
+  },
+];
+
 function SundayPage() {
   const { sunday, settings } = useAdmin();
 
@@ -92,10 +120,14 @@ function SundayPage() {
 
       {/* Description & Custom Buttons */}
       <section className="py-12 md:py-16 bg-background">
-        <div className="max-w-4xl mx-auto px-6 text-center space-y-6">
-          <p className="text-foreground/85 text-lg md:text-xl leading-relaxed max-w-3xl mx-auto font-sans">
-            {sunday.description || "Experience a spiritually uplifting Sunday at ISKCON Kurnool. Join devotees for devotional chanting, enlightening Bhagavad Gita discourse, darshan, and delicious prasadam. Everyone is welcome."}
-          </p>
+        <div className="max-w-4xl mx-auto px-6 text-center space-y-6 animate-fade-up">
+          <div className="bg-[#fdf6ec] border-2 border-secondary/40 rounded-3xl p-8 md:p-10 shadow-gold relative overflow-hidden max-w-3xl mx-auto">
+            <span className="absolute top-2 left-4 text-7xl text-secondary/20 font-serif select-none pointer-events-none">“</span>
+            <p className="text-primary font-display italic text-xl md:text-2xl leading-relaxed relative z-10 font-medium">
+              {sunday.description || "Experience a spiritually uplifting Sunday at ISKCON Kurnool. Join devotees for devotional chanting, enlightening Bhagavad Gita discourse, darshan, and delicious prasadam. Everyone is welcome."}
+            </p>
+            <span className="absolute bottom-2 right-4 text-7xl text-secondary/20 font-serif select-none pointer-events-none">”</span>
+          </div>
 
           {customButtons.length > 0 && (
             <div className="flex flex-wrap justify-center gap-4 pt-4">
@@ -118,7 +150,7 @@ function SundayPage() {
 
       {/* Weekly Schedule Section */}
       <section className="py-16 bg-white border-y border-border/40">
-        <div className="max-w-3xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-6">
           <div className="text-center max-w-xl mx-auto mb-12">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary text-primary text-xs font-bold uppercase tracking-wider mb-3">
               <Calendar className="h-3.5 w-3.5" /> Weekly
@@ -129,51 +161,107 @@ function SundayPage() {
             <div className="h-1 w-20 bg-secondary mx-auto rounded-full mt-3" />
           </div>
 
-          {groupedSchedule.length === 0 ? (
-            <p className="text-muted-foreground text-center py-6">No schedule details updated yet. Check back soon!</p>
-          ) : (
-            <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-elegant animate-fade-up">
-              <div className="divide-y divide-border/60">
-                {groupedSchedule.map((group, i) => {
-                  const { icon: Icon, color: iconColor } = getProgramIcon(group.programs.join(" "));
-                  return (
-                    <div 
-                      key={group.time || i} 
-                      className={`flex flex-col sm:flex-row sm:items-center justify-between px-6 py-5 gap-4 transition-colors hover:bg-muted/30 ${
-                        i % 2 === 0 ? "bg-white" : "bg-background/20"
-                      }`}
-                    >
-                      <div className="flex items-center gap-4 flex-1">
-                        <div className={`p-2.5 rounded-xl border shrink-0 ${iconColor}`}>
-                          <Icon className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          {group.programs.length === 1 ? (
-                            <h4 className="font-semibold text-foreground text-lg">{group.programs[0]}</h4>
-                          ) : (
-                            <div className="space-y-1.5 py-1">
-                              {group.programs.map((prog, idx) => (
-                                <div key={idx} className="flex items-start gap-2.5">
-                                  <span className="h-2 w-2 rounded-full bg-accent shrink-0 mt-2" />
-                                  <h4 className="font-semibold text-foreground text-lg leading-tight">{prog}</h4>
-                                </div>
-                              ))}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Left Column: Timings List */}
+            <div className="lg:col-span-7">
+              {groupedSchedule.length === 0 ? (
+                <p className="text-muted-foreground text-center py-6">No schedule details updated yet. Check back soon!</p>
+              ) : (
+                <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-elegant animate-fade-up">
+                  <div className="divide-y divide-border/60">
+                    {groupedSchedule.map((group, i) => {
+                      const { icon: Icon, color: iconColor } = getProgramIcon(group.programs.join(" "));
+                      return (
+                        <div 
+                          key={group.time || i} 
+                          className={`flex flex-col sm:flex-row sm:items-center justify-between px-6 py-5 gap-4 transition-colors hover:bg-muted/30 ${
+                            i % 2 === 0 ? "bg-white" : "bg-background/20"
+                          }`}
+                        >
+                          <div className="flex items-center gap-4 flex-1">
+                            <div className={`p-2.5 rounded-xl border shrink-0 ${iconColor}`}>
+                              <Icon className="w-5 h-5" />
                             </div>
-                          )}
-                          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider block mt-0.5">Sunday Program</span>
+                            <div className="flex-1 min-w-0">
+                              {group.programs.length === 1 ? (
+                                <h4 className="font-semibold text-foreground text-lg">{group.programs[0]}</h4>
+                              ) : (
+                                <div className="space-y-1.5 py-1">
+                                  {group.programs.map((prog, idx) => (
+                                    <div key={idx} className="flex items-start gap-2.5">
+                                      <span className="h-2 w-2 rounded-full bg-accent shrink-0 mt-2" />
+                                      <h4 className="font-semibold text-foreground text-lg leading-tight">{prog}</h4>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider block mt-0.5">Sunday Program</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center self-start sm:self-center shrink-0">
+                            <span className="text-accent font-sans font-semibold text-base sm:text-lg bg-surface/40 border border-secondary/20 px-4 py-1.5 rounded-full shadow-sm whitespace-nowrap">
+                              {group.time}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center self-start sm:self-center shrink-0">
-                        <span className="text-accent font-sans font-semibold text-base sm:text-lg bg-surface/40 border border-secondary/20 px-4 py-1.5 rounded-full shadow-sm whitespace-nowrap">
-                          {group.time}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Right Column: Image */}
+            <div className="lg:col-span-5 animate-fade-up">
+              <div className="relative group rounded-3xl overflow-hidden border-4 border-white shadow-elegant aspect-[4/3] lg:aspect-[1/1] xl:aspect-[4/3] bg-muted">
+                <img 
+                  src={sunday.timingsImage || "https://images.unsplash.com/photo-1609137144813-7d7211bf7fc4?auto=format&fit=crop&w=800&q=80"} 
+                  alt="Sunday Feast Timings" 
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
               </div>
             </div>
-          )}
+          </div>
+        </div>
+      </section>
+
+      {/* Sunday Feast Activities Cards Section */}
+      <section className="py-16 bg-[#faf6ee] border-b border-border/40">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold uppercase tracking-wider mb-3">
+              <Sparkles className="h-3.5 w-3.5" /> Highlights
+            </span>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-primary">
+              Sunday Feast Activities
+            </h2>
+            <p className="text-[#6b5c54] mt-2 font-sans text-sm md:text-base">
+              Explore the sequential highlights of our Sunday gathering
+            </p>
+            <div className="h-1 w-20 bg-accent mx-auto rounded-full mt-4" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+            {programCards.map((card, i) => {
+              const Icon = card.icon;
+              return (
+                <div 
+                  key={i} 
+                  className="bg-white rounded-2xl p-6 border border-[#ece6f5]/60 shadow-md hover:shadow-lg hover:-translate-y-1 transition duration-300 flex flex-col items-center text-center h-full"
+                >
+                  <div className="p-3 rounded-full bg-[#fdf6ec] text-accent mb-4 border border-secondary/20">
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-display font-bold text-lg text-primary mb-3 leading-tight min-h-[56px] flex items-center justify-center">
+                    {card.title}
+                  </h3>
+                  <p className="text-[#6b5c54] font-sans text-sm leading-relaxed flex-1">
+                    {card.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </section>
 
@@ -189,7 +277,10 @@ function SundayPage() {
           </p>
         </div>
 
-        <AutoGallery images={gallery} />
+        <div className="space-y-6">
+          <AutoGallery images={gallery} direction="left" />
+          <AutoGallery images={[...gallery].reverse()} direction="right" />
+        </div>
       </section>
 
       {/* Visit ISKCON Kurnool Section */}
@@ -253,7 +344,7 @@ function SundayPage() {
   );
 }
 
-function AutoGallery({ images }: { images: SundayGalleryItem[] }) {
+function AutoGallery({ images, direction = "left" }: { images: SundayGalleryItem[]; direction?: "left" | "right" }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const pausedRef = useRef(false);
 
@@ -263,15 +354,21 @@ function AutoGallery({ images }: { images: SundayGalleryItem[] }) {
     let raf = 0;
     const step = () => {
       if (!pausedRef.current) {
-        track.scrollLeft += 0.7;
-        const half = track.scrollWidth / 2;
-        if (track.scrollLeft >= half) track.scrollLeft -= half;
+        if (direction === "left") {
+          track.scrollLeft += 0.7;
+          const half = track.scrollWidth / 2;
+          if (track.scrollLeft >= half) track.scrollLeft -= half;
+        } else {
+          track.scrollLeft -= 0.7;
+          const half = track.scrollWidth / 2;
+          if (track.scrollLeft <= 0) track.scrollLeft = half;
+        }
       }
       raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [images.length]);
+  }, [images.length, direction]);
 
   const loop = [...images, ...images];
 
