@@ -228,6 +228,38 @@ export const defaultEkadashi: EkadashiData = {
     "Note: The Parana timing changes for every Ekadashi — always check the calendar for the correct window.",
 };
 
+export type GitaCourseData = {
+  heroImage: string;
+  eyebrow: string;
+  title: string;
+  tagline: string;
+  badges: string[];
+  registerUrl: string;
+  dateRange: string;
+  time: string;
+  mode: string;
+  fee: string;
+  contact: string;
+  startLabel: string;
+  endLabel: string;
+};
+
+export const defaultGitaCourse: GitaCourseData = {
+  heroImage: "",
+  eyebrow: "ISKCON Kurnool — Bhagavad Gita Course",
+  title: "18 Days, 18 Chapters",
+  tagline: "A complete journey through the Bhagavad Gita, one chapter at a time",
+  badges: ["Free", "Online", "Daily"],
+  registerUrl: "",
+  dateRange: "July 14 – 31, 2026",
+  time: "7:30 PM Daily",
+  mode: "Online",
+  fee: "Free",
+  contact: "+91 8500789687",
+  startLabel: "July 14, 2026",
+  endLabel: "July 31, 2026",
+};
+
 export type DailyClass = {
   id: string;
   thumbnail: string;
@@ -278,6 +310,8 @@ type AdminState = {
   setHarinama: (h: HarinamaData) => void;
   ekadashi: EkadashiData;
   setEkadashi: (e: EkadashiData) => void;
+  gitaCourse: GitaCourseData;
+  setGitaCourse: (g: GitaCourseData) => void;
   settings: SiteSettings;
   setSettings: (s: SiteSettings) => void;
   theme: ThemeSettings;
@@ -325,6 +359,7 @@ const KEYS = {
   youth: "youth",
   harinama: "harinama",
   ekadashi: "ekadashi",
+  gitaCourse: "gitaCourse",
   settings: "settings",
   theme: "theme",
 } as const;
@@ -341,6 +376,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [youth, setYouthState] = useState<YouthData>(defaultYouth);
   const [harinama, setHarinamaState] = useState<HarinamaData>(defaultHarinama);
   const [ekadashi, setEkadashiState] = useState<EkadashiData>(defaultEkadashi);
+  const [gitaCourse, setGitaCourseState] = useState<GitaCourseData>(defaultGitaCourse);
   const [settings, setSettingsState] = useState<SiteSettings>(defaultSettings);
   const [theme, setThemeState] = useState<ThemeSettings>(defaultTheme);
   const [authed, setAuthed] = useState<boolean>(false);
@@ -412,6 +448,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.youth: setYouthState({ ...defaultYouth, ...value }); break;
       case KEYS.harinama: setHarinamaState({ ...defaultHarinama, ...value }); break;
       case KEYS.ekadashi: setEkadashiState({ ...defaultEkadashi, ...value }); break;
+      case KEYS.gitaCourse: setGitaCourseState({ ...defaultGitaCourse, ...value }); break;
       case KEYS.settings: setSettingsState(value); break;
       case KEYS.theme: setThemeState(value); break;
     }
@@ -434,6 +471,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setYouth = (v: YouthData) => { setYouthState(v); persist(KEYS.youth, v); };
   const setHarinama = (v: HarinamaData) => { setHarinamaState(v); persist(KEYS.harinama, v); };
   const setEkadashi = (v: EkadashiData) => { setEkadashiState(v); persist(KEYS.ekadashi, v); };
+  const setGitaCourse = (v: GitaCourseData) => { setGitaCourseState(v); persist(KEYS.gitaCourse, v); };
   const setSettings = (v: SiteSettings) => { setSettingsState(v); persist(KEYS.settings, v); };
   const setTheme = (v: ThemeSettings) => { setThemeState(v); persist(KEYS.theme, v); };
 
@@ -472,6 +510,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         youth, setYouth,
         harinama, setHarinama,
         ekadashi, setEkadashi,
+        gitaCourse, setGitaCourse,
         settings, setSettings,
         theme, setTheme,
         authed, login, logout, ready,

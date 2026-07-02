@@ -33,7 +33,7 @@ const NAV: NavItem[] = [
     { label: "Hari Nama Sankeerthana", href: "/harinama" },
   ]},
   { label: "Courses", children: [
-    { label: "Bhagavad Gita", href: "/courses" },
+    { label: "Bhagavad Gita", href: "/gita-course" },
     { label: "Daily Classes", href: "/courses" },
   ]},
   { label: "Connect", href: "/connect" },

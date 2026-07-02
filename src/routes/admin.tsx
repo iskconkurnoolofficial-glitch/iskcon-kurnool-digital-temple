@@ -11,14 +11,15 @@ import SevasManager from "@/admin/SevasManager";
 import YouthManager from "@/admin/YouthManager";
 import HarinamaManager from "@/admin/HarinamaManager";
 import EkadashiManager from "@/admin/EkadashiManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music } from "lucide-react";
+import GitaCourseManager from "@/admin/GitaCourseManager";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
 
-type Tab = "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "classes" | "gallery" | "settings" | "theme";
+type Tab = "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "gita" | "classes" | "gallery" | "settings" | "theme";
 
 function AdminPage() {
   const { authed, login, logout, settings } = useAdmin();
@@ -84,6 +85,7 @@ function AdminPage() {
     { id: "youth", label: "Youth Festival", icon: Users },
     { id: "harinama", label: "Harinama Sankeerthan", icon: Music },
     { id: "ekadashi", label: "Ekadashi Vratam", icon: Leaf },
+    { id: "gita", label: "Gita Course", icon: BookOpen },
     { id: "classes", label: "Daily Classes", icon: Radio },
     { id: "gallery", label: "Gallery", icon: Images },
     { id: "settings", label: "Site Settings", icon: Settings },
@@ -130,6 +132,7 @@ function AdminPage() {
         {tab === "youth" && <YouthManager />}
         {tab === "harinama" && <HarinamaManager />}
         {tab === "ekadashi" && <EkadashiManager />}
+        {tab === "gita" && <GitaCourseManager />}
         {tab === "classes" && <DailyClassesManager />}
         {tab === "gallery" && <GalleryManager />}
         {tab === "settings" && <SiteSettingsForm />}
