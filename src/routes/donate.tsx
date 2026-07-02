@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import SiteLayout from "@/components/SiteLayout";
+import SiteLayout, { PageHero } from "@/components/SiteLayout";
 import { useAdmin, Seva } from "@/context/AdminContext";
 import { Heart, Search, HandHeart, IndianRupee, Sparkles } from "lucide-react";
 
@@ -64,17 +64,15 @@ function Page() {
 
   return (
     <SiteLayout>
-      <section className="pt-10 md:pt-16 pb-16 md:pb-24 bg-background">
+      <PageHero
+        eyebrow="Participate in Divine Service"
+        title="Sri Sri Jagannath Sevas"
+        subtitle="Offer your devotion to Lord Jagannath and be blessed. Every seva performed with love reaches the lotus feet of the Lord."
+        pageKey="donate"
+      />
+
+      <section className="py-14 md:py-16 bg-background">
         <div className="max-w-6xl mx-auto px-5 sm:px-6">
-          {/* Heading */}
-          <div className="text-center max-w-2xl mx-auto mb-8">
-            <div className="text-2xl mb-2">🙏</div>
-            <p className="text-accent font-semibold tracking-wide uppercase text-xs sm:text-sm mb-2">Participate in Divine Service</p>
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-primary mb-4">Sri Sri Jagannath Sevas</h2>
-            <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-              Offer your devotion to Lord Jagannath and be blessed. Every seva performed with love reaches the lotus feet of the Lord.
-            </p>
-          </div>
 
           {/* Search */}
           <div className="max-w-md mx-auto mb-10">

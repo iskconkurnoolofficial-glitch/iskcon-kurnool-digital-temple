@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Leaf, XCircle, CheckCircle2, Sun, BookOpen, AlertTriangle, Sunrise } from "lucide-react";
-import SiteLayout from "@/components/SiteLayout";
+import SiteLayout, { PageHero } from "@/components/SiteLayout";
 import vishnuAsset from "@/assets/vishnu-ekadashi.png.asset.json";
 import { useAdmin } from "@/context/AdminContext";
 
@@ -31,22 +31,12 @@ function EkadashiPage() {
 
   return (
     <SiteLayout>
-      {/* 1. HEADER — existing gradient, white text */}
-      <section className="relative overflow-hidden bg-gradient-hero">
-        <div className="relative max-w-4xl mx-auto px-6 py-16 md:py-20 text-center">
-          <span className="inline-flex items-center gap-2 text-primary-foreground bg-white/15 rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.25em]">
-            <Leaf className="h-4 w-4" />
-            {e.badge}
-          </span>
-          <h1 className="font-display font-black text-4xl md:text-6xl text-primary-foreground mt-6 tracking-tight leading-[1.05]">
-            {e.title}
-          </h1>
-          <p className="mt-4 text-lg md:text-xl text-primary-foreground/85 font-display italic">
-            {e.subtitle}
-          </p>
-          <span className="divider-gold mt-8 inline-flex" />
-        </div>
-      </section>
+      <PageHero
+        eyebrow={e.badge}
+        title={e.title}
+        subtitle={e.subtitle}
+        pageKey="ekadashi"
+      />
 
       <div className="max-w-6xl mx-auto px-6 py-14 md:py-16 space-y-10 md:space-y-14">
         {/* 2. TWO-COLUMN FOOD CARD */}

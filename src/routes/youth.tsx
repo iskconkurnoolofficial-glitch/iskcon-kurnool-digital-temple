@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import SiteLayout from "@/components/SiteLayout";
+import SiteLayout, { PageHero } from "@/components/SiteLayout";
 import { useAdmin } from "@/context/AdminContext";
 import { MessageCircle, Star, Instagram, MapPin, Calendar, Settings } from "lucide-react";
 
@@ -20,6 +20,17 @@ function YouthPage() {
 
   return (
     <SiteLayout>
+      <PageHero
+        eyebrow="ISKCON Kurnool"
+        title="Youth Festival"
+        subtitle={youth.schedule}
+        pageKey="youth"
+      >
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary text-primary text-xs font-bold">
+          <Calendar className="h-3.5 w-3.5" /> Every Saturday
+        </span>
+      </PageHero>
+
       <div className="max-w-4xl mx-auto px-4 py-8 md:py-12 space-y-8">
 
         {/* WhatsApp banner */}
@@ -42,18 +53,8 @@ function YouthPage() {
           </a>
         </div>
 
-        {/* Hero card */}
-        <div className="rounded-3xl bg-gradient-soft border border-border shadow-elegant overflow-hidden p-6 md:p-10">
-          <div className="text-center">
-            <span className="text-xs uppercase tracking-[0.3em] text-accent font-medium">ISKCON Kurnool</span>
-            <div className="mt-3">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary text-primary text-xs font-bold">
-                <Calendar className="h-3.5 w-3.5" /> Every Saturday
-              </span>
-            </div>
-            <h1 className="font-display font-bold text-4xl md:text-6xl text-primary mt-4">Youth Festival</h1>
-            <p className="mt-3 text-muted-foreground font-medium">{youth.schedule}</p>
-          </div>
+        {/* Hero card details */}
+        <div className="rounded-3xl bg-card border border-border shadow-elegant overflow-hidden p-6 md:p-10">
 
           {/* 2x2 feature grid */}
           <div className="grid grid-cols-2 gap-3 md:gap-5 mt-8">
