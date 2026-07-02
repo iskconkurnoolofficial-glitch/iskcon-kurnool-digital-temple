@@ -12,7 +12,7 @@ export const Route = createFileRoute("/goshala")({
 function Page() {
   return (
     <SiteLayout>
-      <PageHero eyebrow="Go-Seva" title="Goshala" subtitle="Loving care for Mother Cow" />
+      <PageHero eyebrow="Go-Seva" title="Goshala" subtitle="Loving care for Mother Cow" pageKey="goshala" />
       <section className="py-16 md:py-24 bg-background">
         <div className="max-w-4xl mx-auto px-6 space-y-6 text-lg text-muted-foreground leading-relaxed">
           <p>

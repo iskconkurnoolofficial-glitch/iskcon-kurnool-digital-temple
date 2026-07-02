@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import SiteLayout from "@/components/SiteLayout";
+import SiteLayout, { PageHero } from "@/components/SiteLayout";
 import { useAdmin } from "@/context/AdminContext";
 import { MessageCircle, Instagram, MapPin, Calendar, Camera, Music, Sparkles, Heart, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
@@ -46,35 +46,29 @@ function HarinamaPage() {
 
   return (
     <SiteLayout>
-      {/* Hero Section */}
-      <section className="relative bg-gradient-hero text-primary-foreground py-20 md:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-soft opacity-40 animate-fade-in" />
-        <div className="relative max-w-5xl mx-auto px-6 text-center animate-fade-up">
-          <span className="text-secondary font-medium uppercase text-xs tracking-[0.3em] block mb-4">Activities</span>
-          <h1 className="font-display font-bold text-4xl sm:text-6xl md:text-7xl">Hari Nama Sankeerthana</h1>
-          <p className="mt-6 text-lg sm:text-xl md:text-2xl opacity-90 max-w-3xl mx-auto font-light leading-relaxed">
-            Chanting the holy names through the streets of Kurnool — every week, every heart, one Name at a time.
-          </p>
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a 
-              href={whatsappUrl} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-secondary hover:bg-secondary/95 text-secondary-foreground font-semibold px-8 py-3.5 shadow-gold transition hover:scale-[1.03] text-base"
-            >
-              <MessageCircle className="h-5 w-5 shrink-0" />
-              Join the Next Sankeerthana
-            </a>
-            <a 
-              href="#gallery"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border-2 border-white/80 hover:border-white hover:bg-white/10 text-white font-semibold px-8 py-3.5 transition hover:scale-[1.03] text-base"
-            >
-              <Camera className="h-5 w-5 shrink-0" />
-              View Photo Gallery
-            </a>
-          </div>
-        </div>
-      </section>
+      <PageHero 
+        eyebrow="Activities" 
+        title="Hari Nama Sankeerthana" 
+        subtitle="Chanting the holy names through the streets of Kurnool — every week, every heart, one Name at a time." 
+        pageKey="harinama"
+      >
+        <a 
+          href={whatsappUrl} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-secondary hover:bg-secondary/95 text-secondary-foreground font-semibold px-8 py-3.5 shadow-gold transition hover:scale-[1.03] text-base"
+        >
+          <MessageCircle className="h-5 w-5 shrink-0" />
+          Join the Next Sankeerthana
+        </a>
+        <a 
+          href="#gallery"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border-2 border-white/80 hover:border-white hover:bg-white/10 text-white font-semibold px-8 py-3.5 transition hover:scale-[1.03] text-base"
+        >
+          <Camera className="h-5 w-5 shrink-0" />
+          View Photo Gallery
+        </a>
+      </PageHero>
 
       {/* About Section */}
       <section className="py-16 md:py-24 bg-background">

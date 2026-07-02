@@ -14,7 +14,7 @@ export const Route = createFileRoute("/connect")({
 function Page() {
   return (
     <SiteLayout>
-      <PageHero eyebrow="Get in Touch" title="Connect With Us" subtitle="Visit, call or follow — we welcome you with open arms" />
+      <PageHero eyebrow="Get in Touch" title="Connect With Us" subtitle="Visit, call or follow — we welcome you with open arms" pageKey="connect" />
       <SocialMediaSection />
       <ConnectSection />
     </SiteLayout>

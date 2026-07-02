@@ -12,7 +12,7 @@ export const Route = createFileRoute("/about/founder")({
 function Page() {
   return (
     <SiteLayout>
-      <PageHero eyebrow="Founder Acharya" title="Srila Prabhupada" subtitle="His Divine Grace A.C. Bhaktivedanta Swami Prabhupada" />
+      <PageHero eyebrow="Founder Acharya" title="Srila Prabhupada" subtitle="His Divine Grace A.C. Bhaktivedanta Swami Prabhupada" pageKey="aboutFounder" />
       <section className="py-16 md:py-24 bg-background">
         <div className="max-w-4xl mx-auto px-6 space-y-6 text-lg text-muted-foreground leading-relaxed">
           <p>

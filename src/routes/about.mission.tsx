@@ -22,7 +22,7 @@ const purposes = [
 function Page() {
   return (
     <SiteLayout>
-      <PageHero eyebrow="Our Purpose" title="Our Mission" subtitle="The Seven Purposes of ISKCON" />
+      <PageHero eyebrow="Our Purpose" title="Our Mission" subtitle="The Seven Purposes of ISKCON" pageKey="aboutMission" />
       <section className="py-16 md:py-24 bg-background">
         <div className="max-w-4xl mx-auto px-6 space-y-4">
           {purposes.map((p, i) => (

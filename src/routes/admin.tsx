@@ -13,6 +13,7 @@ import HarinamaManager from "@/admin/HarinamaManager";
 import EkadashiManager from "@/admin/EkadashiManager";
 import GitaCourseManager from "@/admin/GitaCourseManager";
 import SundayManager from "@/admin/SundayManager";
+import HeroBannersManager from "@/admin/HeroBannersManager";
 import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
@@ -20,7 +21,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "theme";
+type Tab = "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "theme" | "heroBanners";
 
 function AdminPage() {
   const { authed, login, logout, settings } = useAdmin();
@@ -90,6 +91,7 @@ function AdminPage() {
     { id: "sunday", label: "Sunday Program", icon: Calendar },
     { id: "classes", label: "Daily Classes", icon: Radio },
     { id: "gallery", label: "Gallery", icon: Images },
+    { id: "heroBanners", label: "Hero Banners", icon: Images },
     { id: "settings", label: "Site Settings", icon: Settings },
     { id: "theme", label: "Theme", icon: Palette },
   ];
@@ -138,6 +140,7 @@ function AdminPage() {
         {tab === "sunday" && <SundayManager />}
         {tab === "classes" && <DailyClassesManager />}
         {tab === "gallery" && <GalleryManager />}
+        {tab === "heroBanners" && <HeroBannersManager />}
         {tab === "settings" && <SiteSettingsForm />}
         {tab === "theme" && <ThemeSettings />}
       </main>

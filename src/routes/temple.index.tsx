@@ -22,7 +22,7 @@ const schedule = [
 function Page() {
   return (
     <SiteLayout>
-      <PageHero eyebrow="Daily Worship" title="The Temple" subtitle="Timings, Programs, Festivals & Service" />
+      <PageHero eyebrow="Daily Worship" title="The Temple" subtitle="Timings, Programs, Festivals & Service" pageKey="temple" />
       
       <section className="py-16 md:py-24 bg-background">
         <div className="max-w-4xl mx-auto px-6">
@@ -63,14 +63,6 @@ function Page() {
                 );
               })}
             </div>
-          </div>
-
-          <div className="max-w-2xl mx-auto mt-12 rounded-2xl border border-secondary/30 bg-surface/50 p-6 md:p-8 text-center shadow-gold animate-fade-up">
-            <h3 className="font-display text-2xl font-bold text-primary mb-3">Sunday Feast Program</h3>
-            <p className="text-foreground text-lg">
-              Every Sunday from <span className="font-bold text-accent">5:00 PM</span> onwards. 
-              Join us for uplifting congregational kirtan, an inspiring lecture, and delicious prasadam.
-            </p>
           </div>
         </div>
       </section>

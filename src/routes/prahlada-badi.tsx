@@ -8,7 +8,7 @@ export const Route = createFileRoute("/prahlada-badi")({
   ]}),
   component: () => (
     <SiteLayout>
-      <PageHero eyebrow="For Children" title="Prahlada Badi" subtitle="Spiritual education and values for young devotees." />
+      <PageHero eyebrow="For Children" title="Prahlada Badi" subtitle="Spiritual education and values for young devotees." pageKey="prahladaBadi" />
       <section className="py-20 text-center">
         <p className="text-muted-foreground max-w-xl mx-auto px-6">Prahlada Badi nurtures children with stories, values and devotion. More details coming soon.</p>
       </section>

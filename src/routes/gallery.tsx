@@ -13,7 +13,7 @@ export const Route = createFileRoute("/gallery")({
 function Page() {
   return (
     <SiteLayout>
-      <PageHero eyebrow="Memories" title="Temple Gallery" subtitle="Festivals, deities and moments of devotion" />
+      <PageHero eyebrow="Memories" title="Temple Gallery" subtitle="Festivals, deities and moments of devotion" pageKey="gallery" />
       <GallerySection />
     </SiteLayout>
   );

@@ -106,17 +106,12 @@ function SundayPage() {
 
   return (
     <SiteLayout>
-      {/* Hero Section */}
-      <section className="relative bg-gradient-hero text-primary-foreground py-20 md:py-28 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-soft opacity-30 animate-fade-in" />
-        <div className="relative max-w-5xl mx-auto px-6 text-center animate-fade-up">
-          <span className="text-secondary font-medium uppercase text-xs tracking-[0.3em] block mb-3">Worship & Feast</span>
-          <h1 className="font-display font-bold text-4xl sm:text-6xl md:text-7xl">Sunday Feast Program</h1>
-          <p className="mt-6 text-lg sm:text-xl md:text-2xl opacity-90 max-w-3xl mx-auto font-light leading-relaxed">
-            Experience a spiritually uplifting Sunday at ISKCON Kurnool.
-          </p>
-        </div>
-      </section>
+      <PageHero 
+        eyebrow="Worship & Feast" 
+        title="Sunday Feast Program" 
+        subtitle="Experience a spiritually uplifting Sunday at ISKCON Kurnool." 
+        pageKey="sunday" 
+      />
 
       {/* Description & Custom Buttons */}
       <section className="py-12 md:py-16 bg-background">

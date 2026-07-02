@@ -19,7 +19,7 @@ const courses = [
 function Page() {
   return (
     <SiteLayout>
-      <PageHero eyebrow="Spiritual Learning" title="Courses & Classes" subtitle="Vedic wisdom for the modern seeker" />
+      <PageHero eyebrow="Spiritual Learning" title="Courses & Classes" subtitle="Vedic wisdom for the modern seeker" pageKey="courses" />
       <section className="py-16 md:py-24 bg-background">
         <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-6">
           {courses.map((c) => (

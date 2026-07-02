@@ -213,6 +213,46 @@ export const defaultSunday: SundayData = {
   timingsImage: ""
 };
 
+export type HeroBannersData = {
+  aboutKurnool: string;
+  aboutFounder: string;
+  aboutIskcon: string;
+  aboutMission: string;
+  connect: string;
+  courses: string;
+  festivals: string;
+  gallery: string;
+  goshala: string;
+  prahladaBadi: string;
+  sunday: string;
+  harinama: string;
+  youth: string;
+  donate: string;
+  ekadashi: string;
+  shop: string;
+  temple: string;
+};
+
+export const defaultHeroBanners: HeroBannersData = {
+  aboutKurnool: "",
+  aboutFounder: "",
+  aboutIskcon: "",
+  aboutMission: "",
+  connect: "",
+  courses: "",
+  festivals: "",
+  gallery: "",
+  goshala: "",
+  prahladaBadi: "",
+  sunday: "",
+  harinama: "",
+  youth: "",
+  donate: "",
+  ekadashi: "",
+  shop: "",
+  temple: "",
+};
+
 export type EkadashiData = {
   badge: string;
   title: string;
@@ -370,6 +410,8 @@ type AdminState = {
   setSettings: (s: SiteSettings) => void;
   theme: ThemeSettings;
   setTheme: (t: ThemeSettings) => void;
+  heroBanners: HeroBannersData;
+  setHeroBanners: (h: HeroBannersData) => void;
   authed: boolean;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
@@ -417,6 +459,7 @@ const KEYS = {
   sunday: "sunday",
   settings: "settings",
   theme: "theme",
+  heroBanners: "heroBanners",
 } as const;
 
 const Ctx = createContext<AdminState | null>(null);
@@ -435,6 +478,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [sunday, setSundayState] = useState<SundayData>(defaultSunday);
   const [settings, setSettingsState] = useState<SiteSettings>(defaultSettings);
   const [theme, setThemeState] = useState<ThemeSettings>(defaultTheme);
+  const [heroBanners, setHeroBannersState] = useState<HeroBannersData>(defaultHeroBanners);
   const [authed, setAuthed] = useState<boolean>(false);
 
   // Track Supabase auth session for admin access
@@ -508,6 +552,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.sunday: setSundayState({ ...defaultSunday, ...value }); break;
       case KEYS.settings: setSettingsState(value); break;
       case KEYS.theme: setThemeState(value); break;
+      case KEYS.heroBanners: setHeroBannersState({ ...defaultHeroBanners, ...value }); break;
     }
   }
 
@@ -532,6 +577,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setSunday = (v: SundayData) => { setSundayState(v); persist(KEYS.sunday, v); };
   const setSettings = (v: SiteSettings) => { setSettingsState(v); persist(KEYS.settings, v); };
   const setTheme = (v: ThemeSettings) => { setThemeState(v); persist(KEYS.theme, v); };
+  const setHeroBanners = (v: HeroBannersData) => { setHeroBannersState(v); persist(KEYS.heroBanners, v); };
 
   // Apply theme to CSS variables
   useEffect(() => {
@@ -572,6 +618,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         sunday, setSunday,
         settings, setSettings,
         theme, setTheme,
+        heroBanners, setHeroBanners,
         authed, login, logout, ready,
       }}
     >
