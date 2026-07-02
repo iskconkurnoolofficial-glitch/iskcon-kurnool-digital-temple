@@ -15,6 +15,7 @@ import { Route as ShopRouteImport } from './routes/shop'
 import { Route as PrahladaBadiRouteImport } from './routes/prahlada-badi'
 import { Route as HarinamaRouteImport } from './routes/harinama'
 import { Route as GoshalaRouteImport } from './routes/goshala'
+import { Route as GitaCourseRouteImport } from './routes/gita-course'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as FestivalsRouteImport } from './routes/festivals'
 import { Route as EkadashiRouteImport } from './routes/ekadashi'
@@ -57,6 +58,11 @@ const HarinamaRoute = HarinamaRouteImport.update({
 const GoshalaRoute = GoshalaRouteImport.update({
   id: '/goshala',
   path: '/goshala',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GitaCourseRoute = GitaCourseRouteImport.update({
+  id: '/gita-course',
+  path: '/gita-course',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GalleryRoute = GalleryRouteImport.update({
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/ekadashi': typeof EkadashiRoute
   '/festivals': typeof FestivalsRoute
   '/gallery': typeof GalleryRoute
+  '/gita-course': typeof GitaCourseRoute
   '/goshala': typeof GoshalaRoute
   '/harinama': typeof HarinamaRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
@@ -155,6 +162,7 @@ export interface FileRoutesByTo {
   '/ekadashi': typeof EkadashiRoute
   '/festivals': typeof FestivalsRoute
   '/gallery': typeof GalleryRoute
+  '/gita-course': typeof GitaCourseRoute
   '/goshala': typeof GoshalaRoute
   '/harinama': typeof HarinamaRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
@@ -177,6 +185,7 @@ export interface FileRoutesById {
   '/ekadashi': typeof EkadashiRoute
   '/festivals': typeof FestivalsRoute
   '/gallery': typeof GalleryRoute
+  '/gita-course': typeof GitaCourseRoute
   '/goshala': typeof GoshalaRoute
   '/harinama': typeof HarinamaRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
@@ -200,6 +209,7 @@ export interface FileRouteTypes {
     | '/ekadashi'
     | '/festivals'
     | '/gallery'
+    | '/gita-course'
     | '/goshala'
     | '/harinama'
     | '/prahlada-badi'
@@ -221,6 +231,7 @@ export interface FileRouteTypes {
     | '/ekadashi'
     | '/festivals'
     | '/gallery'
+    | '/gita-course'
     | '/goshala'
     | '/harinama'
     | '/prahlada-badi'
@@ -242,6 +253,7 @@ export interface FileRouteTypes {
     | '/ekadashi'
     | '/festivals'
     | '/gallery'
+    | '/gita-course'
     | '/goshala'
     | '/harinama'
     | '/prahlada-badi'
@@ -264,6 +276,7 @@ export interface RootRouteChildren {
   EkadashiRoute: typeof EkadashiRoute
   FestivalsRoute: typeof FestivalsRoute
   GalleryRoute: typeof GalleryRoute
+  GitaCourseRoute: typeof GitaCourseRoute
   GoshalaRoute: typeof GoshalaRoute
   HarinamaRoute: typeof HarinamaRoute
   PrahladaBadiRoute: typeof PrahladaBadiRoute
@@ -319,6 +332,13 @@ declare module '@tanstack/react-router' {
       path: '/goshala'
       fullPath: '/goshala'
       preLoaderRoute: typeof GoshalaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gita-course': {
+      id: '/gita-course'
+      path: '/gita-course'
+      fullPath: '/gita-course'
+      preLoaderRoute: typeof GitaCourseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/gallery': {
@@ -424,6 +444,7 @@ const rootRouteChildren: RootRouteChildren = {
   EkadashiRoute: EkadashiRoute,
   FestivalsRoute: FestivalsRoute,
   GalleryRoute: GalleryRoute,
+  GitaCourseRoute: GitaCourseRoute,
   GoshalaRoute: GoshalaRoute,
   HarinamaRoute: HarinamaRoute,
   PrahladaBadiRoute: PrahladaBadiRoute,
