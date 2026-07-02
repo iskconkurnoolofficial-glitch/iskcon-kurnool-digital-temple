@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import SiteLayout from "@/components/SiteLayout";
+import ChapterWheel from "@/components/ChapterWheel";
 import { useAdmin } from "@/context/AdminContext";
 import { Calendar, Clock, Monitor, IndianRupee, Check, BookOpen, Languages, Timer, Sparkles, Phone } from "lucide-react";
 
@@ -77,37 +78,48 @@ function Page() {
     <SiteLayout>
       {/* HERO */}
       <section className="relative bg-gradient-hero text-primary-foreground overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-soft opacity-30" />
-        <div className="relative max-w-6xl mx-auto px-6 py-16 md:py-24 grid md:grid-cols-2 gap-10 items-center">
+        <div className="absolute inset-0 bg-gradient-soft opacity-40" />
+        {/* decorative glow orbs */}
+        <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-secondary/20 blur-3xl" />
+        <div className="absolute -bottom-32 right-0 h-80 w-80 rounded-full bg-accent/25 blur-3xl" />
+        <div className="relative max-w-6xl mx-auto px-6 py-16 md:py-28 grid md:grid-cols-2 gap-10 md:gap-14 items-center">
           <div className="animate-fade-up text-center md:text-left">
-            <span className="text-secondary font-medium uppercase text-xs tracking-[0.25em]">{g.eyebrow}</span>
-            <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm ring-1 ring-white/20 text-secondary font-medium uppercase text-[11px] tracking-[0.25em]">
+              <BookOpen className="h-3.5 w-3.5" /> {g.eyebrow}
+            </span>
+            <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-5">
               {g.badges.filter(Boolean).map((b) => (
-                <span key={b} className="px-3 py-1 rounded-full bg-white/15 text-xs font-medium">{b}</span>
+                <span key={b} className="px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm ring-1 ring-white/15 text-xs font-medium">{b}</span>
               ))}
             </div>
-            <h1 className="font-display font-bold text-4xl md:text-6xl mt-5">{g.title}</h1>
-            <p className="mt-4 text-lg opacity-90 max-w-md mx-auto md:mx-0">{g.tagline}</p>
-            <div className="mt-6 space-y-1.5 text-sm opacity-90">
-              <div className="flex items-center justify-center md:justify-start gap-2"><Calendar className="h-4 w-4 text-secondary" /> {g.dateRange}</div>
-              <div className="flex items-center justify-center md:justify-start gap-2"><Clock className="h-4 w-4 text-secondary" /> {g.time}</div>
-              <div className="flex items-center justify-center md:justify-start gap-2"><Monitor className="h-4 w-4 text-secondary" /> {g.mode}</div>
+            <h1 className="font-display font-bold text-4xl md:text-6xl mt-6 leading-[1.05] tracking-tight">
+              {g.title}
+            </h1>
+            <p className="mt-5 text-lg opacity-90 max-w-md mx-auto md:mx-0">{g.tagline}</p>
+            <div className="mt-7 flex flex-col sm:flex-row sm:flex-wrap justify-center md:justify-start gap-2.5">
+              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 backdrop-blur-sm ring-1 ring-white/15 text-sm"><Calendar className="h-4 w-4 text-secondary" /> {g.dateRange}</span>
+              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 backdrop-blur-sm ring-1 ring-white/15 text-sm"><Clock className="h-4 w-4 text-secondary" /> {g.time}</span>
+              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 backdrop-blur-sm ring-1 ring-white/15 text-sm"><Monitor className="h-4 w-4 text-secondary" /> {g.mode}</span>
             </div>
-            <div className="mt-7">
+            <div className="mt-8">
               <RegisterButton url={g.registerUrl} />
-              <p className="mt-2 text-xs opacity-75">Takes less than a minute. No fee, ever.</p>
+              <p className="mt-2.5 text-xs opacity-75">Takes less than a minute. No fee, ever.</p>
             </div>
           </div>
 
           {g.heroImage && (
             <div className="animate-fade-up">
-              <div className="rounded-3xl overflow-hidden shadow-elegant ring-1 ring-white/20 max-w-sm mx-auto">
-                <img src={g.heroImage} alt="Bhagavad Gita Course" className="w-full h-auto object-cover" style={{ aspectRatio: "1080 / 1350" }} />
+              <div className="relative max-w-sm mx-auto">
+                <div className="absolute -inset-3 rounded-[2rem] bg-gradient-to-tr from-secondary/40 to-accent/30 blur-xl opacity-70" />
+                <div className="relative rounded-3xl overflow-hidden shadow-elegant ring-1 ring-white/25">
+                  <img src={g.heroImage} alt="Bhagavad Gita Course" className="w-full h-auto object-cover" style={{ aspectRatio: "1080 / 1350" }} />
+                </div>
               </div>
             </div>
           )}
         </div>
       </section>
+
 
       {/* ABOUT */}
       <section className="py-16 md:py-24 bg-background">
@@ -170,20 +182,12 @@ function Page() {
           <div className="text-center max-w-2xl mx-auto">
             <span className="text-accent font-medium uppercase text-xs tracking-[0.25em]">The Journey</span>
             <h2 className="font-display font-bold text-3xl md:text-4xl text-primary mt-3">Eighteen Chapters, Eighteen Nights</h2>
+            <p className="mt-3 text-muted-foreground">Hover or tap a mark on the wheel to reveal that night's chapter.</p>
           </div>
-          <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {CHAPTERS.map((c, i) => (
-              <div key={i} className="flex gap-4 p-5 rounded-2xl bg-surface border border-border hover:border-secondary transition">
-                <div className="h-10 w-10 shrink-0 rounded-full bg-gradient-hero text-primary-foreground grid place-items-center font-display font-bold">
-                  {i + 1}
-                </div>
-                <div>
-                  <div className="font-display font-semibold text-primary leading-tight">{c.sanskrit}</div>
-                  <div className="text-sm text-muted-foreground mt-0.5">{c.english}</div>
-                </div>
-              </div>
-            ))}
+          <div className="mt-12">
+            <ChapterWheel chapters={CHAPTERS} />
           </div>
+
         </div>
       </section>
 
