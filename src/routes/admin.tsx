@@ -14,14 +14,15 @@ import EkadashiManager from "@/admin/EkadashiManager";
 import GitaCourseManager from "@/admin/GitaCourseManager";
 import SundayManager from "@/admin/SundayManager";
 import HeroBannersManager from "@/admin/HeroBannersManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar } from "lucide-react";
+import GoshalaManager from "@/admin/GoshalaManager";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
 
-type Tab = "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "theme" | "heroBanners";
+type Tab = "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "theme" | "heroBanners" | "goshala";
 
 function AdminPage() {
   const { authed, login, logout, settings } = useAdmin();
@@ -89,6 +90,7 @@ function AdminPage() {
     { id: "ekadashi", label: "Ekadashi Vratam", icon: Leaf },
     { id: "gita", label: "Gita Course", icon: BookOpen },
     { id: "sunday", label: "Sunday Program", icon: Calendar },
+    { id: "goshala", label: "Goshala Seva", icon: Heart },
     { id: "classes", label: "Daily Classes", icon: Radio },
     { id: "gallery", label: "Gallery", icon: Images },
     { id: "heroBanners", label: "Hero Banners", icon: Images },
@@ -138,6 +140,7 @@ function AdminPage() {
         {tab === "ekadashi" && <EkadashiManager />}
         {tab === "gita" && <GitaCourseManager />}
         {tab === "sunday" && <SundayManager />}
+        {tab === "goshala" && <GoshalaManager />}
         {tab === "classes" && <DailyClassesManager />}
         {tab === "gallery" && <GalleryManager />}
         {tab === "heroBanners" && <HeroBannersManager />}

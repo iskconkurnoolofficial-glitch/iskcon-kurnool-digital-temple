@@ -213,6 +213,37 @@ export const defaultSunday: SundayData = {
   timingsImage: ""
 };
 
+export type GoshalaGalleryItem = { id: string; url: string; label: string };
+export type GoshalaData = {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  aboutText1: string;
+  aboutText2: string;
+  aboutText3: string;
+  buttonLabel: string;
+  buttonUrl: string;
+  gallery: GoshalaGalleryItem[];
+  aboutImage: string;
+};
+
+export const defaultGoshala: GoshalaData = {
+  eyebrow: "Our Goshala",
+  title: "Goshala Seva",
+  subtitle: "Maintained by ISKCON Kurnool at Narsaraopeta",
+  aboutText1: "In the Vedic tradition, the cow is regarded as a mother a source of nourishment, gentleness, and grace. As part of our seva to Krishna and His creation, ISKCON Kurnool proudly maintains a Goshala at ISKCON Narsaraopeta, where cows are cared for with love, given proper shelter, feed, and medical attention, and allowed to live out their natural lives in peace.",
+  aboutText2: "This Goshala is not just a shelter it is an extension of our devotional service, rooted in the understanding that caring for cows is caring for Krishna's own beloved companions. Devotees and well-wishers are welcome to visit, participate in seva, or contribute towards the Goshala's upkeep.",
+  aboutText3: "We invite you to come see this seva in person and experience the quiet devotion behind it.",
+  buttonLabel: "Visit Goshala",
+  buttonUrl: "https://maps.app.goo.gl/yJpP11F8Q8ZqT76W9",
+  gallery: [
+    { id: "g1", url: "https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&w=800&q=80", label: "Mother Cow at the Goshala" },
+    { id: "g2", url: "https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=800&q=80", label: "Caring and feeding the cows" },
+    { id: "g3", url: "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?auto=format&fit=crop&w=800&q=80", label: "Fresh fodder for the cows" }
+  ],
+  aboutImage: "https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&w=1000&q=80",
+};
+
 export type HeroBannersData = {
   aboutKurnool: string;
   aboutFounder: string;
@@ -412,6 +443,8 @@ type AdminState = {
   setTheme: (t: ThemeSettings) => void;
   heroBanners: HeroBannersData;
   setHeroBanners: (h: HeroBannersData) => void;
+  goshala: GoshalaData;
+  setGoshala: (g: GoshalaData) => void;
   authed: boolean;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
@@ -460,6 +493,7 @@ const KEYS = {
   settings: "settings",
   theme: "theme",
   heroBanners: "heroBanners",
+  goshala: "goshala",
 } as const;
 
 const Ctx = createContext<AdminState | null>(null);
@@ -479,6 +513,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [settings, setSettingsState] = useState<SiteSettings>(defaultSettings);
   const [theme, setThemeState] = useState<ThemeSettings>(defaultTheme);
   const [heroBanners, setHeroBannersState] = useState<HeroBannersData>(defaultHeroBanners);
+  const [goshala, setGoshalaState] = useState<GoshalaData>(defaultGoshala);
   const [authed, setAuthed] = useState<boolean>(false);
 
   // Track Supabase auth session for admin access
@@ -553,6 +588,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.settings: setSettingsState(value); break;
       case KEYS.theme: setThemeState(value); break;
       case KEYS.heroBanners: setHeroBannersState({ ...defaultHeroBanners, ...value }); break;
+      case KEYS.goshala: setGoshalaState({ ...defaultGoshala, ...value }); break;
     }
   }
 
@@ -578,6 +614,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setSettings = (v: SiteSettings) => { setSettingsState(v); persist(KEYS.settings, v); };
   const setTheme = (v: ThemeSettings) => { setThemeState(v); persist(KEYS.theme, v); };
   const setHeroBanners = (v: HeroBannersData) => { setHeroBannersState(v); persist(KEYS.heroBanners, v); };
+  const setGoshala = (v: GoshalaData) => { setGoshalaState(v); persist(KEYS.goshala, v); };
 
   // Apply theme to CSS variables
   useEffect(() => {
@@ -619,6 +656,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         settings, setSettings,
         theme, setTheme,
         heroBanners, setHeroBanners,
+        goshala, setGoshala,
         authed, login, logout, ready,
       }}
     >
