@@ -244,6 +244,34 @@ export const defaultGoshala: GoshalaData = {
   aboutImage: "https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&w=1000&q=80",
 };
 
+export type InstagramReel = { id: string; url: string };
+export type InstagramData = {
+  username: string;
+  fullName: string;
+  bio: string;
+  hashtags: string;
+  websiteUrl: string;
+  reels: InstagramReel[];
+};
+
+export const defaultInstagram: InstagramData = {
+  username: "iskcon_kurnool",
+  fullName: "ISKCON KURNOOL OFFICIAL",
+  bio: "Hare Krishna! Welcome to the official page of ISKCON Kurnool, the abode of Sri Sri Jagannatha, Baladeva, and Subhadra Devi.",
+  hashtags: "#ISKCONKurnool #JagannathSeva #DailyDarshan",
+  websiteUrl: "www.iskconkurnool.com",
+  reels: [
+    { id: "r1", url: "https://www.instagram.com/reel/C8qK7gBvyjN/" },
+    { id: "r2", url: "https://www.instagram.com/reel/C8S6u_ivS1u/" },
+    { id: "r3", url: "https://www.instagram.com/reel/C72x6yAvt5V/" },
+    { id: "r4", url: "https://www.instagram.com/reel/C7rV6oIvF2N/" },
+    { id: "r5", url: "https://www.instagram.com/reel/C7UTd14PRyY/" },
+    { id: "r6", url: "https://www.instagram.com/reel/C7B0Pievj2K/" },
+    { id: "r7", url: "https://www.instagram.com/reel/C6p47vIvD1u/" },
+    { id: "r8", url: "https://www.instagram.com/reel/C6I5q_iv2NL/" }
+  ]
+};
+
 export type HeroBannersData = {
   aboutKurnool: string;
   aboutFounder: string;
@@ -408,6 +436,7 @@ export type SiteSettings = {
   address: string;
   footer: string;
   logo: string;
+  facebook?: string;
 };
 
 export type ThemeSettings = {
@@ -459,6 +488,8 @@ type AdminState = {
   setGoshala: (g: GoshalaData) => void;
   contacts: ContactEntry[];
   setContacts: (c: ContactEntry[]) => void;
+  instagram: InstagramData;
+  setInstagram: (i: InstagramData) => void;
   authed: boolean;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
@@ -479,6 +510,7 @@ const defaultSettings: SiteSettings = {
   address: "ISKCON Kurnool\nSri Sri Jagannath Baladev Subhadra Temple\nKurnool, Andhra Pradesh\nIndia",
   footer: "© 2025 ISKCON Kurnool. All Rights Reserved.",
   logo: "",
+  facebook: "https://facebook.com/iskconkurnool",
 };
 
 const defaultTheme: ThemeSettings = {
@@ -509,6 +541,7 @@ const KEYS = {
   heroBanners: "heroBanners",
   goshala: "goshala",
   contacts: "contacts",
+  instagram: "instagram",
 } as const;
 
 const Ctx = createContext<AdminState | null>(null);
@@ -530,6 +563,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [heroBanners, setHeroBannersState] = useState<HeroBannersData>(defaultHeroBanners);
   const [goshala, setGoshalaState] = useState<GoshalaData>(defaultGoshala);
   const [contacts, setContactsState] = useState<ContactEntry[]>([]);
+  const [instagram, setInstagramState] = useState<InstagramData>(defaultInstagram);
   const [authed, setAuthed] = useState<boolean>(false);
 
   // Track Supabase auth session for admin access
@@ -606,6 +640,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.heroBanners: setHeroBannersState({ ...defaultHeroBanners, ...value }); break;
       case KEYS.goshala: setGoshalaState({ ...defaultGoshala, ...value }); break;
       case KEYS.contacts: setContactsState(value); break;
+      case KEYS.instagram: setInstagramState({ ...defaultInstagram, ...value }); break;
     }
   }
 
@@ -636,6 +671,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     setContactsState(v);
     persist(KEYS.contacts, v);
   };
+  const setInstagram = (v: InstagramData) => { setInstagramState(v); persist(KEYS.instagram, v); };
 
   // Apply theme to CSS variables
   useEffect(() => {
@@ -679,6 +715,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         heroBanners, setHeroBanners,
         goshala, setGoshala,
         contacts, setContacts,
+        instagram, setInstagram,
         authed, login, logout, ready,
       }}
     >

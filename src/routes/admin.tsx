@@ -16,14 +16,15 @@ import SundayManager from "@/admin/SundayManager";
 import HeroBannersManager from "@/admin/HeroBannersManager";
 import GoshalaManager from "@/admin/GoshalaManager";
 import ContactsManager from "@/admin/ContactsManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet } from "lucide-react";
+import InstagramManager from "@/admin/InstagramManager";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
 
-type Tab = "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "theme" | "heroBanners" | "goshala" | "contacts";
+type Tab = "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "theme" | "heroBanners" | "goshala" | "contacts" | "instagram";
 
 function AdminPage() {
   const { authed, login, logout, settings, contacts, setContacts } = useAdmin();
@@ -132,6 +133,7 @@ function AdminPage() {
     { id: "sunday", label: "Sunday Program", icon: Calendar },
     { id: "goshala", label: "Goshala Seva", icon: Heart },
     { id: "contacts", label: "Contact Messages", icon: Mail },
+    { id: "instagram", label: "Instagram Feed", icon: Instagram },
     { id: "classes", label: "Daily Classes", icon: Radio },
     { id: "gallery", label: "Gallery", icon: Images },
     { id: "heroBanners", label: "Hero Banners", icon: Images },
@@ -210,6 +212,7 @@ function AdminPage() {
         {tab === "sunday" && <SundayManager />}
         {tab === "goshala" && <GoshalaManager />}
         {tab === "contacts" && <ContactsManager />}
+        {tab === "instagram" && <InstagramManager />}
         {tab === "classes" && <DailyClassesManager />}
         {tab === "gallery" && <GalleryManager />}
         {tab === "heroBanners" && <HeroBannersManager />}
