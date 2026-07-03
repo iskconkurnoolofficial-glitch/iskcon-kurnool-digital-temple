@@ -154,7 +154,7 @@ function HarinamaPage() {
       </section>
 
       {/* Auto-scrolling Gallery Section */}
-      <section id="gallery" className="py-16 md:py-24 bg-white overflow-hidden border-y border-border/40">
+      <section id="gallery" className="py-16 md:py-24 bg-surface overflow-hidden border-y border-border/40">
         <div className="max-w-7xl mx-auto px-6 mb-12 text-center">
           <h2 className="font-display text-3xl md:text-4xl font-bold text-primary">A Glimpse of the Joy</h2>
           <p className="text-muted-foreground mt-3 max-w-2xl mx-auto text-base md:text-lg">
@@ -206,7 +206,7 @@ function HarinamaPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 bg-white border-t border-border">
+      <section className="py-12 bg-surface border-t border-border">
         <div className="max-w-4xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* WhatsApp CTA */}
           <a

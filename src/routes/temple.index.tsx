@@ -28,10 +28,10 @@ function Page() {
     <SiteLayout>
       <PageHero eyebrow="Daily Worship" title="The Temple" subtitle="Timings, Programs, Festivals & Service" pageKey="temple" />
       
-      <section className="py-16 md:py-24 bg-background">
+      <section className="py-16 md:py-24 bg-gradient-to-b from-surface to-background">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-12 animate-fade-in">
-            <h2 className="font-display text-4xl font-bold text-primary mb-4">Daily Temple Schedule</h2>
+            <h2 className="font-display text-4xl font-bold text-primary mb-4">Temple Daily Schedule</h2>
             <div className="h-1 w-24 bg-secondary mx-auto rounded-full mb-6" />
             <p className="text-muted-foreground text-lg">
               Join us for the daily worship, chanting, and spiritual discourses. All programs are open to the public.

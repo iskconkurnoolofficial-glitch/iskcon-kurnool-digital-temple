@@ -17,14 +17,15 @@ import HeroBannersManager from "@/admin/HeroBannersManager";
 import GoshalaManager from "@/admin/GoshalaManager";
 import ContactsManager from "@/admin/ContactsManager";
 import InstagramManager from "@/admin/InstagramManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram } from "lucide-react";
+import PrahladaBadiManager from "@/admin/PrahladaBadiManager";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
 
-type Tab = "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "theme" | "heroBanners" | "goshala" | "contacts" | "instagram";
+type Tab = "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "theme" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi";
 
 function AdminPage() {
   const { authed, login, logout, settings, contacts, setContacts } = useAdmin();
@@ -127,6 +128,7 @@ function AdminPage() {
     { id: "festivals", label: "Upcoming Festivals", icon: Sparkles },
     { id: "sevas", label: "Jagannath Sevas", icon: HandHeart },
     { id: "youth", label: "Youth Festival", icon: Users },
+    { id: "prahladaBadi", label: "Prahlada Badi", icon: Baby },
     { id: "harinama", label: "Harinama Sankeerthan", icon: Music },
     { id: "ekadashi", label: "Ekadashi Vratam", icon: Leaf },
     { id: "gita", label: "Gita Course", icon: BookOpen },
@@ -206,6 +208,7 @@ function AdminPage() {
         {tab === "festivals" && <FestivalsManager />}
         {tab === "sevas" && <SevasManager />}
         {tab === "youth" && <YouthManager />}
+        {tab === "prahladaBadi" && <PrahladaBadiManager />}
         {tab === "harinama" && <HarinamaManager />}
         {tab === "ekadashi" && <EkadashiManager />}
         {tab === "gita" && <GitaCourseManager />}

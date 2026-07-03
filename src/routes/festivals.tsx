@@ -48,7 +48,7 @@ function FestivalsPage() {
         pageKey="festivals"
       />
 
-      <section className="py-16 md:py-24 bg-background relative overflow-hidden">
+      <section className="py-16 md:py-24 bg-gradient-to-b from-surface to-background relative overflow-hidden">
         {/* Subtle decorative background glow */}
         <div className="absolute top-1/4 left-1/10 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute bottom-1/4 right-1/10 w-96 h-96 bg-secondary/5 rounded-full blur-[100px] pointer-events-none" />

@@ -18,7 +18,7 @@ function Page() {
         subtitle="His Divine Grace A.C. Bhaktivedanta Swami Prabhupada" 
         pageKey="aboutFounder" 
       />
-      <section className="py-16 md:py-24 bg-background">
+      <section className="py-16 md:py-24 bg-gradient-to-b from-surface to-background">
         <div className="max-w-4xl mx-auto px-6 space-y-10 animate-fade-up">
           
           {/* Main Biography content */}

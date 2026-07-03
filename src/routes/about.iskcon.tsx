@@ -13,7 +13,7 @@ function Page() {
   return (
     <SiteLayout>
       <PageHero eyebrow="Our Heritage" title="About ISKCON" subtitle="The International Society for Krishna Consciousness" pageKey="aboutIskcon" />
-      <section className="py-16 md:py-24 bg-background">
+      <section className="py-16 md:py-24 bg-gradient-to-b from-surface to-background">
         <div className="max-w-4xl mx-auto px-6 prose prose-lg">
           <p className="text-lg text-muted-foreground leading-relaxed">
             The International Society for Krishna Consciousness, also popularly known as the Hare Krishna movement,

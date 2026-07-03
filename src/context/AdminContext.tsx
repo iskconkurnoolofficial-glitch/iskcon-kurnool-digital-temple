@@ -138,6 +138,95 @@ export const defaultYouth: YouthData = {
   ],
 };
 
+export type PrahladaBadiActivity = {
+  id: string;
+  titleEn: string;
+  titleTel: string;
+  icon: string;
+  order: number;
+};
+
+export type PrahladaBadiGalleryItem = {
+  id: string;
+  url: string;
+  label: string;
+};
+
+export type PrahladaBadiReview = {
+  id: string;
+  name: string;
+  text: string;
+  rating: number;
+  visible: boolean;
+};
+
+export type PrahladaBadiData = {
+  regStatus: "Open" | "Closed" | "Coming Soon";
+  registerUrl: string;
+  startDate: string;
+  endDate: string;
+  timings: string;
+  venueEn: string;
+  venueTel: string;
+  feeTier1LabelEn: string;
+  feeTier1LabelTel: string;
+  feeTier1Amount: string;
+  feeTier2LabelEn: string;
+  feeTier2LabelTel: string;
+  feeTier2Amount: string;
+  contactName: string;
+  contactTitleEn: string;
+  contactTitleTel: string;
+  phone1: string;
+  phone2: string;
+  phone3: string;
+  heroImage: string;
+  footerNoteEn: string;
+  footerNoteTel: string;
+  activities: PrahladaBadiActivity[];
+  gallery: PrahladaBadiGalleryItem[];
+  reviews: PrahladaBadiReview[];
+};
+
+export const defaultPrahladaBadi: PrahladaBadiData = {
+  regStatus: "Coming Soon",
+  registerUrl: "",
+  startDate: "2026-05-01",
+  endDate: "2026-05-31",
+  timings: "8:00 AM – 11:30 AM",
+  venueEn: "ISKCON Kurnool Temple, Park Road, Kurnool",
+  venueTel: "ఇస్కాన్ కర్నూలు ఆలయం, పార్క్ రోడ్, కర్నూలు",
+  feeTier1LabelEn: "Up to 5th Class",
+  feeTier1LabelTel: "5 వ తరగతి వరకు",
+  feeTier1Amount: "500",
+  feeTier2LabelEn: "Above 5th Class",
+  feeTier2LabelTel: "5 వ తరగతి పైన",
+  feeTier2Amount: "700",
+  contactName: "Temple Administration",
+  contactTitleEn: "Program Coordinator",
+  contactTitleTel: "కార్యక్రమ సమన్వయకర్త",
+  phone1: "+91 98765 43210",
+  phone2: "",
+  phone3: "",
+  heroImage: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
+  footerNoteEn: "Many more cultural and traditional topics will be taught",
+  footerNoteTel: "మరెన్నో సాంస్కృతిక మరియు సాంప్రదాయ విషయాలు బోధించబడతాయి",
+  activities: [
+    { id: "a1", titleEn: "Bhagavad Gita Slokas", titleTel: "భగవద్గీత శ్లోకాలు", icon: "📖", order: 1 },
+    { id: "a2", titleEn: "Annamacharya Keerthanas", titleTel: "అన్నమాచార్య కీర్తనలు", icon: "🎵", order: 2 },
+    { id: "a3", titleEn: "Personality Development Stories", titleTel: "వ్యక్తిత్వ వికాస కథలు", icon: "📚", order: 3 },
+    { id: "a4", titleEn: "Short Skits (Drama)", titleTel: "నాటికలు (డ్రామా)", icon: "🎭", order: 4 },
+    { id: "a5", titleEn: "Drawing & Art", titleTel: "డ్రాయింగ్ & ఆర్ట్", icon: "🎨", order: 5 },
+    { id: "a6", titleEn: "Devotional Songs", titleTel: "భక్తి గీతాలు", icon: "🎶", order: 6 },
+    { id: "a7", titleEn: "Pranama Slokas", titleTel: "ప్రణామ శ్లోకాలు", icon: "🙏", order: 7 },
+  ],
+  gallery: [],
+  reviews: [
+    { id: "r1", name: "Srinivas (Parent)", text: "My daughter learned so many slokas in just one month. The environment was very spiritual and nurturing.", rating: 5, visible: true },
+    { id: "r2", name: "Radha (Parent)", text: "Excellent summer program! The values taught here are very helpful for character building.", rating: 5, visible: true },
+  ],
+};
+
 export type HarinamaGalleryItem = { id: string; url: string; label: string };
 export type HarinamaData = {
   whatsappUrl: string;
@@ -179,6 +268,13 @@ export type SundayLinkButton = {
   url: string;
 };
 
+export type SundayActivityItem = {
+  id: string;
+  title: string;
+  description: string;
+  image?: string;
+};
+
 export type SundayData = {
   description: string;
   scheduleTitle: string;
@@ -191,6 +287,7 @@ export type SundayData = {
   logo: string;
   buttons: SundayLinkButton[];
   timingsImage?: string;
+  activities?: SundayActivityItem[];
 };
 
 export const defaultSunday: SundayData = {
@@ -210,7 +307,39 @@ export const defaultSunday: SundayData = {
   directionsUrl: "https://maps.app.goo.gl/yJpP11F8Q8ZqT76W9",
   logo: "",
   buttons: [],
-  timingsImage: ""
+  timingsImage: "",
+  activities: [
+    {
+      id: "a1",
+      title: "Hari Nama Sankirtana",
+      description: "Congregational chanting of the holy names of Krishna, creating a joyful and purifying spiritual atmosphere.",
+      image: ""
+    },
+    {
+      id: "a2",
+      title: "Bhagavad Gita Pravachanam",
+      description: "Enlightening discourse on the timeless teachings of Bhagavad Gita and their practical application in daily life.",
+      image: ""
+    },
+    {
+      id: "a3",
+      title: "Raja Bhoga Arati",
+      description: "A grand midday arati offering with beautiful lamps, incense, flowers, and ecstatic congregational kirtan.",
+      image: ""
+    },
+    {
+      id: "a4",
+      title: "Sudarshana Ashirvadam",
+      description: "Sacred prayers and blessings of Lord Sudarshana for protection, health, and spiritual well-being.",
+      image: ""
+    },
+    {
+      id: "a5",
+      title: "Prasada Vitarana",
+      description: "A sumptuous, sanctified vegetarian feast (prasadam) served with love to all visiting guests and devotees.",
+      image: ""
+    }
+  ]
 };
 
 export type GoshalaGalleryItem = { id: string; url: string; label: string };
@@ -478,6 +607,8 @@ type AdminState = {
   setGitaCourse: (g: GitaCourseData) => void;
   sunday: SundayData;
   setSunday: (s: SundayData) => void;
+  prahladaBadi: PrahladaBadiData;
+  setPrahladaBadi: (p: PrahladaBadiData) => void;
   settings: SiteSettings;
   setSettings: (s: SiteSettings) => void;
   theme: ThemeSettings;
@@ -542,6 +673,7 @@ const KEYS = {
   goshala: "goshala",
   contacts: "contacts",
   instagram: "instagram",
+  prahladaBadi: "prahladaBadi",
 } as const;
 
 const Ctx = createContext<AdminState | null>(null);
@@ -558,6 +690,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [ekadashi, setEkadashiState] = useState<EkadashiData>(defaultEkadashi);
   const [gitaCourse, setGitaCourseState] = useState<GitaCourseData>(defaultGitaCourse);
   const [sunday, setSundayState] = useState<SundayData>(defaultSunday);
+  const [prahladaBadi, setPrahladaBadiState] = useState<PrahladaBadiData>(defaultPrahladaBadi);
   const [settings, setSettingsState] = useState<SiteSettings>(defaultSettings);
   const [theme, setThemeState] = useState<ThemeSettings>(defaultTheme);
   const [heroBanners, setHeroBannersState] = useState<HeroBannersData>(defaultHeroBanners);
@@ -635,6 +768,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.ekadashi: setEkadashiState({ ...defaultEkadashi, ...value }); break;
       case KEYS.gitaCourse: setGitaCourseState({ ...defaultGitaCourse, ...value }); break;
       case KEYS.sunday: setSundayState({ ...defaultSunday, ...value }); break;
+      case KEYS.prahladaBadi: setPrahladaBadiState({ ...defaultPrahladaBadi, ...value }); break;
       case KEYS.settings: setSettingsState(value); break;
       case KEYS.theme: setThemeState(value); break;
       case KEYS.heroBanners: setHeroBannersState({ ...defaultHeroBanners, ...value }); break;
@@ -663,6 +797,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setEkadashi = (v: EkadashiData) => { setEkadashiState(v); persist(KEYS.ekadashi, v); };
   const setGitaCourse = (v: GitaCourseData) => { setGitaCourseState(v); persist(KEYS.gitaCourse, v); };
   const setSunday = (v: SundayData) => { setSundayState(v); persist(KEYS.sunday, v); };
+  const setPrahladaBadi = (v: PrahladaBadiData) => { setPrahladaBadiState(v); persist(KEYS.prahladaBadi, v); };
   const setSettings = (v: SiteSettings) => { setSettingsState(v); persist(KEYS.settings, v); };
   const setTheme = (v: ThemeSettings) => { setThemeState(v); persist(KEYS.theme, v); };
   const setHeroBanners = (v: HeroBannersData) => { setHeroBannersState(v); persist(KEYS.heroBanners, v); };
@@ -710,6 +845,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         ekadashi, setEkadashi,
         gitaCourse, setGitaCourse,
         sunday, setSunday,
+        prahladaBadi, setPrahladaBadi,
         settings, setSettings,
         theme, setTheme,
         heroBanners, setHeroBanners,

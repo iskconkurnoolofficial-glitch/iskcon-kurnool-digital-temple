@@ -71,7 +71,7 @@ function Page() {
         pageKey="donate"
       />
 
-      <section className="py-14 md:py-16 bg-background">
+      <section className="py-14 md:py-16 bg-gradient-to-b from-surface to-background">
         <div className="max-w-6xl mx-auto px-5 sm:px-6">
 
           {/* Search */}
@@ -82,7 +82,7 @@ function Page() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search sevas..."
-                className="w-full pl-11 pr-4 py-3 rounded-full border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-sm"
+                className="w-full pl-11 pr-4 py-3 rounded-full border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-sm"
               />
             </div>
           </div>

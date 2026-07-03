@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useAdmin, uploadToCloudinary, SundayData, SundayScheduleItem, SundayGalleryItem, SundayLinkButton } from "@/context/AdminContext";
+import { useAdmin, uploadToCloudinary, SundayData, SundayScheduleItem, SundayGalleryItem, SundayLinkButton, SundayActivityItem } from "@/context/AdminContext";
 import { Trash2, ArrowUp, ArrowDown, X, Check } from "lucide-react";
 import { UploadBox } from "./CarouselManager";
 
-type Tab = "settings" | "schedule" | "gallery" | "buttons";
+type Tab = "settings" | "schedule" | "activities" | "gallery" | "buttons";
 
 export default function SundayManager() {
   const { sunday, setSunday } = useAdmin();
@@ -14,7 +14,7 @@ export default function SundayManager() {
   return (
     <div className="space-y-6">
       <div className="flex gap-2 flex-wrap">
-        {(["settings", "schedule", "gallery", "buttons"] as Tab[]).map((t) => (
+        {(["settings", "schedule", "activities", "gallery", "buttons"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -29,6 +29,7 @@ export default function SundayManager() {
 
       {tab === "settings" && <SettingsTab sunday={sunday} update={update} />}
       {tab === "schedule" && <ScheduleTab sunday={sunday} update={update} />}
+      {tab === "activities" && <ActivitiesTab sunday={sunday} update={update} />}
       {tab === "gallery" && <GalleryTab sunday={sunday} update={update} />}
       {tab === "buttons" && <ButtonsTab sunday={sunday} update={update} />}
     </div>
@@ -533,6 +534,243 @@ function ButtonsTab({ sunday, update }: { sunday: SundayData; update: (p: Partia
             ))}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function ActivitiesTab({ sunday, update }: { sunday: SundayData; update: (p: Partial<SundayData>) => void }) {
+  const [busyId, setBusyId] = useState<string | null>(null);
+  
+  // States for adding a new activity
+  const [newTitle, setNewTitle] = useState("");
+  const [newDesc, setNewDesc] = useState("");
+  const [newUrl, setNewUrl] = useState("");
+  const [addingBusy, setAddingBusy] = useState(false);
+
+  const list = sunday.activities || [];
+
+  const onPickNewImage = async (f: File) => {
+    setAddingBusy(true);
+    try {
+      const url = await uploadToCloudinary(f);
+      setNewUrl(url);
+    } catch {
+      alert("Upload failed");
+    }
+    setAddingBusy(false);
+  };
+
+  const addActivity = () => {
+    if (!newTitle || !newDesc) {
+      return alert("Title and Description are required");
+    }
+    if (list.length >= 6) {
+      return alert("You can add a maximum of 6 activities");
+    }
+
+    const newItem: SundayActivityItem = {
+      id: Date.now().toString(),
+      title: newTitle,
+      description: newDesc,
+      image: newUrl
+    };
+
+    update({ activities: [...list, newItem] });
+    
+    // Reset states
+    setNewTitle("");
+    setNewDesc("");
+    setNewUrl("");
+  };
+
+  const deleteActivity = (id: string) => {
+    if (confirm("Are you sure you want to delete this activity?")) {
+      update({ activities: list.filter((x) => x.id !== id) });
+    }
+  };
+
+  const move = (i: number, dir: -1 | 1) => {
+    const j = i + dir;
+    if (j < 0 || j >= list.length) return;
+    const copy = [...list];
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+    update({ activities: copy });
+  };
+
+  const onPickImage = async (id: string, f: File) => {
+    setBusyId(id);
+    try {
+      const url = await uploadToCloudinary(f);
+      const updated = list.map((x) =>
+        x.id === id ? { ...x, image: url } : x
+      );
+      update({ activities: updated });
+    } catch {
+      alert("Upload failed");
+    }
+    setBusyId(null);
+  };
+
+  const removeImage = (id: string) => {
+    const updated = list.map((x) =>
+      x.id === id ? { ...x, image: "" } : x
+    );
+    update({ activities: updated });
+  };
+
+  const updateField = (id: string, field: "title" | "description", val: string) => {
+    const updated = list.map((x) =>
+      x.id === id ? { ...x, [field]: val } : x
+    );
+    update({ activities: updated });
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Add New Activity Card */}
+      {list.length < 6 ? (
+        <div className="bg-white rounded-2xl shadow p-6 border space-y-4">
+          <h3 className="font-display text-xl font-bold text-primary">Add New Feast Activity ({list.length}/6)</h3>
+          
+          <div className="grid md:grid-cols-12 gap-6">
+            <div className="md:col-span-4">
+              <UploadBox 
+                label="Activity Thumbnail" 
+                url={newUrl} 
+                onPick={onPickNewImage} 
+              />
+              {newUrl && (
+                <button
+                  onClick={() => setNewUrl("")}
+                  className="text-xs text-destructive hover:underline flex items-center gap-1 mt-2"
+                >
+                  <X className="h-3.5 w-3.5" /> Remove Image
+                </button>
+              )}
+              {addingBusy && (
+                <p className="text-xs text-muted-foreground animate-pulse mt-2">Uploading image…</p>
+              )}
+            </div>
+
+            <div className="md:col-span-8 space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Activity Title</label>
+                <input
+                  className="w-full px-4 py-2.5 border rounded-lg"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  placeholder="e.g. Maha Prasadam Feast"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Description</label>
+                <textarea
+                  className="w-full px-4 py-2.5 border rounded-lg font-sans text-sm"
+                  rows={2}
+                  value={newDesc}
+                  onChange={(e) => setNewDesc(e.target.value)}
+                  placeholder="Describe the activity..."
+                />
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={addActivity}
+            className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium"
+          >
+            Add Activity
+          </button>
+        </div>
+      ) : (
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl text-sm font-medium">
+          Maximum limit of 6 feast activities reached. Delete an existing activity to add a new one.
+        </div>
+      )}
+
+      {/* List / Edit Existing Activities */}
+      <div className="bg-white rounded-2xl shadow p-6 border">
+        <h3 className="font-display text-xl font-bold text-primary mb-2">Manage Current Activities ({list.length})</h3>
+        <p className="text-sm text-muted-foreground mb-6">
+          Rearrange, edit, or delete activities. Dynamic layout automatically wraps and centers them cleanly (3 cards per row on desktop).
+        </p>
+
+        <div className="space-y-8 divide-y divide-border">
+          {list.map((act, index) => (
+            <div key={act.id} className={`pt-6 ${index === 0 ? "pt-0" : ""} space-y-4`}>
+              <div className="grid md:grid-cols-12 gap-6">
+                <div className="md:col-span-4 space-y-3">
+                  <UploadBox 
+                    label={`Image Thumbnail (${act.title})`} 
+                    url={act.image} 
+                    onPick={(f) => onPickImage(act.id, f)} 
+                  />
+                  {act.image && (
+                    <button
+                      onClick={() => removeImage(act.id)}
+                      className="text-xs text-destructive hover:underline flex items-center gap-1"
+                    >
+                      <X className="h-3.5 w-3.5" /> Remove Image
+                    </button>
+                  )}
+                  {busyId === act.id && (
+                    <p className="text-xs text-muted-foreground animate-pulse">Uploading image…</p>
+                  )}
+                </div>
+
+                <div className="md:col-span-8 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Activity Title</label>
+                    <input
+                      className="w-full px-4 py-2.5 border rounded-lg font-semibold"
+                      value={act.title || ""}
+                      onChange={(e) => updateField(act.id, "title", e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Description</label>
+                    <textarea
+                      className="w-full px-4 py-2.5 border rounded-lg font-sans text-sm"
+                      rows={3}
+                      value={act.description || ""}
+                      onChange={(e) => updateField(act.id, "description", e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions for Ordering and Deleting */}
+              <div className="flex items-center justify-end gap-1 pt-2">
+                <button 
+                  onClick={() => move(index, -1)} 
+                  disabled={index === 0}
+                  className="p-2 rounded hover:bg-muted disabled:opacity-30" 
+                  aria-label="Move up"
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </button>
+                <button 
+                  onClick={() => move(index, 1)} 
+                  disabled={index === list.length - 1}
+                  className="p-2 rounded hover:bg-muted disabled:opacity-30" 
+                  aria-label="Move down"
+                >
+                  <ArrowDown className="h-4 w-4" />
+                </button>
+                <button 
+                  onClick={() => deleteActivity(act.id)} 
+                  className="p-2 rounded hover:bg-destructive/10 text-destructive ml-auto flex items-center gap-1 text-xs font-semibold" 
+                  aria-label="Delete"
+                >
+                  <Trash2 className="h-4 w-4" /> Delete Activity
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

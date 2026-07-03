@@ -9,7 +9,7 @@ export const Route = createFileRoute("/shop")({
   component: () => (
     <SiteLayout>
       <PageHero eyebrow="Store" title="Shop" subtitle="Devotional books, deities and spiritual items — coming soon." pageKey="shop" />
-      <section className="py-20 text-center">
+      <section className="py-20 text-center bg-gradient-to-b from-surface to-background">
         <p className="text-muted-foreground max-w-xl mx-auto px-6">Our online store is being prepared. Please visit the temple gift shop in the meantime.</p>
       </section>
     </SiteLayout>

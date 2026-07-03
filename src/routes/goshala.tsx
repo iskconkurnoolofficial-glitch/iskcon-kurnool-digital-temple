@@ -58,7 +58,7 @@ function Page() {
       </PageHero>
 
       {/* Intro Section with Quote */}
-      <section className="py-16 md:py-24 bg-gradient-to-b from-background to-surface">
+      <section className="py-16 md:py-24 bg-background">
         <div className="max-w-5xl mx-auto px-6">
           <div className="relative bg-white rounded-3xl p-8 md:p-12 shadow-elegant border border-primary/5 flex flex-col md:flex-row items-center gap-8">
             <div className="h-16 w-16 md:h-20 md:w-20 rounded-2xl bg-primary/5 text-primary flex items-center justify-center shrink-0">

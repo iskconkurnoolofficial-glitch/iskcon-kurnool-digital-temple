@@ -54,33 +54,7 @@ const defaultGallery = [
   }
 ];
 
-const programCards = [
-  {
-    title: "Hari Nama Sankirtana",
-    description: "Congregational chanting of the holy names of Krishna, creating a joyful and purifying spiritual atmosphere.",
-    icon: Music,
-  },
-  {
-    title: "Bhagavad Gita Pravachanam",
-    description: "Enlightening discourse on the timeless teachings of Bhagavad Gita and their practical application in daily life.",
-    icon: BookOpen,
-  },
-  {
-    title: "Raja Bhoga Arati",
-    description: "A grand midday arati offering with beautiful lamps, incense, flowers, and ecstatic congregational kirtan.",
-    icon: Flame,
-  },
-  {
-    title: "Sudarshana Ashirvadam",
-    description: "Sacred prayers and blessings of Lord Sudarshana for protection, health, and spiritual well-being.",
-    icon: Sparkles,
-  },
-  {
-    title: "Prasada Vitarana",
-    description: "A sumptuous, sanctified vegetarian feast (prasadam) served with love to all visiting guests and devotees.",
-    icon: Utensils,
-  },
-];
+const icons = [Music, BookOpen, Flame, Sparkles, Utensils, Heart];
 
 function SundayPage() {
   const { sunday, settings } = useAdmin();
@@ -144,7 +118,7 @@ function SundayPage() {
       </section>
 
       {/* Weekly Schedule Section */}
-      <section className="py-16 bg-white border-y border-border/40">
+      <section className="py-16 bg-surface border-y border-border/40">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center max-w-xl mx-auto mb-12">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary text-primary text-xs font-bold uppercase tracking-wider mb-3">
@@ -221,7 +195,7 @@ function SundayPage() {
       </section>
 
       {/* Sunday Feast Activities Cards Section */}
-      <section className="py-16 bg-[#faf6ee] border-b border-border/40">
+      <section className="py-16 bg-background border-b border-border/40">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold uppercase tracking-wider mb-3">
@@ -236,23 +210,43 @@ function SundayPage() {
             <div className="h-1 w-20 bg-accent mx-auto rounded-full mt-4" />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-            {programCards.map((card, i) => {
-              const Icon = card.icon;
+          <div className="flex flex-wrap justify-center gap-8 md:gap-10 max-w-6xl mx-auto">
+            {(sunday.activities || []).map((card, i) => {
+              const Icon = icons[i % icons.length];
               return (
                 <div 
-                  key={i} 
-                  className="bg-white rounded-2xl p-6 border border-[#ece6f5]/60 shadow-md hover:shadow-lg hover:-translate-y-1 transition duration-300 flex flex-col items-center text-center h-full"
+                  key={card.id || i} 
+                  className="group bg-white rounded-3xl p-6 border border-border hover:border-primary/20 shadow-[0_8px_30px_rgba(91,44,155,0.03)] hover:shadow-elegant hover:-translate-y-1.5 transition-all duration-300 flex flex-col relative overflow-hidden w-full md:w-[calc(50%-20px)] lg:w-[calc(33.333%-27px)] max-w-[380px]"
                 >
-                  <div className="p-3 rounded-full bg-[#fdf6ec] text-accent mb-4 border border-secondary/20">
-                    <Icon className="w-6 h-6" />
+                  <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm text-primary font-display font-bold text-xs px-3 py-1 rounded-full border border-primary/10 shadow-sm z-10 transition-transform duration-300 group-hover:scale-105">
+                    Activity 0{i + 1}
                   </div>
-                  <h3 className="font-display font-bold text-lg text-primary mb-3 leading-tight min-h-[56px] flex items-center justify-center">
-                    {card.title}
-                  </h3>
-                  <p className="text-[#6b5c54] font-sans text-sm leading-relaxed flex-1">
-                    {card.description}
-                  </p>
+
+                  {card.image ? (
+                    <div className="w-full rounded-2xl overflow-hidden mb-5 relative">
+                      <img 
+                        src={card.image} 
+                        alt={card.title} 
+                        className="w-full h-auto block transition-transform duration-700 group-hover:scale-105" 
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-full aspect-[4/3] bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 flex items-center justify-center mb-5 rounded-2xl border border-primary/5 relative overflow-hidden transition-all duration-500">
+                      <div className="absolute inset-0 bg-[radial-gradient(#5b2c9b_1px,transparent_1px)] [background-size:16px_16px] opacity-[0.03]" />
+                      <div className="p-4 rounded-2xl bg-white text-accent shadow-sm border border-secondary/20 transition-transform duration-500 group-hover:scale-110">
+                        <Icon className="w-8 h-8" />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex-1 flex flex-col items-center">
+                    <h3 className="font-display font-bold text-lg md:text-xl text-primary mb-3 leading-tight min-h-[56px] flex items-center justify-center text-center group-hover:text-accent transition-colors duration-300">
+                      {card.title}
+                    </h3>
+                    <p className="text-[#6b5c54] font-sans text-sm md:text-base leading-relaxed flex-1 text-center">
+                      {card.description}
+                    </p>
+                  </div>
                 </div>
               );
             })}
@@ -261,7 +255,7 @@ function SundayPage() {
       </section>
 
       {/* Auto-scrolling Gallery Section */}
-      <section className="py-16 md:py-20 bg-background overflow-hidden">
+      <section className="py-16 md:py-20 bg-surface overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 mb-12 text-center">
           <span className="inline-flex items-center gap-1.5 text-xs uppercase tracking-widest text-accent font-bold mb-2">
             <Sparkles className="h-4 w-4" /> Photos
@@ -279,7 +273,7 @@ function SundayPage() {
       </section>
 
       {/* Visit ISKCON Kurnool Section */}
-      <section className="py-16 bg-white border-t border-border/40">
+      <section className="py-16 bg-background border-t border-border/40">
         <div className="max-w-4xl mx-auto px-6">
           <div className="rounded-3xl bg-gradient-soft border border-border shadow-elegant overflow-hidden p-8 md:p-12">
             <div className="grid md:grid-cols-12 gap-8 items-center">
