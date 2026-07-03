@@ -158,3 +158,29 @@ body { top: 0 !important; position: static !important; }
 .prose-festival a { color: var(--accent); text-decoration: underline; }
 .prose-festival strong { font-weight: 700; }
 
+/* Animated Checkmark Utilities */
+.animate-scale-circle {
+  animation: scaleInCircle 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.animate-draw-check {
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: drawCheck 0.4s cubic-bezier(0.65, 0, 0.45, 1) 0.3s both;
+}
+
+@keyframes scaleInCircle {
+  from {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes drawCheck {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+

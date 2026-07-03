@@ -29,6 +29,7 @@ export default function HeroBannersManager() {
     { key: "aboutIskcon", label: "About — About ISKCON" },
     { key: "aboutMission", label: "About — Our Mission" },
     { key: "connect", label: "Connect Page" },
+    { key: "socialMedia", label: "Social Media Page" },
     { key: "courses", label: "Courses Page" },
     { key: "festivals", label: "Festivals Page" },
     { key: "gallery", label: "Gallery Page" },

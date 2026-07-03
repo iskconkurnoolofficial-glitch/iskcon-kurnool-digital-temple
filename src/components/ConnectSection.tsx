@@ -6,12 +6,12 @@ export default function ConnectSection() {
   const { settings } = useAdmin();
 
   return (
-    <section id="connect" className="py-20 md:py-28 bg-secondary/10">
+    <section id="connect" className="py-20 md:py-28 bg-surface">
       <div className="max-w-7xl mx-auto px-4 lg:px-8">
         <div className="text-center mb-14 animate-fade-up">
-          <span className="text-accent font-medium uppercase text-xs tracking-[0.3em]">Get in Touch</span>
-          <h2 className="font-display text-4xl md:text-5xl font-bold text-primary mt-3">Connect With Us</h2>
-          <p className="text-foreground/70 mt-3 max-w-2xl mx-auto">Visit the temple, join our programs, or reach out — we welcome you with open arms.</p>
+          <span className="text-accent font-medium uppercase text-xs tracking-[0.3em]">Find Us</span>
+          <h2 className="font-display text-4xl md:text-5xl font-bold text-primary mt-3">Visit the Temple</h2>
+          <p className="text-foreground/70 mt-3 max-w-2xl mx-auto">Come experience absolute peace, devotion, and spiritual association in person.</p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
@@ -47,7 +47,7 @@ export default function ConnectSection() {
               </div>
             </div>
 
-            <a id="donate" href="/donate" className="block text-center px-6 py-4 rounded-full bg-accent text-white font-semibold hover:scale-[1.02] hover:shadow-lg transition">
+            <a id="donate" href="/donate" className="block text-center px-6 py-4 rounded-full bg-gradient-to-r from-[#e65c00] to-[#ff9933] text-white font-semibold shadow-[0_4px_14px_rgba(230,92,0,0.35)] hover:shadow-[0_6px_20px_rgba(230,92,0,0.5)] hover:from-[#d35400] hover:to-[#e67e22] hover:-translate-y-0.5 transition cursor-pointer">
               Donate to Support the Temple
             </a>
           </div>

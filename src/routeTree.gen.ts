@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as YouthRouteImport } from './routes/youth'
 import { Route as TempleRouteImport } from './routes/temple'
+import { Route as SocialMediaRouteImport } from './routes/social-media'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as PrahladaBadiRouteImport } from './routes/prahlada-badi'
 import { Route as HarinamaRouteImport } from './routes/harinama'
@@ -40,6 +41,11 @@ const YouthRoute = YouthRouteImport.update({
 const TempleRoute = TempleRouteImport.update({
   id: '/temple',
   path: '/temple',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SocialMediaRoute = SocialMediaRouteImport.update({
+  id: '/social-media',
+  path: '/social-media',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShopRoute = ShopRouteImport.update({
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/harinama': typeof HarinamaRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/shop': typeof ShopRoute
+  '/social-media': typeof SocialMediaRoute
   '/temple': typeof TempleRouteWithChildren
   '/youth': typeof YouthRoute
   '/about/founder': typeof AboutFounderRoute
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/harinama': typeof HarinamaRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/shop': typeof ShopRoute
+  '/social-media': typeof SocialMediaRoute
   '/youth': typeof YouthRoute
   '/about/founder': typeof AboutFounderRoute
   '/about/iskcon': typeof AboutIskconRoute
@@ -205,6 +213,7 @@ export interface FileRoutesById {
   '/harinama': typeof HarinamaRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/shop': typeof ShopRoute
+  '/social-media': typeof SocialMediaRoute
   '/temple': typeof TempleRouteWithChildren
   '/youth': typeof YouthRoute
   '/about/founder': typeof AboutFounderRoute
@@ -231,6 +240,7 @@ export interface FileRouteTypes {
     | '/harinama'
     | '/prahlada-badi'
     | '/shop'
+    | '/social-media'
     | '/temple'
     | '/youth'
     | '/about/founder'
@@ -255,6 +265,7 @@ export interface FileRouteTypes {
     | '/harinama'
     | '/prahlada-badi'
     | '/shop'
+    | '/social-media'
     | '/youth'
     | '/about/founder'
     | '/about/iskcon'
@@ -278,6 +289,7 @@ export interface FileRouteTypes {
     | '/harinama'
     | '/prahlada-badi'
     | '/shop'
+    | '/social-media'
     | '/temple'
     | '/youth'
     | '/about/founder'
@@ -303,6 +315,7 @@ export interface RootRouteChildren {
   HarinamaRoute: typeof HarinamaRoute
   PrahladaBadiRoute: typeof PrahladaBadiRoute
   ShopRoute: typeof ShopRoute
+  SocialMediaRoute: typeof SocialMediaRoute
   TempleRoute: typeof TempleRouteWithChildren
   YouthRoute: typeof YouthRoute
   AboutFounderRoute: typeof AboutFounderRoute
@@ -326,6 +339,13 @@ declare module '@tanstack/react-router' {
       path: '/temple'
       fullPath: '/temple'
       preLoaderRoute: typeof TempleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/social-media': {
+      id: '/social-media'
+      path: '/social-media'
+      fullPath: '/social-media'
+      preLoaderRoute: typeof SocialMediaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/shop': {
@@ -498,6 +518,7 @@ const rootRouteChildren: RootRouteChildren = {
   HarinamaRoute: HarinamaRoute,
   PrahladaBadiRoute: PrahladaBadiRoute,
   ShopRoute: ShopRoute,
+  SocialMediaRoute: SocialMediaRoute,
   TempleRoute: TempleRouteWithChildren,
   YouthRoute: YouthRoute,
   AboutFounderRoute: AboutFounderRoute,

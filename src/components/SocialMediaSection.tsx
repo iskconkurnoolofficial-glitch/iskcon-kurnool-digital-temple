@@ -1,50 +1,49 @@
 import { Instagram, Youtube, Facebook, MessageCircle } from "lucide-react";
-
-type Platform = {
-  name: string;
-  href: string;
-  icon: typeof Instagram;
-  desc: string;
-  cta: string;
-  brand: string; // tailwind classes for icon bg
-};
-
-const PLATFORMS: Platform[] = [
-  {
-    name: "Instagram",
-    href: "https://instagram.com/iskcon_kurnool",
-    icon: Instagram,
-    desc: "Daily darshan, reels & festival highlights",
-    cta: "Follow",
-    brand: "from-[#feda75] via-[#fa7e1e] to-[#d62976]",
-  },
-  {
-    name: "YouTube",
-    href: "https://youtube.com/@iskconkurnool",
-    icon: Youtube,
-    desc: "Lectures, kirtans & live programs",
-    cta: "Subscribe",
-    brand: "from-[#ff0000] to-[#cc0000]",
-  },
-  {
-    name: "Facebook",
-    href: "https://facebook.com/iskconkurnool",
-    icon: Facebook,
-    desc: "Community updates & event invites",
-    cta: "Follow",
-    brand: "from-[#1877f2] to-[#0a5dc2]",
-  },
-  {
-    name: "WhatsApp",
-    href: "https://wa.me/919505377520",
-    icon: MessageCircle,
-    desc: "Get temple updates on your phone",
-    cta: "Chat Now",
-    brand: "from-[#25d366] to-[#128c7e]",
-  },
-];
+import { useAdmin } from "@/context/AdminContext";
 
 export default function SocialMediaSection() {
+  const { settings } = useAdmin();
+
+  // Format WhatsApp Link
+  const waPhone = settings.whatsapp || "+91 9505377520";
+  const rawDigits = waPhone.replace(/\D/g, "");
+  const waUrl = waPhone.startsWith("http") ? waPhone : `https://wa.me/${rawDigits}`;
+
+  const platforms = [
+    {
+      name: "Instagram",
+      href: settings.instagram || "https://instagram.com/iskcon_kurnool",
+      icon: Instagram,
+      desc: "Daily darshan, reels & festival highlights",
+      cta: "Follow",
+      brand: "from-[#feda75] via-[#fa7e1e] to-[#d62976]",
+    },
+    {
+      name: "YouTube",
+      href: settings.youtube || "https://youtube.com/@iskconkurnool",
+      icon: Youtube,
+      desc: "Lectures, kirtans & live programs",
+      cta: "Subscribe",
+      brand: "from-[#ff0000] to-[#cc0000]",
+    },
+    {
+      name: "Facebook",
+      href: "https://facebook.com/iskconkurnool",
+      icon: Facebook,
+      desc: "Community updates & event invites",
+      cta: "Follow",
+      brand: "from-[#1877f2] to-[#0a5dc2]",
+    },
+    {
+      name: "WhatsApp",
+      href: waUrl,
+      icon: MessageCircle,
+      desc: "Get temple updates on your phone",
+      cta: "Chat Now",
+      brand: "from-[#25d366] to-[#128c7e]",
+    },
+  ];
+
   return (
     <section className="py-16 md:py-24 bg-gradient-to-b from-secondary/10 via-white to-accent/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -61,7 +60,7 @@ export default function SocialMediaSection() {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
-          {PLATFORMS.map((p) => {
+          {platforms.map((p) => {
             const Icon = p.icon;
             return (
               <a
@@ -87,3 +86,4 @@ export default function SocialMediaSection() {
     </section>
   );
 }
+

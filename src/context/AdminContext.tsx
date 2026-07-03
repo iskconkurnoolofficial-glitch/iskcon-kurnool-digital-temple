@@ -262,6 +262,7 @@ export type HeroBannersData = {
   ekadashi: string;
   shop: string;
   temple: string;
+  socialMedia: string;
 };
 
 export const defaultHeroBanners: HeroBannersData = {
@@ -282,6 +283,7 @@ export const defaultHeroBanners: HeroBannersData = {
   ekadashi: "",
   shop: "",
   temple: "",
+  socialMedia: "",
 };
 
 export type EkadashiData = {
@@ -414,6 +416,16 @@ export type ThemeSettings = {
   accent: string;
 };
 
+export type ContactEntry = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+  date: string;
+  read: boolean;
+};
+
 type AdminState = {
   slides: Slide[];
   setSlides: (s: Slide[]) => void;
@@ -445,6 +457,8 @@ type AdminState = {
   setHeroBanners: (h: HeroBannersData) => void;
   goshala: GoshalaData;
   setGoshala: (g: GoshalaData) => void;
+  contacts: ContactEntry[];
+  setContacts: (c: ContactEntry[]) => void;
   authed: boolean;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
@@ -494,6 +508,7 @@ const KEYS = {
   theme: "theme",
   heroBanners: "heroBanners",
   goshala: "goshala",
+  contacts: "contacts",
 } as const;
 
 const Ctx = createContext<AdminState | null>(null);
@@ -514,6 +529,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<ThemeSettings>(defaultTheme);
   const [heroBanners, setHeroBannersState] = useState<HeroBannersData>(defaultHeroBanners);
   const [goshala, setGoshalaState] = useState<GoshalaData>(defaultGoshala);
+  const [contacts, setContactsState] = useState<ContactEntry[]>([]);
   const [authed, setAuthed] = useState<boolean>(false);
 
   // Track Supabase auth session for admin access
@@ -589,6 +605,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.theme: setThemeState(value); break;
       case KEYS.heroBanners: setHeroBannersState({ ...defaultHeroBanners, ...value }); break;
       case KEYS.goshala: setGoshalaState({ ...defaultGoshala, ...value }); break;
+      case KEYS.contacts: setContactsState(value); break;
     }
   }
 
@@ -615,6 +632,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setTheme = (v: ThemeSettings) => { setThemeState(v); persist(KEYS.theme, v); };
   const setHeroBanners = (v: HeroBannersData) => { setHeroBannersState(v); persist(KEYS.heroBanners, v); };
   const setGoshala = (v: GoshalaData) => { setGoshalaState(v); persist(KEYS.goshala, v); };
+  const setContacts = (v: ContactEntry[]) => {
+    setContactsState(v);
+    persist(KEYS.contacts, v);
+  };
 
   // Apply theme to CSS variables
   useEffect(() => {
@@ -657,6 +678,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         theme, setTheme,
         heroBanners, setHeroBanners,
         goshala, setGoshala,
+        contacts, setContacts,
         authed, login, logout, ready,
       }}
     >

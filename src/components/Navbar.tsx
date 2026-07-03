@@ -25,7 +25,7 @@ const NAV: NavItem[] = [
   ]},
   { label: "Media", children: [
     { label: "Gallery", href: "/gallery" },
-    { label: "Social Media", href: "/connect" },
+    { label: "Social Media", href: "/social-media" },
   ]},
   { label: "Activities", children: [
     { label: "Youth Program", href: "/youth" },
