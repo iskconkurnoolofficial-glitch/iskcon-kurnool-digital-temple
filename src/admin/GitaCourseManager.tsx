@@ -9,9 +9,21 @@ export default function GitaCourseManager() {
 
   const update = (patch: Partial<GitaCourseData>) => setGitaCourse({ ...gitaCourse, ...patch });
 
-  const pickImage = async (f: File) => {
+  const pickHeroImage = async (f: File) => {
     setBusy(true);
     try { update({ heroImage: await uploadToCloudinary(f) }); } catch { alert("Upload failed"); }
+    setBusy(false);
+  };
+
+  const pickAboutImage = async (f: File) => {
+    setBusy(true);
+    try { update({ gitaAboutImage: await uploadToCloudinary(f) }); } catch { alert("Upload failed"); }
+    setBusy(false);
+  };
+
+  const pickWhyImage = async (f: File) => {
+    setBusy(true);
+    try { update({ gitaWhyImage: await uploadToCloudinary(f) }); } catch { alert("Upload failed"); }
     setBusy(false);
   };
 
@@ -27,9 +39,26 @@ export default function GitaCourseManager() {
       {/* Hero image */}
       <div className="bg-white rounded-2xl shadow p-6 border space-y-4">
         <h3 className="font-display text-xl font-bold text-primary">Hero Image (1080 × 1350)</h3>
-        <UploadBox label="Hero Image" url={gitaCourse.heroImage} onPick={pickImage} aspect="aspect-[4/5]" className="max-w-[130px]" />
+        <UploadBox label="Hero Image" url={gitaCourse.heroImage} onPick={pickHeroImage} aspect="aspect-[4/5]" className="max-w-[130px]" />
         {busy && <p className="text-sm text-muted-foreground">Uploading…</p>}
       </div>
+
+      {/* Section images */}
+      <div className="bg-white rounded-2xl shadow p-6 border space-y-4">
+        <h3 className="font-display text-xl font-bold text-primary">Section Images (2000 × 2000)</h3>
+        <div className="grid grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-slate-700">"How to Read Bhagavad Gita" Image</p>
+            <UploadBox label="About Image" url={gitaCourse.gitaAboutImage} onPick={pickAboutImage} aspect="aspect-square" className="max-w-[130px]" />
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-slate-700">"Why Gita Classes Matter" Image</p>
+            <UploadBox label="Why Image" url={gitaCourse.gitaWhyImage} onPick={pickWhyImage} aspect="aspect-square" className="max-w-[130px]" />
+          </div>
+        </div>
+        {busy && <p className="text-sm text-muted-foreground">Uploading…</p>}
+      </div>
+
 
       {/* Header text */}
       <div className="bg-white rounded-2xl shadow p-6 border space-y-4">

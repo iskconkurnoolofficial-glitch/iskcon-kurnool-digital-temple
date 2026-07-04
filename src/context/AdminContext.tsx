@@ -512,6 +512,8 @@ export const defaultEkadashi: EkadashiData = {
 
 export type GitaCourseData = {
   heroImage: string;
+  gitaAboutImage: string;
+  gitaWhyImage: string;
   eyebrow: string;
   title: string;
   tagline: string;
@@ -528,6 +530,8 @@ export type GitaCourseData = {
 
 export const defaultGitaCourse: GitaCourseData = {
   heroImage: "",
+  gitaAboutImage: "",
+  gitaWhyImage: "",
   eyebrow: "ISKCON Kurnool — Bhagavad Gita Course",
   title: "18 Days, 18 Chapters",
   tagline: "A complete journey through the Bhagavad Gita, one chapter at a time",

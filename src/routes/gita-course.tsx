@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import SiteLayout from "@/components/SiteLayout";
-import ChapterWheel from "@/components/ChapterWheel";
 import { useAdmin } from "@/context/AdminContext";
-import { Calendar, Clock, Monitor, IndianRupee, Check, BookOpen, Languages, Timer, Sparkles, Phone } from "lucide-react";
+import { Calendar, Clock, Monitor, IndianRupee, Check, BookOpen, Languages, Timer, Sparkles, ArrowRight } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/gita-course")({
   head: () => ({
@@ -38,10 +38,10 @@ const CHAPTERS: { sanskrit: string; english: string }[] = [
 ];
 
 const WHY = [
-  { icon: BookOpen, title: "Complete Gita", desc: "All 18 chapters, start to finish — nothing skipped." },
-  { icon: Languages, title: "Plain Telugu", desc: "Explained the way you'd explain it to family, not a lecture hall." },
-  { icon: Timer, title: "30–40 Min a Day", desc: "Fits into an evening. No long-term commitment beyond 18 days." },
-  { icon: Sparkles, title: "ISKCON Guidance", desc: "Led by ISKCON Kurnool teachers, rooted in tradition." },
+  { icon: BookOpen, title: "Complete Gita", desc: "All 18 chapters, start to finish — nothing skipped.", colorClass: "bg-primary/20 text-secondary" },
+  { icon: Languages, title: "Plain Telugu", desc: "Explained simply, in Telugu, with real-life context.", colorClass: "bg-amber-500/20 text-amber-300" },
+  { icon: Timer, title: "30–40 Min a Day", desc: "Fits into an evening. No long-term commitment beyond 18 days.", colorClass: "bg-emerald-500/20 text-emerald-300" },
+  { icon: Sparkles, title: "ISKCON Guidance", desc: "Led by ISKCON Kurnool teachers, rooted in tradition.", colorClass: "bg-indigo-500/20 text-indigo-300" },
 ];
 
 function safeUrl(u: string): string | undefined {
@@ -64,12 +64,17 @@ function RegisterButton({ url, label = "Register Now" }: { url?: string; label?:
     );
   }
   return (
-    <a href={safe} target="_blank" rel="noopener noreferrer"
-      className="inline-flex items-center px-8 py-3.5 rounded-full bg-accent text-white font-semibold hover:scale-105 hover:shadow-lg transition-all">
-      {label}
+    <a
+      href={safe}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-accent text-white font-semibold hover:scale-105 hover:shadow-xl active:scale-95 transition-all duration-200 cursor-pointer shadow-lg"
+    >
+      {label} <ArrowRight className="h-4 w-4" />
     </a>
   );
 }
+
 
 function Page() {
   const { gitaCourse: g } = useAdmin();
@@ -96,14 +101,46 @@ function Page() {
               {g.title}
             </h1>
             <p className="mt-5 text-lg opacity-90 max-w-md mx-auto md:mx-0">{g.tagline}</p>
-            <div className="mt-7 flex flex-col sm:flex-row sm:flex-wrap justify-center md:justify-start gap-2.5">
-              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 backdrop-blur-sm ring-1 ring-white/15 text-sm"><Calendar className="h-4 w-4 text-secondary" /> {g.dateRange}</span>
-              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 backdrop-blur-sm ring-1 ring-white/15 text-sm"><Clock className="h-4 w-4 text-secondary" /> {g.time}</span>
-              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 backdrop-blur-sm ring-1 ring-white/15 text-sm"><Monitor className="h-4 w-4 text-secondary" /> {g.mode}</span>
+            {/* Course Info Card — white, all-in-one */}
+            <div className="mt-7 inline-flex flex-col sm:flex-row items-stretch rounded-2xl overflow-hidden bg-white shadow-lg w-full sm:w-auto text-slate-800">
+              {/* Starts */}
+              <div className="flex items-center gap-3 px-5 py-4 flex-1">
+                <Calendar className="h-5 w-5 text-primary shrink-0" />
+                <div>
+                  <div className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Starts</div>
+                  <div className="font-sans font-bold text-sm leading-tight text-slate-900">{g.startLabel}</div>
+                </div>
+              </div>
+              <div className="w-px bg-slate-100 hidden sm:block" /><div className="h-px bg-slate-100 sm:hidden" />
+              {/* Ends */}
+              <div className="flex items-center gap-3 px-5 py-4 flex-1">
+                <Calendar className="h-5 w-5 text-primary shrink-0" />
+                <div>
+                  <div className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Ends</div>
+                  <div className="font-sans font-bold text-sm leading-tight text-slate-900">{g.endLabel}</div>
+                </div>
+              </div>
+              <div className="w-px bg-slate-100 hidden sm:block" /><div className="h-px bg-slate-100 sm:hidden" />
+              {/* Time */}
+              <div className="flex items-center gap-3 px-5 py-4 flex-1">
+                <Clock className="h-5 w-5 text-primary shrink-0" />
+                <div>
+                  <div className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Daily at</div>
+                  <div className="font-sans font-bold text-sm leading-tight text-slate-900">{g.time}</div>
+                </div>
+              </div>
+              <div className="w-px bg-slate-100 hidden sm:block" /><div className="h-px bg-slate-100 sm:hidden" />
+              {/* Mode */}
+              <div className="flex items-center gap-3 px-5 py-4 flex-1">
+                <Monitor className="h-5 w-5 text-primary shrink-0" />
+                <div>
+                  <div className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Mode</div>
+                  <div className="font-sans font-bold text-sm leading-tight text-slate-900">{g.mode}</div>
+                </div>
+              </div>
             </div>
             <div className="mt-8">
               <RegisterButton url={g.registerUrl} />
-              <p className="mt-2.5 text-xs opacity-75">Takes less than a minute. No fee, ever.</p>
             </div>
           </div>
 
@@ -120,102 +157,235 @@ function Page() {
         </div>
       </section>
 
+      {/* SECTION 1: How to Read Bhagavad Gita — Text Left, Image Right */}
+      <section className="py-20 md:py-28 bg-background relative overflow-hidden">
+        <div className="absolute right-0 top-0 w-96 h-96 bg-secondary/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-12 md:gap-16 items-center">
 
-      {/* ABOUT */}
-      <section className="py-16 md:py-24 bg-background">
-        <div className="max-w-3xl mx-auto px-6">
-          <span className="text-accent font-medium uppercase text-xs tracking-[0.25em]">About the Course</span>
-          <h2 className="font-display font-bold text-3xl md:text-4xl text-primary mt-3">Ancient wisdom, explained for how you actually live</h2>
-          <div className="mt-6 space-y-5 text-muted-foreground leading-relaxed">
-            <p>The Bhagavad Gita is not a relic to admire from a distance — it's a conversation between Krishna and Arjuna that speaks directly to doubt, duty, fear, and purpose. The questions Arjuna asked on the battlefield are the same ones we quietly carry today.</p>
-            <p>Over 18 evenings, we'll go through the Gita exactly as it was taught — one chapter each night — explained simply, in Telugu, with real-life context. No prior knowledge needed. Just eighteen nights, and eighteen chapters, start to finish.</p>
+            {/* Left: Text Content */}
+            <div className="space-y-6">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-secondary/15 text-amber-800 text-xs font-semibold uppercase tracking-wider">
+                <BookOpen className="h-4 w-4" /> Understanding the Gita
+              </div>
+              <h2 className="font-display font-bold text-3xl md:text-4xl text-primary leading-tight">
+                How to Read Bhagavad Gita &amp; What is It?
+              </h2>
+              <div className="text-slate-600 leading-relaxed space-y-4">
+                <p>
+                  The Bhagavad Gita is a conversation between Lord Krishna and the warrior Arjun that happens on the battlefield of Kurukshetra, right before the Mahabharata starts. Arjun is confused and upset about fighting, so Krishna helps him by telling him deep truths about life, duty, the soul, and God. The Gita tells us how to live with wisdom, balance, and devotion.
+                </p>
+                <p>
+                  For beginners who wonder how to read Bhagavad Gita, <strong>ISKCON Kurnool's</strong> classes make the process simple and structured, so you don't just read verses but understand their true meaning and learn how to apply them in real life. The life lessons from Bhagavad Gita teach us to stay calm in challenges, act with clarity, and live with purpose.
+                </p>
+              </div>
+            </div>
+
+            {/* Right: Image */}
+            <div className="flex justify-center lg:justify-end">
+              {g.gitaAboutImage ? (
+                <div className="w-full max-w-md rounded-3xl overflow-hidden">
+                  <img
+                    src={g.gitaAboutImage}
+                    alt="How to Read the Bhagavad Gita"
+                    className="w-full h-full object-cover aspect-square"
+                  />
+                </div>
+              ) : (
+                <div className="w-full max-w-md aspect-square rounded-3xl bg-gradient-to-br from-secondary/10 to-primary/5 border-2 border-dashed border-secondary/30 flex flex-col items-center justify-center gap-3 text-center p-8">
+                  <BookOpen className="h-12 w-12 text-secondary/50" />
+                  <p className="text-sm text-slate-400 font-medium">Upload section image<br/><span className="text-xs opacity-70">2000 × 2000 px via Admin Panel</span></p>
+                </div>
+              )}
+            </div>
+
           </div>
-          <blockquote className="mt-8 border-l-4 border-secondary pl-5 italic text-primary font-display text-lg">
+        </div>
+      </section>
+
+      {/* Golden Quote */}
+      <section className="py-10 bg-gradient-to-r from-primary to-[#3d1a6a]">
+        <div className="max-w-4xl mx-auto px-6 text-center text-white relative overflow-hidden">
+          <div className="absolute right-0 top-0 w-32 h-32 bg-secondary/10 rounded-full blur-2xl pointer-events-none" />
+          <blockquote className="italic font-display text-lg md:text-xl leading-relaxed max-w-2xl mx-auto">
             "Whenever there is a decline in righteousness and an increase in unrighteousness, I manifest myself."
-            <footer className="mt-2 text-sm not-italic text-muted-foreground">— Bhagavad Gita, Chapter 4</footer>
           </blockquote>
+          <p className="text-secondary font-bold text-xs uppercase tracking-widest mt-4">
+            — Bhagavad Gita, Chapter 4
+          </p>
+        </div>
+      </section>
+
+      {/* SECTION 2: Why Do These Gita Classes Matter — Image Left, Text Right */}
+      <section className="py-20 md:py-28 bg-slate-50/60 relative overflow-hidden">
+        <div className="absolute left-0 bottom-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-12 md:gap-16 items-center">
+
+            {/* Left: Image */}
+            <div className="flex justify-center lg:justify-start order-2 lg:order-1">
+              {g.gitaWhyImage ? (
+                <div className="w-full max-w-md rounded-3xl overflow-hidden">
+                  <img
+                    src={g.gitaWhyImage}
+                    alt="Why Gita Classes Matter"
+                    className="w-full h-full object-cover aspect-square"
+                  />
+                </div>
+              ) : (
+                <div className="w-full max-w-md aspect-square rounded-3xl bg-gradient-to-br from-primary/10 to-secondary/5 border-2 border-dashed border-primary/30 flex flex-col items-center justify-center gap-3 text-center p-8">
+                  <Sparkles className="h-12 w-12 text-primary/50" />
+                  <p className="text-sm text-slate-400 font-medium">Upload section image<br/><span className="text-xs opacity-70">2000 × 2000 px via Admin Panel</span></p>
+                </div>
+              )}
+            </div>
+
+            {/* Right: Text Content */}
+            <div className="space-y-6 order-1 lg:order-2">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wider">
+                <Sparkles className="h-4 w-4" /> Core Relevance
+              </div>
+              <h2 className="font-display font-bold text-3xl md:text-4xl text-primary leading-tight">
+                Why Do These Gita Classes Matter?
+              </h2>
+              <div className="text-slate-600 leading-relaxed space-y-4">
+                <p>
+                  These days, life often feels like a race. We balance work, relationships, duties, and expectations, but many still feel empty inside. People look for peace in travel, technology, or entertainment, but these things don't last long. What if the answers you want are already out there and will always be?
+                </p>
+                <p>
+                  The Bhagavad Gita isn't just a book about religion; it's a conversation about life. It asks questions that everyone can relate to: <em>Who am I? What is my goal? How can I live in this world without losing my peace of mind?</em> These questions are not only about spirituality; they are also about being human. <strong>ISKCON Kurnool</strong> offers structured Gita classes to help you find these answers in a clear and deep way.
+                </p>
+                <p>
+                  The Gita gives you wisdom that never goes away, unlike motivational talks that only give you a short burst of energy. It changes how you think, act, and deal with problems. These classes are about more than just studying; they are about real change.
+                </p>
+              </div>
+            </div>
+
+          </div>
         </div>
       </section>
 
       {/* WHY JOIN */}
-      <section className="py-16 md:py-24 bg-surface">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto">
-            <span className="text-accent font-medium uppercase text-xs tracking-[0.25em]">Why Join</span>
-            <h2 className="font-display font-bold text-3xl md:text-4xl text-primary mt-3">Built to actually finish</h2>
+      <section className="py-20 md:py-28 bg-[#231e3d] text-white relative overflow-hidden">
+        {/* Soft glowing decorations */}
+        <div className="absolute top-1/4 left-1/4 h-80 w-80 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 h-80 w-80 rounded-full bg-secondary/5 blur-3xl pointer-events-none" />
+
+        <div className="max-w-6xl mx-auto px-6 relative z-10">
+          <div className="text-center max-w-2xl mx-auto space-y-3">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/10 text-secondary text-[10px] font-bold uppercase tracking-wider">
+              <Sparkles className="h-3 w-3" /> Why Join
+            </span>
+            <h2 className="font-display font-bold text-3xl md:text-5xl text-white tracking-tight">
+              Built to Actually Finish
+            </h2>
+            <p className="text-slate-400 text-sm max-w-md mx-auto leading-relaxed">
+              Experience a program built around your busy routine, designed to give you clarity and wisdom that stays with you.
+            </p>
+            <div className="pt-2">
+              <RegisterButton url={g.registerUrl} />
+            </div>
           </div>
-          <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {WHY.map((w) => (
-              <div key={w.title} className="p-6 rounded-2xl bg-white border border-border hover:shadow-elegant hover:-translate-y-1 transition">
-                <div className="h-12 w-12 rounded-full bg-primary text-primary-foreground grid place-items-center mb-4 shadow-glow">
-                  <w.icon className="h-5 w-5" />
+              <div key={w.title} className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-secondary/20 hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 relative overflow-hidden group">
+                {/* Hover top line accent */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-secondary scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+                
+                {/* Soft Tint Icon Box */}
+                <div className={`h-12 w-12 rounded-2xl flex items-center justify-center mb-5 shrink-0 transition-transform duration-300 group-hover:scale-110 ${w.colorClass}`}>
+                  <w.icon className="h-5.5 w-5.5" />
                 </div>
-                <h3 className="font-display font-bold text-lg text-primary mb-1.5">{w.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{w.desc}</p>
+                
+                <h3 className="font-display font-bold text-lg text-white mb-2 group-hover:text-secondary transition-colors duration-300">
+                  {w.title}
+                </h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  {w.desc}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* SCHEDULE STRIP */}
-      <section className="py-12 bg-gradient-hero text-primary-foreground">
-        <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          {[
-            { icon: Calendar, k: "Starts", v: g.startLabel },
-            { icon: Calendar, k: "Ends", v: g.endLabel },
-            { icon: Clock, k: "Time", v: g.time },
-            { icon: IndianRupee, k: "Fee", v: g.fee },
-          ].map((s) => (
-            <div key={s.k}>
-              <s.icon className="h-6 w-6 mx-auto text-secondary" />
-              <div className="mt-2 text-xs uppercase tracking-widest opacity-75">{s.k}</div>
-              <div className="font-display font-bold text-lg mt-0.5">{s.v}</div>
-            </div>
-          ))}
-        </div>
-      </section>
 
-      {/* CHAPTERS */}
-      <section className="py-16 md:py-24 bg-background">
+
+      {/* CHAPTERS SECTION */}
+      <section className="py-20 md:py-28 bg-background">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto space-y-3">
             <span className="text-accent font-medium uppercase text-xs tracking-[0.25em]">The Journey</span>
-            <h2 className="font-display font-bold text-3xl md:text-4xl text-primary mt-3">Eighteen Chapters, Eighteen Nights</h2>
-            <p className="mt-3 text-muted-foreground">Hover or tap a mark on the wheel to reveal that night's chapter.</p>
-          </div>
-          <div className="mt-12">
-            <ChapterWheel chapters={CHAPTERS} />
+            <h2 className="font-display font-bold text-3xl md:text-4xl text-primary">
+              18 Days, 18 Chapters
+            </h2>
+            <p className="text-muted-foreground text-sm max-w-md mx-auto">
+              Explore the complete curriculum of the course, moving step-by-step through the core chapters of the Gita.
+            </p>
           </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-14">
+            {CHAPTERS.map((ch, idx) => {
+              const numStr = String(idx + 1).padStart(2, "0");
+              return (
+                <div 
+                  key={ch.sanskrit} 
+                  className="flex items-center gap-4 bg-white border border-slate-100 p-5 rounded-2xl shadow-[0_3px_12px_rgba(0,0,0,0.01)] hover:shadow-[0_12px_35px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 transition-all duration-300 group"
+                >
+                  <div className="h-12 w-12 rounded-xl bg-secondary/10 group-hover:bg-primary/5 border border-amber-500/20 group-hover:border-primary/10 text-amber-700 group-hover:text-primary flex items-center justify-center font-display font-extrabold text-sm shrink-0 transition-all duration-300">
+                    {numStr}
+                  </div>
+                  <div className="text-left flex-1 min-w-0">
+                    <h3 className="font-display font-bold text-base text-primary group-hover:text-amber-700 transition-colors duration-300 truncate">
+                      {ch.sanskrit}
+                    </h3>
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">
+                      {ch.english}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </section>
 
-      {/* REGISTRATION */}
-      <section className="py-16 md:py-24 bg-surface">
-        <div className="max-w-2xl mx-auto px-6 text-center">
-          <span className="text-accent font-medium uppercase text-xs tracking-[0.25em]">Registration</span>
-          <h2 className="font-display font-bold text-3xl md:text-4xl text-primary mt-3">Reserve your seat for the journey</h2>
-          <p className="mt-4 text-muted-foreground">Registration is free and open through July 14. Once you register, you'll receive the daily session link directly.</p>
-          <div className="mt-7 flex flex-col items-center gap-3">
-            <RegisterButton url={g.registerUrl} />
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Check className="h-4 w-4 text-green-600" /> {g.fee} · {g.mode} · Daily
+      {/* REGISTRATION SECTION */}
+      <section className="py-20 md:py-28 bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 relative overflow-hidden text-white">
+        <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 right-0 h-80 w-80 rounded-full bg-white/15 blur-3xl pointer-events-none" />
+
+        <div className="max-w-3xl mx-auto px-6 text-center relative z-10 space-y-6">
+          <span className="text-white/80 font-medium uppercase text-xs tracking-[0.25em]">Registration</span>
+          <h2 className="font-display font-bold text-3xl md:text-5xl text-white mt-3 tracking-tight">
+            Reserve Your Seat for the Journey
+          </h2>
+          <p className="text-white/90 text-sm max-w-lg mx-auto leading-relaxed">
+            Once you register, you will receive the daily session link directly via email/WhatsApp.
+          </p>
+          
+          <div className="bg-white border border-orange-200/20 rounded-3xl p-8 max-w-md mx-auto shadow-2xl space-y-6 text-slate-800 animate-fade-up">
+            <div className="space-y-1">
+              <div className="text-[10px] uppercase font-bold text-orange-600 tracking-widest">Enrollment Status</div>
+              <div className="text-xl font-extrabold text-slate-900 font-display">Free Registration Open</div>
+            </div>
+            
+            <div className="flex flex-col items-center gap-3.5">
+              <RegisterButton url={g.registerUrl} />
+              <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-slate-600 font-semibold mt-1">
+                <span className="flex items-center gap-1"><Check className="h-4 w-4 text-emerald-600 font-bold" /> {g.fee}</span>
+                <span>•</span>
+                <span className="flex items-center gap-1">{g.mode}</span>
+                <span>•</span>
+                <span>Daily Sessions</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* FOOTER STRIP */}
-      <section className="py-10 bg-gradient-hero text-primary-foreground text-center">
-        <div className="max-w-3xl mx-auto px-6">
-          <h3 className="font-display font-bold text-xl">ISKCON KURNOOL</h3>
-          <a href={`tel:${g.contact.replace(/\s+/g, "")}`} className="mt-2 inline-flex items-center gap-2 text-sm opacity-90 hover:opacity-100">
-            <Phone className="h-4 w-4 text-secondary" /> Questions? Call/WhatsApp {g.contact}
-          </a>
-          <p className="mt-2 text-xs opacity-70">Telugu Gita Online Course · {g.dateRange}</p>
-        </div>
-      </section>
     </SiteLayout>
+
   );
 }
+
