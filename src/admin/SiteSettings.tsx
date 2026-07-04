@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAdmin, uploadToCloudinary, SiteSettings as Settings } from "@/context/AdminContext";
+import { UploadBox } from "./CarouselManager";
 
 export default function SiteSettingsForm() {
   const { settings, setSettings } = useAdmin();
@@ -38,16 +39,13 @@ export default function SiteSettingsForm() {
 
       <Input label="Footer Copyright Text" value={s.footer} onChange={(v) => update("footer", v)} />
 
-      <div>
-        <span className="text-sm font-medium text-foreground/80 mb-2 block">Logo</span>
-        <div className="flex items-center gap-4">
-          {s.logo && <img src={s.logo} alt="" className="h-16 w-16 rounded-full object-cover ring-2 ring-secondary" />}
-          <label className="px-4 py-2 rounded-lg border-2 border-dashed cursor-pointer hover:border-primary">
-            Upload Logo
-            <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && onLogo(e.target.files[0])} />
-          </label>
-        </div>
-      </div>
+      <UploadBox
+        label="Temple Logo"
+        url={s.logo}
+        onPick={onLogo}
+        aspect="aspect-square"
+        className="w-20 shrink-0"
+      />
 
       <div className="flex items-center gap-3">
         <button onClick={save} className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium">Save Changes</button>

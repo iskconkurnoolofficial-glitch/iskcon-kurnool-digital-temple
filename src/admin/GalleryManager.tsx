@@ -39,9 +39,9 @@ export default function GalleryManager() {
     <div className="space-y-8">
       <div className="bg-white rounded-2xl shadow p-6 border">
         <h3 className="font-display text-xl font-bold text-primary mb-4">Add Photo</h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          <UploadBox label="Photo" url={url} onPick={onPick} />
-          <div className="space-y-3">
+        <div className="flex flex-col md:flex-row gap-6">
+          <UploadBox label="Photo" url={url} onPick={onPick} aspect="aspect-square" className="w-full max-w-[140px] shrink-0" />
+          <div className="flex-1 space-y-3">
             <input className="w-full px-4 py-2.5 border rounded-lg" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
             <select className="w-full px-4 py-2.5 border rounded-lg" value={cat} onChange={(e) => setCat(e.target.value)}>
               {categories.map((c) => <option key={c}>{c}</option>)}

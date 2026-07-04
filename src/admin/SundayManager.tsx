@@ -66,7 +66,7 @@ function SettingsTab({ sunday, update }: { sunday: SundayData; update: (p: Parti
       <h3 className="font-display text-xl font-bold text-primary mb-2">Sunday Program Settings</h3>
       <div className="grid md:grid-cols-2 gap-6">
         <div className="space-y-4">
-          <UploadBox label="Sunday Program Logo (Optional — defaults to main logo)" url={sunday.logo} onPick={pickImage} />
+          <UploadBox label="Sunday Program Logo (Optional)" url={sunday.logo} onPick={pickImage} aspect="aspect-square" className="w-full max-w-[100px]" />
           {sunday.logo && (
             <button
               onClick={() => update({ logo: "" })}
@@ -76,7 +76,7 @@ function SettingsTab({ sunday, update }: { sunday: SundayData; update: (p: Parti
             </button>
           )}
 
-          <UploadBox label="Timings Section Image (Optional)" url={sunday.timingsImage} onPick={pickTimingsImage} />
+          <UploadBox label="Timings Section Image (Optional)" url={sunday.timingsImage} onPick={pickTimingsImage} aspect="aspect-video" className="w-full max-w-[180px]" />
           {sunday.timingsImage && (
             <button
               onClick={() => update({ timingsImage: "" })}
@@ -337,9 +337,9 @@ function GalleryTab({ sunday, update }: { sunday: SundayData; update: (p: Partia
     <div className="space-y-6">
       <div className="bg-white rounded-2xl shadow p-6 border">
         <h3 className="font-display text-xl font-bold text-primary mb-4">Add Sunday moments Photo</h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          <UploadBox label="Upload Image" url={url} onPick={onPick} />
-          <div className="space-y-3">
+        <div className="flex flex-col md:flex-row gap-6">
+          <UploadBox label="Upload Image" url={url} onPick={onPick} aspect="aspect-square" className="w-full max-w-[140px] shrink-0" />
+          <div className="flex-1 space-y-3">
             <input 
               className="w-full px-4 py-2.5 border rounded-lg" 
               placeholder="Caption (optional)" 
@@ -634,11 +634,13 @@ function ActivitiesTab({ sunday, update }: { sunday: SundayData; update: (p: Par
           <h3 className="font-display text-xl font-bold text-primary">Add New Feast Activity ({list.length}/6)</h3>
           
           <div className="grid md:grid-cols-12 gap-6">
-            <div className="md:col-span-4">
+            <div className="md:col-span-3">
               <UploadBox 
                 label="Activity Thumbnail" 
                 url={newUrl} 
                 onPick={onPickNewImage} 
+                aspect="aspect-square"
+                className="w-full max-w-[110px]"
               />
               {newUrl && (
                 <button
@@ -701,11 +703,13 @@ function ActivitiesTab({ sunday, update }: { sunday: SundayData; update: (p: Par
           {list.map((act, index) => (
             <div key={act.id} className={`pt-6 ${index === 0 ? "pt-0" : ""} space-y-4`}>
               <div className="grid md:grid-cols-12 gap-6">
-                <div className="md:col-span-4 space-y-3">
+                <div className="md:col-span-3 space-y-3">
                   <UploadBox 
-                    label={`Image Thumbnail (${act.title})`} 
+                    label={`Image Thumbnail`} 
                     url={act.image} 
                     onPick={(f) => onPickImage(act.id, f)} 
+                    aspect="aspect-square"
+                    className="w-full max-w-[100px]"
                   />
                   {act.image && (
                     <button

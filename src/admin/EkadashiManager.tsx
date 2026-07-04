@@ -41,7 +41,7 @@ export default function EkadashiManager() {
       <div className="bg-white rounded-2xl shadow p-6 border space-y-4">
         <h3 className="font-display text-xl font-bold text-primary">Image</h3>
         <div className="grid md:grid-cols-2 gap-4">
-          <UploadBox label="Image" url={ekadashi.image} onPick={pickImage} />
+          <UploadBox label="Image" url={ekadashi.image} onPick={pickImage} aspect="aspect-video" className="max-w-[180px]" />
           <div>
             <label className={label}>Image Quote</label>
             <textarea className={input} rows={3} value={ekadashi.imageQuote} onChange={(e) => update({ imageQuote: e.target.value })} />

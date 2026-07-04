@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAdmin, uploadToCloudinary, Seva, SevaPrice } from "@/context/AdminContext";
 import { Trash2, Eye, EyeOff, Upload, HandHeart, Pencil, X, Plus, ArrowUp, ArrowDown, IndianRupee } from "lucide-react";
+import { UploadBox } from "./CarouselManager";
 
 function emptyDraft(): Partial<Seva> {
   return { title: "", description: "", prices: [{ label: "Per Day", amount: 101 }], active: true };
@@ -82,21 +83,14 @@ export default function SevasManager() {
           )}
         </div>
 
-        <div className="grid lg:grid-cols-[320px,1fr] gap-6">
-          <label className="block cursor-pointer">
-            <span className="text-sm font-medium text-foreground/80 mb-1 block">Thumbnail (1080 × 1080px)</span>
-            <div className="relative aspect-square bg-muted rounded-lg border-2 border-dashed border-border overflow-hidden grid place-items-center hover:border-primary transition">
-              {draft.thumbnail ? (
-                <img src={draft.thumbnail} alt="" className="absolute inset-0 w-full h-full object-cover" />
-              ) : (
-                <div className="text-center text-muted-foreground">
-                  <Upload className="h-6 w-6 mx-auto mb-1" />
-                  <span className="text-xs">Click to upload</span>
-                </div>
-              )}
-              <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
-            </div>
-          </label>
+        <div className="grid lg:grid-cols-[180px,1fr] gap-6">
+          <UploadBox
+            label="Thumbnail (1080px)"
+            url={draft.thumbnail}
+            onPick={upload}
+            aspect="aspect-square"
+            className="w-full max-w-[130px]"
+          />
 
           <div className="grid gap-3">
             <Field label="Title">

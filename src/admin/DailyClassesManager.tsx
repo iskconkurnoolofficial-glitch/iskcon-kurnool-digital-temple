@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAdmin, uploadToCloudinary, DailyClass } from "@/context/AdminContext";
 import { Trash2, Eye, EyeOff, Upload, Radio, Calendar, Clock, Globe2, Link as LinkIcon, Pencil, X } from "lucide-react";
+import { UploadBox } from "./CarouselManager";
 
 const LANGUAGES = ["Telugu", "English", "Hindi", "Sanskrit", "Tamil", "Kannada"];
 
@@ -79,21 +80,14 @@ export default function DailyClassesManager() {
           )}
         </div>
 
-        <div className="grid lg:grid-cols-[260px,1fr] gap-6">
-          <label className="block cursor-pointer">
-            <span className="text-sm font-medium text-foreground/80 mb-1 block">Class Thumbnail</span>
-            <div className="relative aspect-video bg-muted rounded-lg border-2 border-dashed border-border overflow-hidden grid place-items-center hover:border-primary transition">
-              {draft.thumbnail ? (
-                <img src={draft.thumbnail} alt="" className="absolute inset-0 w-full h-full object-cover" />
-              ) : (
-                <div className="text-center text-muted-foreground">
-                  <Upload className="h-6 w-6 mx-auto mb-1" />
-                  <span className="text-xs">Click to upload</span>
-                </div>
-              )}
-              <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
-            </div>
-          </label>
+        <div className="grid lg:grid-cols-[220px,1fr] gap-6">
+          <UploadBox
+            label="Class Thumbnail"
+            url={draft.thumbnail}
+            onPick={upload}
+            aspect="aspect-video"
+            className="w-full max-w-[180px]"
+          />
 
           <div className="grid sm:grid-cols-2 gap-3">
             <Field label="Title">

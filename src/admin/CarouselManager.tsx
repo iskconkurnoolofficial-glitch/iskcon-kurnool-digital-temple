@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAdmin, uploadToCloudinary, Slide } from "@/context/AdminContext";
-import { Trash2, Eye, EyeOff, ArrowUp, ArrowDown, Upload, Pencil, X } from "lucide-react";
+import { Trash2, Eye, EyeOff, ArrowUp, ArrowDown, Upload, Pencil, X, Play } from "lucide-react";
 
 export default function CarouselManager() {
   const { slides, setSlides } = useAdmin();
@@ -59,12 +59,10 @@ export default function CarouselManager() {
             <button onClick={resetForm} className="text-sm text-muted-foreground hover:text-primary inline-flex items-center gap-1"><X className="h-4 w-4" /> Cancel</button>
           )}
         </div>
-        <div className="grid md:grid-cols-2 gap-4">
-          <UploadBox label="Desktop Image (4917×1750)" url={draft.desktop} onPick={(f) => upload(f, "desktop")} />
-          <UploadBox label="Mobile Image (1080×1350)" url={draft.mobile} onPick={(f) => upload(f, "mobile")} />
-        </div>
-        <div className="mt-4">
-          <VideoUploadBox label="Video (optional — plays instead of image)" url={draft.video} onPick={(f) => upload(f, "video")} onClear={() => setDraft((d) => ({ ...d, video: undefined }))} />
+        <div className="flex flex-wrap gap-6 mb-4">
+          <UploadBox label="Desktop Image (4917×1750)" url={draft.desktop} onPick={(f) => upload(f, "desktop")} aspect="aspect-video" className="w-full max-w-[180px]" />
+          <UploadBox label="Mobile Image (1080×1350)" url={draft.mobile} onPick={(f) => upload(f, "mobile")} aspect="aspect-[4/5]" className="w-full max-w-[130px]" />
+          <VideoUploadBox label="Video (optional)" url={draft.video} onPick={(f) => upload(f, "video")} onClear={() => setDraft((d) => ({ ...d, video: undefined }))} aspect="aspect-video" className="w-full max-w-[180px]" />
         </div>
         <div className="grid md:grid-cols-2 gap-4 mt-4">
           <input className="px-4 py-2.5 border rounded-lg" placeholder="Title (optional)" value={draft.title || ""} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
@@ -106,45 +104,91 @@ export default function CarouselManager() {
   );
 }
 
-export function UploadBox({ label, url, onPick }: { label: string; url?: string; onPick: (f: File) => void }) {
+export function UploadBox({ 
+  label, 
+  url, 
+  onPick,
+  aspect = "aspect-video",
+  className = ""
+}: { 
+  label: string; 
+  url?: string; 
+  onPick: (f: File) => void;
+  aspect?: string;
+  className?: string;
+}) {
   return (
-    <label className="block cursor-pointer">
-      <span className="text-sm font-medium text-foreground/80 mb-1 block">{label}</span>
-      <div className="relative aspect-video bg-muted rounded-lg border-2 border-dashed border-border overflow-hidden grid place-items-center hover:border-primary transition">
-        {url ? <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover" /> : (
-          <div className="text-center text-muted-foreground">
-            <Upload className="h-6 w-6 mx-auto mb-1" />
-            <span className="text-xs">Click to upload</span>
-          </div>
-        )}
-        <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && onPick(e.target.files[0])} />
-      </div>
-    </label>
+    <div className={`block ${className}`}>
+      <span className="text-sm font-semibold text-foreground/80 mb-1.5 block">{label}</span>
+      <label className="relative block cursor-pointer group">
+        <div className={`relative ${aspect} bg-slate-50/80 rounded-xl border-2 border-dashed border-border/80 overflow-hidden flex flex-col items-center justify-center text-center transition-all duration-300 hover:border-primary hover:bg-primary/[0.01] shadow-sm`}>
+          {url ? (
+            <>
+              <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              {/* Premium Hover Overlay */}
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-1.5 transition-opacity duration-300 text-white font-bold text-xs">
+                <div className="p-2 rounded-xl bg-white/20 backdrop-blur-sm">
+                  <Pencil className="h-4 w-4" />
+                </div>
+                <span>Change Image</span>
+              </div>
+            </>
+          ) : (
+            <div className="p-4 text-center text-muted-foreground space-y-1 select-none">
+              <div className="p-3 rounded-full bg-slate-100 group-hover:bg-primary/10 group-hover:text-primary transition duration-300 inline-block">
+                <Upload className="h-5 w-5 mx-auto" />
+              </div>
+              <p className="text-xs font-semibold text-foreground/75">Click to upload</p>
+              <p className="text-[10px] text-muted-foreground">PNG, JPG or WEBP</p>
+            </div>
+          )}
+          <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && onPick(e.target.files[0])} />
+        </div>
+      </label>
+    </div>
   );
 }
 
-export function VideoUploadBox({ label, url, onPick, onClear }: { label: string; url?: string; onPick: (f: File) => void; onClear: () => void }) {
+export function VideoUploadBox({ 
+  label, 
+  url, 
+  onPick, 
+  onClear,
+  aspect = "aspect-video",
+  className = ""
+}: { 
+  label: string; 
+  url?: string; 
+  onPick: (f: File) => void; 
+  onClear: () => void;
+  aspect?: string;
+  className?: string;
+}) {
   return (
-    <div>
-      <span className="text-sm font-medium text-foreground/80 mb-1 block">{label}</span>
-      <div className="relative aspect-video bg-muted rounded-lg border-2 border-dashed border-border overflow-hidden grid place-items-center hover:border-primary transition">
+    <div className={className}>
+      <span className="text-sm font-semibold text-foreground/80 mb-1.5 block">{label}</span>
+      <div className={`relative ${aspect} bg-slate-50/80 rounded-xl border-2 border-dashed border-border/80 overflow-hidden flex flex-col items-center justify-center text-center transition-all duration-300 hover:border-primary hover:bg-primary/[0.01] shadow-sm group`}>
         {url ? (
           <>
             <video src={url} className="absolute inset-0 w-full h-full object-cover" muted loop playsInline autoPlay />
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300 pointer-events-none">
+              <Play className="h-7 w-7 text-white" />
+            </div>
             <button
               type="button"
               onClick={onClear}
-              className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-destructive shadow"
+              className="absolute top-2.5 right-2.5 z-10 inline-flex items-center gap-1.5 rounded-xl bg-white/95 px-3 py-1.5 text-xs font-bold text-destructive shadow-sm hover:bg-destructive hover:text-white transition duration-200"
             >
               <X className="h-3.5 w-3.5" /> Remove
             </button>
           </>
         ) : (
-          <label className="absolute inset-0 grid place-items-center cursor-pointer">
-            <div className="text-center text-muted-foreground">
-              <Upload className="h-6 w-6 mx-auto mb-1" />
-              <span className="text-xs">Click to upload video</span>
+          <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer p-4 text-center text-muted-foreground space-y-1 select-none">
+            <div className="p-3 rounded-full bg-slate-100 group-hover:bg-primary/10 group-hover:text-primary transition duration-300 inline-block">
+              <Upload className="h-5 w-5 mx-auto" />
             </div>
+            <p className="text-xs font-semibold text-foreground/75">Click to upload video</p>
+            <p className="text-[10px] text-muted-foreground">MP4 or WEBM (optional)</p>
             <input type="file" accept="video/*" className="hidden" onChange={(e) => e.target.files?.[0] && onPick(e.target.files[0])} />
           </label>
         )}

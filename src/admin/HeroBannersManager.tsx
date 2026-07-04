@@ -58,9 +58,10 @@ export default function HeroBannersManager() {
             <div>
               <span className="text-sm font-semibold text-foreground/80 block mb-2">{p.label}</span>
               <UploadBox 
-                label="Upload Hero Image" 
+                label="" 
                 url={heroBanners[p.key]} 
                 onPick={(f) => pickImage(p.key, f)} 
+                aspect="aspect-[5/4]"
               />
               {busy === p.key && <p className="text-xs text-muted-foreground animate-pulse mt-1.5">Uploading...</p>}
             </div>

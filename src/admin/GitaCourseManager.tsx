@@ -27,7 +27,7 @@ export default function GitaCourseManager() {
       {/* Hero image */}
       <div className="bg-white rounded-2xl shadow p-6 border space-y-4">
         <h3 className="font-display text-xl font-bold text-primary">Hero Image (1080 × 1350)</h3>
-        <UploadBox label="Hero Image" url={gitaCourse.heroImage} onPick={pickImage} />
+        <UploadBox label="Hero Image" url={gitaCourse.heroImage} onPick={pickImage} aspect="aspect-[4/5]" className="max-w-[130px]" />
         {busy && <p className="text-sm text-muted-foreground">Uploading…</p>}
       </div>
 

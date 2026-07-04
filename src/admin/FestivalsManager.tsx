@@ -8,6 +8,7 @@ import {
   Plus, Trash2, Pencil, Eye, EyeOff, Upload, Calendar, Clock, Search,
   ArrowUp, ArrowDown, X, GripVertical, Sparkles, Save, CheckCircle2, CircleSlash,
 } from "lucide-react";
+import { UploadBox } from "./CarouselManager";
 
 function fmtDate(d: string) {
   if (!d) return "—";
@@ -298,10 +299,10 @@ function FestivalEditor({ draft, setDraft, slugEdited, setSlugEdited, onSave, on
 
       {/* Images */}
       <Section title="Images">
-        <div className="grid sm:grid-cols-3 gap-4">
-          <ImageUpload label="Card Thumbnail" hint="1280 × 720 px" url={draft.thumbnail} busy={busy === "thumbnail"} ratio="aspect-video" onFile={(f) => uploadField(f, "thumbnail")} />
-          <ImageUpload label="Desktop Banner" hint="4917 × 1750 px" url={draft.desktopBanner} busy={busy === "desktopBanner"} ratio="aspect-video" onFile={(f) => uploadField(f, "desktopBanner")} />
-          <ImageUpload label="Mobile Banner" hint="1080 × 1080 px" url={draft.mobileBanner} busy={busy === "mobileBanner"} ratio="aspect-square" onFile={(f) => uploadField(f, "mobileBanner")} />
+        <div className="flex flex-wrap gap-6">
+          <UploadBox label="Card Thumbnail (1280 × 720)" url={draft.thumbnail} onPick={(f) => uploadField(f, "thumbnail")} aspect="aspect-video" className="w-full max-w-[180px]" />
+          <UploadBox label="Desktop Banner (4917 × 1750)" url={draft.desktopBanner} onPick={(f) => uploadField(f, "desktopBanner")} aspect="aspect-video" className="w-full max-w-[180px]" />
+          <UploadBox label="Mobile Banner (1080 × 1080)" url={draft.mobileBanner} onPick={(f) => uploadField(f, "mobileBanner")} aspect="aspect-square" className="w-full max-w-[110px]" />
         </div>
       </Section>
 
@@ -385,14 +386,14 @@ function SevaEditor({ seva, index, total, onChange, onDelete, onMove }: {
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-[140px,1fr] gap-4">
-        <label className="block cursor-pointer">
-          <div className="relative aspect-square bg-muted rounded-lg border-2 border-dashed overflow-hidden grid place-items-center hover:border-primary transition">
-            {seva.thumbnail ? <img src={seva.thumbnail} alt="" className="absolute inset-0 w-full h-full object-cover" />
-              : <div className="text-center text-muted-foreground text-xs"><Upload className="h-5 w-5 mx-auto mb-1" />{busy ? "..." : "1080×1080"}</div>}
-            <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
-          </div>
-        </label>
+      <div className="grid sm:grid-cols-[100px,1fr] gap-4">
+        <UploadBox
+          label=""
+          url={seva.thumbnail}
+          onPick={upload}
+          aspect="aspect-square"
+          className="w-full max-w-[100px]"
+        />
 
         <div className="space-y-3">
           <input className="inp" placeholder="Seva title (e.g. Go Seva)" value={seva.title} onChange={(e) => onChange({ title: e.target.value })} />
@@ -441,21 +442,6 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     <label className="block">
       <span className="text-sm font-medium text-foreground/80 mb-1 block">{label}</span>
       {children}
-    </label>
-  );
-}
-function ImageUpload({ label, hint, url, busy, ratio, onFile }: {
-  label: string; hint: string; url: string; busy: boolean; ratio: string; onFile: (f: File) => void;
-}) {
-  return (
-    <label className="block cursor-pointer">
-      <span className="text-sm font-medium text-foreground/80 mb-1 block">{label}</span>
-      <div className={`relative ${ratio} bg-muted rounded-lg border-2 border-dashed overflow-hidden grid place-items-center hover:border-primary transition`}>
-        {url ? <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover" />
-          : <div className="text-center text-muted-foreground"><Upload className="h-5 w-5 mx-auto mb-1" /><span className="text-xs">{busy ? "Uploading..." : hint}</span></div>}
-        <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
-      </div>
-      <span className="text-[11px] text-muted-foreground mt-1 block">{hint}</span>
     </label>
   );
 }

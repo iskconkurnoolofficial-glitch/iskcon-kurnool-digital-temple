@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { useAdmin } from "@/context/AdminContext";
+import LanguageToggle from "@/components/LanguageToggle";
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
   return (
@@ -12,6 +13,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       <main className="flex-1 pt-20 md:pt-24 pb-20 lg:pb-0">{children}</main>
       <Footer />
       <FloatingWhatsApp />
+      <LanguageToggle layout="vertical-sticky" />
       <MobileBottomNav />
     </div>
   );
