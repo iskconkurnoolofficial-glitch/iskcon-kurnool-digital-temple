@@ -28,7 +28,15 @@ export function useLiveClass(): DailyClass | null {
   const now = nowIST();
   for (const c of classes) {
     if (!c.active || !c.startAt) continue;
-    const start = parseIST(c.startAt);
+    
+    let start = parseIST(c.startAt);
+    if (c.everyday) {
+      const dt = new Date(c.startAt);
+      const startToday = new Date(now);
+      startToday.setHours(dt.getHours(), dt.getMinutes(), 0, 0);
+      start = startToday.getTime();
+    }
+    
     const end = start + (c.durationMin || 60) * 60_000;
     if (now >= start && now <= end) return c;
   }

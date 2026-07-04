@@ -546,6 +546,7 @@ export type DailyClass = {
   id: string;
   thumbnail: string;
   title: string;
+  description?: string;
   /** ISO datetime — class start (interpreted as IST when entered) */
   startAt: string;
   /** Duration minutes */
@@ -553,6 +554,7 @@ export type DailyClass = {
   language: string;
   joinUrl: string;
   active: boolean;
+  everyday?: boolean;
 };
 
 export type SiteSettings = {
