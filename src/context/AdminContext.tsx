@@ -104,7 +104,7 @@ export function isFestivalLive(f: Festival, now: number = Date.now()): boolean {
   return f.status === "published";
 }
 
-export type YouthFeature = { title: string; image: string };
+export type YouthFeature = { title: string; image: string; desc: string };
 export type YouthGalleryItem = { id: string; url: string; label: string };
 export type YouthReview = { id: string; name: string; text: string; rating: number; visible: boolean };
 export type YouthData = {
@@ -120,13 +120,15 @@ export type YouthData = {
 
 export const defaultYouth: YouthData = {
   logo: "",
-  whatsappUrl: "https://chat.whatsapp.com/",
+  whatsappUrl: "https://chat.whatsapp.com/LhB20hR5J1T7xVvH7Hk9y3",
   instagramHandle: "Gaura_Bhaktas_Official",
   features: [
-    { title: "Bhagavad Gita", image: "" },
-    { title: "Music & Dance", image: "" },
-    { title: "Kirtan Beats", image: "" },
-    { title: "Delicious Prasadam", image: "" },
+    { title: "Soulful Kirtan", desc: "Experience uplifting Hare Krishna mantra meditation through joyful music and collective chanting.", image: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=500&q=80" },
+    { title: "Bhagavad Gita Wisdom", desc: "Explore practical teachings from the Bhagavad Gita and learn how they apply to studies, career, relationships, and habits.", image: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=500&q=80" },
+    { title: "Interactive Youth Sessions", desc: "Ask questions, exchange ideas, participate in discussions, and discover practical solutions for real-life challenges.", image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=500&q=80" },
+    { title: "Mind Management", desc: "Learn timeless principles to improve focus, manage stress, overcome distractions, build discipline, and develop positive habits.", image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=500&q=80" },
+    { title: "Positive Youth Community", desc: "Meet like-minded students and young people from Kurnool, build meaningful friendships, and grow in a supportive environment.", image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=500&q=80" },
+    { title: "Krishna Prasadam", desc: "Conclude the program by honoring delicious, sanctified, healthy vegetarian food (prasadam) together.", image: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=500&q=80" },
   ],
   venue: "ISKCON Kurnool\nSri Sri Jagannath Baladev Subhadra Temple\nKurnool, Andhra Pradesh",
   schedule: "Every Saturday · 6:30 PM – 8:30 PM",

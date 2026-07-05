@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import SiteLayout, { PageHero } from "@/components/SiteLayout";
 import { useAdmin } from "@/context/AdminContext";
-import { MessageCircle, Instagram, MapPin, Calendar, Camera, Music, Sparkles, Heart, ArrowRight } from "lucide-react";
+import { MessageCircle, Instagram, MapPin, Calendar, Camera, Music, Sparkles, Heart, ArrowRight, Smile, Globe, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/harinama")({
@@ -153,49 +153,159 @@ function HarinamaPage() {
         </div>
       </section>
 
+      {/* Benefits Section */}
+      <section className="py-20 md:py-28 bg-gradient-to-br from-amber-100 via-amber-200/40 to-amber-50 relative overflow-hidden border-y border-amber-200/40">
+        {/* Soft glowing decorations */}
+        <div className="absolute top-12 left-10 h-72 w-72 rounded-full bg-secondary/25 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-12 right-10 h-72 w-72 rounded-full bg-accent/15 blur-3xl pointer-events-none" />
+
+        <div className="max-w-6xl mx-auto px-6 relative z-10">
+          <div className="text-center max-w-2xl mx-auto space-y-3 mb-16">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/60 border border-amber-200 text-accent text-xs font-bold uppercase tracking-wider">
+              <Sparkles className="h-3.5 w-3.5 text-accent" /> Spiritual Rewards
+            </span>
+            <h2 className="font-display font-bold text-3xl md:text-5xl text-primary tracking-tight">
+              Benefits of Harinam Sankirtana
+            </h2>
+            <p className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto leading-relaxed">
+              Discover the transformative power of congregational chanting on your heart, mind, and surroundings.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                icon: Heart,
+                title: "Purifies the Heart",
+                desc: "The chanting cleanses the consciousness and removes impurities from the heart.",
+                color: "bg-rose-500/10 text-rose-600 border-rose-200/30"
+              },
+              {
+                icon: Sparkles,
+                title: "Calms the Mind",
+                desc: "The rhythmic repetition of the mantra brings deep peace and mental clarity.",
+                color: "bg-indigo-500/10 text-indigo-600 border-indigo-200/30"
+              },
+              {
+                icon: Smile,
+                title: "Spiritual Joy",
+                desc: "Participants experience a deep sense of spiritual awakening and ecstatic joy.",
+                color: "bg-amber-500/10 text-amber-600 border-amber-200/30"
+              },
+              {
+                icon: Globe,
+                title: "Spiritual Influence",
+                desc: "Creates a positive spiritual atmosphere, purifying the surroundings and inspiring others.",
+                color: "bg-emerald-500/10 text-emerald-600 border-emerald-200/30"
+              }
+            ].map((b, i) => (
+              <div 
+                key={i} 
+                className="bg-white/95 backdrop-blur-sm border border-amber-200/40 rounded-3xl p-8 shadow-[0_8px_30px_rgba(245,197,24,0.03)] hover:shadow-[0_20px_50px_rgba(245,197,24,0.12)] hover:-translate-y-1.5 transition-all duration-300 relative group flex flex-col justify-between overflow-hidden"
+              >
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary to-secondary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                
+                <div>
+                  {/* Icon Box */}
+                  <div className={`h-12 w-12 rounded-2xl flex items-center justify-center mb-6 shrink-0 transition-all duration-300 group-hover:scale-110 border ${b.color}`}>
+                    <b.icon className="h-6 w-6" />
+                  </div>
+                  
+                  <h3 className="font-display font-bold text-xl text-primary mb-3 group-hover:text-accent transition-colors duration-300">
+                    {b.title}
+                  </h3>
+                  <p className="text-sm text-foreground/80 leading-relaxed">
+                    {b.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Auto-scrolling Gallery Section */}
-      <section id="gallery" className="py-16 md:py-24 bg-surface overflow-hidden border-y border-border/40">
-        <div className="max-w-7xl mx-auto px-6 mb-12 text-center">
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-primary">A Glimpse of the Joy</h2>
-          <p className="text-muted-foreground mt-3 max-w-2xl mx-auto text-base md:text-lg">
-            A glimpse of the streets we've walked, the faces we've met, and the joy we've shared — one Hari Nama at a time.
+      <section id="gallery" className="py-20 md:py-28 bg-[#141221] overflow-hidden border-y border-black relative">
+        {/* Soft glowing decorations */}
+        <div className="absolute top-1/4 left-1/4 h-96 w-96 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-secondary/5 blur-3xl pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-6 mb-16 text-center relative z-10">
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-secondary text-xs font-bold uppercase tracking-wider">
+            <Camera className="h-3.5 w-3.5 text-secondary" /> Visual Darshan
+          </span>
+          <h2 className="font-display text-3xl md:text-5xl font-bold text-white tracking-tight mt-4">
+            A Glimpse of the Joy
+          </h2>
+          <p className="text-slate-400 mt-4 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
+            A graceful visual walk of the streets we've walked, the faces we've met, and the sheer ecstasy of congregational chanting.
           </p>
         </div>
 
-        <AutoGallery images={gallery} />
+        <DualRowGallery images={gallery} />
       </section>
 
       {/* Schedule Block Section */}
-      <section className="py-16 bg-background">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="rounded-3xl bg-gradient-soft border border-border shadow-elegant overflow-hidden p-8 md:p-12 relative">
-            <div className="text-center">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-secondary text-primary text-xs font-bold uppercase tracking-wider mb-4">
-                <Calendar className="h-4 w-4" /> Schedule
-              </span>
-              <h2 className="font-display font-bold text-3xl md:text-4xl text-primary">Join the Street Chanting</h2>
-              <p className="mt-3 text-muted-foreground text-base md:text-lg">Come walk, dance, and chant the holy names with us weekly.</p>
-            </div>
+      <section className="py-20 md:py-24 bg-background relative overflow-hidden">
+        {/* Subtle background effects */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-secondary/5 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
-              <div className="rounded-2xl bg-white border border-border p-6 flex items-center gap-4 shadow-sm">
-                <div className="p-3.5 rounded-xl bg-orange-50 text-orange-600 border border-orange-100">
-                  <Calendar className="h-6 w-6" />
+        <div className="max-w-5xl mx-auto px-6 relative z-10">
+          <div className="text-center max-w-2xl mx-auto space-y-3 mb-12">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary/15 text-amber-800 text-xs font-semibold uppercase tracking-wider">
+              <Calendar className="h-3.5 w-3.5 text-amber-700" /> Gathering Details
+            </span>
+            <h2 className="font-display font-bold text-3xl md:text-4xl text-primary mt-3">
+              Join the Street Chanting
+            </h2>
+            <p className="text-slate-500 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
+              Come walk, dance, and chant the holy names with us weekly.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Weekly Day */}
+            <div className="bg-white border border-slate-100/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.01)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden flex items-center">
+              <div className="absolute top-0 left-0 bottom-0 w-1 bg-orange-500 transition-all duration-300 group-hover:w-1.5" />
+              <div className="flex items-center gap-4 pl-2">
+                <div className="p-3.5 rounded-xl bg-orange-50 text-orange-600 border border-orange-100 shrink-0 transition-transform duration-300 group-hover:scale-105">
+                  <Calendar className="h-5.5 w-5.5" />
                 </div>
                 <div>
-                  <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Weekly Schedule</h4>
-                  <p className="font-semibold text-foreground text-lg mt-0.5">{harinama.scheduleDay || "Every Saturday"}</p>
-                  <p className="text-sm text-accent font-semibold">{harinama.scheduleTime || "5:00 PM onwards"}</p>
+                  <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Weekly Day</h4>
+                  <p className="font-display font-extrabold text-slate-800 text-lg mt-0.5 leading-tight">
+                    {harinama.scheduleDay || "Every Saturday"}
+                  </p>
                 </div>
               </div>
+            </div>
 
-              <div className="rounded-2xl bg-white border border-border p-6 flex items-center gap-4 shadow-sm">
-                <div className="p-3.5 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100">
-                  <MapPin className="h-6 w-6" />
+            {/* Starting Time */}
+            <div className="bg-white border border-slate-100/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.01)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden flex items-center">
+              <div className="absolute top-0 left-0 bottom-0 w-1 bg-amber-500 transition-all duration-300 group-hover:w-1.5" />
+              <div className="flex items-center gap-4 pl-2">
+                <div className="p-3.5 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 shrink-0 transition-transform duration-300 group-hover:scale-105">
+                  <Clock className="h-5.5 w-5.5" />
                 </div>
                 <div>
-                  <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Starting Point</h4>
-                  <p className="font-semibold text-foreground text-base mt-0.5 leading-snug">
+                  <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Starting Time</h4>
+                  <p className="font-display font-extrabold text-slate-800 text-lg mt-0.5 leading-tight">
+                    {harinama.scheduleTime || "5:00 PM onwards"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Starting Point */}
+            <div className="bg-white border border-slate-100/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.01)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden flex items-center">
+              <div className="absolute top-0 left-0 bottom-0 w-1 bg-indigo-500 transition-all duration-300 group-hover:w-1.5" />
+              <div className="flex items-center gap-4 pl-2">
+                <div className="p-3.5 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 shrink-0 transition-transform duration-300 group-hover:scale-105">
+                  <MapPin className="h-5.5 w-5.5" />
+                </div>
+                <div>
+                  <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Starting Point</h4>
+                  <p className="font-sans font-semibold text-slate-700 text-sm mt-0.5 leading-snug">
                     {harinama.meetingPoint || "ISKCON Kurnool Temple, Sri Sri Puri Jagannath Temple"}
                   </p>
                 </div>
@@ -251,57 +361,73 @@ function HarinamaPage() {
   );
 }
 
-function AutoGallery({ images }: { images: { id: string; url: string; label: string }[] }) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const pausedRef = useRef(false);
+function DualRowGallery({ images }: { images: { id: string; url: string; label: string }[] }) {
+  if (!images || images.length === 0) return null;
 
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-    let raf = 0;
-    const step = () => {
-      if (!pausedRef.current) {
-        track.scrollLeft += 0.7;
-        const half = track.scrollWidth / 2;
-        if (track.scrollLeft >= half) track.scrollLeft -= half;
-      }
-      raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, [images.length]);
-
-  const loop = [...images, ...images];
+  // Split or copy images for Row 1 & Row 2.
+  // Ensure enough items in each row to fill the marquee width seamlessly
+  const row1Images = [...images, ...images, ...images];
+  const row2Images = [...images.slice().reverse(), ...images.slice().reverse(), ...images.slice().reverse()];
 
   return (
-    <div
-      ref={trackRef}
-      className="flex gap-4 sm:gap-6 overflow-x-hidden py-4 cursor-grab select-none"
-      onMouseEnter={() => (pausedRef.current = true)}
-      onMouseLeave={() => (pausedRef.current = false)}
-    >
-      {loop.map((img, i) => (
-        <div key={img.id + "-" + i} className="shrink-0 w-64 sm:w-72 md:w-80 group">
-          <div className="rounded-2xl overflow-hidden border border-border shadow-md bg-white aspect-[4/3] relative">
-            <img 
-              src={img.url} 
-              alt={img.label} 
-              loading="lazy"
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-            />
-            {img.label && (
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <p className="text-white text-xs sm:text-sm font-medium font-sans leading-tight">{img.label}</p>
-              </div>
-            )}
-          </div>
-          {img.label && (
-            <p className="text-center text-sm font-medium text-muted-foreground mt-3 group-hover:text-primary transition duration-300 block md:hidden">
-              {img.label}
-            </p>
-          )}
+    <div className="space-y-6 relative z-10">
+      {/* Row 1: Left to Right */}
+      <div className="group overflow-hidden relative w-full">
+        {/* Fade Overlays */}
+        <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-r from-[#141221] to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-l from-[#141221] to-transparent z-10 pointer-events-none" />
+
+        <div className="flex w-max animate-[marquee-reverse_35s_linear_infinite] gap-6 px-4 py-2 group-hover:[animation-play-state:paused] will-change-transform">
+          {row1Images.map((img, idx) => (
+            <div 
+              key={`r1-${img.id}-${idx}`}
+              className="w-[280px] sm:w-[340px] md:w-[400px] aspect-[16/10] relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.3)] group/card shrink-0 select-none cursor-pointer"
+            >
+              <img 
+                src={img.url} 
+                alt={img.label} 
+                loading="lazy"
+                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover/card:scale-105 group-hover/card:rotate-1" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-60 group-hover/card:opacity-90 transition-opacity duration-300" />
+              {img.label && (
+                <div className="absolute bottom-4 left-4 right-4 bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-3.5 transform translate-y-1.5 opacity-0 group-hover/card:translate-y-0 group-hover/card:opacity-100 transition-all duration-300">
+                  <p className="text-white text-xs sm:text-sm font-medium font-sans leading-tight">{img.label}</p>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
+
+      {/* Row 2: Right to Left */}
+      <div className="group overflow-hidden relative w-full">
+        {/* Fade Overlays */}
+        <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-r from-[#141221] to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-l from-[#141221] to-transparent z-10 pointer-events-none" />
+
+        <div className="flex w-max animate-[marquee_35s_linear_infinite] gap-6 px-4 py-2 group-hover:[animation-play-state:paused] will-change-transform">
+          {row2Images.map((img, idx) => (
+            <div 
+              key={`r2-${img.id}-${idx}`}
+              className="w-[280px] sm:w-[340px] md:w-[400px] aspect-[16/10] relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.3)] group/card shrink-0 select-none cursor-pointer"
+            >
+              <img 
+                src={img.url} 
+                alt={img.label} 
+                loading="lazy"
+                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover/card:scale-105 group-hover/card:rotate-1" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-60 group-hover/card:opacity-90 transition-opacity duration-300" />
+              {img.label && (
+                <div className="absolute bottom-4 left-4 right-4 bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-3.5 transform translate-y-1.5 opacity-0 group-hover/card:translate-y-0 group-hover/card:opacity-100 transition-all duration-300">
+                  <p className="text-white text-xs sm:text-sm font-medium font-sans leading-tight">{img.label}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

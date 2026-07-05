@@ -14,9 +14,13 @@ export default function HomeGallery() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.9, ease: "easeOut" }}
-      className="relative overflow-hidden py-20 sm:py-24 bg-white"
+      className="relative overflow-hidden py-20 sm:py-24 bg-gradient-to-b from-amber-100 via-amber-200/50 to-amber-100/45 border-t border-amber-200/40"
     >
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Soft glowing decorations */}
+      <div className="absolute top-12 left-10 h-72 w-72 rounded-full bg-secondary/30 blur-3xl pointer-events-none" />
+      <div className="absolute bottom-12 right-10 h-72 w-72 rounded-full bg-accent/15 blur-3xl pointer-events-none" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <span className="inline-flex items-center justify-center gap-3 text-xs uppercase tracking-[0.34em] text-slate-500/70 font-semibold">
             <span className="h-px w-10 bg-slate-300/40" />

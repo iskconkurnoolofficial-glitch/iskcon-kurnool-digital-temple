@@ -21,23 +21,27 @@ export default function GallerySection() {
   }, [lightbox, filtered.length]);
 
   return (
-    <section id="gallery" className="py-20 md:py-28 bg-background">
-      <div className="max-w-7xl mx-auto px-4 lg:px-8">
+    <section id="gallery" className="py-20 md:py-28 bg-gradient-to-b from-amber-100 via-amber-200/50 to-amber-100/45 border-t border-amber-200/40 relative overflow-hidden">
+      {/* Soft glowing decorations */}
+      <div className="absolute top-12 left-10 h-72 w-72 rounded-full bg-secondary/30 blur-3xl pointer-events-none" />
+      <div className="absolute bottom-12 right-10 h-72 w-72 rounded-full bg-accent/15 blur-3xl pointer-events-none" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-8">
         <div className="text-center mb-12 animate-fade-up">
           <span className="text-secondary font-medium uppercase text-xs tracking-[0.3em]">Memories</span>
           <h2 className="font-display text-4xl md:text-5xl font-bold text-primary mt-3">Temple Gallery</h2>
           <p className="text-muted-foreground mt-3 max-w-2xl mx-auto">Glimpses of devotion, festivals, and divine moments at ISKCON Kurnool.</p>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-2 mb-10">
+        <div className="flex flex-wrap justify-center gap-3 mb-12 bg-white/30 backdrop-blur-md border border-amber-200/20 p-2 rounded-2xl max-w-3xl mx-auto">
           {["All", ...categories].map((c) => (
             <button
               key={c}
               onClick={() => setFilter(c)}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition ${
+              className={`px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all duration-300 cursor-pointer ${
                 filter === c
-                  ? "bg-primary text-primary-foreground shadow-glow"
-                  : "bg-surface text-foreground hover:bg-muted"
+                  ? "bg-primary text-white shadow-glow scale-[1.03] ring-2 ring-primary/10"
+                  : "text-slate-700 hover:text-primary hover:bg-white/60"
               }`}
             >
               {c}

@@ -220,6 +220,16 @@
   }
 }
 
+@keyframes marquee-reverse {
+  from {
+    transform: translateX(-50%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
 /* Google Translate widget — hide default banner & keep layout intact */
 .goog-te-banner-frame.skiptranslate,
 .goog-te-gadget-icon,

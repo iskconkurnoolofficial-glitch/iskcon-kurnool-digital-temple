@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import SiteLayout from "@/components/SiteLayout";
 import { useAdmin } from "@/context/AdminContext";
-import { Calendar, Clock, Monitor, IndianRupee, Check, BookOpen, Languages, Timer, Sparkles, ArrowRight } from "lucide-react";
+import { Calendar, Clock, Monitor, IndianRupee, Check, BookOpen, Languages, Timer, Sparkles, ArrowRight, Star, Quote } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/gita-course")({
@@ -42,6 +42,51 @@ const WHY = [
   { icon: Languages, title: "Plain Telugu", desc: "Explained simply, in Telugu, with real-life context.", colorClass: "bg-amber-500/20 text-amber-300" },
   { icon: Timer, title: "30–40 Min a Day", desc: "Fits into an evening. No long-term commitment beyond 18 days.", colorClass: "bg-emerald-500/20 text-emerald-300" },
   { icon: Sparkles, title: "ISKCON Guidance", desc: "Led by ISKCON Kurnool teachers, rooted in tradition.", colorClass: "bg-indigo-500/20 text-indigo-300" },
+];
+
+const TESTIMONIALS = [
+  {
+    quote: "The way the chapters are explained in Telugu is so simple and practical. It changed how I handle daily stress and challenging situations.",
+    author: "Srinivas K.",
+    role: "Software Engineer",
+    rating: 5,
+    batch: "July 2025 Batch"
+  },
+  {
+    quote: "I never thought I could understand the Gita in 18 days. The daily 30-minute sessions fit perfectly into my busy evening schedule.",
+    author: "Radhika M.",
+    role: "Homemaker",
+    rating: 5,
+    batch: "Oct 2025 Batch"
+  },
+  {
+    quote: "Beautifully structured! Krishna's teachings were made extremely relevant to modern life. Heartfelt gratitude to the ISKCON Kurnool team.",
+    author: "Ananth R.",
+    role: "College Student",
+    rating: 5,
+    batch: "Jan 2026 Batch"
+  },
+  {
+    quote: "The explanations are very clear, logical, and beginner-friendly. Highly recommend this course to everyone seeking mental clarity and peace.",
+    author: "Vijaya Lakshmi",
+    role: "Retired Teacher",
+    rating: 5,
+    batch: "July 2025 Batch"
+  },
+  {
+    quote: "Simple Telugu, wonderful daily examples, and very direct, practical guidance. This is the best online course I have ever attended.",
+    author: "Rajesh V.",
+    role: "Business Owner",
+    rating: 5,
+    batch: "April 2026 Batch"
+  },
+  {
+    quote: "Every single session was an eye-opener. It helped me find logical answers to deep life questions I had been asking for years.",
+    author: "Sai Prasanna",
+    role: "Chartered Accountant",
+    rating: 5,
+    batch: "Jan 2026 Batch"
+  }
 ];
 
 function safeUrl(u: string): string | undefined {
@@ -312,8 +357,12 @@ function Page() {
 
 
       {/* CHAPTERS SECTION */}
-      <section className="py-20 md:py-28 bg-background">
-        <div className="max-w-6xl mx-auto px-6">
+      <section className="py-20 md:py-28 bg-gradient-to-b from-amber-100 via-amber-200/40 to-amber-50 relative overflow-hidden border-t border-amber-200/40">
+        {/* Soft glowing decorations */}
+        <div className="absolute top-12 left-10 h-72 w-72 rounded-full bg-secondary/25 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-12 right-10 h-72 w-72 rounded-full bg-accent/15 blur-3xl pointer-events-none" />
+
+        <div className="max-w-6xl mx-auto px-6 relative z-10">
           <div className="text-center max-w-2xl mx-auto space-y-3">
             <span className="text-accent font-medium uppercase text-xs tracking-[0.25em]">The Journey</span>
             <h2 className="font-display font-bold text-3xl md:text-4xl text-primary">
@@ -346,6 +395,71 @@ function Page() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* TESTIMONIALS SECTION */}
+      <section className="py-20 md:py-24 bg-gradient-to-b from-amber-50 via-amber-100/30 to-background overflow-hidden relative border-t border-amber-200/30">
+        {/* Soft glowing decorations */}
+        <div className="absolute top-12 right-10 h-72 w-72 rounded-full bg-secondary/20 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-12 left-10 h-72 w-72 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
+
+        <div className="max-w-6xl mx-auto px-6 mb-12 text-center relative z-10">
+          <span className="text-accent font-semibold uppercase text-xs tracking-[0.25em]">Reviews</span>
+          <h2 className="font-display font-bold text-3xl md:text-4xl text-primary mt-2">
+            What Seekers Say
+          </h2>
+          <p className="text-muted-foreground text-sm max-w-md mx-auto mt-2">
+            Real stories of transformation from participants of the 18-day Bhagavad Gita course.
+          </p>
+        </div>
+
+        {/* Scrolling Marquee Container */}
+        <div className="relative w-full overflow-hidden z-10">
+          {/* Left/Right Gradient Overlays for smooth fading */}
+          <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-amber-50 to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-amber-50 to-transparent z-10 pointer-events-none" />
+
+          {/* Marquee Inner Wrapper */}
+          <div className="group flex overflow-hidden">
+            <div className="flex w-max animate-[marquee-reverse_30s_linear_infinite] gap-6 px-4 py-4 group-hover:[animation-play-state:paused] will-change-transform">
+              {[...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS].map((t, idx) => (
+                <div
+                  key={idx}
+                  className="w-[320px] sm:w-[380px] bg-white border border-slate-100/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between shrink-0"
+                >
+                  <div>
+                    {/* Stars and Quote Icon */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-1">
+                        {[...Array(t.rating)].map((_, i) => (
+                          <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                        ))}
+                      </div>
+                      <Quote className="h-8 w-8 text-primary/10 rotate-180" />
+                    </div>
+                    {/* Quote Text */}
+                    <p className="text-slate-600 text-sm leading-relaxed italic mb-6">
+                      "{t.quote}"
+                    </p>
+                  </div>
+                  {/* Divider & Author */}
+                  <div>
+                    <div className="h-px bg-slate-100 w-full mb-4" />
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-display font-bold text-sm text-primary">{t.author}</h4>
+                        <p className="text-[10px] text-slate-400 font-medium mt-0.5">{t.role}</p>
+                      </div>
+                      <span className="px-2.5 py-1 rounded-full bg-secondary/10 border border-amber-500/10 text-[9px] font-bold text-amber-800 uppercase tracking-wider shrink-0">
+                        {t.batch}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

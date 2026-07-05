@@ -74,16 +74,64 @@ function SettingsTab({ youth, update }: { youth: YouthData; update: (p: Partial<
       </div>
 
       <div className="bg-white rounded-2xl shadow p-6 border">
-        <h3 className="font-display text-xl font-bold text-primary mb-4">Feature Thumbnails (1080×1080)</h3>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="font-display text-xl font-bold text-primary">Feature Cards (Image, Title, Description)</h3>
+          {youth.features.length < 6 && (
+            <button
+              onClick={() => {
+                update({
+                  features: [
+                    ...youth.features,
+                    { title: "New Activity", desc: "Description of the activity.", image: "" }
+                  ]
+                });
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white hover:bg-primary/95 font-semibold rounded-lg text-sm transition shadow-sm"
+            >
+              <Plus className="h-4 w-4" /> Add Activity Card
+            </button>
+          )}
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {youth.features.map((ft, i) => (
-            <div key={i} className="space-y-2">
-              <UploadBox label={ft.title} url={ft.image} onPick={(f) => pickFeature(i, f)} />
-              <input
-                className="w-full px-3 py-2 border rounded-lg text-sm"
-                value={ft.title}
-                onChange={(e) => update({ features: youth.features.map((x, idx) => idx === i ? { ...x, title: e.target.value } : x) })}
-              />
+            <div key={i} className="space-y-3 p-4 border rounded-xl bg-slate-50/50 relative">
+              <div className="flex justify-between items-center border-b pb-2 mb-2">
+                <span className="text-xs font-bold text-primary">Card {i + 1}</span>
+                <button
+                  onClick={() => {
+                    if (confirm(`Are you sure you want to delete "${ft.title || `Card ${i + 1}`}"?`)) {
+                      update({ features: youth.features.filter((_, idx) => idx !== i) });
+                    }
+                  }}
+                  className="text-rose-600 hover:text-rose-800 transition p-1"
+                  title="Delete Card"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+
+              <UploadBox label={`Card Image`} url={ft.image} onPick={(f) => pickFeature(i, f)} />
+
+              <div className="space-y-1">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Title</label>
+                <input
+                  className="w-full px-3 py-2 bg-white border rounded-lg text-sm shadow-sm"
+                  value={ft.title}
+                  onChange={(e) => update({ features: youth.features.map((x, idx) => idx === i ? { ...x, title: e.target.value } : x) })}
+                  placeholder="Card Title"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Description</label>
+                <textarea
+                  className="w-full px-3 py-2 bg-white border rounded-lg text-sm shadow-sm"
+                  rows={3}
+                  value={ft.desc || ""}
+                  onChange={(e) => update({ features: youth.features.map((x, idx) => idx === i ? { ...x, desc: e.target.value } : x) })}
+                  placeholder="Card Description"
+                />
+              </div>
             </div>
           ))}
         </div>
