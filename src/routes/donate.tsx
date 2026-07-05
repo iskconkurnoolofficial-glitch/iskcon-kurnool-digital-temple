@@ -71,6 +71,66 @@ function Page() {
         pageKey="donate"
       />
 
+      {/* Bhagavad Gita Quote Section */}
+      <section className="-mt-8 md:-mt-12 relative z-10 max-w-4xl mx-auto px-5">
+        <div className="bg-white rounded-3xl border border-border p-8 md:p-10 shadow-elegant text-center relative overflow-hidden">
+          {/* Decorative background gradients or motifs */}
+          <div className="absolute -top-10 -left-10 w-40 h-40 bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+          
+          {/* Sanskrit symbol or elegant divider */}
+          <div className="flex justify-center mb-6">
+            <span className="text-secondary font-display text-sm md:text-base tracking-[0.2em] uppercase divider-gold font-semibold">
+              Bhagavad Gita 9.26
+            </span>
+          </div>
+
+          {/* Sanskrit verse */}
+          <blockquote className="space-y-4">
+            <p className="font-display text-xl md:text-2xl lg:text-3xl font-semibold text-primary leading-relaxed tracking-wide">
+              पत्रं पुष्पं फलं तोयं यो मे भक्त्या प्रयच्छति ।<br />
+              तदहं भक्त्युपहृतमश्नामि प्रयतात्मन: ॥
+            </p>
+            
+            {/* Translation divider */}
+            <div className="h-px w-24 bg-gradient-to-r from-transparent via-border to-transparent mx-auto my-6" />
+
+            {/* Translation */}
+            <p className="text-base md:text-lg text-foreground/80 max-w-2xl mx-auto leading-relaxed font-sans font-medium italic">
+              "If one offers Me with love and devotion a leaf, a flower, fruit, or water, I will accept it."
+            </p>
+          </blockquote>
+
+          {/* Icons/Emojis representation in a modern aesthetic way */}
+          <div className="flex justify-center gap-6 md:gap-8 mt-8 text-2xl md:text-3xl">
+            <div className="flex flex-col items-center gap-1 group">
+              <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 grid place-items-center group-hover:scale-110 group-hover:bg-emerald-100 transition-all duration-300 shadow-sm border border-emerald-100/50">
+                🌿
+              </div>
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Leaf</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 group">
+              <div className="w-12 h-12 rounded-full bg-pink-50 text-pink-600 grid place-items-center group-hover:scale-110 group-hover:bg-pink-100 transition-all duration-300 shadow-sm border border-pink-100/50">
+                🌸
+              </div>
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Flower</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 group">
+              <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 grid place-items-center group-hover:scale-110 group-hover:bg-rose-100 transition-all duration-300 shadow-sm border border-rose-100/50">
+                🍎
+              </div>
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Fruit</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 group">
+              <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 grid place-items-center group-hover:scale-110 group-hover:bg-blue-100 transition-all duration-300 shadow-sm border border-blue-100/50">
+                💧
+              </div>
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Water</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="py-14 md:py-16 bg-gradient-to-b from-surface to-background">
         <div className="max-w-6xl mx-auto px-5 sm:px-6">
 

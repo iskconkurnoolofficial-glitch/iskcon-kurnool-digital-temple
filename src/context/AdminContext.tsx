@@ -146,6 +146,8 @@ export type PrahladaBadiActivity = {
   titleTel: string;
   icon: string;
   order: number;
+  descriptionEn?: string;
+  descriptionTel?: string;
 };
 
 export type PrahladaBadiGalleryItem = {
@@ -193,11 +195,11 @@ export type PrahladaBadiData = {
 export const defaultPrahladaBadi: PrahladaBadiData = {
   regStatus: "Coming Soon",
   registerUrl: "",
-  startDate: "2026-05-01",
-  endDate: "2026-05-31",
-  timings: "8:00 AM – 11:30 AM",
-  venueEn: "ISKCON Kurnool Temple, Park Road, Kurnool",
-  venueTel: "ఇస్కాన్ కర్నూలు ఆలయం, పార్క్ రోడ్, కర్నూలు",
+  startDate: "2026-04-25",
+  endDate: "2026-05-16",
+  timings: "9:30 AM – 12:30 PM",
+  venueEn: "ISKCON Kurnool Temple",
+  venueTel: "ఇస్కాన్ కర్నూలు ఆలయం",
   feeTier1LabelEn: "Up to 5th Class",
   feeTier1LabelTel: "5 వ తరగతి వరకు",
   feeTier1Amount: "500",
@@ -214,13 +216,12 @@ export const defaultPrahladaBadi: PrahladaBadiData = {
   footerNoteEn: "Many more cultural and traditional topics will be taught",
   footerNoteTel: "మరెన్నో సాంస్కృతిక మరియు సాంప్రదాయ విషయాలు బోధించబడతాయి",
   activities: [
-    { id: "a1", titleEn: "Bhagavad Gita Slokas", titleTel: "భగవద్గీత శ్లోకాలు", icon: "📖", order: 1 },
-    { id: "a2", titleEn: "Annamacharya Keerthanas", titleTel: "అన్నమాచార్య కీర్తనలు", icon: "🎵", order: 2 },
-    { id: "a3", titleEn: "Personality Development Stories", titleTel: "వ్యక్తిత్వ వికాస కథలు", icon: "📚", order: 3 },
-    { id: "a4", titleEn: "Short Skits (Drama)", titleTel: "నాటికలు (డ్రామా)", icon: "🎭", order: 4 },
-    { id: "a5", titleEn: "Drawing & Art", titleTel: "డ్రాయింగ్ & ఆర్ట్", icon: "🎨", order: 5 },
-    { id: "a6", titleEn: "Devotional Songs", titleTel: "భక్తి గీతాలు", icon: "🎶", order: 6 },
-    { id: "a7", titleEn: "Pranama Slokas", titleTel: "ప్రణామ శ్లోకాలు", icon: "🙏", order: 7 },
+    { id: "a1", titleEn: "Bhagavad Gita Slokas", titleTel: "భగవద్గీత శ్లోకాలు", icon: "📖", order: 1, descriptionEn: "Learn meaningful verses and timeless spiritual wisdom.", descriptionTel: "భగవద్గీత శ్లోకాలు మరియు అమూల్యమైన ఆధ్యాత్మిక జ్ఞానాన్ని నేర్చుకోండి." },
+    { id: "a2", titleEn: "Annamacharya Keerthanas", titleTel: "అన్నమాచార్య కీర్తనలు", icon: "🎵", order: 2, descriptionEn: "Discover devotional music through beautiful traditional compositions.", descriptionTel: "సాంప్రదాయ కీర్తనల ద్వారా భక్తి సంగీతాన్ని అన్వేషించండి." },
+    { id: "a3", titleEn: "Personality Development Stories", titleTel: "వ్యక్తిత్వ వికాస కథలు", icon: "📚", order: 3, descriptionEn: "Build confidence, discipline, kindness, leadership, and good character.", descriptionTel: "కథల ద్వారా ఆత్మవిశ్వాసం, క్రమశిక్షణ, నాయకత్వ లక్షణాలను పెంపొందించుకోండి." },
+    { id: "a4", titleEn: "Short Skits & Drama", titleTel: "నాటికలు (డ్రామా)", icon: "🎭", order: 4, descriptionEn: "Develop creativity, teamwork, communication, and stage confidence.", descriptionTel: "నాటకాల ద్వారా సృజనాత్మకత, జట్టుకృషి మరియు సంభాషణ నైపుణ్యాలను పెంపొందించుకోండి." },
+    { id: "a5", titleEn: "Drawing & Art", titleTel: "డ్రాయింగ్ & ఆర్ట్", icon: "🎨", order: 5, descriptionEn: "Encourage imagination and artistic expression through engaging activities.", descriptionTel: "చిత్రలేఖనం మరియు కళల ద్వారా సృజనాత్మకతను వ్యక్తపరచండి." },
+    { id: "a6", titleEn: "Devotional Songs", titleTel: "భక్తి గీతాలు", icon: "🎶", order: 6, descriptionEn: "Experience joyful devotion through music and group singing.", descriptionTel: "సమూహ భక్తి గీతాల ఆలపన ద్వారా ఆనందాన్ని పొందండి." },
   ],
   gallery: [],
   reviews: [

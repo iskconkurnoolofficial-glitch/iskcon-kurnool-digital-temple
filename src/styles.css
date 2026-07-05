@@ -230,6 +230,19 @@
   }
 }
 
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
 /* Google Translate widget — hide default banner & keep layout intact */
 .goog-te-banner-frame.skiptranslate,
 .goog-te-gadget-icon,
@@ -343,4 +356,9 @@ body {
   to {
     stroke-dashoffset: 0;
   }
+}
+
+.mask-marquee {
+  mask-image: linear-gradient(to right, transparent, white 8%, white 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, white 8%, white 92%, transparent);
 }

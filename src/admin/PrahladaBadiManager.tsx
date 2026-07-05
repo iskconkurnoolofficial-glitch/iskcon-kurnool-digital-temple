@@ -259,6 +259,8 @@ function SettingsTab({ data, update }: { data: PrahladaBadiData; update: (p: Par
 function ActivitiesTab({ data, update }: { data: PrahladaBadiData; update: (p: Partial<PrahladaBadiData>) => void }) {
   const [titleEn, setTitleEn] = useState("");
   const [titleTel, setTitleTel] = useState("");
+  const [descriptionEn, setDescriptionEn] = useState("");
+  const [descriptionTel, setDescriptionTel] = useState("");
   const [icon, setIcon] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -266,6 +268,8 @@ function ActivitiesTab({ data, update }: { data: PrahladaBadiData; update: (p: P
     setEditingId(act.id);
     setTitleEn(act.titleEn);
     setTitleTel(act.titleTel);
+    setDescriptionEn(act.descriptionEn || "");
+    setDescriptionTel(act.descriptionTel || "");
     setIcon(act.icon);
   };
 
@@ -273,6 +277,8 @@ function ActivitiesTab({ data, update }: { data: PrahladaBadiData; update: (p: P
     setEditingId(null);
     setTitleEn("");
     setTitleTel("");
+    setDescriptionEn("");
+    setDescriptionTel("");
     setIcon("");
   };
 
@@ -281,7 +287,16 @@ function ActivitiesTab({ data, update }: { data: PrahladaBadiData; update: (p: P
     
     if (editingId) {
       const activities = (data.activities || []).map((a) =>
-        a.id === editingId ? { ...a, titleEn: titleEn.trim(), titleTel: titleTel.trim(), icon: icon.trim() } : a
+        a.id === editingId 
+          ? { 
+              ...a, 
+              titleEn: titleEn.trim(), 
+              titleTel: titleTel.trim(), 
+              descriptionEn: descriptionEn.trim(), 
+              descriptionTel: descriptionTel.trim(), 
+              icon: icon.trim() 
+            } 
+          : a
       );
       update({ activities });
     } else {
@@ -290,6 +305,8 @@ function ActivitiesTab({ data, update }: { data: PrahladaBadiData; update: (p: P
         id: Date.now().toString(),
         titleEn: titleEn.trim(),
         titleTel: titleTel.trim(),
+        descriptionEn: descriptionEn.trim(),
+        descriptionTel: descriptionTel.trim(),
         icon: icon.trim() || "📖",
         order,
       };
@@ -326,35 +343,49 @@ function ActivitiesTab({ data, update }: { data: PrahladaBadiData; update: (p: P
         </h3>
         <div className="grid md:grid-cols-3 gap-3">
           <input
-            className="px-4 py-2.5 border rounded-lg"
+            className="px-4 py-2.5 border rounded-lg text-sm"
             placeholder="English Title"
             value={titleEn}
             onChange={(e) => setTitleEn(e.target.value)}
           />
           <input
-            className="px-4 py-2.5 border rounded-lg"
+            className="px-4 py-2.5 border rounded-lg text-sm"
             placeholder="Telugu Title"
             value={titleTel}
             onChange={(e) => setTitleTel(e.target.value)}
           />
           <input
-            className="px-4 py-2.5 border rounded-lg"
+            className="px-4 py-2.5 border rounded-lg text-sm"
             placeholder="Emoji / Icon (e.g. 📖)"
             value={icon}
             onChange={(e) => setIcon(e.target.value)}
           />
         </div>
+        <div className="grid md:grid-cols-2 gap-3">
+          <textarea
+            className="px-4 py-2.5 border rounded-lg text-sm h-20 resize-none"
+            placeholder="English Description"
+            value={descriptionEn}
+            onChange={(e) => setDescriptionEn(e.target.value)}
+          />
+          <textarea
+            className="px-4 py-2.5 border rounded-lg text-sm h-20 resize-none"
+            placeholder="Telugu Description"
+            value={descriptionTel}
+            onChange={(e) => setDescriptionTel(e.target.value)}
+          />
+        </div>
         <div className="flex gap-2">
           <button
             onClick={save}
-            className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium flex items-center gap-1"
+            className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium flex items-center gap-1 cursor-pointer"
           >
             {editingId ? "Save Changes" : <><Plus className="h-4 w-4" /> Add Activity</>}
           </button>
           {editingId && (
             <button
               onClick={cancelEdit}
-              className="px-4 py-2.5 rounded-lg bg-muted text-foreground font-medium flex items-center gap-1"
+              className="px-4 py-2.5 rounded-lg bg-muted text-foreground font-medium flex items-center gap-1 cursor-pointer"
             >
               <X className="h-4 w-4" /> Cancel
             </button>
@@ -371,16 +402,26 @@ function ActivitiesTab({ data, update }: { data: PrahladaBadiData; update: (p: P
             list
               .sort((a, b) => a.order - b.order)
               .map((act, i) => (
-                <div key={act.id} className="p-4 flex items-center gap-4 hover:bg-slate-50 transition">
-                  <div className="h-10 w-10 rounded-full bg-secondary text-primary font-bold flex items-center justify-center shrink-0">
+                <div key={act.id} className="p-4 flex items-start gap-4 hover:bg-slate-50 transition">
+                  <div className="h-10 w-10 rounded-full bg-secondary text-primary font-bold flex items-center justify-center shrink-0 mt-1">
                     {act.order}
                   </div>
-                  <div className="text-2xl shrink-0">{act.icon}</div>
+                  <div className="text-2xl shrink-0 mt-1">{act.icon}</div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold truncate text-primary">{act.titleEn}</div>
-                    <div className="text-sm text-muted-foreground truncate">{act.titleTel}</div>
+                    <div className="font-semibold text-primary">{act.titleEn}</div>
+                    <div className="text-xs text-muted-foreground font-medium mb-1">{act.titleTel}</div>
+                    {act.descriptionEn && (
+                      <p className="text-xs text-slate-600 italic mt-1 font-sans">
+                        En: {act.descriptionEn}
+                      </p>
+                    )}
+                    {act.descriptionTel && (
+                      <p className="text-xs text-primary/70 italic mt-0.5 font-sans">
+                        Te: {act.descriptionTel}
+                      </p>
+                    )}
                   </div>
-                  <div className="flex gap-1 shrink-0">
+                  <div className="flex gap-1 shrink-0 mt-1">
                     <button
                       onClick={() => move(i, -1)}
                       className="p-2 rounded hover:bg-muted"
