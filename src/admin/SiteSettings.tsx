@@ -14,6 +14,10 @@ export default function SiteSettingsForm() {
     try { const url = await uploadToCloudinary(f); setS((p) => ({ ...p, logo: url })); } catch { alert("Upload failed"); }
   };
 
+  const onWelcomeImage = async (f: File) => {
+    try { const url = await uploadToCloudinary(f); setS((p) => ({ ...p, welcomeImage: url })); } catch { alert("Upload failed"); }
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow p-6 border space-y-6 max-w-3xl">
       <h3 className="font-display text-xl font-bold text-primary">Site Settings</h3>
@@ -39,13 +43,23 @@ export default function SiteSettingsForm() {
 
       <Input label="Footer Copyright Text" value={s.footer} onChange={(v) => update("footer", v)} />
 
-      <UploadBox
-        label="Temple Logo"
-        url={s.logo}
-        onPick={onLogo}
-        aspect="aspect-square"
-        className="w-20 shrink-0"
-      />
+      <div className="flex flex-col sm:flex-row gap-6 border-t pt-4">
+        <UploadBox
+          label="Temple Logo"
+          url={s.logo}
+          onPick={onLogo}
+          aspect="aspect-square"
+          className="w-20 shrink-0"
+        />
+
+        <UploadBox
+          label="Homepage Welcome Image"
+          url={s.welcomeImage || ""}
+          onPick={onWelcomeImage}
+          aspect="aspect-[4/3]"
+          className="max-w-[200px] w-full"
+        />
+      </div>
 
       <div className="flex items-center gap-3">
         <button onClick={save} className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium">Save Changes</button>

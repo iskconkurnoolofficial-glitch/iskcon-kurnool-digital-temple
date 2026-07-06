@@ -2,7 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import SiteLayout from "@/components/SiteLayout";
 import HeroCarousel from "@/components/HeroCarousel";
 import WelcomeSection from "@/components/WelcomeSection";
+import DailyDarshanSection from "@/components/DailyDarshanSection";
+import FeaturedOfferingsSection from "@/components/FeaturedOfferingsSection";
 import UpcomingFestivals from "@/components/UpcomingFestivals";
+import SundayProgramSection from "@/components/SundayProgramSection";
 import HomeGallery from "@/components/HomeGallery";
 import ConnectSection from "@/components/ConnectSection";
 
@@ -21,7 +24,10 @@ function Home() {
     <SiteLayout>
       <HeroCarousel />
       <WelcomeSection />
+      <DailyDarshanSection />
       <UpcomingFestivals />
+      <SundayProgramSection />
+      <FeaturedOfferingsSection />
       <HomeGallery />
       <ConnectSection />
     </SiteLayout>

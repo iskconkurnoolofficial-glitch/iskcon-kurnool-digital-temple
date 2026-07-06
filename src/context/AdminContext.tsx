@@ -575,6 +575,7 @@ export type SiteSettings = {
   footer: string;
   logo: string;
   facebook?: string;
+  welcomeImage?: string;
 };
 
 export type ThemeSettings = {
@@ -651,6 +652,7 @@ const defaultSettings: SiteSettings = {
   footer: "© 2025 ISKCON Kurnool. All Rights Reserved.",
   logo: "",
   facebook: "https://facebook.com/iskconkurnool",
+  welcomeImage: "",
 };
 
 const defaultTheme: ThemeSettings = {

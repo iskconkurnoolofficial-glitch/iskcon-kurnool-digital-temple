@@ -13,11 +13,11 @@ function fmt(d: string) {
 function FestivalCard({ f }: { f: Festival }) {
   return (
     <article className="group bg-white rounded-2xl overflow-hidden border border-border shadow-sm hover:shadow-elegant transition-all duration-300 flex flex-col h-full">
-      <div className="relative aspect-[4/3] bg-muted overflow-hidden">
+      <div className="relative w-full overflow-hidden">
         {f.thumbnail ? (
-          <img src={f.thumbnail} alt={f.title} loading="lazy" className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" />
+          <img src={f.thumbnail} alt={f.title} loading="lazy" className="w-full h-auto block group-hover:scale-105 transition-transform duration-500" />
         ) : (
-          <div className="w-full h-full grid place-items-center text-muted-foreground"><Sparkles className="h-10 w-10" /></div>
+          <div className="aspect-[4/3] w-full grid place-items-center text-muted-foreground bg-muted"><Sparkles className="h-10 w-10" /></div>
         )}
       </div>
       <div className="p-5 flex-1 flex flex-col">
@@ -61,12 +61,25 @@ export default function UpcomingFestivals() {
       const cards = Array.from(el.querySelectorAll<HTMLElement>("[data-fcard]"));
       if (!cards.length) return;
       const left = el.scrollLeft;
-      // find first card whose start is clearly ahead of current position
-      const next = cards.find((c) => c.offsetLeft > left + 8);
-      if (next && next.offsetLeft + next.offsetWidth <= el.scrollWidth - 4) {
-        el.scrollTo({ left: next.offsetLeft, behavior: "smooth" });
-      } else {
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      
+      // If we are at or close to the maximum scroll limit, loop back to the start
+      if (left >= maxScroll - 8) {
         el.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        const elRect = el.getBoundingClientRect();
+        // Find the first card whose start position relative to the scroll container is ahead of current scroll
+        const next = cards.find((c) => {
+          const cardLeft = c.getBoundingClientRect().left - elRect.left + left;
+          return cardLeft > left + 8;
+        });
+        
+        if (next) {
+          const nextLeft = next.getBoundingClientRect().left - elRect.left + left;
+          el.scrollTo({ left: nextLeft, behavior: "smooth" });
+        } else {
+          el.scrollTo({ left: 0, behavior: "smooth" });
+        }
       }
     }, 3500);
 
@@ -82,7 +95,7 @@ export default function UpcomingFestivals() {
   if (list.length === 0) return null;
 
   return (
-    <section className="py-16 md:py-24 bg-white">
+    <section className="py-12 md:py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-secondary font-semibold">
@@ -95,7 +108,7 @@ export default function UpcomingFestivals() {
         {/* Horizontally scrollable cards — auto-scrolls one after another */}
         <div ref={scrollerRef} className="flex gap-5 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-4 -mx-4 px-4 sm:mx-0 sm:px-0" style={{ scrollbarWidth: "none" }}>
           {list.map((f) => (
-            <div key={f.id} data-fcard className="snap-center sm:snap-start shrink-0 w-[85vw] sm:w-[320px] lg:w-[calc(25%-0.9375rem)]">
+            <div key={f.id} data-fcard className="snap-center sm:snap-start shrink-0 w-[85vw] sm:w-[320px] lg:w-[calc((100%-2.5rem)/3)]">
               <FestivalCard f={f} />
             </div>
           ))}

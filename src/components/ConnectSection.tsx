@@ -6,7 +6,7 @@ export default function ConnectSection() {
   const { settings } = useAdmin();
 
   return (
-    <section id="connect" className="py-20 md:py-28 bg-surface">
+    <section id="connect" className="py-12 md:py-16 bg-gradient-to-b from-[#ffffff] via-[#fffbf0] to-[#fffaf0]">
       <div className="max-w-7xl mx-auto px-4 lg:px-8">
         <div className="text-center mb-14 animate-fade-up">
           <span className="text-accent font-medium uppercase text-xs tracking-[0.3em]">Find Us</span>
