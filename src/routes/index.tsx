@@ -7,6 +7,8 @@ import FeaturedOfferingsSection from "@/components/FeaturedOfferingsSection";
 import UpcomingFestivals from "@/components/UpcomingFestivals";
 import SundayProgramSection from "@/components/SundayProgramSection";
 import HomeGallery from "@/components/HomeGallery";
+import HomeGoshala from "@/components/HomeGoshala";
+import SocialMediaSection from "@/components/SocialMediaSection";
 import ConnectSection from "@/components/ConnectSection";
 
 export const Route = createFileRoute("/")({
@@ -27,8 +29,10 @@ function Home() {
       <DailyDarshanSection />
       <UpcomingFestivals />
       <SundayProgramSection />
-      <FeaturedOfferingsSection />
       <HomeGallery />
+      <HomeGoshala />
+      <SocialMediaSection />
+      <FeaturedOfferingsSection />
       <ConnectSection />
     </SiteLayout>
   );

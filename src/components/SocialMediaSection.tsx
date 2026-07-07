@@ -1,235 +1,185 @@
-import { useState } from "react";
-import { Instagram, Youtube, Facebook, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useRef } from "react";
+import { Play, Instagram, Youtube, Facebook, MessageCircle } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 
 export default function SocialMediaSection() {
   const { settings, instagram } = useAdmin();
-  const [activeReelIdx, setActiveReelIdx] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  const activeReelsList = (instagram?.reels || []).slice(0, 8).filter((r) => !!r.url);
+  // Limit list to latest 4 reels
+  const activeReelsList = (instagram?.reels || []).slice(0, 4).filter((r) => !!r.url);
+  
+  if (activeReelsList.length === 0) return null;
+
+  // Track active slide on scroll (for mobile dot indicators)
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollLeft, clientWidth } = e.currentTarget;
+    if (clientWidth > 0) {
+      const index = Math.round(scrollLeft / clientWidth);
+      setActiveIndex(index);
+    }
+  };
 
   // Format WhatsApp Link
   const waPhone = settings.whatsapp || "+91 9505377520";
   const rawDigits = waPhone.replace(/\D/g, "");
   const waUrl = waPhone.startsWith("http") ? waPhone : `https://wa.me/${rawDigits}`;
 
-  const platforms = [
+  const socials = [
     {
       name: "Instagram",
       href: settings.instagram || "https://instagram.com/iskcon_kurnool",
       icon: Instagram,
-      desc: "Daily darshan, reels & festival highlights",
-      cta: "Follow Us",
-      brand: "from-[#feda75] via-[#fa7e1e] to-[#d62976]",
-      glow: "hover:shadow-[0_20px_40px_-15px_rgba(214,41,118,0.25)] hover:border-[#d62976]/35",
-      btnStyle: "border border-slate-200 text-slate-700 group-hover:bg-gradient-to-r group-hover:from-[#fa7e1e] group-hover:to-[#d62976] group-hover:text-white group-hover:border-transparent",
+      glow: "hover:bg-gradient-to-tr hover:from-[#feda75] hover:via-[#fa7e1e] hover:to-[#d62976] hover:border-transparent hover:shadow-[0_8px_20px_rgba(214,41,118,0.25)]",
     },
     {
       name: "YouTube",
       href: settings.youtube || "https://youtube.com/@iskconkurnool",
       icon: Youtube,
-      desc: "Lectures, kirtans & live programs",
-      cta: "Subscribe",
-      brand: "from-[#ff0000] to-[#cc0000]",
-      glow: "hover:shadow-[0_20px_40px_-15px_rgba(255,0,0,0.25)] hover:border-red-500/35",
-      btnStyle: "border border-slate-200 text-slate-700 group-hover:bg-red-600 group-hover:text-white group-hover:border-transparent",
+      glow: "hover:bg-red-600 hover:border-transparent hover:shadow-[0_8px_20px_rgba(255,0,0,0.25)]",
     },
     {
       name: "Facebook",
       href: settings.facebook || "https://facebook.com/iskconkurnool",
       icon: Facebook,
-      desc: "Community updates & event invites",
-      cta: "Follow Us",
-      brand: "from-[#1877f2] to-[#0a5dc2]",
-      glow: "hover:shadow-[0_20px_40px_-15px_rgba(24,119,242,0.25)] hover:border-[#1877f2]/35",
-      btnStyle: "border border-slate-200 text-slate-700 group-hover:bg-[#1877f2] group-hover:text-white group-hover:border-transparent",
+      glow: "hover:bg-[#1877f2] hover:border-transparent hover:shadow-[0_8px_20px_rgba(24,119,242,0.25)]",
     },
     {
       name: "WhatsApp",
       href: waUrl,
       icon: MessageCircle,
-      desc: "Get temple updates on your phone",
-      cta: "Join Channel",
-      brand: "from-[#25d366] to-[#128c7e]",
-      glow: "hover:shadow-[0_20px_40px_-15px_rgba(37,211,102,0.25)] hover:border-[#25d366]/35",
-      btnStyle: "border border-slate-200 text-slate-700 group-hover:bg-[#25d366] group-hover:text-white group-hover:border-transparent",
+      glow: "hover:bg-[#25d366] hover:border-transparent hover:shadow-[0_8px_20px_rgba(37,211,102,0.25)]",
     },
   ];
 
   return (
-    <section className="py-16 bg-gradient-to-b from-secondary/15 via-white to-accent/5">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-        
-        {/* Main Section Title */}
-        <div className="text-center animate-fade-in">
-          <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-accent font-semibold">
-            <span className="h-px w-8 bg-secondary" /> Social Channels <span className="h-px w-8 bg-secondary" />
-          </span>
-          <h2 className="font-display font-extrabold text-3xl sm:text-4xl md:text-5xl text-primary mt-4">
-            Follow Us on Social Media
-          </h2>
-          <p className="text-muted-foreground mt-3 max-w-2xl mx-auto text-base md:text-lg">
-            Stay connected with ISKCON Kurnool — daily darshan, festivals, kirtans &amp; spiritual content
-          </p>
-        </div>
+    <section className="relative overflow-hidden py-16 sm:py-24 bg-gradient-to-t from-[#120422] to-[#3d1270] border-t border-primary/20">
+      
+      {/* Decorative background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[450px] w-[600px] rounded-full bg-[#5b2c9b]/25 blur-[120px] pointer-events-none" />
 
-        {/* Social Platforms Row */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {platforms.map((p) => {
-            const Icon = p.icon;
-            return (
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        
+        {/* Split Header: Left Text, Right Social Icons */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/10 pb-6">
+          <div className="space-y-2 text-left max-w-2xl">
+            <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-accent font-semibold">
+              <Instagram className="h-4 w-4 text-accent" />
+              Instagram Highlights
+            </span>
+            <h2 className="font-display font-extrabold text-3xl sm:text-4xl text-white mt-2">
+              Sacred Reels & Darshan
+            </h2>
+            <p className="text-white/60 text-sm sm:text-base">
+              Watch our daily darshans, transcendental kirtans, and festival celebrations. Follow us{" "}
               <a
-                key={p.name}
-                href={p.href}
+                href={settings.instagram || "https://instagram.com/iskcon_kurnool"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`group relative bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/60 p-6 flex flex-col items-center text-center hover:-translate-y-1.5 transition-all duration-300 shadow-sm ${p.glow}`}
+                className="text-white hover:text-accent font-semibold underline"
               >
-                <div className={`h-14 w-14 rounded-2xl bg-gradient-to-br ${p.brand} grid place-items-center text-white shadow-md mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300`}>
-                  <Icon className="h-6 w-6" />
-                </div>
-                <h3 className="font-display font-bold text-lg text-primary mb-1">{p.name}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed flex-1">{p.desc}</p>
-                <span className={`mt-6 inline-flex items-center justify-center gap-1.5 px-6 py-2.5 rounded-full font-bold text-xs w-full transition-all duration-300 transform group-hover:scale-[1.02] shadow-sm ${p.btnStyle}`}>
-                  {p.cta}
-                </span>
+                @{instagram?.username || "iskcon_kurnool"}
               </a>
-            );
-          })}
-        </div>
+              .
+            </p>
+          </div>
 
-        {/* Instagram Profile Header section */}
-        {instagram && (
-          <div className="space-y-8 pt-8 border-t border-secondary/20">
-            <div className="bg-white rounded-3xl p-6 md:p-8 border border-secondary/20 shadow-sm flex flex-col sm:flex-row items-center sm:items-start gap-6 max-w-4xl mx-auto animate-fade-in">
-              {/* Logo / Profile Picture */}
-              <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full border-2 border-primary/20 p-1 bg-white shrink-0 overflow-hidden shadow-sm">
-                {settings.logo ? (
-                  <img src={settings.logo} alt="ISKCON Kurnool Profile" className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  <div className="w-full h-full rounded-full bg-gradient-hero flex items-center justify-center text-white font-bold text-lg">
-                    IK
-                  </div>
-                )}
-              </div>
-
-              {/* Bio info */}
-              <div className="text-center sm:text-left space-y-2 flex-1">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                  <h3 className="font-display font-bold text-xl sm:text-2xl text-primary tracking-wide">
-                    {instagram.fullName || "ISKCON KURNOOL OFFICIAL"}
-                  </h3>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 bg-slate-100 border text-slate-500 rounded-full w-max mx-auto sm:mx-0">
-                    Non-profit organisation
-                  </span>
-                </div>
-                
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  {instagram.bio}
-                </p>
-
-                <div className="flex flex-wrap justify-center sm:justify-start gap-2 text-sm font-semibold text-accent">
-                  {instagram.hashtags.split(" ").map((tag, i) => (
-                    <span key={i}>{tag}</span>
-                  ))}
-                </div>
-
-                <div>
+          {/* Social Icons row on the right */}
+          <div className="flex items-center gap-3 self-start md:self-end">
+            <div className="flex items-center gap-2.5">
+              {socials.map((s) => {
+                const Icon = s.icon;
+                return (
                   <a
-                    href={`https://${instagram.websiteUrl.replace(/https?:\/\//, "")}`}
+                    key={s.name}
+                    href={s.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs font-bold text-primary hover:text-accent underline transition"
+                    className={`h-10 w-10 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white/80 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:text-white ${s.glow}`}
+                    title={`Follow us on ${s.name}`}
                   >
-                    {instagram.websiteUrl}
+                    <Icon className="h-4.5 w-4.5" />
                   </a>
-                </div>
-              </div>
-            </div>
-
-            {/* Reels Grid (4 cols, 2 rows) */}
-            <div className="space-y-4">
-              <div className="text-center">
-                <h3 className="font-display font-bold text-xl text-primary">Featured Reels</h3>
-                <p className="text-xs text-muted-foreground">Click to watch latest devotional highlights directly</p>
-              </div>
-              
-              {/* Desktop Grid (visible on md and up) */}
-              <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
-                {activeReelsList.map((reel) => (
-                  <div
-                    key={reel.id}
-                    className="bg-white rounded-3xl border border-secondary/20 shadow-sm overflow-hidden aspect-[9/16] relative hover:shadow-gold hover:-translate-y-1 transition-all duration-300 group"
-                  >
-                    <video
-                      src={reel.url}
-                      className="absolute inset-0 w-full h-full object-cover rounded-3xl bg-black"
-                      controls
-                      preload="metadata"
-                      playsInline
-                      loop
-                      muted
-                      autoPlay
-                    />
-                  </div>
-                ))}
-              </div>
-
-              {/* Mobile Carousel Slider (visible on mobile only) */}
-              {activeReelsList.length > 0 && (
-                <div className="md:hidden space-y-5 max-w-sm mx-auto">
-                  <div className="relative aspect-[9/16] w-full max-w-[270px] mx-auto bg-black rounded-3xl overflow-hidden shadow-gold border border-secondary/20 group">
-                    <video
-                      key={activeReelsList[activeReelIdx].id}
-                      src={activeReelsList[activeReelIdx].url}
-                      className="absolute inset-0 w-full h-full object-cover rounded-3xl"
-                      controls
-                      preload="metadata"
-                      playsInline
-                      loop
-                      muted
-                      autoPlay
-                    />
-                    
-                    {/* Navigation Arrows */}
-                    {activeReelIdx > 0 && (
-                      <button
-                        onClick={() => setActiveReelIdx((prev) => prev - 1)}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full text-primary hover:bg-white shadow z-20 transition active:scale-95 cursor-pointer"
-                        aria-label="Previous reel"
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </button>
-                    )}
-                    {activeReelIdx < activeReelsList.length - 1 && (
-                      <button
-                        onClick={() => setActiveReelIdx((prev) => prev + 1)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full text-primary hover:bg-white shadow z-20 transition active:scale-95 cursor-pointer"
-                        aria-label="Next reel"
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Indicator Dots */}
-                  <div className="flex justify-center items-center gap-2 pt-1">
-                    {activeReelsList.map((_, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setActiveReelIdx(i)}
-                        className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                          activeReelIdx === i ? "w-6 bg-accent" : "w-2 bg-slate-300"
-                        }`}
-                        aria-label={`Go to reel ${i + 1}`}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
+                );
+              })}
             </div>
           </div>
-        )}
+        </div>
+
+        {/* Reels Responsive Grid / Slider Layout */}
+        <div className="relative">
+          <div
+            ref={scrollRef}
+            onScroll={handleScroll}
+            className="flex md:grid overflow-x-auto md:overflow-x-visible snap-x snap-mandatory md:snap-none gap-6 w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-2 md:pb-0 md:grid-cols-4 max-w-6xl mx-auto"
+          >
+            {activeReelsList.map((reel) => (
+              <a
+                key={reel.id}
+                href={reel.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative w-full flex-shrink-0 snap-center overflow-hidden rounded-[24px] border border-white/10 shadow-[0_15px_40px_-20px_rgba(0,0,0,0.8)] transition-all duration-500 hover:scale-[1.02] hover:border-accent/40 hover:shadow-gold group/card bg-black aspect-[9/16]"
+              >
+                <video
+                  src={reel.url}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover/card:scale-105"
+                  preload="auto"
+                  playsInline
+                  webkit-playsinline="true"
+                  loop
+                  muted
+                  autoPlay
+                />
+                {/* Subtle Dark Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover/card:opacity-40 transition-opacity duration-300" />
+                
+                {/* Play Button Icon Overlay */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity duration-300">
+                  <div className="p-3.5 rounded-full bg-white/20 backdrop-blur-md border border-white/40 text-white shadow-lg">
+                    <Play className="h-6 w-6 fill-white" />
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+
+          {/* Mobile Dot Indicators */}
+          <div className="flex justify-center items-center gap-2 mt-6 md:hidden">
+            {activeReelsList.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  if (scrollRef.current) {
+                    const cardWidth = scrollRef.current.clientWidth;
+                    scrollRef.current.scrollTo({
+                      left: idx * cardWidth,
+                      behavior: "smooth",
+                    });
+                  }
+                }}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  activeIndex === idx ? "w-6 bg-accent" : "w-2 bg-white/30"
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* View All Button */}
+        <div className="mt-10 flex justify-center">
+          <a
+            href={settings.instagram || "https://instagram.com/iskcon_kurnool"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-accent hover:bg-accent/95 text-white font-semibold shadow-gold hover:scale-[1.02] transition-all duration-200 cursor-pointer text-sm font-sans"
+          >
+            View All Reels
+            <Instagram className="h-4 w-4" />
+          </a>
+        </div>
 
       </div>
     </section>
