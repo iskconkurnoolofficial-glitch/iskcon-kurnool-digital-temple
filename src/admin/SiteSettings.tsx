@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAdmin, uploadToCloudinary, SiteSettings as Settings } from "@/context/AdminContext";
 import { UploadBox } from "./CarouselManager";
 
@@ -6,6 +6,10 @@ export default function SiteSettingsForm() {
   const { settings, setSettings } = useAdmin();
   const [s, setS] = useState<Settings>(settings);
   const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    setS(settings);
+  }, [settings]);
 
   const update = (k: keyof Settings, v: string) => setS((prev) => ({ ...prev, [k]: v }));
   const save = () => { setSettings(s); setSaved(true); setTimeout(() => setSaved(false), 2000); };
@@ -61,8 +65,42 @@ export default function SiteSettingsForm() {
         />
       </div>
 
-      <div className="flex items-center gap-3">
-        <button onClick={save} className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium">Save Changes</button>
+      {/* Coming Soon / Launch Page Settings */}
+      <div className="border-t pt-6 space-y-4">
+        <h4 className="font-display text-base font-bold text-primary">Coming Soon Launch Page</h4>
+        
+        <label className="flex items-center gap-2.5 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={!!s.launchPageActive}
+            onChange={(e) => setS((prev) => ({ ...prev, launchPageActive: e.target.checked }))}
+            className="h-4.5 w-4.5 rounded text-accent focus:ring-accent border-border"
+          />
+          <span className="text-sm font-semibold text-foreground/80">Enable Coming Soon Page (Locks Website)</span>
+        </label>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          <label className="block">
+            <span className="text-sm font-medium text-foreground/80 mb-1 block">Launch Date & Time</span>
+            <input
+              type="datetime-local"
+              className="w-full px-4 py-2.5 border rounded-lg font-medium text-foreground bg-white"
+              value={s.launchDate ? s.launchDate.substring(0, 16) : ""}
+              onChange={(e) => update("launchDate", e.target.value)}
+            />
+            <span className="text-xs text-muted-foreground">Select when the website will officially launch.</span>
+          </label>
+
+          <Input
+            label="Launch Bypass Passcode"
+            value={s.launchBypassCode || "108"}
+            onChange={(v) => update("launchBypassCode", v)}
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 border-t pt-4">
+        <button onClick={save} className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium cursor-pointer">Save Changes</button>
         {saved && <span className="text-sm text-green-600">Saved ✓</span>}
       </div>
     </div>

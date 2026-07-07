@@ -11,7 +11,7 @@ type TimingItem = {
 };
 
 export default function DailyDarshanSection() {
-  const [darshan, setDarshan] = useState({ open: false, status: "Checking Altar Status..." });
+  const [darshan, setDarshan] = useState({ open: false, status: "Checking Temple Status..." });
 
   useEffect(() => {
     const updateStatus = () => {
@@ -100,7 +100,7 @@ export default function DailyDarshanSection() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
           
-          {/* Left Column: Live Altar Status Card */}
+          {/* Left Column: Live Temple Status Card */}
           <div className="lg:col-span-5 flex flex-col justify-between p-8 rounded-[32px] bg-white border border-border/80 shadow-elegant relative overflow-hidden">
             {/* Soft decorative background circles */}
             <div className="absolute top-0 right-0 -translate-y-1/3 translate-x-1/3 w-40 h-40 bg-accent/5 rounded-full blur-2xl pointer-events-none" />
@@ -113,13 +113,13 @@ export default function DailyDarshanSection() {
                   <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${darshan.open ? "bg-green-500" : "bg-red-500"}`}></span>
                 </span>
                 <span className="text-[11px] font-bold tracking-widest text-muted-foreground uppercase font-sans">
-                  Live Altar Status
+                  Live Temple Status
                 </span>
               </div>
 
               {/* Status Header */}
               <h3 className="font-display font-bold text-2xl md:text-3xl text-foreground mt-4 mb-2">
-                {darshan.open ? "Altar is Open" : "Altar is Closed"}
+                {darshan.open ? "Temple is Open" : "Temple is Closed"}
               </h3>
               <p className="text-muted-foreground text-sm font-sans mb-6">
                 Current State: <span className="font-semibold text-primary">{darshan.status}</span>

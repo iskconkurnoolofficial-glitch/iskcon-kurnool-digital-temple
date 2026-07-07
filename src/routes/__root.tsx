@@ -10,6 +10,7 @@ import {
 
 import appCss from "../styles.css?url";
 import { AdminProvider } from "@/context/AdminContext";
+import LaunchPageGate from "@/components/LaunchPageGate";
 
 function NotFoundComponent() {
   return (
@@ -126,7 +127,9 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AdminProvider>
-        <Outlet />
+        <LaunchPageGate>
+          <Outlet />
+        </LaunchPageGate>
       </AdminProvider>
     </QueryClientProvider>
   );

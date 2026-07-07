@@ -81,7 +81,7 @@ export default function ContactFormSection() {
                 <CheckCircle2 className="h-6 w-6 text-accent shrink-0" />
                 <div>
                   <h4 className="font-semibold text-primary">Prayer Request Seva</h4>
-                  <p className="text-sm text-muted-foreground">All prayer requests received here are placed before the altar of Sri Sri Jagannatha Baladeva Subhadra.</p>
+                  <p className="text-sm text-muted-foreground">All prayer requests received here are placed before the Temple Deities of Sri Sri Jagannatha Baladeva Subhadra.</p>
                 </div>
               </div>
             </div>

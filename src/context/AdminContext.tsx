@@ -576,6 +576,9 @@ export type SiteSettings = {
   logo: string;
   facebook?: string;
   welcomeImage?: string;
+  launchPageActive?: boolean;
+  launchDate?: string;
+  launchBypassCode?: string;
 };
 
 export type ThemeSettings = {
@@ -653,6 +656,9 @@ const defaultSettings: SiteSettings = {
   logo: "",
   facebook: "https://facebook.com/iskconkurnool",
   welcomeImage: "",
+  launchPageActive: false,
+  launchDate: "2026-07-15T09:00:00",
+  launchBypassCode: "108",
 };
 
 const defaultTheme: ThemeSettings = {
