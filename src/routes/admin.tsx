@@ -17,14 +17,16 @@ import GoshalaManager from "@/admin/GoshalaManager";
 import ContactsManager from "@/admin/ContactsManager";
 import InstagramManager from "@/admin/InstagramManager";
 import PrahladaBadiManager from "@/admin/PrahladaBadiManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search } from "lucide-react";
+import TempleScheduleManager from "@/admin/TempleScheduleManager";
+import LiveDashboardManager from "@/admin/LiveDashboardManager";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
 
-type Tab = "welcome" | "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi";
+type Tab = "welcome" | "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "liveDashboard";
 
 function AdminPage() {
   const { authed, login, logout, settings, contacts, setContacts } = useAdmin();
@@ -136,12 +138,19 @@ function AdminPage() {
       ]
     },
     {
+      title: "Live Operations",
+      items: [
+        { id: "liveDashboard", label: "LIVE Dashboard", icon: Radio },
+      ]
+    },
+    {
       title: "Devotional & Programs",
       items: [
         { id: "festivals", label: "Upcoming Festivals", icon: Sparkles },
         { id: "sevas", label: "Jagannath Sevas", icon: HandHeart },
         { id: "sunday", label: "Sunday Program", icon: Calendar },
         { id: "classes", label: "Daily Classes", icon: Radio },
+        { id: "templeSchedule", label: "Temple Schedule", icon: Clock },
       ]
     },
     {
@@ -287,6 +296,8 @@ function AdminPage() {
         {tab === "gallery" && <GalleryManager />}
         {tab === "heroBanners" && <HeroBannersManager />}
         {tab === "settings" && <SiteSettingsForm />}
+        {tab === "templeSchedule" && <TempleScheduleManager />}
+        {tab === "liveDashboard" && <LiveDashboardManager />}
       </main>
 
       {/* Floating Onboarding Tour Backdrop is removed - inline card is used instead */}

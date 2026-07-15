@@ -29,6 +29,8 @@ import { useAdmin } from "@/context/AdminContext";
 import LiveClassBanner from "@/components/LiveClassBanner";
 import LanguageToggle from "@/components/LanguageToggle";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLiveClass } from "@/hooks/useLiveClass";
+import { isTimeStrLive } from "@/lib/scheduleUtils";
 import { safeUrl } from "@/lib/utils";
 
 type SubItem = { 
@@ -77,15 +79,60 @@ const NAV: NavItem[] = [
 ];
 
 export default function Navbar() {
-  const { settings } = useAdmin();
+  const { settings, sunday, gitaCourse, templeSchedule } = useAdmin();
+  const liveClass = useLiveClass();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDrop, setOpenDrop] = useState<string | null>(null);
   const [mobileGroupOpen, setMobileGroupOpen] = useState<string | null>(null);
   const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [tick, setTick] = useState(0);
   
   const location = useLocation();
   const currentPath = location.pathname;
+
+  useEffect(() => {
+    const timer = setInterval(() => setTick((t) => t + 1), 10000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const isLinkLive = (href: string): boolean => {
+    if (href === "/courses") {
+      return !!liveClass;
+    }
+    if (href === "/temple/sunday") {
+      return sunday.schedule?.some(item => isTimeStrLive(item.time, 0)) || false;
+    }
+    if (href === "/youth") {
+      return isTimeStrLive("6:30 PM – 8:30 PM", 6);
+    }
+    if (href === "/gita-course") {
+      try {
+        if (!gitaCourse.startLabel || !gitaCourse.endLabel) return false;
+        const nowStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+        const nowIst = new Date(nowStr);
+        const start = new Date(gitaCourse.startLabel);
+        const end = new Date(gitaCourse.endLabel);
+        end.setHours(23, 59, 59, 999);
+        if (nowIst >= start && nowIst <= end) {
+          return isTimeStrLive(gitaCourse.time || "7:30 PM");
+        }
+      } catch {}
+      return false;
+    }
+    if (href === "/temple") {
+      const scheduleList = templeSchedule && templeSchedule.length > 0 ? templeSchedule : [
+        { time: "4:30 AM" },
+        { time: "5:15 AM – 7:00 AM" },
+        { time: "7:30 AM" },
+        { time: "8:15 AM" },
+        { time: "12:00 PM" },
+        { time: "6:30 PM" }
+      ];
+      return scheduleList.some(item => isTimeStrLive(item.time));
+    }
+    return false;
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -172,7 +219,15 @@ export default function Navbar() {
                       setHoveredLabel(item.label);
                     }}
                   >
-                    <span className="relative z-10">{item.label}</span>
+                    <span className="relative z-10 flex items-center gap-1.5">
+                      {item.label}
+                      {item.children.some(c => isLinkLive(c.href)) && (
+                        <span className="relative flex h-1.5 w-1.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-600"></span>
+                        </span>
+                      )}
+                    </span>
                     <ChevronDown className="h-3 w-3 xl:h-3.5 xl:w-3.5 relative z-10 transition-transform duration-200" style={{ transform: openDrop === item.label ? 'rotate(180deg)' : 'none' }} />
                     
                     {hoveredLabel === item.label && (
@@ -255,10 +310,16 @@ export default function Navbar() {
                                   <Icon className="h-4 w-4" />
                                 </div>
                                 <div className="leading-tight">
-                                  <div className={`text-sm font-semibold transition-colors duration-200 ${
+                                  <div className={`text-sm font-semibold transition-colors duration-200 flex items-center gap-1.5 ${
                                     isSubActive ? "text-primary" : "text-foreground group-hover:text-primary"
                                   }`}>
                                     {c.label}
+                                    {isLinkLive(c.href) && (
+                                      <span className="relative flex h-1.5 w-1.5">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-600"></span>
+                                      </span>
+                                    )}
                                   </div>
                                   <div className="text-[11px] text-muted-foreground mt-1.5 leading-normal">
                                     {c.subtitle}
@@ -393,7 +454,15 @@ export default function Navbar() {
                               isActive ? "bg-primary/5 text-primary" : "text-gray-650 hover:bg-gray-50"
                             }`}
                           >
-                            <span className={isActive ? "font-semibold text-primary" : ""}>{item.label}</span>
+                            <span className={`flex items-center gap-1.5 ${isActive ? "font-semibold text-primary" : ""}`}>
+                              {item.label}
+                              {item.children.some(c => isLinkLive(c.href)) && (
+                                <span className="relative flex h-1.5 w-1.5">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-600"></span>
+                                </span>
+                              )}
+                            </span>
                             <ChevronDown
                               className={`h-4 w-4 text-gray-500 transition-transform duration-250 ${mobileGroupOpen === item.label ? "rotate-180" : ""}`}
                             />
@@ -428,7 +497,14 @@ export default function Navbar() {
                                     }`}
                                   >
                                     <ChildIcon className={`h-4 w-4 shrink-0 ${isSubActive ? "text-white" : "text-primary/70"}`} />
-                                    <span>{child.label}</span>
+                                    <span className="flex-1 flex items-center justify-between gap-1.5">
+                                      <span>{child.label}</span>
+                                      {isLinkLive(child.href) && (
+                                        <span className="inline-flex items-center gap-1 bg-red-600 text-white text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shadow-sm animate-pulse">
+                                          <span className="h-1 w-1 rounded-full bg-white" /> Live
+                                        </span>
+                                      )}
+                                    </span>
                                   </Link>
                                 );
                               })}

@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import SiteLayout, { PageHero } from "@/components/SiteLayout";
-import { Sunrise, Sun, Sunset, Heart, MapPin, Navigation } from "lucide-react";
-import { useAdmin } from "@/context/AdminContext";
+import { Sunrise, Sun, Sunset, Heart, MapPin, Navigation, Clock } from "lucide-react";
+import { useAdmin, defaultTempleSchedule } from "@/context/AdminContext";
+import { isTimeStrLive } from "@/lib/scheduleUtils";
 
 export const Route = createFileRoute("/temple/")({
   head: () => ({ meta: [
@@ -11,18 +13,39 @@ export const Route = createFileRoute("/temple/")({
   component: Page,
 });
 
-const schedule = [
-  { name: "Subha Mangala Harati", time: "4:30 AM", period: "Morning", icon: Sunrise, iconColor: "text-amber-500 bg-amber-50 dark:bg-amber-950/30" },
-  { name: "Harinama Japa", time: "5:15 AM – 7:00 AM", period: "Morning", icon: Sunrise, iconColor: "text-amber-500 bg-amber-50 dark:bg-amber-950/30" },
-  { name: "Darshan Arati", time: "7:30 AM", period: "Morning", icon: Sunrise, iconColor: "text-amber-500 bg-amber-50 dark:bg-amber-950/30" },
-  { name: "Srimad Bhagavatam Class", time: "8:15 AM", period: "Morning", icon: Sunrise, iconColor: "text-amber-500 bg-amber-50 dark:bg-amber-950/30" },
-  { name: "Rajbhoga Arati", time: "12:00 PM", period: "Afternoon", icon: Sun, iconColor: "text-orange-500 bg-orange-50 dark:bg-orange-950/30" },
-  { name: "Gaura Arati", time: "6:30 PM", period: "Evening", icon: Sunset, iconColor: "text-indigo-500 bg-indigo-50 dark:bg-indigo-950/30" },
-];
+function getIconComponent(iconName: string) {
+  switch (iconName?.toLowerCase()) {
+    case "sunrise": return Sunrise;
+    case "sun": return Sun;
+    case "sunset": return Sunset;
+    case "clock": return Clock;
+    default: return Clock;
+  }
+}
+
+function getIconColorClass(iconName: string) {
+  switch (iconName?.toLowerCase()) {
+    case "sunrise": return "text-amber-500 bg-amber-50 dark:bg-amber-950/30";
+    case "sun": return "text-orange-500 bg-orange-50 dark:bg-orange-950/30";
+    case "sunset": return "text-indigo-500 bg-indigo-50 dark:bg-indigo-950/30";
+    default: return "text-primary bg-purple-50 dark:bg-purple-950/30";
+  }
+}
 
 function Page() {
-  const { sunday, settings } = useAdmin();
+  const { sunday, settings, templeSchedule } = useAdmin();
   const logoUrl = sunday.logo || settings.logo;
+  const [tick, setTick] = useState(0);
+
+  // Update live states dynamically
+  useEffect(() => {
+    const timer = setInterval(() => setTick((t) => t + 1), 10000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const scheduleList = templeSchedule && templeSchedule.length > 0 
+    ? [...templeSchedule].sort((a, b) => (a.order || 0) - (b.order || 0)) 
+    : defaultTempleSchedule;
 
   return (
     <SiteLayout>
@@ -42,26 +65,44 @@ function Page() {
             {/* Left Side: Daily Temple Schedule */}
             <div className="lg:col-span-7 rounded-2xl border border-border bg-card overflow-hidden shadow-elegant animate-fade-up">
               <div className="divide-y divide-border/60">
-                {schedule.map((item, i) => {
-                  const Icon = item.icon;
+                {scheduleList.map((item, i) => {
+                  const Icon = getIconComponent(item.iconName);
+                  const iconColor = getIconColorClass(item.iconName);
+                  const isLive = isTimeStrLive(item.time);
+                  
                   return (
                     <div 
-                      key={item.name} 
+                      key={item.id || item.name} 
                       className={`flex flex-col sm:flex-row sm:items-center justify-between px-6 py-5 gap-4 transition-colors hover:bg-muted/30 ${
-                        i % 2 === 0 ? "bg-white" : "bg-background/20"
+                        isLive 
+                          ? "bg-amber-50/60 border-l-4 border-amber-500 pl-5 dark:bg-amber-950/20" 
+                          : i % 2 === 0 
+                            ? "bg-white" 
+                            : "bg-background/20"
                       }`}
                     >
                       <div className="flex items-center gap-4">
-                        <div className={`p-2.5 rounded-xl border border-border/40 ${item.iconColor}`}>
+                        <div className={`p-2.5 rounded-xl border border-border/40 ${iconColor}`}>
                           <Icon className="w-5 h-5" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-foreground text-lg">{item.name}</h4>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h4 className="font-semibold text-foreground text-lg">{item.name}</h4>
+                            {isLive && (
+                              <span className="inline-flex items-center gap-1 bg-amber-600 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shadow-md animate-pulse">
+                                <span className="h-1.5 w-1.5 rounded-full bg-white" /> Live Now
+                              </span>
+                            )}
+                          </div>
                           <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{item.period}</span>
                         </div>
                       </div>
                       <div className="flex items-center self-start sm:self-center">
-                        <span className="text-accent font-sans font-semibold text-base sm:text-lg bg-surface/40 border border-secondary/20 px-4 py-1.5 rounded-full shadow-sm whitespace-nowrap">
+                        <span className={`font-sans font-semibold text-base sm:text-lg border px-4 py-1.5 rounded-full shadow-sm whitespace-nowrap transition-colors ${
+                          isLive 
+                            ? "text-amber-650 bg-amber-50/50 border-amber-200" 
+                            : "text-accent bg-surface/40 border-secondary/20"
+                        }`}>
                           {item.time}
                         </span>
                       </div>

@@ -14,7 +14,7 @@ function Page() {
   return (
     <SiteLayout>
       <PageHero eyebrow="Media Channels" title="Social Media" subtitle="Follow us on YouTube, Instagram, Facebook, and WhatsApp for daily updates, reels, darshan, and lectures." pageKey="socialMedia" />
-      <SocialMediaSection />
+      <SocialMediaSection variant="dedicated" />
     </SiteLayout>
   );
 }

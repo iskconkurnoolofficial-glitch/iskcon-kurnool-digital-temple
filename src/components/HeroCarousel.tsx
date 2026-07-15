@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 
 export default function HeroCarousel() {
-  const { slides, ready } = useAdmin();
+  const { slides, settings, ready } = useAdmin();
   const active = slides.filter((s) => s.active);
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -45,6 +45,24 @@ export default function HeroCarousel() {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
+      {/* Join LIVE Button Overlay */}
+      {settings.liveStreamLink && (
+        <div className="absolute top-6 right-6 md:right-16 z-30 animate-fade-in">
+          <a
+            href={settings.liveStreamLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 md:px-5 py-2.5 rounded-full bg-red-600 hover:bg-red-700 text-white font-bold shadow-lg shadow-red-600/40 text-xs md:text-sm tracking-wide transition hover:scale-105 active:scale-95 border border-white/20"
+          >
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+            </span>
+            Join LIVE
+          </a>
+        </div>
+      )}
+
       <div className="relative aspect-[1080/1350] md:aspect-[4917/1750]">
         {active.map((s, idx) => (
           <div

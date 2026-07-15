@@ -1,8 +1,42 @@
+import { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import SiteLayout from "@/components/SiteLayout";
 import { useAdmin } from "@/context/AdminContext";
-import { Calendar, Clock, Monitor, IndianRupee, Check, BookOpen, Languages, Timer, Sparkles, ArrowRight, Star, Quote } from "lucide-react";
+import { Calendar, Clock, Monitor, IndianRupee, Check, BookOpen, Languages, Timer, Sparkles, ArrowRight, Star, Quote, Book, Compass, Award, Heart } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { isTimeStrLive, getCurrentTimeIST } from "@/lib/scheduleUtils";
+
+function getGitaIcon(name: string) {
+  switch (name) {
+    case "book-open": return BookOpen;
+    case "languages": return Languages;
+    case "timer": return Timer;
+    case "sparkles": return Sparkles;
+    case "book": return Book;
+    case "compass": return Compass;
+    case "clock": return Clock;
+    case "award": return Award;
+    case "star": return Star;
+    case "heart": return Heart;
+    default: return BookOpen;
+  }
+}
+
+function getGitaIconColorClass(name: string) {
+  switch (name) {
+    case "book-open": return "bg-primary/20 text-secondary";
+    case "languages": return "bg-amber-500/20 text-amber-300";
+    case "timer": return "bg-emerald-500/20 text-emerald-300";
+    case "sparkles": return "bg-indigo-500/20 text-indigo-300";
+    case "book": return "bg-blue-500/20 text-blue-300";
+    case "compass": return "bg-teal-500/20 text-teal-300";
+    case "clock": return "bg-rose-500/20 text-rose-300";
+    case "award": return "bg-yellow-500/20 text-yellow-300";
+    case "star": return "bg-orange-500/20 text-orange-300";
+    case "heart": return "bg-pink-500/20 text-pink-300";
+    default: return "bg-primary/20 text-secondary";
+  }
+}
 
 export const Route = createFileRoute("/gita-course")({
   head: () => ({
@@ -37,12 +71,7 @@ const CHAPTERS: { sanskrit: string; english: string }[] = [
   { sanskrit: "Moksha Sanyasa Yoga", english: "Liberation Through Renunciation" },
 ];
 
-const WHY = [
-  { icon: BookOpen, title: "Complete Gita", desc: "All 18 chapters, start to finish — nothing skipped.", colorClass: "bg-primary/20 text-secondary" },
-  { icon: Languages, title: "Plain Telugu", desc: "Explained simply, in Telugu, with real-life context.", colorClass: "bg-amber-500/20 text-amber-300" },
-  { icon: Timer, title: "30–40 Min a Day", desc: "Fits into an evening. No long-term commitment beyond 18 days.", colorClass: "bg-emerald-500/20 text-emerald-300" },
-  { icon: Sparkles, title: "ISKCON Guidance", desc: "Led by ISKCON Kurnool teachers, rooted in tradition.", colorClass: "bg-indigo-500/20 text-indigo-300" },
-];
+// WHY array removed in favor of dynamic admin values whyCards
 
 const TESTIMONIALS = [
   {
@@ -123,6 +152,35 @@ function RegisterButton({ url, label = "Register Now" }: { url?: string; label?:
 
 function Page() {
   const { gitaCourse: g } = useAdmin();
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setTick((t) => t + 1), 10000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const courseActive = (() => {
+    try {
+      if (!g.startLabel || !g.endLabel) return false;
+      const now = getCurrentTimeIST();
+      const start = new Date(g.startLabel);
+      const end = new Date(g.endLabel);
+      end.setHours(23, 59, 59, 999);
+      if (now >= start && now <= end) {
+        return isTimeStrLive(g.time || "7:30 PM");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return false;
+  })();
+
+  const whyCards = g.whyCards && g.whyCards.length > 0 ? g.whyCards : [
+    { iconName: "book-open", title: "Complete Gita", desc: "All 18 chapters, start to finish — nothing skipped." },
+    { iconName: "languages", title: "Plain Telugu", desc: "Explained simply, in Telugu, with real-life context." },
+    { iconName: "timer", title: "30–40 Min a Day", desc: "Fits into an evening. No long-term commitment beyond 18 days." },
+    { iconName: "sparkles", title: "ISKCON Guidance", desc: "Led by ISKCON Kurnool teachers, rooted in tradition." },
+  ];
 
   return (
     <SiteLayout>
@@ -170,7 +228,14 @@ function Page() {
               <div className="flex items-center gap-3 px-5 py-4 flex-1">
                 <Clock className="h-5 w-5 text-primary shrink-0" />
                 <div>
-                  <div className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Daily at</div>
+                  <div className="text-[9px] uppercase tracking-widest text-slate-400 font-bold flex items-center gap-1.5">
+                    Daily at
+                    {courseActive && (
+                      <span className="inline-flex items-center gap-1 bg-red-600 text-white text-[8px] font-bold uppercase tracking-wider px-1 py-0.2 rounded animate-pulse">
+                        Live
+                      </span>
+                    )}
+                  </div>
                   <div className="font-sans font-bold text-sm leading-tight text-slate-900">{g.time}</div>
                 </div>
               </div>
@@ -332,24 +397,28 @@ function Page() {
             </div>
           </div>
           <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {WHY.map((w) => (
-              <div key={w.title} className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-secondary/20 hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 relative overflow-hidden group">
-                {/* Hover top line accent */}
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-secondary scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
-                
-                {/* Soft Tint Icon Box */}
-                <div className={`h-12 w-12 rounded-2xl flex items-center justify-center mb-5 shrink-0 transition-transform duration-300 group-hover:scale-110 ${w.colorClass}`}>
-                  <w.icon className="h-5.5 w-5.5" />
+            {whyCards.map((w) => {
+              const Icon = getGitaIcon(w.iconName);
+              const colorClass = getGitaIconColorClass(w.iconName);
+              return (
+                <div key={w.title} className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-secondary/20 hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 relative overflow-hidden group">
+                  {/* Hover top line accent */}
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-secondary scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+                  
+                  {/* Soft Tint Icon Box */}
+                  <div className={`h-12 w-12 rounded-2xl flex items-center justify-center mb-5 shrink-0 transition-transform duration-300 group-hover:scale-110 ${colorClass}`}>
+                    <Icon className="h-5.5 w-5.5" />
+                  </div>
+                  
+                  <h3 className="font-display font-bold text-lg text-white mb-2 group-hover:text-secondary transition-colors duration-300">
+                    {w.title}
+                  </h3>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    {w.desc}
+                  </p>
                 </div>
-                
-                <h3 className="font-display font-bold text-lg text-white mb-2 group-hover:text-secondary transition-colors duration-300">
-                  {w.title}
-                </h3>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  {w.desc}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

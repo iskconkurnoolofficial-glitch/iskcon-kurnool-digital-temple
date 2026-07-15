@@ -36,8 +36,10 @@ export default function SevasManager() {
       .map((p) => ({ label: p.label.trim(), amount: Number(p.amount) }));
     if (cleanPrices.length === 0) { alert("Add at least one valid price option"); return; }
 
+    const generatedSlug = draft.slug?.trim() || draft.title?.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-") || Date.now().toString();
+
     if (editingId) {
-      setSevas(sevas.map((s) => s.id === editingId ? { ...s, ...draft, prices: cleanPrices } as Seva : s));
+      setSevas(sevas.map((s) => s.id === editingId ? { ...s, ...draft, slug: generatedSlug, prices: cleanPrices } as Seva : s));
     } else {
       const maxOrder = sevas.reduce((m, s) => Math.max(m, s.order ?? 0), 0);
       const item: Seva = {
@@ -48,6 +50,7 @@ export default function SevasManager() {
         prices: cleanPrices,
         order: maxOrder + 1,
         active: draft.active ?? true,
+        slug: generatedSlug,
       };
       setSevas([...sevas, item]);
     }
@@ -93,11 +96,16 @@ export default function SevasManager() {
           />
 
           <div className="grid gap-3">
-            <Field label="Title">
-              <input className="w-full px-3 py-2.5 border rounded-lg" value={draft.title || ""} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder="Sri Jagannath Bhoga Seva" />
-            </Field>
+            <div className="grid md:grid-cols-2 gap-4">
+              <Field label="Title">
+                <input className="w-full px-3 py-2.5 border rounded-lg bg-white" value={draft.title || ""} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder="Sri Jagannath Bhoga Seva" />
+              </Field>
+              <Field label="URL Custom Slug">
+                <input className="w-full px-3 py-2.5 border rounded-lg bg-white" value={draft.slug || ""} onChange={(e) => setDraft({ ...draft, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })} placeholder="e.g. bhoga-seva" />
+              </Field>
+            </div>
             <Field label="Short Description">
-              <textarea rows={2} className="w-full px-3 py-2.5 border rounded-lg resize-none" value={draft.description || ""} onChange={(e) => setDraft({ ...draft, description: e.target.value })} placeholder="Offer sanctified food to the Lord..." />
+              <textarea rows={2} className="w-full px-3 py-2.5 border rounded-lg resize-none bg-white" value={draft.description || ""} onChange={(e) => setDraft({ ...draft, description: e.target.value })} placeholder="Offer sanctified food to the Lord..." />
             </Field>
 
             <div>

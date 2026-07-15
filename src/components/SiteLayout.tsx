@@ -61,13 +61,28 @@ export function PageHero({
                   {eyebrow}
                 </span>
               )}
-              <h1 className="font-display font-bold text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-tight">
-                {title}
-              </h1>
-              {subtitle && (
-                <p className="text-lg md:text-xl opacity-90 max-w-2xl leading-relaxed">
-                  {subtitle}
-                </p>
+              {pageKey === "aboutFounder" ? (
+                <>
+                  {subtitle && (
+                    <p className="text-lg md:text-xl opacity-90 max-w-2xl leading-tight">
+                      {subtitle}
+                    </p>
+                  )}
+                  <h1 className="font-display font-bold text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-tight !mt-0">
+                    {title}
+                  </h1>
+                </>
+              ) : (
+                <>
+                  <h1 className="font-display font-bold text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-tight">
+                    {title}
+                  </h1>
+                  {subtitle && (
+                    <p className="text-lg md:text-xl opacity-90 max-w-2xl leading-relaxed">
+                      {subtitle}
+                    </p>
+                  )}
+                </>
               )}
               {children && (
                 <div className="pt-4 flex flex-wrap justify-center lg:justify-start gap-4">

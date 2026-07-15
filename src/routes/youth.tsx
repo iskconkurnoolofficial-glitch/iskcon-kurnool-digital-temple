@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import SiteLayout, { PageHero } from "@/components/SiteLayout";
 import { useAdmin } from "@/context/AdminContext";
+import { isTimeStrLive } from "@/lib/scheduleUtils";
 import { 
   MessageCircle, 
   Star, 
@@ -33,6 +34,15 @@ export const Route = createFileRoute("/youth")({
 
 function YouthPage() {
   const { youth, sunday } = useAdmin();
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setTick((t) => t + 1), 10000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const isLive = isTimeStrLive("6:30 PM – 8:30 PM", 6); // 6 = Saturday
+
   const visibleReviews = youth.reviews.filter((r) => r.visible);
   const whatsappUrl = youth.whatsappUrl || "https://chat.whatsapp.com/LhB20hR5J1T7xVvH7Hk9y3";
   const directionsUrl = sunday.directionsUrl || "https://maps.app.goo.gl/yJpP11F8Q8ZqT76W9";
@@ -55,6 +65,11 @@ function YouthPage() {
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-secondary text-sm font-semibold tracking-wide shadow-sm">
             <Clock className="h-4 w-4" />
             <span>{youth.schedule}</span>
+            {isLive && (
+              <span className="ml-1.5 inline-flex items-center gap-1 bg-red-600 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shadow-md animate-pulse">
+                <span className="h-1.5 w-1.5 rounded-full bg-white" /> Live
+              </span>
+            )}
           </div>
           <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
             <a
@@ -144,7 +159,14 @@ function YouthPage() {
                 <div>
                   <h4 className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Schedule</h4>
                   <p className="text-sm font-semibold text-white mt-0.5">Every Saturday</p>
-                  <p className="text-xs text-slate-400 mt-0.5">6:30 PM – 8:30 PM</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-xs text-slate-400">6:30 PM – 8:30 PM</p>
+                    {isLive && (
+                      <span className="inline-flex items-center gap-1 bg-red-600 text-white text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shadow-sm animate-pulse">
+                        Live
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="flex gap-3.5 items-start">

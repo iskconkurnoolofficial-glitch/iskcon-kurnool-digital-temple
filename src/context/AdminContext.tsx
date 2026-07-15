@@ -32,6 +32,7 @@ export type Seva = {
   prices: SevaPrice[];
   order: number;
   active: boolean;
+  slug?: string;
 };
 
 export type Festival = {
@@ -124,7 +125,7 @@ export const defaultYouth: YouthData = {
   instagramHandle: "Gaura_Bhaktas_Official",
   features: [
     { title: "Soulful Kirtan", desc: "Experience uplifting Hare Krishna mantra meditation through joyful music and collective chanting.", image: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=500&q=80" },
-    { title: "Bhagavad Gita Wisdom", desc: "Explore practical teachings from the Bhagavad Gita and learn how they apply to studies, career, relationships, and habits.", image: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=500&q=80" },
+    { title: "Discourse of Bhagavad Gita", desc: "Explore practical teachings from the Bhagavad Gita and learn how they apply to studies, career, relationships, and habits.", image: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=500&q=80" },
     { title: "Interactive Youth Sessions", desc: "Ask questions, exchange ideas, participate in discussions, and discover practical solutions for real-life challenges.", image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=500&q=80" },
     { title: "Mind Management", desc: "Learn timeless principles to improve focus, manage stress, overcome distractions, build discipline, and develop positive habits.", image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=500&q=80" },
     { title: "Positive Youth Community", desc: "Meet like-minded students and young people from Kurnool, build meaningful friendships, and grow in a supportive environment.", image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=500&q=80" },
@@ -362,7 +363,7 @@ export type GoshalaData = {
 export const defaultGoshala: GoshalaData = {
   eyebrow: "Our Goshala",
   title: "Goshala Seva",
-  subtitle: "Maintained by ISKCON Kurnool at Narsaraopeta",
+  subtitle: "Maintained by ISKCON Kurnool & Narsaraopeta",
   aboutText1: "In the Vedic tradition, the cow is regarded as a mother a source of nourishment, gentleness, and grace. As part of our seva to Krishna and His creation, ISKCON Kurnool proudly maintains a Goshala at ISKCON Narsaraopeta, where cows are cared for with love, given proper shelter, feed, and medical attention, and allowed to live out their natural lives in peace.",
   aboutText2: "This Goshala is not just a shelter it is an extension of our devotional service, rooted in the understanding that caring for cows is caring for Krishna's own beloved companions. Devotees and well-wishers are welcome to visit, participate in seva, or contribute towards the Goshala's upkeep.",
   aboutText3: "We invite you to come see this seva in person and experience the quiet devotion behind it.",
@@ -513,6 +514,12 @@ export const defaultEkadashi: EkadashiData = {
     "Note: The Parana timing changes for every Ekadashi — always check the calendar for the correct window.",
 };
 
+export type GitaWhyCard = {
+  title: string;
+  desc: string;
+  iconName: string;
+};
+
 export type GitaCourseData = {
   heroImage: string;
   gitaAboutImage: string;
@@ -529,6 +536,7 @@ export type GitaCourseData = {
   contact: string;
   startLabel: string;
   endLabel: string;
+  whyCards?: GitaWhyCard[];
 };
 
 export const defaultGitaCourse: GitaCourseData = {
@@ -547,6 +555,12 @@ export const defaultGitaCourse: GitaCourseData = {
   contact: "+91 8500789687",
   startLabel: "July 14, 2026",
   endLabel: "July 31, 2026",
+  whyCards: [
+    { iconName: "book-open", title: "Complete Gita", desc: "All 18 chapters, start to finish — nothing skipped." },
+    { iconName: "languages", title: "Plain Telugu", desc: "Explained simply, in Telugu, with real-life context." },
+    { iconName: "timer", title: "30–40 Min a Day", desc: "Fits into an evening. No long-term commitment beyond 18 days." },
+    { iconName: "sparkles", title: "ISKCON Guidance", desc: "Led by ISKCON Kurnool teachers, rooted in tradition." },
+  ],
 };
 
 export type DailyClass = {
@@ -579,6 +593,8 @@ export type SiteSettings = {
   launchPageActive?: boolean;
   launchDate?: string;
   launchBypassCode?: string;
+  liveStreamLink?: string;
+  liveStreamTitle?: string;
 };
 
 export type ThemeSettings = {
@@ -596,6 +612,24 @@ export type ContactEntry = {
   date: string;
   read: boolean;
 };
+
+export type TempleScheduleItem = {
+  id: string;
+  name: string;
+  time: string;
+  period: "Morning" | "Afternoon" | "Evening";
+  iconName: string;
+  order: number;
+};
+
+export const defaultTempleSchedule: TempleScheduleItem[] = [
+  { id: "ts1", name: "Subha Mangala Harati", time: "4:30 AM", period: "Morning", iconName: "sunrise", order: 1 },
+  { id: "ts2", name: "Harinama Japa", time: "5:15 AM – 7:00 AM", period: "Morning", iconName: "sunrise", order: 2 },
+  { id: "ts3", name: "Darshan Arati", time: "7:30 AM", period: "Morning", iconName: "sunrise", order: 3 },
+  { id: "ts4", name: "Srimad Bhagavatam Class", time: "8:15 AM", period: "Morning", iconName: "sunrise", order: 4 },
+  { id: "ts5", name: "Rajbhoga Arati", time: "12:00 PM", period: "Afternoon", iconName: "sun", order: 5 },
+  { id: "ts6", name: "Gaura Arati", time: "6:30 PM", period: "Evening", iconName: "sunset", order: 6 },
+];
 
 type AdminState = {
   slides: Slide[];
@@ -634,6 +668,8 @@ type AdminState = {
   setContacts: (c: ContactEntry[]) => void;
   instagram: InstagramData;
   setInstagram: (i: InstagramData) => void;
+  templeSchedule: TempleScheduleItem[];
+  setTempleSchedule: (s: TempleScheduleItem[]) => void;
   authed: boolean;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
@@ -659,6 +695,8 @@ const defaultSettings: SiteSettings = {
   launchPageActive: false,
   launchDate: "2026-07-15T09:00:00",
   launchBypassCode: "108",
+  liveStreamLink: "",
+  liveStreamTitle: "",
 };
 
 const defaultTheme: ThemeSettings = {
@@ -691,6 +729,7 @@ const KEYS = {
   contacts: "contacts",
   instagram: "instagram",
   prahladaBadi: "prahladaBadi",
+  templeSchedule: "templeSchedule",
 } as const;
 
 const Ctx = createContext<AdminState | null>(null);
@@ -714,6 +753,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [goshala, setGoshalaState] = useState<GoshalaData>(defaultGoshala);
   const [contacts, setContactsState] = useState<ContactEntry[]>([]);
   const [instagram, setInstagramState] = useState<InstagramData>(defaultInstagram);
+  const [templeSchedule, setTempleScheduleState] = useState<TempleScheduleItem[]>(defaultTempleSchedule);
   const [authed, setAuthed] = useState<boolean>(false);
 
   // Track Supabase auth session for admin access
@@ -779,7 +819,14 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.categories: setCategoriesState(value); break;
       case KEYS.classes: setClassesState(value); break;
       case KEYS.festivals: setFestivalsState(value); break;
-      case KEYS.sevas: setSevasState(value); break;
+      case KEYS.sevas: {
+        const list = Array.isArray(value) ? value.map((s: any) => ({
+          ...s,
+          slug: s.slug || s.title?.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-") || s.id
+        })) : [];
+        setSevasState(list);
+        break;
+      }
       case KEYS.youth: setYouthState({ ...defaultYouth, ...value }); break;
       case KEYS.harinama: setHarinamaState({ ...defaultHarinama, ...value }); break;
       case KEYS.ekadashi: setEkadashiState({ ...defaultEkadashi, ...value }); break;
@@ -792,6 +839,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.goshala: setGoshalaState({ ...defaultGoshala, ...value }); break;
       case KEYS.contacts: setContactsState(value); break;
       case KEYS.instagram: setInstagramState({ ...defaultInstagram, ...value }); break;
+      case KEYS.templeSchedule: setTempleScheduleState(value || defaultTempleSchedule); break;
     }
   }
 
@@ -824,6 +872,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     persist(KEYS.contacts, v);
   };
   const setInstagram = (v: InstagramData) => { setInstagramState(v); persist(KEYS.instagram, v); };
+  const setTempleSchedule = (v: TempleScheduleItem[]) => { setTempleScheduleState(v); persist(KEYS.templeSchedule, v); };
 
   // Apply theme to CSS variables
   useEffect(() => {
@@ -869,6 +918,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         goshala, setGoshala,
         contacts, setContacts,
         instagram, setInstagram,
+        templeSchedule, setTempleSchedule,
         authed, login, logout, ready,
       }}
     >

@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, Outlet } from "@tanstack/react-router";
 import SiteLayout, { PageHero } from "@/components/SiteLayout";
 import { useAdmin, Seva } from "@/context/AdminContext";
-import { Heart, Search, HandHeart, IndianRupee, Sparkles } from "lucide-react";
+import { Heart, Search, HandHeart, IndianRupee, Sparkles, ArrowLeft, Lock, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/donate")({
-  head: () => ({ meta: [
-    { title: "Donate — Sri Sri Jagannath Sevas | ISKCON Kurnool" },
-    { name: "description", content: "Participate in divine service — offer Sri Sri Jagannath Sevas at ISKCON Kurnool. Every seva performed with love reaches the lotus feet of the Lord." },
-  ]}),
-  component: Page,
+  head: () => ({
+    meta: [
+      { title: "Donate — Sri Sri Jagannath Sevas | ISKCON Kurnool" },
+      { name: "description", content: "Participate in divine service — offer Sri Sri Jagannath Sevas at ISKCON Kurnool. Every seva performed with love reaches the lotus feet of the Lord." },
+    ]
+  }),
+  component: () => <Outlet />,
 });
 
 const RAZORPAY_KEY = "rzp_test_SwEw3kkyiffJww";
@@ -26,10 +28,42 @@ function loadRazorpay(): Promise<boolean> {
   });
 }
 
-function Page() {
-  const { sevas, settings, theme } = useAdmin();
+export default function Page({ initialSlug }: { initialSlug?: string }) {
+  const { sevas, settings, theme, ready } = useAdmin();
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Record<string, number>>({});
+  const [checkoutSeva, setCheckoutSeva] = useState<Seva | null>(null);
+
+  // Form inputs
+  const [donorName, setDonorName] = useState("");
+  const [purpose, setPurpose] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [pan, setPan] = useState("");
+
+  useEffect(() => {
+    if (initialSlug && sevas.length > 0) {
+      const found = sevas.find(s => s.slug === initialSlug || s.id === initialSlug);
+      if (found) {
+        setCheckoutSeva(found);
+      } else {
+        setCheckoutSeva(null);
+      }
+    } else {
+      setCheckoutSeva(null);
+    }
+  }, [initialSlug, sevas]);
+
+  if (!ready) {
+    return (
+      <SiteLayout>
+        <div className="min-h-[60vh] flex items-center justify-center bg-gradient-to-b from-[#fffbf0] via-[#fdf4d4] to-[#ffffff]">
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      </SiteLayout>
+    );
+  }
 
   const active = useMemo(
     () => [...sevas].filter((s) => s.active).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
@@ -52,15 +86,229 @@ function Page() {
       name: "ISKCON Kurnool",
       description: `${seva.title} — ${label}`,
       image: settings.logo || undefined,
-      notes: { seva: seva.title, option: label },
-      prefill: { contact: settings.phone?.replace(/\D/g, "") || "" },
+      notes: {
+        seva: seva.title,
+        option: label,
+        donorName: donorName.trim(),
+        purpose: purpose.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        pan: pan.trim()
+      },
+      prefill: {
+        name: donorName.trim() || undefined,
+        email: email.trim() || undefined,
+        contact: phone.trim() || settings.phone?.replace(/\D/g, "") || undefined
+      },
       theme: { color: theme.primary || "#5b2c9b" },
       handler: () => {
-        alert(`🙏 Hare Krishna! Thank you for your ${seva.title} seva.`);
+        alert(`🙏 Hare Krishna! Thank you for your ${seva.title} seva, ${donorName.trim() || "Devotee"}.`);
+        setCheckoutSeva(null);
+        setDonorName("");
+        setPurpose("");
+        setEmail("");
+        setPhone("");
+        setPan("");
       },
     });
     rzp.open();
   };
+
+  if (checkoutSeva) {
+    const selIdx = selected[checkoutSeva.id] ?? 0;
+    const currentPrice = checkoutSeva.prices[selIdx] ?? checkoutSeva.prices[0];
+
+    const handleFormSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!donorName.trim()) { alert("Please enter Donor Name."); return; }
+      if (!email.trim()) { alert("Please enter Email Address."); return; }
+      if (!phone.trim()) { alert("Please enter WhatsApp Phone Number."); return; }
+
+      donate(checkoutSeva, currentPrice.amount, currentPrice.label);
+    };
+
+    return (
+      <SiteLayout>
+        <PageHero
+          eyebrow="Offer Your Seva"
+          title="Seva Checkout"
+          subtitle={`Complete your offering details for ${checkoutSeva.title}.`}
+          pageKey="donate"
+        />
+
+        <section className="py-12 bg-gradient-to-b from-[#fffbf0] via-[#fdf4d4] to-[#ffffff]">
+          <div className="max-w-6xl mx-auto px-5 sm:px-6">
+            <Link
+              to="/donate"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition mb-8 cursor-pointer font-sans"
+            >
+              <ArrowLeft className="h-4 w-4" /> Back to Sevas list
+            </Link>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+              {/* Left Column: Thumbnail and selection */}
+              <div className="lg:col-span-5 space-y-6">
+                <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-6">
+                  <div className="rounded-2xl overflow-hidden">
+                    {checkoutSeva.thumbnail ? (
+                      <img src={checkoutSeva.thumbnail} alt={checkoutSeva.title} className="w-full h-auto object-contain rounded-2xl shadow-sm border border-slate-100/50" />
+                    ) : (
+                      <div className="aspect-[4/3] w-full grid place-items-center text-primary/30 bg-primary/5 rounded-2xl">
+                        <HandHeart className="h-16 w-16" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-bold text-accent tracking-widest uppercase">Selected Devotional Offering</span>
+                    <h3 className="font-display font-extrabold text-2xl text-primary leading-tight">{checkoutSeva.title}</h3>
+                    {checkoutSeva.description && (
+                      <p className="text-xs text-slate-500 leading-relaxed font-sans">{checkoutSeva.description}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-3 pt-4 border-t border-slate-100">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Select Option / Amount</label>
+                    <div className="grid grid-cols-1 gap-2.5">
+                      {checkoutSeva.prices.map((p, i) => {
+                        const isSel = i === selIdx;
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => setSelected((m) => ({ ...m, [checkoutSeva.id]: i }))}
+                            className={`w-full text-left p-3.5 rounded-xl border flex items-center justify-between transition-all duration-200 cursor-pointer ${isSel
+                                ? "border-primary bg-primary/5 ring-1 ring-primary/20 shadow-sm"
+                                : "border-slate-200 hover:border-slate-350 hover:bg-slate-50"
+                              }`}
+                          >
+                            <span className={`text-xs font-bold font-sans ${isSel ? "text-primary" : "text-slate-700"}`}>
+                              {p.label}
+                            </span>
+                            <span className={`text-xs font-extrabold font-sans ${isSel ? "text-primary" : "text-slate-900"}`}>
+                              ₹{p.amount.toLocaleString("en-IN")}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-50 rounded-2xl p-4.5 space-y-2.5 border border-slate-100">
+                    <div className="flex justify-between items-center text-xs text-slate-600 font-sans">
+                      <span>Selected Seva:</span>
+                      <span className="font-semibold text-slate-800 text-right max-w-[200px] truncate">{checkoutSeva.title}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs text-slate-600 font-sans">
+                      <span>Option:</span>
+                      <span className="font-semibold text-slate-800 text-right">{currentPrice.label}</span>
+                    </div>
+                    <div className="h-px bg-slate-200/60 my-2" />
+                    <div className="flex justify-between items-center text-sm font-bold text-primary font-display">
+                      <span>DONATE Amount:</span>
+                      <span className="text-base text-accent">₹{currentPrice.amount.toLocaleString("en-IN")}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Donor Form */}
+              <div className="lg:col-span-7">
+                <form onSubmit={handleFormSubmit} className="bg-white rounded-3xl p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
+                  <div>
+                    <h4 className="font-display font-extrabold text-xl text-primary">Donor & Receipt Information</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5 font-sans">Please provide your details below to process the offering receipt.</p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-sans">Donor Name *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Enter full name of the donor"
+                        value={donorName}
+                        onChange={(e) => setDonorName(e.target.value)}
+                        className="w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary font-sans bg-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-sans">Purpose of Donation</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. For good health, family welfare, birthdays..."
+                        value={purpose}
+                        onChange={(e) => setPurpose(e.target.value)}
+                        className="w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary font-sans bg-white"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-sans">Email Address *</label>
+                        <input
+                          type="email"
+                          required
+                          placeholder="donor@example.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary font-sans bg-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-sans">WhatsApp Phone Number *</label>
+                        <input
+                          type="tel"
+                          required
+                          placeholder="e.g. +91 9876543210"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          className="w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary font-sans bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center mb-1.5">
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider font-sans">PAN Card (Optional)</label>
+                        <span className="text-[10px] text-muted-foreground font-sans">For 80G Tax exemption benefits</span>
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="ABCDE1234F"
+                        value={pan}
+                        onChange={(e) => setPan(e.target.value.toUpperCase())}
+                        className="w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary font-sans tracking-wide uppercase bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-100 space-y-4">
+                    <button
+                      type="submit"
+                      className="w-full py-3.5 bg-accent hover:bg-accent/95 hover:shadow-lg text-white font-bold rounded-2xl transition duration-200 cursor-pointer flex items-center justify-center gap-2 text-sm shadow shadow-accent/25 hover:scale-[1.01]"
+                    >
+                      <Lock className="h-4.5 w-4.5" />
+                      <span>DONATE ₹{currentPrice.amount.toLocaleString("en-IN")}</span>
+                    </button>
+
+                    <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                      <ShieldCheck className="h-4.5 w-4.5 text-emerald-500" />
+                      <span>Secure Payments by Razorpay</span>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </div>
+          </div>
+        </section>
+      </SiteLayout>
+    );
+  }
 
   return (
     <SiteLayout>
@@ -71,67 +319,7 @@ function Page() {
         pageKey="donate"
       />
 
-      {/* Bhagavad Gita Quote Section */}
-      <section className="-mt-8 md:-mt-12 relative z-10 max-w-4xl mx-auto px-5">
-        <div className="bg-white rounded-3xl border border-border p-8 md:p-10 shadow-elegant text-center relative overflow-hidden">
-          {/* Decorative background gradients or motifs */}
-          <div className="absolute -top-10 -left-10 w-40 h-40 bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-          
-          {/* Sanskrit symbol or elegant divider */}
-          <div className="flex justify-center mb-6">
-            <span className="text-secondary font-display text-sm md:text-base tracking-[0.2em] uppercase divider-gold font-semibold">
-              Bhagavad Gita 9.26
-            </span>
-          </div>
-
-          {/* Sanskrit verse */}
-          <blockquote className="space-y-4">
-            <p className="font-display text-xl md:text-2xl lg:text-3xl font-semibold text-primary leading-relaxed tracking-wide">
-              पत्रं पुष्पं फलं तोयं यो मे भक्त्या प्रयच्छति ।<br />
-              तदहं भक्त्युपहृतमश्नामि प्रयतात्मन: ॥
-            </p>
-            
-            {/* Translation divider */}
-            <div className="h-px w-24 bg-gradient-to-r from-transparent via-border to-transparent mx-auto my-6" />
-
-            {/* Translation */}
-            <p className="text-base md:text-lg text-foreground/80 max-w-2xl mx-auto leading-relaxed font-sans font-medium italic">
-              "If one offers Me with love and devotion a leaf, a flower, fruit, or water, I will accept it."
-            </p>
-          </blockquote>
-
-          {/* Icons/Emojis representation in a modern aesthetic way */}
-          <div className="flex justify-center gap-6 md:gap-8 mt-8 text-2xl md:text-3xl">
-            <div className="flex flex-col items-center gap-1 group">
-              <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 grid place-items-center group-hover:scale-110 group-hover:bg-emerald-100 transition-all duration-300 shadow-sm border border-emerald-100/50">
-                🌿
-              </div>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Leaf</span>
-            </div>
-            <div className="flex flex-col items-center gap-1 group">
-              <div className="w-12 h-12 rounded-full bg-pink-50 text-pink-600 grid place-items-center group-hover:scale-110 group-hover:bg-pink-100 transition-all duration-300 shadow-sm border border-pink-100/50">
-                🌸
-              </div>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Flower</span>
-            </div>
-            <div className="flex flex-col items-center gap-1 group">
-              <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 grid place-items-center group-hover:scale-110 group-hover:bg-rose-100 transition-all duration-300 shadow-sm border border-rose-100/50">
-                🍎
-              </div>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Fruit</span>
-            </div>
-            <div className="flex flex-col items-center gap-1 group">
-              <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 grid place-items-center group-hover:scale-110 group-hover:bg-blue-100 transition-all duration-300 shadow-sm border border-blue-100/50">
-                💧
-              </div>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Water</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-14 md:py-16 bg-gradient-to-b from-surface to-background">
+      <section className="py-14 md:py-16 bg-gradient-to-b from-[#fffbf0] via-[#fdf4d4] to-[#ffffff]">
         <div className="max-w-6xl mx-auto px-5 sm:px-6">
 
           {/* Search */}
@@ -159,9 +347,9 @@ function Page() {
                 const price = s.prices[selIdx] ?? s.prices[0];
                 return (
                   <div key={s.id} className="group bg-white rounded-2xl border border-border overflow-hidden flex flex-col shadow-sm hover:shadow-elegant transition-all duration-300">
-                    <div className="relative aspect-square bg-muted overflow-hidden">
+                    <div className="relative aspect-square overflow-hidden flex items-center justify-center p-3">
                       {s.thumbnail ? (
-                        <img src={s.thumbnail} alt={s.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <img src={s.thumbnail} alt={s.title} loading="lazy" className="w-full h-full object-contain rounded-2xl group-hover:scale-105 transition-transform duration-500" />
                       ) : (
                         <div className="w-full h-full grid place-items-center text-primary/40"><HandHeart className="h-12 w-12" /></div>
                       )}
@@ -178,9 +366,8 @@ function Page() {
                             <button
                               key={i}
                               onClick={() => setSelected((m) => ({ ...m, [s.id]: i }))}
-                              className={`text-xs font-medium px-3 py-1.5 rounded-full border transition ${
-                                isSel ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-surface text-foreground border-border hover:border-primary/50"
-                              }`}
+                              className={`text-xs font-medium px-3 py-1.5 rounded-full border transition ${isSel ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-surface text-foreground border-border hover:border-primary/50"
+                                }`}
                             >
                               {p.label} · ₹{p.amount.toLocaleString("en-IN")}
                             </button>
@@ -189,7 +376,7 @@ function Page() {
                       </div>
 
                       <button
-                        onClick={() => donate(s, price.amount, price.label)}
+                        onClick={() => navigate({ to: "/donate/$slug", params: { slug: s.slug || s.id } })}
                         className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-hero text-primary-foreground font-semibold hover:shadow-gold transition-all"
                       >
                         <Heart className="h-4 w-4" /> Donate ₹{price.amount.toLocaleString("en-IN")}

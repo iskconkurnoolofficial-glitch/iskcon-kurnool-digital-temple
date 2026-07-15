@@ -76,7 +76,7 @@ function SettingsTab({ goshala, update }: { goshala: GoshalaData; update: (p: Pa
               className="w-full px-4 py-2.5 border rounded-lg" 
               value={goshala.subtitle || ""} 
               onChange={(e) => update({ subtitle: e.target.value })} 
-              placeholder="Maintained by ISKCON Kurnool at Narsaraopeta" 
+              placeholder="Maintained by ISKCON Kurnool & Narsaraopeta" 
             />
           </div>
         </div>

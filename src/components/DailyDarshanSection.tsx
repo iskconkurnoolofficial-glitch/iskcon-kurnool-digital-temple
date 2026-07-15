@@ -1,81 +1,57 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Clock, Compass, Sun, Sunrise, Sunset, Moon, ArrowRight } from "lucide-react";
-
-type TimingItem = {
-  name: string;
-  time: string;
-  desc: string;
-  icon: any;
-  color: string;
-};
+import { Clock, Compass, Sun, Sunrise, Sunset, ArrowRight } from "lucide-react";
+import { useAdmin, defaultTempleSchedule } from "@/context/AdminContext";
+import { isTimeStrLive } from "@/lib/scheduleUtils";
 
 export default function DailyDarshanSection() {
-  const [darshan, setDarshan] = useState({ open: false, status: "Checking Temple Status..." });
+  const { templeSchedule } = useAdmin();
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    const updateStatus = () => {
-      const now = new Date();
-      const hrs = now.getHours();
-      const mins = now.getMinutes();
-      const timeVal = hrs * 60 + mins;
-
-      // 4:30 AM to 5:00 AM (Mangala)
-      if (timeVal >= 270 && timeVal <= 300) {
-        setDarshan({ open: true, status: "Open (Mangala Aarti)" });
-      }
-      // 7:30 AM to 1:00 PM (Morning Darshan)
-      else if (timeVal >= 450 && timeVal <= 780) {
-        setDarshan({ open: true, status: "Open (Morning Darshan)" });
-      }
-      // 4:30 PM to 8:30 PM (Evening Darshan)
-      else if (timeVal >= 990 && timeVal <= 1230) {
-        setDarshan({ open: true, status: "Open (Evening Darshan & Aarti)" });
-      }
-      // Closed times
-      else {
-        let nextTime = "4:30 AM";
-        if (timeVal < 450 && timeVal > 300) nextTime = "7:30 AM";
-        else if (timeVal < 990 && timeVal > 780) nextTime = "4:30 PM";
-        setDarshan({ open: false, status: `Closed (Next Darshan: ${nextTime})` });
-      }
-    };
-
-    updateStatus();
-    const interval = setInterval(updateStatus, 60000);
-    return () => clearInterval(interval);
+    const timer = setInterval(() => setTick((t) => t + 1), 10000);
+    return () => clearInterval(timer);
   }, []);
 
-  const timings: TimingItem[] = [
-    {
-      name: "Mangala Aarti",
-      time: "04:30 AM",
-      desc: "The auspicious first worship of the day at early dawn.",
-      icon: Sunrise,
-      color: "from-amber-500/10 to-orange-500/10 text-orange-600 border-orange-500/20",
-    },
-    {
-      name: "Darshan Aarti",
-      time: "07:30 AM",
-      desc: "Lord's morning darshan, dressed in elegant fresh attire.",
-      icon: Sun,
-      color: "from-yellow-500/10 to-amber-500/10 text-amber-600 border-yellow-500/20",
-    },
-    {
-      name: "Rajbhoga Aarti",
-      time: "12:00 PM",
-      desc: "Noon offering of exquisite bhoga items and worship.",
-      icon: Clock,
-      color: "from-orange-500/10 to-red-500/10 text-red-600 border-red-500/20",
-    },
-    {
-      name: "Sandhya Gaura Aarti",
-      time: "06:30 PM",
-      desc: "Evening lamps offering accompanied by sweet kirtan tunes.",
-      icon: Sunset,
-      color: "from-indigo-500/10 to-purple-500/10 text-purple-600 border-indigo-500/20",
-    },
-  ];
+  const rawItems = templeSchedule && templeSchedule.length > 0 ? templeSchedule : defaultTempleSchedule;
+  
+  const filtered = [...rawItems].sort((a, b) => (a.order || 0) - (b.order || 0));
+
+  const activeLiveItem = filtered.find(item => isTimeStrLive(item.time));
+  const isOpen = !!activeLiveItem;
+  const statusStr = isOpen ? `Open (${activeLiveItem.name})` : "Closed (Check daily schedule)";
+
+  const getTimingDescription = (name: string) => {
+    const n = name.toLowerCase();
+    if (n.includes("mangala")) return "The auspicious first worship of the day at early dawn.";
+    if (n.includes("darshan")) return "Lord's morning darshan, dressed in elegant fresh attire.";
+    if (n.includes("rajbhoga") || n.includes("bhoga")) return "Noon offering of exquisite bhoga items and worship.";
+    if (n.includes("gaura") || n.includes("sandhya") || n.includes("evening")) return "Evening lamps offering accompanied by sweet kirtan tunes.";
+    if (n.includes("tulasi")) return "Worship of the sacred Tulasi plant for devotional growth.";
+    if (n.includes("class") || n.includes("lectur") || n.includes("discourse") || n.includes("bhagavatam")) return "Daily study of sacred scriptures and spiritual discourses.";
+    return "Daily devotional worship service and prayers.";
+  };
+
+  const getTimingColor = (iconName: string, isLive: boolean) => {
+    if (isLive) {
+      return "from-amber-500/10 to-orange-500/10 text-amber-700 border-amber-500/30";
+    }
+    switch (iconName?.toLowerCase()) {
+      case "sunrise": return "from-amber-500/10 to-orange-500/10 text-orange-600 border-orange-500/20";
+      case "sun": return "from-yellow-500/10 to-amber-500/10 text-amber-600 border-yellow-500/20";
+      case "sunset": return "from-indigo-500/10 to-purple-500/10 text-purple-600 border-indigo-500/20";
+      default: return "from-orange-500/10 to-red-500/10 text-red-600 border-red-500/20";
+    }
+  };
+
+  const getIcon = (iconName: string) => {
+    switch (iconName?.toLowerCase()) {
+      case "sunrise": return Sunrise;
+      case "sun": return Sun;
+      case "sunset": return Sunset;
+      default: return Clock;
+    }
+  };
 
   return (
     <section className="relative py-12 md:py-16 bg-gradient-to-b from-[#fffdf5] via-[#fdf3d1] to-[#ffffff] overflow-hidden">
@@ -109,8 +85,8 @@ export default function DailyDarshanSection() {
               {/* Live Tag */}
               <div className="flex items-center gap-2">
                 <span className="relative flex h-2.5 w-2.5">
-                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${darshan.open ? "bg-green-400" : "bg-red-400"}`}></span>
-                  <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${darshan.open ? "bg-green-500" : "bg-red-500"}`}></span>
+                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isOpen ? "bg-green-400" : "bg-red-400"}`}></span>
+                  <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isOpen ? "bg-green-500" : "bg-red-500"}`}></span>
                 </span>
                 <span className="text-[11px] font-bold tracking-widest text-muted-foreground uppercase font-sans">
                   Live Temple Status
@@ -119,10 +95,10 @@ export default function DailyDarshanSection() {
 
               {/* Status Header */}
               <h3 className="font-display font-bold text-2xl md:text-3xl text-foreground mt-4 mb-2">
-                {darshan.open ? "Temple is Open" : "Temple is Closed"}
+                {isOpen ? "Temple is Open" : "Temple is Closed"}
               </h3>
               <p className="text-muted-foreground text-sm font-sans mb-6">
-                Current State: <span className="font-semibold text-primary">{darshan.status}</span>
+                Current State: <span className="font-semibold text-primary">{statusStr}</span>
               </p>
 
               <div className="h-px bg-border/80 w-full my-6" />
@@ -158,7 +134,7 @@ export default function DailyDarshanSection() {
                 Detailed Daily Schedule
               </Link>
               <a
-                href="https://maps.google.com"
+                href="https://maps.app.goo.gl/yJpP11F8Q8ZqT76W9"
                 target="_blank"
                 rel="noreferrer"
                 className="flex-1 text-center py-3.5 rounded-2xl border hover:bg-surface/5 transition-all text-xs font-semibold text-foreground font-sans flex items-center justify-center gap-1.5"
@@ -170,29 +146,46 @@ export default function DailyDarshanSection() {
 
           {/* Right Column: Aarti Timings List */}
           <div className="lg:col-span-7 flex flex-col gap-4">
-            {timings.map((t) => {
-              const Icon = t.icon;
+            {filtered.map((t) => {
+              const isLive = isTimeStrLive(t.time);
+              const Icon = getIcon(t.iconName);
+              const color = getTimingColor(t.iconName, isLive);
+              const desc = getTimingDescription(t.name);
+              
               return (
                 <div
-                  key={t.name}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl bg-white border border-border/80 hover:border-secondary/40 transition-all duration-300 hover:shadow-elegant group"
+                  key={t.id || t.name}
+                  className={`flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl border transition-all duration-300 hover:shadow-elegant group ${
+                    isLive 
+                      ? "bg-amber-50/70 border-amber-500 dark:bg-amber-950/20" 
+                      : "bg-white border-border/80 hover:border-secondary/40"
+                  }`}
                 >
                   <div className="flex gap-4 items-start sm:items-center">
-                    <div className={`p-3.5 rounded-2xl border bg-gradient-to-tr ${t.color}`}>
+                    <div className={`p-3.5 rounded-2xl border bg-gradient-to-tr ${color}`}>
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="space-y-0.5">
-                      <h3 className="font-display font-bold text-base md:text-lg text-primary">
-                        {t.name}
-                      </h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-display font-bold text-base md:text-lg text-primary">
+                          {t.name}
+                        </h3>
+                        {isLive && (
+                          <span className="inline-flex items-center gap-1 bg-amber-600 text-white text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shadow-sm animate-pulse">
+                            Live
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground font-sans max-w-sm sm:max-w-md leading-relaxed">
-                        {t.desc}
+                        {desc}
                       </p>
                     </div>
                   </div>
 
                   <div className="mt-3 sm:mt-0 flex self-start sm:self-center">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/5 text-accent font-bold text-xs font-sans tracking-wide">
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs font-sans tracking-wide ${
+                      isLive ? "bg-amber-500/15 text-amber-700" : "bg-amber-500/5 text-accent"
+                    }`}>
                       <Clock className="h-3.5 w-3.5" />
                       {t.time}
                     </span>

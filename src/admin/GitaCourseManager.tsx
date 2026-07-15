@@ -127,6 +127,93 @@ export default function GitaCourseManager() {
           </div>
         </div>
       </div>
+
+      {/* Why Join (Built to Actually Finish) Cards */}
+      <div className="bg-white rounded-2xl shadow p-6 border space-y-4">
+        <div className="flex justify-between items-center border-b pb-3">
+          <h3 className="font-display text-xl font-bold text-primary">Why Join Cards (Built to Actually Finish)</h3>
+          <button
+            onClick={() => {
+              const currentCards = gitaCourse.whyCards || [];
+              update({
+                whyCards: [...currentCards, { title: "New Card", desc: "Card description here.", iconName: "book-open" }]
+              });
+            }}
+            className="px-4 py-2 bg-primary text-white hover:bg-primary/95 text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1 cursor-pointer"
+          >
+            <Plus className="h-4 w-4" /> Add Card
+          </button>
+        </div>
+        
+        {(!gitaCourse.whyCards || gitaCourse.whyCards.length === 0) ? (
+          <p className="text-sm text-muted-foreground py-4">No custom cards added yet. Default cards are displayed on the site.</p>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-6">
+            {gitaCourse.whyCards.map((card, i) => (
+              <div key={i} className="p-4 border rounded-xl bg-slate-50/50 space-y-3 relative animate-fade-in">
+                <button
+                  onClick={() => {
+                    const currentCards = gitaCourse.whyCards || [];
+                    update({ whyCards: currentCards.filter((_, idx) => idx !== i) });
+                  }}
+                  className="absolute top-2 right-2 text-rose-600 hover:text-rose-800 transition p-1 cursor-pointer"
+                  title="Delete Card"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Card Title</label>
+                  <input
+                    className="w-full px-3 py-2 bg-white border rounded-lg text-sm"
+                    value={card.title}
+                    onChange={(e) => {
+                      const currentCards = [...(gitaCourse.whyCards || [])];
+                      currentCards[i] = { ...currentCards[i], title: e.target.value };
+                      update({ whyCards: currentCards });
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Card Description</label>
+                  <textarea
+                    className="w-full px-3 py-2 bg-white border rounded-lg text-sm font-sans"
+                    rows={2}
+                    value={card.desc}
+                    onChange={(e) => {
+                      const currentCards = [...(gitaCourse.whyCards || [])];
+                      currentCards[i] = { ...currentCards[i], desc: e.target.value };
+                      update({ whyCards: currentCards });
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Icon</label>
+                  <select
+                    className="w-full px-3 py-2 bg-white border rounded-lg text-sm bg-white"
+                    value={card.iconName}
+                    onChange={(e) => {
+                      const currentCards = [...(gitaCourse.whyCards || [])];
+                      currentCards[i] = { ...currentCards[i], iconName: e.target.value };
+                      update({ whyCards: currentCards });
+                    }}
+                  >
+                    <option value="book-open">Book Open</option>
+                    <option value="languages">Languages</option>
+                    <option value="timer">Timer/Clock</option>
+                    <option value="sparkles">Sparkles</option>
+                    <option value="book">Book</option>
+                    <option value="compass">Compass</option>
+                    <option value="clock">Clock</option>
+                    <option value="award">Award</option>
+                    <option value="star">Star</option>
+                    <option value="heart">Heart</option>
+                  </select>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

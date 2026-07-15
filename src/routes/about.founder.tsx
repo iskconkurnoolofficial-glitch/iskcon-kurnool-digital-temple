@@ -15,7 +15,7 @@ function Page() {
       <PageHero 
         eyebrow="Founder Acharya" 
         title="Srila Prabhupada" 
-        subtitle="His Divine Grace A.C. Bhaktivedanta Swami Prabhupada" 
+        subtitle="His Divine Grace A.C. Bhaktivedanta Swami" 
         pageKey="aboutFounder" 
       />
       <section className="py-16 md:py-24 bg-gradient-to-b from-surface to-background">

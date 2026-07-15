@@ -26,8 +26,10 @@ import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TempleIndexRouteImport } from './routes/temple.index'
+import { Route as DonateIndexRouteImport } from './routes/donate.index'
 import { Route as TempleSundayRouteImport } from './routes/temple.sunday'
 import { Route as FestivalSlugRouteImport } from './routes/festival.$slug'
+import { Route as DonateSlugRouteImport } from './routes/donate.$slug'
 import { Route as AboutMissionRouteImport } from './routes/about.mission'
 import { Route as AboutKurnoolRouteImport } from './routes/about.kurnool'
 import { Route as AboutIskconRouteImport } from './routes/about.iskcon'
@@ -118,6 +120,11 @@ const TempleIndexRoute = TempleIndexRouteImport.update({
   path: '/',
   getParentRoute: () => TempleRoute,
 } as any)
+const DonateIndexRoute = DonateIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DonateRoute,
+} as any)
 const TempleSundayRoute = TempleSundayRouteImport.update({
   id: '/sunday',
   path: '/sunday',
@@ -127,6 +134,11 @@ const FestivalSlugRoute = FestivalSlugRouteImport.update({
   id: '/festival/$slug',
   path: '/festival/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DonateSlugRoute = DonateSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => DonateRoute,
 } as any)
 const AboutMissionRoute = AboutMissionRouteImport.update({
   id: '/about/mission',
@@ -154,7 +166,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
-  '/donate': typeof DonateRoute
+  '/donate': typeof DonateRouteWithChildren
   '/ekadashi': typeof EkadashiRoute
   '/festivals': typeof FestivalsRoute
   '/gallery': typeof GalleryRoute
@@ -170,8 +182,10 @@ export interface FileRoutesByFullPath {
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
   '/about/mission': typeof AboutMissionRoute
+  '/donate/$slug': typeof DonateSlugRoute
   '/festival/$slug': typeof FestivalSlugRoute
   '/temple/sunday': typeof TempleSundayRoute
+  '/donate/': typeof DonateIndexRoute
   '/temple/': typeof TempleIndexRoute
 }
 export interface FileRoutesByTo {
@@ -179,7 +193,6 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
-  '/donate': typeof DonateRoute
   '/ekadashi': typeof EkadashiRoute
   '/festivals': typeof FestivalsRoute
   '/gallery': typeof GalleryRoute
@@ -194,8 +207,10 @@ export interface FileRoutesByTo {
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
   '/about/mission': typeof AboutMissionRoute
+  '/donate/$slug': typeof DonateSlugRoute
   '/festival/$slug': typeof FestivalSlugRoute
   '/temple/sunday': typeof TempleSundayRoute
+  '/donate': typeof DonateIndexRoute
   '/temple': typeof TempleIndexRoute
 }
 export interface FileRoutesById {
@@ -204,7 +219,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
-  '/donate': typeof DonateRoute
+  '/donate': typeof DonateRouteWithChildren
   '/ekadashi': typeof EkadashiRoute
   '/festivals': typeof FestivalsRoute
   '/gallery': typeof GalleryRoute
@@ -220,8 +235,10 @@ export interface FileRoutesById {
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
   '/about/mission': typeof AboutMissionRoute
+  '/donate/$slug': typeof DonateSlugRoute
   '/festival/$slug': typeof FestivalSlugRoute
   '/temple/sunday': typeof TempleSundayRoute
+  '/donate/': typeof DonateIndexRoute
   '/temple/': typeof TempleIndexRoute
 }
 export interface FileRouteTypes {
@@ -247,8 +264,10 @@ export interface FileRouteTypes {
     | '/about/iskcon'
     | '/about/kurnool'
     | '/about/mission'
+    | '/donate/$slug'
     | '/festival/$slug'
     | '/temple/sunday'
+    | '/donate/'
     | '/temple/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -256,7 +275,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/connect'
     | '/courses'
-    | '/donate'
     | '/ekadashi'
     | '/festivals'
     | '/gallery'
@@ -271,8 +289,10 @@ export interface FileRouteTypes {
     | '/about/iskcon'
     | '/about/kurnool'
     | '/about/mission'
+    | '/donate/$slug'
     | '/festival/$slug'
     | '/temple/sunday'
+    | '/donate'
     | '/temple'
   id:
     | '__root__'
@@ -296,8 +316,10 @@ export interface FileRouteTypes {
     | '/about/iskcon'
     | '/about/kurnool'
     | '/about/mission'
+    | '/donate/$slug'
     | '/festival/$slug'
     | '/temple/sunday'
+    | '/donate/'
     | '/temple/'
   fileRoutesById: FileRoutesById
 }
@@ -306,7 +328,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   ConnectRoute: typeof ConnectRoute
   CoursesRoute: typeof CoursesRoute
-  DonateRoute: typeof DonateRoute
+  DonateRoute: typeof DonateRouteWithChildren
   EkadashiRoute: typeof EkadashiRoute
   FestivalsRoute: typeof FestivalsRoute
   GalleryRoute: typeof GalleryRoute
@@ -446,6 +468,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TempleIndexRouteImport
       parentRoute: typeof TempleRoute
     }
+    '/donate/': {
+      id: '/donate/'
+      path: '/'
+      fullPath: '/donate/'
+      preLoaderRoute: typeof DonateIndexRouteImport
+      parentRoute: typeof DonateRoute
+    }
     '/temple/sunday': {
       id: '/temple/sunday'
       path: '/sunday'
@@ -459,6 +488,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/festival/$slug'
       preLoaderRoute: typeof FestivalSlugRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/donate/$slug': {
+      id: '/donate/$slug'
+      path: '/$slug'
+      fullPath: '/donate/$slug'
+      preLoaderRoute: typeof DonateSlugRouteImport
+      parentRoute: typeof DonateRoute
     }
     '/about/mission': {
       id: '/about/mission'
@@ -491,6 +527,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface DonateRouteChildren {
+  DonateSlugRoute: typeof DonateSlugRoute
+  DonateIndexRoute: typeof DonateIndexRoute
+}
+
+const DonateRouteChildren: DonateRouteChildren = {
+  DonateSlugRoute: DonateSlugRoute,
+  DonateIndexRoute: DonateIndexRoute,
+}
+
+const DonateRouteWithChildren =
+  DonateRoute._addFileChildren(DonateRouteChildren)
+
 interface TempleRouteChildren {
   TempleSundayRoute: typeof TempleSundayRoute
   TempleIndexRoute: typeof TempleIndexRoute
@@ -509,7 +558,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   ConnectRoute: ConnectRoute,
   CoursesRoute: CoursesRoute,
-  DonateRoute: DonateRoute,
+  DonateRoute: DonateRouteWithChildren,
   EkadashiRoute: EkadashiRoute,
   FestivalsRoute: FestivalsRoute,
   GalleryRoute: GalleryRoute,

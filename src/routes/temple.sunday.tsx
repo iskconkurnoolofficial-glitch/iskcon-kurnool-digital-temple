@@ -1,8 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import SiteLayout, { PageHero } from "@/components/SiteLayout";
 import { useAdmin } from "@/context/AdminContext";
 import { Calendar, Clock, MapPin, Sparkles, Navigation, Link as LinkIcon, Heart, Sunrise, Sun, Sunset, Music, BookOpen, Soup, Flame, Utensils } from "lucide-react";
+import { isTimeStrLive } from "@/lib/scheduleUtils";
 
 function getProgramIcon(program: string) {
   const name = program.toLowerCase();
@@ -58,6 +59,12 @@ const icons = [Music, BookOpen, Flame, Sparkles, Utensils, Heart];
 
 function SundayPage() {
   const { sunday, settings } = useAdmin();
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setTick((t) => t + 1), 10000);
+    return () => clearInterval(timer);
+  }, []);
 
   const scheduleList = sunday.schedule || [];
 
@@ -140,11 +147,16 @@ function SundayPage() {
                   <div className="divide-y divide-border/60">
                     {groupedSchedule.map((group, i) => {
                       const { icon: Icon, color: iconColor } = getProgramIcon(group.programs.join(" "));
+                      const isLive = isTimeStrLive(group.time, 0); // 0 = Sunday
                       return (
                         <div 
                           key={group.time || i} 
                           className={`flex flex-col sm:flex-row sm:items-center justify-between px-6 py-5 gap-4 transition-colors hover:bg-muted/30 ${
-                            i % 2 === 0 ? "bg-white" : "bg-background/20"
+                            isLive 
+                              ? "bg-red-55/40 border-l-4 border-red-500 pl-5" 
+                              : i % 2 === 0 
+                                ? "bg-white" 
+                                : "bg-background/20"
                           }`}
                         >
                           <div className="flex items-center gap-4 flex-1">
@@ -153,13 +165,27 @@ function SundayPage() {
                             </div>
                             <div className="flex-1 min-w-0">
                               {group.programs.length === 1 ? (
-                                <h4 className="font-semibold text-foreground text-lg">{group.programs[0]}</h4>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <h4 className="font-semibold text-foreground text-lg">{group.programs[0]}</h4>
+                                  {isLive && (
+                                    <span className="inline-flex items-center gap-1 bg-red-600 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shadow-md animate-pulse">
+                                      <span className="h-1.5 w-1.5 rounded-full bg-white" /> Live Now
+                                    </span>
+                                  )}
+                                </div>
                               ) : (
                                 <div className="space-y-1.5 py-1">
                                   {group.programs.map((prog, idx) => (
                                     <div key={idx} className="flex items-start gap-2.5">
                                       <span className="h-2 w-2 rounded-full bg-accent shrink-0 mt-2" />
-                                      <h4 className="font-semibold text-foreground text-lg leading-tight">{prog}</h4>
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <h4 className="font-semibold text-foreground text-lg leading-tight">{prog}</h4>
+                                        {isLive && idx === 0 && (
+                                          <span className="inline-flex items-center gap-1 bg-red-600 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shadow-md animate-pulse">
+                                            <span className="h-1.5 w-1.5 rounded-full bg-white" /> Live Now
+                                          </span>
+                                        )}
+                                      </div>
                                     </div>
                                   ))}
                                 </div>
@@ -168,7 +194,11 @@ function SundayPage() {
                             </div>
                           </div>
                           <div className="flex items-center self-start sm:self-center shrink-0">
-                            <span className="text-accent font-sans font-semibold text-base sm:text-lg bg-surface/40 border border-secondary/20 px-4 py-1.5 rounded-full shadow-sm whitespace-nowrap">
+                            <span className={`font-sans font-semibold text-base sm:text-lg border px-4 py-1.5 rounded-full shadow-sm whitespace-nowrap transition-colors ${
+                              isLive 
+                                ? "text-red-600 bg-red-50/50 border-red-200" 
+                                : "text-accent bg-surface/40 border-secondary/20"
+                            }`}>
                               {group.time}
                             </span>
                           </div>
