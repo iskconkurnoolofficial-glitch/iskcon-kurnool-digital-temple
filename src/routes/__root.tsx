@@ -11,6 +11,7 @@ import {
 import appCss from "../styles.css?url";
 import { AdminProvider } from "@/context/AdminContext";
 import LaunchPageGate from "@/components/LaunchPageGate";
+import FeaturePopupModal from "@/components/FeaturePopupModal";
 
 function NotFoundComponent() {
   return (
@@ -129,6 +130,7 @@ function RootComponent() {
       <AdminProvider>
         <LaunchPageGate>
           <Outlet />
+          <FeaturePopupModal />
         </LaunchPageGate>
       </AdminProvider>
     </QueryClientProvider>

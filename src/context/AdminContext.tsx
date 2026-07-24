@@ -631,6 +631,90 @@ export const defaultTempleSchedule: TempleScheduleItem[] = [
   { id: "ts6", name: "Gaura Arati", time: "6:30 PM", period: "Evening", iconName: "sunset", order: 6 },
 ];
 
+export type FeaturePopupData = {
+  active: boolean;
+  image: string;
+  title: string;
+  content: string;
+  buttonText: string;
+  buttonLink: string;
+};
+
+export const defaultFeaturePopup: FeaturePopupData = {
+  active: false,
+  image: "",
+  title: "Special Announcement",
+  content: "Welcome to ISKCON Kurnool Digital Temple. Stay connected for daily darshan, upcoming festivals, and spiritual discourses.",
+  buttonText: "Learn More",
+  buttonLink: "",
+};
+
+export type PaymentPageField = {
+  id: string;
+  label: string;
+  type: "text" | "email" | "phone" | "number" | "select";
+  required: boolean;
+  options?: string[];
+};
+
+export type PaymentPagePriceField = {
+  id: string;
+  label: string;
+  amount: number;
+  isCustom?: boolean;
+};
+
+export type PaymentPage = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  bannerImage?: string;
+  logoUrl?: string;
+  isPrivate: boolean;
+  active: boolean;
+  enableGoalTracker?: boolean;
+  goalAmount?: number;
+  raisedAmount?: number;
+  pricingType: "fixed" | "preset" | "custom";
+  fixedAmount?: number;
+  presetPrices?: PaymentPagePriceField[];
+  contactEmail?: string;
+  contactPhone?: string;
+  termsAndConditions?: string;
+  fields: PaymentPageField[];
+  razorpayPageUrl?: string;
+  bgStyle?: "gradient" | "geometric" | "mandala" | "minimal";
+  layoutTheme?: "split" | "royal" | "centered";
+};
+
+export const defaultPaymentPages: PaymentPage[] = [
+  {
+    id: "p1",
+    slug: "sharandev",
+    title: "Sharandev Seva",
+    description: "Participate in divine seva for ISKCON Kurnool. Your generous contributions support daily deity worship, temple maintenance, and prasadam distribution.",
+    bannerImage: "",
+    logoUrl: "",
+    isPrivate: true,
+    active: true,
+    enableGoalTracker: true,
+    goalAmount: 100000,
+    raisedAmount: 25555,
+    pricingType: "fixed",
+    fixedAmount: 5555,
+    contactEmail: "info@iskconkurnool.org",
+    contactPhone: "+91 98765 43210",
+    termsAndConditions: "You agree to share information entered on this page with ISKCON Kurnool and Razorpay.",
+    fields: [
+      { id: "f1", label: "Full Name", type: "text", required: true },
+      { id: "f2", label: "Email Address", type: "email", required: true },
+      { id: "f3", label: "Phone Number", type: "phone", required: true },
+      { id: "f4", label: "Gotram / Nakshatra", type: "text", required: false },
+    ],
+  },
+];
+
 type AdminState = {
   slides: Slide[];
   setSlides: (s: Slide[]) => void;
@@ -670,6 +754,10 @@ type AdminState = {
   setInstagram: (i: InstagramData) => void;
   templeSchedule: TempleScheduleItem[];
   setTempleSchedule: (s: TempleScheduleItem[]) => void;
+  featurePopup: FeaturePopupData;
+  setFeaturePopup: (fp: FeaturePopupData) => void;
+  paymentPages: PaymentPage[];
+  setPaymentPages: (p: PaymentPage[]) => void;
   authed: boolean;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
@@ -730,6 +818,8 @@ const KEYS = {
   instagram: "instagram",
   prahladaBadi: "prahladaBadi",
   templeSchedule: "templeSchedule",
+  featurePopup: "featurePopup",
+  paymentPages: "paymentPages",
 } as const;
 
 const Ctx = createContext<AdminState | null>(null);
@@ -754,6 +844,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [contacts, setContactsState] = useState<ContactEntry[]>([]);
   const [instagram, setInstagramState] = useState<InstagramData>(defaultInstagram);
   const [templeSchedule, setTempleScheduleState] = useState<TempleScheduleItem[]>(defaultTempleSchedule);
+  const [featurePopup, setFeaturePopupState] = useState<FeaturePopupData>(defaultFeaturePopup);
+  const [paymentPages, setPaymentPagesState] = useState<PaymentPage[]>(defaultPaymentPages);
   const [authed, setAuthed] = useState<boolean>(false);
 
   // Track Supabase auth session for admin access
@@ -840,6 +932,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.contacts: setContactsState(value); break;
       case KEYS.instagram: setInstagramState({ ...defaultInstagram, ...value }); break;
       case KEYS.templeSchedule: setTempleScheduleState(value || defaultTempleSchedule); break;
+      case KEYS.featurePopup: setFeaturePopupState({ ...defaultFeaturePopup, ...value }); break;
+      case KEYS.paymentPages: setPaymentPagesState(Array.isArray(value) ? value : defaultPaymentPages); break;
     }
   }
 
@@ -873,6 +967,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   };
   const setInstagram = (v: InstagramData) => { setInstagramState(v); persist(KEYS.instagram, v); };
   const setTempleSchedule = (v: TempleScheduleItem[]) => { setTempleScheduleState(v); persist(KEYS.templeSchedule, v); };
+  const setFeaturePopup = (fp: FeaturePopupData) => { setFeaturePopupState(fp); persist(KEYS.featurePopup, fp); };
+  const setPaymentPages = (p: PaymentPage[]) => { setPaymentPagesState(p); persist(KEYS.paymentPages, p); };
 
   // Apply theme to CSS variables
   useEffect(() => {
@@ -919,6 +1015,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         contacts, setContacts,
         instagram, setInstagram,
         templeSchedule, setTempleSchedule,
+        featurePopup, setFeaturePopup,
+        paymentPages, setPaymentPages,
         authed, login, logout, ready,
       }}
     >

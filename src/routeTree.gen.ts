@@ -28,6 +28,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as TempleIndexRouteImport } from './routes/temple.index'
 import { Route as DonateIndexRouteImport } from './routes/donate.index'
 import { Route as TempleSundayRouteImport } from './routes/temple.sunday'
+import { Route as PaySlugRouteImport } from './routes/pay.$slug'
 import { Route as FestivalSlugRouteImport } from './routes/festival.$slug'
 import { Route as DonateSlugRouteImport } from './routes/donate.$slug'
 import { Route as AboutMissionRouteImport } from './routes/about.mission'
@@ -130,6 +131,11 @@ const TempleSundayRoute = TempleSundayRouteImport.update({
   path: '/sunday',
   getParentRoute: () => TempleRoute,
 } as any)
+const PaySlugRoute = PaySlugRouteImport.update({
+  id: '/pay/$slug',
+  path: '/pay/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FestivalSlugRoute = FestivalSlugRouteImport.update({
   id: '/festival/$slug',
   path: '/festival/$slug',
@@ -184,6 +190,7 @@ export interface FileRoutesByFullPath {
   '/about/mission': typeof AboutMissionRoute
   '/donate/$slug': typeof DonateSlugRoute
   '/festival/$slug': typeof FestivalSlugRoute
+  '/pay/$slug': typeof PaySlugRoute
   '/temple/sunday': typeof TempleSundayRoute
   '/donate/': typeof DonateIndexRoute
   '/temple/': typeof TempleIndexRoute
@@ -209,6 +216,7 @@ export interface FileRoutesByTo {
   '/about/mission': typeof AboutMissionRoute
   '/donate/$slug': typeof DonateSlugRoute
   '/festival/$slug': typeof FestivalSlugRoute
+  '/pay/$slug': typeof PaySlugRoute
   '/temple/sunday': typeof TempleSundayRoute
   '/donate': typeof DonateIndexRoute
   '/temple': typeof TempleIndexRoute
@@ -237,6 +245,7 @@ export interface FileRoutesById {
   '/about/mission': typeof AboutMissionRoute
   '/donate/$slug': typeof DonateSlugRoute
   '/festival/$slug': typeof FestivalSlugRoute
+  '/pay/$slug': typeof PaySlugRoute
   '/temple/sunday': typeof TempleSundayRoute
   '/donate/': typeof DonateIndexRoute
   '/temple/': typeof TempleIndexRoute
@@ -266,6 +275,7 @@ export interface FileRouteTypes {
     | '/about/mission'
     | '/donate/$slug'
     | '/festival/$slug'
+    | '/pay/$slug'
     | '/temple/sunday'
     | '/donate/'
     | '/temple/'
@@ -291,6 +301,7 @@ export interface FileRouteTypes {
     | '/about/mission'
     | '/donate/$slug'
     | '/festival/$slug'
+    | '/pay/$slug'
     | '/temple/sunday'
     | '/donate'
     | '/temple'
@@ -318,6 +329,7 @@ export interface FileRouteTypes {
     | '/about/mission'
     | '/donate/$slug'
     | '/festival/$slug'
+    | '/pay/$slug'
     | '/temple/sunday'
     | '/donate/'
     | '/temple/'
@@ -345,6 +357,7 @@ export interface RootRouteChildren {
   AboutKurnoolRoute: typeof AboutKurnoolRoute
   AboutMissionRoute: typeof AboutMissionRoute
   FestivalSlugRoute: typeof FestivalSlugRoute
+  PaySlugRoute: typeof PaySlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -482,6 +495,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TempleSundayRouteImport
       parentRoute: typeof TempleRoute
     }
+    '/pay/$slug': {
+      id: '/pay/$slug'
+      path: '/pay/$slug'
+      fullPath: '/pay/$slug'
+      preLoaderRoute: typeof PaySlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/festival/$slug': {
       id: '/festival/$slug'
       path: '/festival/$slug'
@@ -575,6 +595,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutKurnoolRoute: AboutKurnoolRoute,
   AboutMissionRoute: AboutMissionRoute,
   FestivalSlugRoute: FestivalSlugRoute,
+  PaySlugRoute: PaySlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

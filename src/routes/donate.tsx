@@ -179,8 +179,8 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                             type="button"
                             onClick={() => setSelected((m) => ({ ...m, [checkoutSeva.id]: i }))}
                             className={`w-full text-left p-3.5 rounded-xl border flex items-center justify-between transition-all duration-200 cursor-pointer ${isSel
-                                ? "border-primary bg-primary/5 ring-1 ring-primary/20 shadow-sm"
-                                : "border-slate-200 hover:border-slate-350 hover:bg-slate-50"
+                              ? "border-primary bg-primary/5 ring-1 ring-primary/20 shadow-sm"
+                              : "border-slate-200 hover:border-slate-350 hover:bg-slate-50"
                               }`}
                           >
                             <span className={`text-xs font-bold font-sans ${isSel ? "text-primary" : "text-slate-700"}`}>
