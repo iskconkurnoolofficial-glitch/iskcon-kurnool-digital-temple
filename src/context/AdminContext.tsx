@@ -578,6 +578,13 @@ export type DailyClass = {
   everyday?: boolean;
 };
 
+export type PreviewLead = {
+  id: string;
+  name: string;
+  phone: string;
+  date: string;
+};
+
 export type SiteSettings = {
   phone: string;
   whatsapp: string;
@@ -595,6 +602,9 @@ export type SiteSettings = {
   launchBypassCode?: string;
   liveStreamLink?: string;
   liveStreamTitle?: string;
+  previewVideoUrl?: string;
+  previewVideoTitle?: string;
+  previewVideoSubtitle?: string;
 };
 
 export type ThemeSettings = {
@@ -758,6 +768,9 @@ type AdminState = {
   setFeaturePopup: (fp: FeaturePopupData) => void;
   paymentPages: PaymentPage[];
   setPaymentPages: (p: PaymentPage[]) => void;
+  previewLeads: PreviewLead[];
+  setPreviewLeads: (leads: PreviewLead[]) => void;
+  addPreviewLead: (lead: { name: string; phone: string }) => void;
   authed: boolean;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
@@ -785,6 +798,9 @@ const defaultSettings: SiteSettings = {
   launchBypassCode: "108",
   liveStreamLink: "",
   liveStreamTitle: "",
+  previewVideoUrl: "",
+  previewVideoTitle: "Sri Sri Puri Jagannath Temple Preview",
+  previewVideoSubtitle: "Experience the divine preview of ISKCON Kurnool digital temple",
 };
 
 const defaultTheme: ThemeSettings = {
@@ -820,6 +836,7 @@ const KEYS = {
   templeSchedule: "templeSchedule",
   featurePopup: "featurePopup",
   paymentPages: "paymentPages",
+  previewLeads: "previewLeads",
 } as const;
 
 const Ctx = createContext<AdminState | null>(null);
@@ -846,6 +863,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [templeSchedule, setTempleScheduleState] = useState<TempleScheduleItem[]>(defaultTempleSchedule);
   const [featurePopup, setFeaturePopupState] = useState<FeaturePopupData>(defaultFeaturePopup);
   const [paymentPages, setPaymentPagesState] = useState<PaymentPage[]>(defaultPaymentPages);
+  const [previewLeads, setPreviewLeadsState] = useState<PreviewLead[]>([]);
   const [authed, setAuthed] = useState<boolean>(false);
 
   // Track Supabase auth session for admin access
@@ -925,7 +943,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.gitaCourse: setGitaCourseState({ ...defaultGitaCourse, ...value }); break;
       case KEYS.sunday: setSundayState({ ...defaultSunday, ...value }); break;
       case KEYS.prahladaBadi: setPrahladaBadiState({ ...defaultPrahladaBadi, ...value }); break;
-      case KEYS.settings: setSettingsState(value); break;
+      case KEYS.settings: setSettingsState({ ...defaultSettings, ...value }); break;
       case KEYS.theme: setThemeState(value); break;
       case KEYS.heroBanners: setHeroBannersState({ ...defaultHeroBanners, ...value }); break;
       case KEYS.goshala: setGoshalaState({ ...defaultGoshala, ...value }); break;
@@ -934,6 +952,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.templeSchedule: setTempleScheduleState(value || defaultTempleSchedule); break;
       case KEYS.featurePopup: setFeaturePopupState({ ...defaultFeaturePopup, ...value }); break;
       case KEYS.paymentPages: setPaymentPagesState(Array.isArray(value) ? value : defaultPaymentPages); break;
+      case KEYS.previewLeads: setPreviewLeadsState(Array.isArray(value) ? value : []); break;
     }
   }
 
@@ -969,6 +988,20 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setTempleSchedule = (v: TempleScheduleItem[]) => { setTempleScheduleState(v); persist(KEYS.templeSchedule, v); };
   const setFeaturePopup = (fp: FeaturePopupData) => { setFeaturePopupState(fp); persist(KEYS.featurePopup, fp); };
   const setPaymentPages = (p: PaymentPage[]) => { setPaymentPagesState(p); persist(KEYS.paymentPages, p); };
+  const setPreviewLeads = (v: PreviewLead[]) => { setPreviewLeadsState(v); persist(KEYS.previewLeads, v); };
+  const addPreviewLead = (lead: { name: string; phone: string }) => {
+    const newEntry: PreviewLead = {
+      id: "lead_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+      name: lead.name.trim(),
+      phone: lead.phone.trim(),
+      date: new Date().toISOString(),
+    };
+    setPreviewLeadsState((prev) => {
+      const updated = [newEntry, ...prev];
+      persist(KEYS.previewLeads, updated);
+      return updated;
+    });
+  };
 
   // Apply theme to CSS variables
   useEffect(() => {
@@ -1017,6 +1050,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         templeSchedule, setTempleSchedule,
         featurePopup, setFeaturePopup,
         paymentPages, setPaymentPages,
+        previewLeads, setPreviewLeads, addPreviewLead,
         authed, login, logout, ready,
       }}
     >

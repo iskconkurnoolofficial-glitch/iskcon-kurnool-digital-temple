@@ -342,11 +342,12 @@ export default function Navbar() {
         <div className="flex items-center shrink-0">
           <Link
             to="/donate"
-            className="relative inline-flex items-center justify-center px-4 py-2 xl:px-6 xl:py-2.5 rounded-full bg-gradient-to-r from-accent to-secondary text-white font-bold text-xs xl:text-sm overflow-hidden group shadow-[0_4px_15px_rgba(232,103,12,0.3)] transition-all duration-300 hover:scale-105 hover:shadow-[0_6px_20px_rgba(232,103,12,0.45)] active:scale-95"
+            className="relative inline-flex items-center justify-center gap-2 px-4 py-2 xl:px-6 xl:py-2.5 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-extrabold text-xs xl:text-sm tracking-wider uppercase overflow-hidden group animate-pulse-glow transition-all duration-300 hover:scale-105 active:scale-95 ring-2 ring-amber-300/40 ring-offset-1 ring-offset-white"
           >
-            <span className="relative z-10">DONATE</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-secondary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-full" />
-            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+            <Heart className="h-4 w-4 fill-white/30 stroke-[2.5] text-white animate-heartbeat shrink-0 transition-transform duration-300 group-hover:scale-125 group-hover:fill-white" />
+            <span className="relative z-10 font-bold">DONATE</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-full" />
+            <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
           </Link>
         </div>
       </div>
@@ -379,9 +380,11 @@ export default function Navbar() {
 
         <Link
           to="/donate"
-          className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-accent to-secondary text-white font-bold text-xs shadow-sm hover:scale-105 active:scale-95 transition-all duration-200"
+          className="relative inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-extrabold text-xs tracking-wider uppercase animate-pulse-glow hover:scale-105 active:scale-95 transition-all duration-200 ring-2 ring-amber-300/30 overflow-hidden group"
         >
-          DONATE
+          <Heart className="h-3.5 w-3.5 fill-white/30 stroke-[2.5] text-white animate-heartbeat shrink-0" />
+          <span className="relative z-10">DONATE</span>
+          <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
         </Link>
       </div>
 
@@ -550,9 +553,11 @@ export default function Navbar() {
                 <Link
                   to="/donate"
                   onClick={() => setMobileOpen(false)}
-                  className="block w-full text-center px-6 py-3.5 rounded-xl bg-gradient-to-r from-accent to-secondary text-white font-bold shadow-[0_4px_15px_rgba(232,103,12,0.25)] hover:shadow-xl hover:scale-[1.02] active:scale-98 transition-all duration-200"
+                  className="relative flex items-center justify-center gap-2 w-full text-center px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-extrabold text-sm tracking-wider uppercase animate-pulse-glow hover:scale-[1.02] active:scale-98 transition-all duration-200 ring-2 ring-amber-300/30 overflow-hidden group"
                 >
-                  DONATE NOW
+                  <Heart className="h-4 w-4 fill-white/30 stroke-[2.5] text-white animate-heartbeat shrink-0" />
+                  <span className="relative z-10">DONATE NOW</span>
+                  <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
                 </Link>
               </div>
             </motion.div>

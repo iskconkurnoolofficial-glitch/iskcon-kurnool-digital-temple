@@ -1,4 +1,4 @@
-import { Phone, Mail, MapPin, Instagram, Youtube, MessageCircle } from "lucide-react";
+import { Phone, Mail, MapPin, Instagram, Youtube, MessageCircle, Heart } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import { safeUrl, safeMapEmbed } from "@/lib/utils";
 
@@ -20,14 +20,16 @@ export default function ConnectSection() {
               <div className="h-11 w-11 rounded-full bg-secondary text-primary grid place-items-center shrink-0"><MapPin /></div>
               <div>
                 <h4 className="font-display font-bold text-primary text-lg">Address</h4>
-                <p className="text-foreground/70 whitespace-pre-line">{settings.address}</p>
+                <p className="text-foreground/70">{settings.address || "Sri Sri Puri Jagannath Temple, Kurnool"}</p>
               </div>
             </div>
+
             <div className="flex items-start gap-4">
               <div className="h-11 w-11 rounded-full bg-secondary text-primary grid place-items-center shrink-0"><Phone /></div>
               <div>
-                <h4 className="font-display font-bold text-primary text-lg">Phone</h4>
-                <a href={`tel:${settings.phone}`} className="text-foreground/70 hover:text-accent">{settings.phone}</a>
+                <h4 className="font-display font-bold text-primary text-lg">Phone & WhatsApp</h4>
+                <a href={`tel:${settings.phone}`} className="text-foreground/70 hover:text-accent block">{settings.phone}</a>
+                <a href={`https://wa.me/${settings.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="text-foreground/70 hover:text-accent block">{settings.whatsapp}</a>
               </div>
             </div>
             <div className="flex items-start gap-4">
@@ -47,8 +49,10 @@ export default function ConnectSection() {
               </div>
             </div>
 
-            <a id="donate" href="/donate" className="block text-center px-6 py-4 rounded-full bg-gradient-to-r from-[#e65c00] to-[#ff9933] text-white font-semibold shadow-[0_4px_14px_rgba(230,92,0,0.35)] hover:shadow-[0_6px_20px_rgba(230,92,0,0.5)] hover:from-[#d35400] hover:to-[#e67e22] hover:-translate-y-0.5 transition cursor-pointer">
-              Donate to Support the Temple
+            <a id="donate" href="/donate" className="relative group overflow-hidden flex items-center justify-center gap-2 text-center px-6 py-4 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-extrabold tracking-wide uppercase text-sm shadow-[0_6px_20px_rgba(249,115,22,0.35)] hover:shadow-[0_8px_28px_rgba(249,115,22,0.55)] hover:scale-[1.02] active:scale-98 transition duration-300 cursor-pointer ring-2 ring-amber-300/30">
+              <Heart className="h-4 w-4 fill-white/20 stroke-[2.5] text-white transition-transform duration-300 group-hover:scale-125 group-hover:fill-white" />
+              <span className="relative z-10">Donate to Support the Temple</span>
+              <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
             </a>
           </div>
 

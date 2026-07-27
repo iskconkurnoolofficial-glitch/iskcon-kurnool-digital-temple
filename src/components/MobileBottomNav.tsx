@@ -28,8 +28,8 @@ export default function MobileBottomNav() {
               activeProps={{ className: "flex flex-col items-center justify-center gap-0.5 py-1 text-[11px] font-semibold text-accent" }}
             >
               {center ? (
-                <span className="-mt-5 mb-0.5 grid place-items-center h-12 w-12 rounded-full bg-accent text-white shadow-lg ring-4 ring-white">
-                  <Icon className="h-6 w-6" />
+                <span className="-mt-6 mb-0.5 grid place-items-center h-13 w-13 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white shadow-[0_4px_18px_rgba(249,115,22,0.55)] ring-4 ring-white transition-transform duration-300 active:scale-95 animate-pulse-glow">
+                  <Icon className="h-6 w-6 fill-white/20 stroke-[2.2] text-white transition-transform duration-300 group-hover:scale-125" />
                 </span>
               ) : (
                 <Icon className="h-5 w-5" />

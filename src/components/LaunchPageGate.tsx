@@ -1,14 +1,29 @@
-import { ReactNode, useState, useEffect, useRef } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { useAdmin } from "@/context/AdminContext";
-import { Instagram, MapPin, Key, Lock, ArrowRight, X, Heart } from "lucide-react";
+import { Instagram, MapPin, Key, Lock, ArrowRight, X, Heart, User, Phone, Play, Sparkles, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function LaunchPageGate({ children }: { children: ReactNode }) {
-  const { settings, ready } = useAdmin();
+  const { settings, ready, addPreviewLead } = useAdmin();
   const [showCodeModal, setShowCodeModal] = useState(false);
   const [enteredCode, setEnteredCode] = useState("");
   const [codeError, setCodeError] = useState("");
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  // Preview Unlock form states
+  const [visitorName, setVisitorName] = useState("");
+  const [visitorPhone, setVisitorPhone] = useState("");
+  const [formError, setFormError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previewUnlocked, setPreviewUnlocked] = useState(false);
+
+  // Check if user previously unlocked preview
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isUnlocked = localStorage.getItem("iskcon_preview_unlocked") === "true";
+      if (isUnlocked) setPreviewUnlocked(true);
+    }
+  }, []);
 
   // 1. Check if launch page is active & passcode bypass status
   const localBypassCode = typeof window !== "undefined" ? localStorage.getItem("iskcon_launch_bypass_code") : null;
@@ -61,6 +76,37 @@ export default function LaunchPageGate({ children }: { children: ReactNode }) {
       window.location.reload();
     } else {
       setCodeError("Invalid Passcode. Please try again.");
+    }
+  };
+
+  // Handle unlock preview form submission
+  const handleUnlockPreview = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError("");
+    const name = visitorName.trim();
+    const phone = visitorPhone.trim();
+
+    if (!name) {
+      setFormError("Please enter your name.");
+      return;
+    }
+    const cleanPhone = phone.replace(/[^0-9]/g, "");
+    if (!cleanPhone || cleanPhone.length < 10) {
+      setFormError("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      addPreviewLead({ name, phone });
+      if (typeof window !== "undefined") {
+        localStorage.setItem("iskcon_preview_unlocked", "true");
+      }
+      setPreviewUnlocked(true);
+    } catch {
+      setFormError("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -195,7 +241,114 @@ export default function LaunchPageGate({ children }: { children: ReactNode }) {
           Launching on Sunday, {formattedLaunchDate}
         </motion.p>
 
-        {/* 4. Discover Items */}
+        {/* 4. UNLOCK WEBSITE PREVIEW SECTION */}
+        <div className="w-full flex flex-col items-center">
+          {!previewUnlocked ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.45 }}
+              className="w-full max-w-xl bg-white/5 border border-white/15 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden text-left space-y-5"
+            >
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 border border-accent/40 text-accent text-xs font-bold uppercase tracking-wider">
+                  <Sparkles className="h-3.5 w-3.5" /> Unlock Website Preview
+                </span>
+                <span className="text-xs text-white/50 font-medium">Early Access Preview</span>
+              </div>
+
+              <div className="space-y-1">
+                <h3 className="font-display text-xl sm:text-2xl font-bold text-white">Hare Krishna 🙏</h3>
+                <p className="text-white/70 text-xs sm:text-sm">
+                  Enter your name and mobile number to unlock exclusive early preview of the ISKCON Kurnool digital temple!
+                </p>
+              </div>
+
+              <form onSubmit={handleUnlockPreview} className="space-y-4 pt-2">
+                <div>
+                  <label className="block text-xs font-semibold text-white/80 mb-1.5">Enter your name</label>
+                  <div className="relative">
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                    <input
+                      type="text"
+                      placeholder="Enter your full name"
+                      value={visitorName}
+                      onChange={(e) => { setVisitorName(e.target.value); setFormError(""); }}
+                      className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/15 focus:border-accent/60 rounded-xl text-white placeholder-white/35 text-sm outline-none transition"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-white/80 mb-1.5">Enter your mobile number</label>
+                  <div className="relative">
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                    <input
+                      type="tel"
+                      placeholder="Enter 10-digit mobile number"
+                      value={visitorPhone}
+                      onChange={(e) => { setVisitorPhone(e.target.value); setFormError(""); }}
+                      className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/15 focus:border-accent/60 rounded-xl text-white placeholder-white/35 text-sm outline-none transition font-mono"
+                    />
+                  </div>
+                </div>
+
+                {formError && (
+                  <p className="text-red-400 text-xs font-semibold animate-pulse">{formError}</p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 bg-gradient-to-r from-accent via-amber-500 to-accent hover:opacity-95 text-white font-bold rounded-xl shadow-gold flex items-center justify-center gap-2 cursor-pointer transition text-sm tracking-wide"
+                >
+                  <Sparkles className="h-4 w-4 text-white" />
+                  {isSubmitting ? "Unlocking Preview..." : "Unlock Website Preview"}
+                </button>
+              </form>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6 }}
+              className="w-full max-w-3xl bg-white/5 border border-white/20 rounded-3xl p-4 sm:p-6 shadow-2xl backdrop-blur-xl space-y-4 text-left"
+            >
+              <div className="flex items-center justify-between px-2">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Preview Unlocked
+                  </span>
+                  <h3 className="font-display text-sm sm:text-base font-bold text-white truncate">
+                    {settings.previewVideoTitle || "Sri Sri Puri Jagannath Temple Preview"}
+                  </h3>
+                </div>
+                <button
+                  onClick={() => {
+                    localStorage.removeItem("iskcon_preview_unlocked");
+                    setPreviewUnlocked(false);
+                  }}
+                  className="text-xs text-white/50 hover:text-white underline cursor-pointer"
+                >
+                  Re-enter Details
+                </button>
+              </div>
+
+              {/* Render Video */}
+              <div className="w-full rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-black">
+                {renderVideoPlayer(settings.previewVideoUrl)}
+              </div>
+
+              {settings.previewVideoSubtitle && (
+                <p className="text-white/70 text-xs sm:text-sm px-2 italic text-center">
+                  "{settings.previewVideoSubtitle}"
+                </p>
+              )}
+            </motion.div>
+          )}
+        </div>
+
+        {/* 5. Discover Items */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -211,7 +364,7 @@ export default function LaunchPageGate({ children }: { children: ReactNode }) {
 
       </main>
 
-      {/* 5. Footer Layout */}
+      {/* 6. Footer Layout */}
       <footer className="relative z-10 w-full max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/5 text-white/55 text-xs sm:text-sm">
         
         {/* Instagram Follow */}
@@ -307,5 +460,31 @@ function TimeBlock({ val, label }: { val: number; label: string }) {
         {label}
       </span>
     </div>
+  );
+}
+
+function renderVideoPlayer(url?: string) {
+  const videoSource = url || "https://assets.mixkit.co/videos/preview/mixkit-candles-shining-in-a-dark-room-41555-large.mp4";
+  if (videoSource.includes("youtube.com") || videoSource.includes("youtu.be")) {
+    const embedUrl = videoSource
+      .replace("watch?v=", "embed/")
+      .replace("youtu.be/", "youtube.com/embed/");
+    return (
+      <iframe
+        src={embedUrl}
+        title="ISKCON Kurnool Website Preview"
+        className="w-full aspect-video rounded-2xl"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    );
+  }
+  return (
+    <video
+      src={videoSource}
+      controls
+      autoPlay
+      className="w-full max-h-[480px] rounded-2xl object-cover"
+    />
   );
 }

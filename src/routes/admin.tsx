@@ -21,14 +21,15 @@ import TempleScheduleManager from "@/admin/TempleScheduleManager";
 import LiveDashboardManager from "@/admin/LiveDashboardManager";
 import FeaturePopupManager from "@/admin/FeaturePopupManager";
 import PaymentPagesManager from "@/admin/PaymentPagesManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard } from "lucide-react";
+import PreviewLeadsManager from "@/admin/PreviewLeadsManager";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard, Video } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
 
-type Tab = "welcome" | "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "liveDashboard" | "featurePopup" | "paymentPages";
+type Tab = "welcome" | "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "liveDashboard" | "featurePopup" | "paymentPages" | "previewLeads";
 
 function AdminPage() {
   const { authed, login, logout, settings, contacts, setContacts } = useAdmin();
@@ -135,6 +136,7 @@ function AdminPage() {
     {
       title: "Main Content",
       items: [
+        { id: "previewLeads", label: "Preview Video & Leads", icon: Video },
         { id: "featurePopup", label: "Feature Pop-Up", icon: Megaphone },
         { id: "carousel", label: "Carousel Banners", icon: Image },
         { id: "heroBanners", label: "Hero Banners", icon: Images },
@@ -477,6 +479,7 @@ function AdminPage() {
         {tab === "liveDashboard" && <LiveDashboardManager />}
         {tab === "featurePopup" && <FeaturePopupManager />}
         {tab === "paymentPages" && <PaymentPagesManager />}
+        {tab === "previewLeads" && <PreviewLeadsManager />}
       </main>
 
       {/* MOBILE STICKY BOTTOM NAVIGATION BAR */}
