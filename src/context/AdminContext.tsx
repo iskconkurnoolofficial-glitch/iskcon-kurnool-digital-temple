@@ -623,6 +623,22 @@ export type ContactEntry = {
   read: boolean;
 };
 
+export type DonationEntry = {
+  id: string;
+  donorName: string;
+  email: string;
+  phone: string;
+  pan?: string;
+  purpose?: string;
+  sevaTitle: string;
+  optionLabel?: string;
+  amount: number;
+  status: "initiated" | "paid" | "failed";
+  paymentRef?: string;
+  date: string;
+};
+
+
 export type TempleScheduleItem = {
   id: string;
   name: string;
