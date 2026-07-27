@@ -984,7 +984,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.templeSchedule: setTempleScheduleState(value || defaultTempleSchedule); break;
       case KEYS.featurePopup: setFeaturePopupState({ ...defaultFeaturePopup, ...value }); break;
       case KEYS.paymentPages: setPaymentPagesState(Array.isArray(value) ? value : defaultPaymentPages); break;
-      case KEYS.previewLeads: setPreviewLeadsState(Array.isArray(value) ? value : []); break;
+      
     }
   }
 
