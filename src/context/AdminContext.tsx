@@ -885,6 +885,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [featurePopup, setFeaturePopupState] = useState<FeaturePopupData>(defaultFeaturePopup);
   const [paymentPages, setPaymentPagesState] = useState<PaymentPage[]>(defaultPaymentPages);
   const [previewLeads, setPreviewLeadsState] = useState<PreviewLead[]>([]);
+  const [donations, setDonationsState] = useState<DonationEntry[]>([]);
   const [authed, setAuthed] = useState<boolean>(false);
 
   // Track Supabase auth session for admin access
