@@ -1144,9 +1144,14 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   };
 
   const addDonation: AdminState["addDonation"] = async (d) => {
-    const { data, error } = await supabase
+    // anon cannot read rows back, so generate the id client-side
+    const id = typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const { error } = await supabase
       .from("donation_enquiries")
       .insert({
+        id,
         donor_name: d.donorName.trim().slice(0, 100),
         email: d.email.trim().slice(0, 200),
         phone: d.phone.trim().slice(0, 20),
@@ -1156,15 +1161,14 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         option_label: d.optionLabel?.trim().slice(0, 200) || null,
         amount: d.amount,
         status: d.status ?? "initiated",
-      })
-      .select("id")
-      .maybeSingle();
+      });
     if (error) {
       console.error("[donation_enquiries] insert failed", error);
       return null;
     }
-    return data?.id ?? null;
+    return id;
   };
+
 
   const updateDonationStatus: AdminState["updateDonationStatus"] = async (id, status, paymentRef) => {
     const { error } = await supabase
