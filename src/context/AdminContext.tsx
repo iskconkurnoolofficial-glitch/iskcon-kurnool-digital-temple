@@ -1098,10 +1098,82 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setTheme = (v: ThemeSettings) => { setThemeState(v); persist(KEYS.theme, v); };
   const setHeroBanners = (v: HeroBannersData) => { setHeroBannersState(v); persist(KEYS.heroBanners, v); };
   const setGoshala = (v: GoshalaData) => { setGoshalaState(v); persist(KEYS.goshala, v); };
-  const setContacts = (v: ContactEntry[]) => {
+  // Contact messages live in their own table: anyone can submit, only admins read/update/delete.
+  const setContacts = async (v: ContactEntry[]) => {
+    const prev = contacts;
     setContactsState(v);
-    persist(KEYS.contacts, v);
+    const keepIds = new Set(v.map((c) => c.id));
+    const removed = prev.filter((c) => !keepIds.has(c.id)).map((c) => c.id);
+    if (removed.length) {
+      const { error } = await supabase.from("contact_messages").delete().in("id", removed);
+      if (error) console.error("[contact_messages] delete failed", error);
+    }
+    const prevById = new Map(prev.map((c) => [c.id, c]));
+    for (const c of v) {
+      const before = prevById.get(c.id);
+      if (before && before.read !== c.read) {
+        const { error } = await supabase.from("contact_messages").update({ read: c.read }).eq("id", c.id);
+        if (error) console.error("[contact_messages] update failed", error);
+      }
+    }
   };
+
+  const addContactMessage = async (m: { name: string; email: string; phone: string; message: string }) => {
+    const { error } = await supabase.from("contact_messages").insert({
+      name: m.name.trim().slice(0, 100),
+      email: m.email.trim().slice(0, 200),
+      phone: m.phone.trim().slice(0, 20),
+      message: m.message.trim().slice(0, 5000),
+    });
+    if (error) {
+      console.error("[contact_messages] insert failed", error);
+      throw error;
+    }
+  };
+
+  // Donation enquiries: anyone can submit, only admins read/update/delete.
+  const setDonations = async (v: DonationEntry[]) => {
+    const prev = donations;
+    setDonationsState(v);
+    const keepIds = new Set(v.map((d) => d.id));
+    const removed = prev.filter((d) => !keepIds.has(d.id)).map((d) => d.id);
+    if (removed.length) {
+      const { error } = await supabase.from("donation_enquiries").delete().in("id", removed);
+      if (error) console.error("[donation_enquiries] delete failed", error);
+    }
+  };
+
+  const addDonation: AdminState["addDonation"] = async (d) => {
+    const { data, error } = await supabase
+      .from("donation_enquiries")
+      .insert({
+        donor_name: d.donorName.trim().slice(0, 100),
+        email: d.email.trim().slice(0, 200),
+        phone: d.phone.trim().slice(0, 20),
+        pan: d.pan?.trim().slice(0, 20) || null,
+        purpose: d.purpose?.trim().slice(0, 500) || null,
+        seva_title: d.sevaTitle.trim().slice(0, 200),
+        option_label: d.optionLabel?.trim().slice(0, 200) || null,
+        amount: d.amount,
+        status: d.status ?? "initiated",
+      })
+      .select("id")
+      .maybeSingle();
+    if (error) {
+      console.error("[donation_enquiries] insert failed", error);
+      return null;
+    }
+    return data?.id ?? null;
+  };
+
+  const updateDonationStatus: AdminState["updateDonationStatus"] = async (id, status, paymentRef) => {
+    const { error } = await supabase
+      .from("donation_enquiries")
+      .update({ status, payment_ref: paymentRef ?? null })
+      .eq("id", id);
+    if (error) console.error("[donation_enquiries] status update failed", error);
+  };
+
   const setInstagram = (v: InstagramData) => { setInstagramState(v); persist(KEYS.instagram, v); };
   const setTempleSchedule = (v: TempleScheduleItem[]) => { setTempleScheduleState(v); persist(KEYS.templeSchedule, v); };
   const setFeaturePopup = (fp: FeaturePopupData) => { setFeaturePopupState(fp); persist(KEYS.featurePopup, fp); };
