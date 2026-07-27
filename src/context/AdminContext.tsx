@@ -776,6 +776,11 @@ type AdminState = {
   setGoshala: (g: GoshalaData) => void;
   contacts: ContactEntry[];
   setContacts: (c: ContactEntry[]) => void;
+  addContactMessage: (m: { name: string; email: string; phone: string; message: string }) => Promise<void>;
+  donations: DonationEntry[];
+  setDonations: (d: DonationEntry[]) => void;
+  addDonation: (d: Omit<DonationEntry, "id" | "date" | "status"> & { status?: DonationEntry["status"] }) => Promise<string | null>;
+  updateDonationStatus: (id: string, status: DonationEntry["status"], paymentRef?: string) => Promise<void>;
   instagram: InstagramData;
   setInstagram: (i: InstagramData) => void;
   templeSchedule: TempleScheduleItem[];
