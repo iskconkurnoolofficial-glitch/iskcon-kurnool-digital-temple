@@ -20,7 +20,9 @@ export default function LaunchPageGate({ children }: { children: ReactNode }) {
   // Check if user previously unlocked preview
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const isUnlocked = localStorage.getItem("iskcon_preview_unlocked") === "true";
+      const isUnlocked =
+        sessionStorage.getItem("iskcon_preview_unlocked") === "true" ||
+        localStorage.getItem("iskcon_preview_unlocked") === "true";
       if (isUnlocked) setPreviewUnlocked(true);
     }
   }, []);
@@ -80,7 +82,7 @@ export default function LaunchPageGate({ children }: { children: ReactNode }) {
   };
 
   // Handle unlock preview form submission
-  const handleUnlockPreview = (e: React.FormEvent) => {
+  const handleUnlockPreview = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError("");
     const name = visitorName.trim();
@@ -98,9 +100,9 @@ export default function LaunchPageGate({ children }: { children: ReactNode }) {
 
     setIsSubmitting(true);
     try {
-      addPreviewLead({ name, phone });
+      await addPreviewLead({ name, phone });
       if (typeof window !== "undefined") {
-        localStorage.setItem("iskcon_preview_unlocked", "true");
+        sessionStorage.setItem("iskcon_preview_unlocked", "true");
       }
       setPreviewUnlocked(true);
     } catch {

@@ -770,7 +770,7 @@ type AdminState = {
   setPaymentPages: (p: PaymentPage[]) => void;
   previewLeads: PreviewLead[];
   setPreviewLeads: (leads: PreviewLead[]) => void;
-  addPreviewLead: (lead: { name: string; phone: string }) => void;
+  addPreviewLead: (lead: { name: string; phone: string }) => Promise<void>;
   authed: boolean;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
@@ -989,18 +989,28 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setFeaturePopup = (fp: FeaturePopupData) => { setFeaturePopupState(fp); persist(KEYS.featurePopup, fp); };
   const setPaymentPages = (p: PaymentPage[]) => { setPaymentPagesState(p); persist(KEYS.paymentPages, p); };
   const setPreviewLeads = (v: PreviewLead[]) => { setPreviewLeadsState(v); persist(KEYS.previewLeads, v); };
-  const addPreviewLead = (lead: { name: string; phone: string }) => {
+  const addPreviewLead = async (lead: { name: string; phone: string }) => {
     const newEntry: PreviewLead = {
       id: "lead_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
       name: lead.name.trim(),
       phone: lead.phone.trim(),
       date: new Date().toISOString(),
     };
-    setPreviewLeadsState((prev) => {
-      const updated = [newEntry, ...prev];
-      persist(KEYS.previewLeads, updated);
-      return updated;
-    });
+    
+    // Fetch latest value from Supabase database to avoid concurrency overwrites
+    let currentLeads: PreviewLead[] = previewLeads;
+    try {
+      const { data } = await supabase.from("site_data").select("value").eq("key", KEYS.previewLeads).maybeSingle();
+      if (data && Array.isArray(data.value)) {
+        currentLeads = data.value;
+      }
+    } catch {
+      // fallback to memory
+    }
+
+    const updated = [newEntry, ...currentLeads.filter((item) => item.id !== newEntry.id)];
+    setPreviewLeadsState(updated);
+    await persist(KEYS.previewLeads, updated);
   };
 
   // Apply theme to CSS variables
