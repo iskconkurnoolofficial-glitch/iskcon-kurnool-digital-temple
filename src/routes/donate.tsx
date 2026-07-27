@@ -29,7 +29,7 @@ function loadRazorpay(): Promise<boolean> {
 }
 
 export default function Page({ initialSlug }: { initialSlug?: string }) {
-  const { sevas, settings, theme, ready } = useAdmin();
+  const { sevas, settings, theme, ready, addDonation, updateDonationStatus } = useAdmin();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Record<string, number>>({});
@@ -77,6 +77,18 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   }, [active, query]);
 
   const donate = async (seva: Seva, amount: number, label: string) => {
+    // Store every submission in the admin panel before opening the gateway
+    const enquiryId = await addDonation({
+      donorName: donorName.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      pan: pan.trim(),
+      purpose: purpose.trim(),
+      sevaTitle: seva.title,
+      optionLabel: label,
+      amount,
+    });
+
     const ok = await loadRazorpay();
     if (!ok) { alert("Unable to load payment gateway. Please try again."); return; }
     const rzp = new (window as any).Razorpay({
@@ -101,7 +113,8 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
         contact: phone.trim() || settings.phone?.replace(/\D/g, "") || undefined
       },
       theme: { color: theme.primary || "#5b2c9b" },
-      handler: () => {
+      handler: (res: any) => {
+        if (enquiryId) updateDonationStatus(enquiryId, "paid", res?.razorpay_payment_id);
         alert(`🙏 Hare Krishna! Thank you for your ${seva.title} seva, ${donorName.trim() || "Devotee"}.`);
         setCheckoutSeva(null);
         setDonorName("");

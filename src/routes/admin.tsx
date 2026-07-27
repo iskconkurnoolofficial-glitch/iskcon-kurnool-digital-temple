@@ -22,6 +22,7 @@ import LiveDashboardManager from "@/admin/LiveDashboardManager";
 import FeaturePopupManager from "@/admin/FeaturePopupManager";
 import PaymentPagesManager from "@/admin/PaymentPagesManager";
 import PreviewLeadsManager from "@/admin/PreviewLeadsManager";
+import DonationsManager from "@/admin/DonationsManager";
 import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard, Video } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
@@ -29,7 +30,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "welcome" | "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "liveDashboard" | "featurePopup" | "paymentPages" | "previewLeads";
+type Tab = "welcome" | "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "liveDashboard" | "featurePopup" | "paymentPages" | "previewLeads" | "donations";
 
 function AdminPage() {
   const { authed, login, logout, settings, contacts, setContacts } = useAdmin();
@@ -137,6 +138,7 @@ function AdminPage() {
       title: "Main Content",
       items: [
         { id: "previewLeads", label: "Preview Video & Leads", icon: Video },
+        { id: "donations", label: "Donation Submissions", icon: CreditCard },
         { id: "featurePopup", label: "Feature Pop-Up", icon: Megaphone },
         { id: "carousel", label: "Carousel Banners", icon: Image },
         { id: "heroBanners", label: "Hero Banners", icon: Images },
@@ -470,6 +472,7 @@ function AdminPage() {
         {tab === "sunday" && <SundayManager />}
         {tab === "goshala" && <GoshalaManager />}
         {tab === "contacts" && <ContactsManager />}
+        {tab === "donations" && <DonationsManager />}
         {tab === "instagram" && <InstagramManager />}
         {tab === "classes" && <DailyClassesManager />}
         {tab === "gallery" && <GalleryManager />}

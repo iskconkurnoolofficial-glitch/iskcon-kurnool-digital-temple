@@ -623,6 +623,22 @@ export type ContactEntry = {
   read: boolean;
 };
 
+export type DonationEntry = {
+  id: string;
+  donorName: string;
+  email: string;
+  phone: string;
+  pan?: string;
+  purpose?: string;
+  sevaTitle: string;
+  optionLabel?: string;
+  amount: number;
+  status: "initiated" | "paid" | "failed";
+  paymentRef?: string;
+  date: string;
+};
+
+
 export type TempleScheduleItem = {
   id: string;
   name: string;
@@ -760,6 +776,11 @@ type AdminState = {
   setGoshala: (g: GoshalaData) => void;
   contacts: ContactEntry[];
   setContacts: (c: ContactEntry[]) => void;
+  addContactMessage: (m: { name: string; email: string; phone: string; message: string }) => Promise<void>;
+  donations: DonationEntry[];
+  setDonations: (d: DonationEntry[]) => void;
+  addDonation: (d: Omit<DonationEntry, "id" | "date" | "status"> & { status?: DonationEntry["status"] }) => Promise<string | null>;
+  updateDonationStatus: (id: string, status: DonationEntry["status"], paymentRef?: string) => Promise<void>;
   instagram: InstagramData;
   setInstagram: (i: InstagramData) => void;
   templeSchedule: TempleScheduleItem[];
@@ -864,6 +885,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [featurePopup, setFeaturePopupState] = useState<FeaturePopupData>(defaultFeaturePopup);
   const [paymentPages, setPaymentPagesState] = useState<PaymentPage[]>(defaultPaymentPages);
   const [previewLeads, setPreviewLeadsState] = useState<PreviewLead[]>([]);
+  const [donations, setDonationsState] = useState<DonationEntry[]>([]);
   const [authed, setAuthed] = useState<boolean>(false);
 
   // Track Supabase auth session for admin access
@@ -880,6 +902,70 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       sub.subscription.unsubscribe();
     };
   }, []);
+
+  // Load contact messages + donation enquiries (admin-only readable), kept live
+  useEffect(() => {
+    if (!authed) {
+      setContactsState([]);
+      setDonationsState([]);
+      return;
+    }
+    let mounted = true;
+
+    const loadContacts = async () => {
+      const { data, error } = await supabase
+        .from("contact_messages")
+        .select("id,name,email,phone,message,read,created_at")
+        .order("created_at", { ascending: false });
+      if (!mounted) return;
+      if (error) { console.error("[contact_messages] load failed", error); return; }
+      setContactsState(
+        (data ?? []).map((r) => ({
+          id: r.id, name: r.name, email: r.email, phone: r.phone,
+          message: r.message, read: r.read, date: r.created_at,
+        })),
+      );
+    };
+
+    const loadDonations = async () => {
+      const { data, error } = await supabase
+        .from("donation_enquiries")
+        .select("id,donor_name,email,phone,pan,purpose,seva_title,option_label,amount,status,payment_ref,created_at")
+        .order("created_at", { ascending: false });
+      if (!mounted) return;
+      if (error) { console.error("[donation_enquiries] load failed", error); return; }
+      setDonationsState(
+        (data ?? []).map((r) => ({
+          id: r.id,
+          donorName: r.donor_name,
+          email: r.email,
+          phone: r.phone,
+          pan: r.pan ?? undefined,
+          purpose: r.purpose ?? undefined,
+          sevaTitle: r.seva_title,
+          optionLabel: r.option_label ?? undefined,
+          amount: Number(r.amount ?? 0),
+          status: (r.status as DonationEntry["status"]) ?? "initiated",
+          paymentRef: r.payment_ref ?? undefined,
+          date: r.created_at,
+        })),
+      );
+    };
+
+    loadContacts();
+    loadDonations();
+
+    const channel = supabase
+      .channel("form_submissions_changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "contact_messages" }, () => loadContacts())
+      .on("postgres_changes", { event: "*", schema: "public", table: "donation_enquiries" }, () => loadDonations())
+      .subscribe();
+
+    return () => {
+      mounted = false;
+      supabase.removeChannel(channel);
+    };
+  }, [authed]);
 
   // Load lead submissions (admin-only readable) and keep them live
   useEffect(() => {
@@ -979,7 +1065,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.theme: setThemeState(value); break;
       case KEYS.heroBanners: setHeroBannersState({ ...defaultHeroBanners, ...value }); break;
       case KEYS.goshala: setGoshalaState({ ...defaultGoshala, ...value }); break;
-      case KEYS.contacts: setContactsState(value); break;
+      // contacts now live in their own table (contact_messages)
       case KEYS.instagram: setInstagramState({ ...defaultInstagram, ...value }); break;
       case KEYS.templeSchedule: setTempleScheduleState(value || defaultTempleSchedule); break;
       case KEYS.featurePopup: setFeaturePopupState({ ...defaultFeaturePopup, ...value }); break;
@@ -1012,10 +1098,86 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setTheme = (v: ThemeSettings) => { setThemeState(v); persist(KEYS.theme, v); };
   const setHeroBanners = (v: HeroBannersData) => { setHeroBannersState(v); persist(KEYS.heroBanners, v); };
   const setGoshala = (v: GoshalaData) => { setGoshalaState(v); persist(KEYS.goshala, v); };
-  const setContacts = (v: ContactEntry[]) => {
+  // Contact messages live in their own table: anyone can submit, only admins read/update/delete.
+  const setContacts = async (v: ContactEntry[]) => {
+    const prev = contacts;
     setContactsState(v);
-    persist(KEYS.contacts, v);
+    const keepIds = new Set(v.map((c) => c.id));
+    const removed = prev.filter((c) => !keepIds.has(c.id)).map((c) => c.id);
+    if (removed.length) {
+      const { error } = await supabase.from("contact_messages").delete().in("id", removed);
+      if (error) console.error("[contact_messages] delete failed", error);
+    }
+    const prevById = new Map(prev.map((c) => [c.id, c]));
+    for (const c of v) {
+      const before = prevById.get(c.id);
+      if (before && before.read !== c.read) {
+        const { error } = await supabase.from("contact_messages").update({ read: c.read }).eq("id", c.id);
+        if (error) console.error("[contact_messages] update failed", error);
+      }
+    }
   };
+
+  const addContactMessage = async (m: { name: string; email: string; phone: string; message: string }) => {
+    const { error } = await supabase.from("contact_messages").insert({
+      name: m.name.trim().slice(0, 100),
+      email: m.email.trim().slice(0, 200),
+      phone: m.phone.trim().slice(0, 20),
+      message: m.message.trim().slice(0, 5000),
+    });
+    if (error) {
+      console.error("[contact_messages] insert failed", error);
+      throw error;
+    }
+  };
+
+  // Donation enquiries: anyone can submit, only admins read/update/delete.
+  const setDonations = async (v: DonationEntry[]) => {
+    const prev = donations;
+    setDonationsState(v);
+    const keepIds = new Set(v.map((d) => d.id));
+    const removed = prev.filter((d) => !keepIds.has(d.id)).map((d) => d.id);
+    if (removed.length) {
+      const { error } = await supabase.from("donation_enquiries").delete().in("id", removed);
+      if (error) console.error("[donation_enquiries] delete failed", error);
+    }
+  };
+
+  const addDonation: AdminState["addDonation"] = async (d) => {
+    // anon cannot read rows back, so generate the id client-side
+    const id = typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const { error } = await supabase
+      .from("donation_enquiries")
+      .insert({
+        id,
+        donor_name: d.donorName.trim().slice(0, 100),
+        email: d.email.trim().slice(0, 200),
+        phone: d.phone.trim().slice(0, 20),
+        pan: d.pan?.trim().slice(0, 20) || null,
+        purpose: d.purpose?.trim().slice(0, 500) || null,
+        seva_title: d.sevaTitle.trim().slice(0, 200),
+        option_label: d.optionLabel?.trim().slice(0, 200) || null,
+        amount: d.amount,
+        status: d.status ?? "initiated",
+      });
+    if (error) {
+      console.error("[donation_enquiries] insert failed", error);
+      return null;
+    }
+    return id;
+  };
+
+
+  const updateDonationStatus: AdminState["updateDonationStatus"] = async (id, status, paymentRef) => {
+    const { error } = await supabase
+      .from("donation_enquiries")
+      .update({ status, payment_ref: paymentRef ?? null })
+      .eq("id", id);
+    if (error) console.error("[donation_enquiries] status update failed", error);
+  };
+
   const setInstagram = (v: InstagramData) => { setInstagramState(v); persist(KEYS.instagram, v); };
   const setTempleSchedule = (v: TempleScheduleItem[]) => { setTempleScheduleState(v); persist(KEYS.templeSchedule, v); };
   const setFeaturePopup = (fp: FeaturePopupData) => { setFeaturePopupState(fp); persist(KEYS.featurePopup, fp); };
@@ -1084,7 +1246,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         theme, setTheme,
         heroBanners, setHeroBanners,
         goshala, setGoshala,
-        contacts, setContacts,
+        contacts, setContacts, addContactMessage,
+        donations, setDonations, addDonation, updateDonationStatus,
         instagram, setInstagram,
         templeSchedule, setTempleSchedule,
         featurePopup, setFeaturePopup,
