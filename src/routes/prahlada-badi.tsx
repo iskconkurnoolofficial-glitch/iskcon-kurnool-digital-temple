@@ -307,7 +307,7 @@ function PrahladaBadiPage() {
                 return (
                   <div 
                     key={act.id} 
-                    className={`group rounded-3xl p-6 border shadow-sm hover:shadow-elegant hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between ${theme.bg} ${theme.border}`}
+                    className={`group rounded-3xl p-6 border shadow-sm hover:shadow-elegant hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between ${theme.bg}`}
                   >
                     <div className="space-y-4">
                       {/* Icon & Index Badge */}

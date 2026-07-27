@@ -880,6 +880,38 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       sub.subscription.unsubscribe();
     };
   }, []);
+
+  // Load lead submissions (admin-only readable) and keep them live
+  useEffect(() => {
+    if (!authed) {
+      setPreviewLeadsState([]);
+      return;
+    }
+    let mounted = true;
+    const load = async () => {
+      const { data, error } = await supabase
+        .from("preview_leads")
+        .select("id,name,phone,created_at")
+        .order("created_at", { ascending: false });
+      if (!mounted) return;
+      if (error) {
+        console.error("[preview_leads] load failed", error);
+        return;
+      }
+      setPreviewLeadsState(
+        (data ?? []).map((r) => ({ id: r.id, name: r.name, phone: r.phone, date: r.created_at })),
+      );
+    };
+    load();
+    const channel = supabase
+      .channel("preview_leads_changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "preview_leads" }, () => load())
+      .subscribe();
+    return () => {
+      mounted = false;
+      supabase.removeChannel(channel);
+    };
+  }, [authed]);
   const [ready, setReady] = useState(false);
 
   // Tracks keys we just wrote locally so realtime echo doesn't overwrite optimistic state.
@@ -952,7 +984,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.templeSchedule: setTempleScheduleState(value || defaultTempleSchedule); break;
       case KEYS.featurePopup: setFeaturePopupState({ ...defaultFeaturePopup, ...value }); break;
       case KEYS.paymentPages: setPaymentPagesState(Array.isArray(value) ? value : defaultPaymentPages); break;
-      case KEYS.previewLeads: setPreviewLeadsState(Array.isArray(value) ? value : []); break;
+      
     }
   }
 
@@ -988,30 +1020,27 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setTempleSchedule = (v: TempleScheduleItem[]) => { setTempleScheduleState(v); persist(KEYS.templeSchedule, v); };
   const setFeaturePopup = (fp: FeaturePopupData) => { setFeaturePopupState(fp); persist(KEYS.featurePopup, fp); };
   const setPaymentPages = (p: PaymentPage[]) => { setPaymentPagesState(p); persist(KEYS.paymentPages, p); };
-  const setPreviewLeads = (v: PreviewLead[]) => { setPreviewLeadsState(v); persist(KEYS.previewLeads, v); };
-  const addPreviewLead = async (lead: { name: string; phone: string }) => {
-    const newEntry: PreviewLead = {
-      id: "lead_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
-      name: lead.name.trim(),
-      phone: lead.phone.trim(),
-      date: new Date().toISOString(),
-    };
-    
-    // Fetch latest value from Supabase database to avoid concurrency overwrites
-    let currentLeads: PreviewLead[] = previewLeads;
-    try {
-      const { data } = await supabase.from("site_data").select("value").eq("key", KEYS.previewLeads).maybeSingle();
-      if (data && Array.isArray(data.value)) {
-        currentLeads = data.value;
-      }
-    } catch {
-      // fallback to memory
+  // Preview leads live in their own table: anyone can submit, only admins can read/delete.
+  const setPreviewLeads = async (v: PreviewLead[]) => {
+    const keepIds = new Set(v.map((l) => l.id));
+    const removed = previewLeads.filter((l) => !keepIds.has(l.id)).map((l) => l.id);
+    setPreviewLeadsState(v);
+    if (removed.length) {
+      const { error } = await supabase.from("preview_leads").delete().in("id", removed);
+      if (error) console.error("[preview_leads] delete failed", error);
     }
-
-    const updated = [newEntry, ...currentLeads.filter((item) => item.id !== newEntry.id)];
-    setPreviewLeadsState(updated);
-    await persist(KEYS.previewLeads, updated);
   };
+
+  const addPreviewLead = async (lead: { name: string; phone: string }) => {
+    const { error } = await supabase
+      .from("preview_leads")
+      .insert({ name: lead.name.trim().slice(0, 100), phone: lead.phone.trim().slice(0, 20) });
+    if (error) {
+      console.error("[preview_leads] insert failed", error);
+      throw error;
+    }
+  };
+
 
   // Apply theme to CSS variables
   useEffect(() => {

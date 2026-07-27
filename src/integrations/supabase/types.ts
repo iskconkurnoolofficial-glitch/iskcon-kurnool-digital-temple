@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      preview_leads: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          phone: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          phone: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string
+        }
+        Relationships: []
+      }
       site_data: {
         Row: {
           key: string
