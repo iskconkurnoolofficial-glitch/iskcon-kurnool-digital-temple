@@ -880,6 +880,38 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       sub.subscription.unsubscribe();
     };
   }, []);
+
+  // Load lead submissions (admin-only readable) and keep them live
+  useEffect(() => {
+    if (!authed) {
+      setPreviewLeadsState([]);
+      return;
+    }
+    let mounted = true;
+    const load = async () => {
+      const { data, error } = await supabase
+        .from("preview_leads")
+        .select("id,name,phone,created_at")
+        .order("created_at", { ascending: false });
+      if (!mounted) return;
+      if (error) {
+        console.error("[preview_leads] load failed", error);
+        return;
+      }
+      setPreviewLeadsState(
+        (data ?? []).map((r) => ({ id: r.id, name: r.name, phone: r.phone, date: r.created_at })),
+      );
+    };
+    load();
+    const channel = supabase
+      .channel("preview_leads_changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "preview_leads" }, () => load())
+      .subscribe();
+    return () => {
+      mounted = false;
+      supabase.removeChannel(channel);
+    };
+  }, [authed]);
   const [ready, setReady] = useState(false);
 
   // Tracks keys we just wrote locally so realtime echo doesn't overwrite optimistic state.
