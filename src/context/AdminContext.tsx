@@ -903,6 +903,70 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Load contact messages + donation enquiries (admin-only readable), kept live
+  useEffect(() => {
+    if (!authed) {
+      setContactsState([]);
+      setDonationsState([]);
+      return;
+    }
+    let mounted = true;
+
+    const loadContacts = async () => {
+      const { data, error } = await supabase
+        .from("contact_messages")
+        .select("id,name,email,phone,message,read,created_at")
+        .order("created_at", { ascending: false });
+      if (!mounted) return;
+      if (error) { console.error("[contact_messages] load failed", error); return; }
+      setContactsState(
+        (data ?? []).map((r) => ({
+          id: r.id, name: r.name, email: r.email, phone: r.phone,
+          message: r.message, read: r.read, date: r.created_at,
+        })),
+      );
+    };
+
+    const loadDonations = async () => {
+      const { data, error } = await supabase
+        .from("donation_enquiries")
+        .select("id,donor_name,email,phone,pan,purpose,seva_title,option_label,amount,status,payment_ref,created_at")
+        .order("created_at", { ascending: false });
+      if (!mounted) return;
+      if (error) { console.error("[donation_enquiries] load failed", error); return; }
+      setDonationsState(
+        (data ?? []).map((r) => ({
+          id: r.id,
+          donorName: r.donor_name,
+          email: r.email,
+          phone: r.phone,
+          pan: r.pan ?? undefined,
+          purpose: r.purpose ?? undefined,
+          sevaTitle: r.seva_title,
+          optionLabel: r.option_label ?? undefined,
+          amount: Number(r.amount ?? 0),
+          status: (r.status as DonationEntry["status"]) ?? "initiated",
+          paymentRef: r.payment_ref ?? undefined,
+          date: r.created_at,
+        })),
+      );
+    };
+
+    loadContacts();
+    loadDonations();
+
+    const channel = supabase
+      .channel("form_submissions_changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "contact_messages" }, () => loadContacts())
+      .on("postgres_changes", { event: "*", schema: "public", table: "donation_enquiries" }, () => loadDonations())
+      .subscribe();
+
+    return () => {
+      mounted = false;
+      supabase.removeChannel(channel);
+    };
+  }, [authed]);
+
   // Load lead submissions (admin-only readable) and keep them live
   useEffect(() => {
     if (!authed) {
