@@ -988,30 +988,27 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setTempleSchedule = (v: TempleScheduleItem[]) => { setTempleScheduleState(v); persist(KEYS.templeSchedule, v); };
   const setFeaturePopup = (fp: FeaturePopupData) => { setFeaturePopupState(fp); persist(KEYS.featurePopup, fp); };
   const setPaymentPages = (p: PaymentPage[]) => { setPaymentPagesState(p); persist(KEYS.paymentPages, p); };
-  const setPreviewLeads = (v: PreviewLead[]) => { setPreviewLeadsState(v); persist(KEYS.previewLeads, v); };
-  const addPreviewLead = async (lead: { name: string; phone: string }) => {
-    const newEntry: PreviewLead = {
-      id: "lead_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
-      name: lead.name.trim(),
-      phone: lead.phone.trim(),
-      date: new Date().toISOString(),
-    };
-    
-    // Fetch latest value from Supabase database to avoid concurrency overwrites
-    let currentLeads: PreviewLead[] = previewLeads;
-    try {
-      const { data } = await supabase.from("site_data").select("value").eq("key", KEYS.previewLeads).maybeSingle();
-      if (data && Array.isArray(data.value)) {
-        currentLeads = data.value;
-      }
-    } catch {
-      // fallback to memory
+  // Preview leads live in their own table: anyone can submit, only admins can read/delete.
+  const setPreviewLeads = async (v: PreviewLead[]) => {
+    const keepIds = new Set(v.map((l) => l.id));
+    const removed = previewLeads.filter((l) => !keepIds.has(l.id)).map((l) => l.id);
+    setPreviewLeadsState(v);
+    if (removed.length) {
+      const { error } = await supabase.from("preview_leads").delete().in("id", removed);
+      if (error) console.error("[preview_leads] delete failed", error);
     }
-
-    const updated = [newEntry, ...currentLeads.filter((item) => item.id !== newEntry.id)];
-    setPreviewLeadsState(updated);
-    await persist(KEYS.previewLeads, updated);
   };
+
+  const addPreviewLead = async (lead: { name: string; phone: string }) => {
+    const { error } = await supabase
+      .from("preview_leads")
+      .insert({ name: lead.name.trim().slice(0, 100), phone: lead.phone.trim().slice(0, 20) });
+    if (error) {
+      console.error("[preview_leads] insert failed", error);
+      throw error;
+    }
+  };
+
 
   // Apply theme to CSS variables
   useEffect(() => {
