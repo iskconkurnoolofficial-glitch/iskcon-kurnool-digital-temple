@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import SiteLayout, { PageHero } from "@/components/SiteLayout";
-import { useAdmin } from "@/context/AdminContext";
+import { useAdmin, type SundayGalleryItem } from "@/context/AdminContext";
 import { Calendar, Clock, MapPin, Sparkles, Navigation, Link as LinkIcon, Heart, Sunrise, Sun, Sunset, Music, BookOpen, Soup, Flame, Utensils } from "lucide-react";
 import { isTimeStrLive } from "@/lib/scheduleUtils";
 
