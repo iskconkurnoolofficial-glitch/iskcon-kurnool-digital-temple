@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          phone: string
+          read: boolean
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          phone: string
+          read?: boolean
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string
+          read?: boolean
+        }
+        Relationships: []
+      }
+      donation_enquiries: {
+        Row: {
+          amount: number
+          created_at: string
+          donor_name: string
+          email: string
+          id: string
+          option_label: string | null
+          pan: string | null
+          payment_ref: string | null
+          phone: string
+          purpose: string | null
+          seva_title: string
+          status: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          donor_name: string
+          email: string
+          id?: string
+          option_label?: string | null
+          pan?: string | null
+          payment_ref?: string | null
+          phone: string
+          purpose?: string | null
+          seva_title: string
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          donor_name?: string
+          email?: string
+          id?: string
+          option_label?: string | null
+          pan?: string | null
+          payment_ref?: string | null
+          phone?: string
+          purpose?: string | null
+          seva_title?: string
+          status?: string
+        }
+        Relationships: []
+      }
       preview_leads: {
         Row: {
           created_at: string
