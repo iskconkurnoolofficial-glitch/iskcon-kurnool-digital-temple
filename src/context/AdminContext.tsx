@@ -1065,7 +1065,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.theme: setThemeState(value); break;
       case KEYS.heroBanners: setHeroBannersState({ ...defaultHeroBanners, ...value }); break;
       case KEYS.goshala: setGoshalaState({ ...defaultGoshala, ...value }); break;
-      case KEYS.contacts: setContactsState(value); break;
+      // contacts now live in their own table (contact_messages)
       case KEYS.instagram: setInstagramState({ ...defaultInstagram, ...value }); break;
       case KEYS.templeSchedule: setTempleScheduleState(value || defaultTempleSchedule); break;
       case KEYS.featurePopup: setFeaturePopupState({ ...defaultFeaturePopup, ...value }); break;
