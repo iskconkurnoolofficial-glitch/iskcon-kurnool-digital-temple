@@ -30,7 +30,7 @@ function loadRazorpay(): Promise<boolean> {
 }
 
 export default function Page({ initialSlug }: { initialSlug?: string }) {
-  const { sevas, settings, theme, addPaymentRecord, platformFee, ready } = useAdmin();
+  const { sevas, settings, theme, ready, addDonation, updateDonationStatus, platformFee, addPaymentRecord } = useAdmin();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Record<string, number>>({});
@@ -82,6 +82,18 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   }, [active, query]);
 
   const donate = async (seva: Seva, amount: number, label: string) => {
+    // Store every submission in the admin panel before opening the gateway
+    const enquiryId = await addDonation({
+      donorName: donorName.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      pan: pan.trim(),
+      purpose: purpose.trim(),
+      sevaTitle: seva.title,
+      optionLabel: label,
+      amount,
+    });
+
     const ok = await loadRazorpay();
     if (!ok) { alert("Unable to load payment gateway. Please try again."); return; }
 
@@ -119,6 +131,14 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
         const currentPhone = phone.trim();
         const currentPan = pan.trim();
         const currentNotes = purpose.trim();
+
+        if (enquiryId) {
+          try {
+            await updateDonationStatus(enquiryId, "paid", pId);
+          } catch (e) {
+            console.error("Failed to update donation status", e);
+          }
+        }
 
         try {
           await addPaymentRecord({

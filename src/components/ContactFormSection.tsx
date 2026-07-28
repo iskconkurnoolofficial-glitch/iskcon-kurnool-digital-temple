@@ -1,10 +1,10 @@
 import { useState, FormEvent } from "react";
 import { toast } from "sonner";
 import { Send, CheckCircle2, MessageSquareHeart } from "lucide-react";
-import { useAdmin, ContactEntry } from "@/context/AdminContext";
+import { useAdmin } from "@/context/AdminContext";
 
 export default function ContactFormSection() {
-  const { contacts, setContacts } = useAdmin();
+  const { addContactMessage } = useAdmin();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -21,18 +21,12 @@ export default function ContactFormSection() {
 
     setBusy(true);
     try {
-      const newEntry: ContactEntry = {
-        id: Date.now().toString(36) + Math.random().toString(36).substring(2, 5),
+      await addContactMessage({
         name: name.trim(),
         email: email.trim(),
         phone: phone.trim(),
         message: message.trim(),
-        date: new Date().toISOString(),
-        read: false,
-      };
-
-      const updated = [newEntry, ...(contacts || [])];
-      setContacts(updated);
+      });
 
       toast.success("Message sent successfully!");
       setSubmittedName(name.trim());
