@@ -1,6 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAdmin, ContactEntry } from "@/context/AdminContext";
-import { MailOpen, Mail, Trash2, Search, Calendar, Phone, Inbox, ShieldCheck, AlertTriangle, FileSpreadsheet, RotateCcw } from "lucide-react";
+import { 
+  MailOpen, 
+  Mail, 
+  Trash2, 
+  Search, 
+  Calendar, 
+  Phone, 
+  Inbox, 
+  ShieldCheck, 
+  AlertTriangle, 
+  FileSpreadsheet, 
+  RotateCcw,
+  MessageCircle,
+  User,
+  ArrowLeft,
+  CheckCircle2,
+  Clock,
+  Sparkles
+} from "lucide-react";
 
 type FilterTab = "all" | "unread";
 
@@ -8,64 +26,9 @@ export default function ContactsManager() {
   const { contacts, setContacts } = useAdmin();
   const [tab, setTab] = useState<FilterTab>("all");
   const [search, setSearch] = useState("");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showResetWarning, setShowResetWarning] = useState(false);
-
-  const handleToggleRead = (id: string) => {
-    const updated = (contacts || []).map((c) =>
-      c.id === id ? { ...c, read: !c.read } : c
-    );
-    setContacts(updated);
-  };
-
-  const handleDelete = (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this message?")) return;
-    const updated = (contacts || []).filter((c) => c.id !== id);
-    setContacts(updated);
-  };
-
-  const handleMarkAllRead = () => {
-    if ((contacts || []).length === 0) return;
-    const updated = (contacts || []).map((c) => ({ ...c, read: true }));
-    setContacts(updated);
-  };
-
-  const handleExportCSV = () => {
-    if (!contacts || contacts.length === 0) {
-      alert("No contacts to export");
-      return;
-    }
-    
-    // CSV Header row
-    const headers = ["ID", "Name", "Email", "Phone", "Message", "Submission Date", "Status"];
-    
-    // Format rows
-    const rows = contacts.map((c) => [
-      c.id,
-      c.name,
-      c.email,
-      c.phone,
-      c.message.replace(/"/g, '""'), // escape quotes in messages
-      new Date(c.date).toLocaleString(),
-      c.read ? "Read" : "Unread"
-    ]);
-    
-    // Combine to string
-    const csvContent = [
-      headers.join(","),
-      ...rows.map((r) => r.map((cell) => `"${cell}"`).join(","))
-    ].join("\n");
-    
-    // Download Blob
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `iskcon_kurnool_contact_messages_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const [mobileViewDetail, setMobileViewDetail] = useState(false);
 
   // Filter messages based on search & tab
   const list = (contacts || [])
@@ -82,190 +45,380 @@ export default function ContactsManager() {
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Latest first
 
+  // Keep selected ID valid
+  useEffect(() => {
+    if (list.length > 0) {
+      if (!selectedId || !list.some((c) => c.id === selectedId)) {
+        setSelectedId(list[0].id);
+      }
+    } else {
+      setSelectedId(null);
+    }
+  }, [list, selectedId]);
+
+  const selectedContact = (contacts || []).find((c) => c.id === selectedId);
   const unreadCount = (contacts || []).filter((c) => !c.read).length;
 
+  const handleToggleRead = (id: string) => {
+    const updated = (contacts || []).map((c) =>
+      c.id === id ? { ...c, read: !c.read } : c
+    );
+    setContacts(updated);
+  };
+
+  const handleDelete = (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this message?")) return;
+    const updated = (contacts || []).filter((c) => c.id !== id);
+    setContacts(updated);
+    if (selectedId === id) {
+      const remaining = updated.filter((c) => c.id !== id);
+      setSelectedId(remaining.length > 0 ? remaining[0].id : null);
+      setMobileViewDetail(false);
+    }
+  };
+
+  const handleMarkAllRead = () => {
+    if ((contacts || []).length === 0) return;
+    const updated = (contacts || []).map((c) => ({ ...c, read: true }));
+    setContacts(updated);
+  };
+
+  const handleExportCSV = () => {
+    if (!contacts || contacts.length === 0) {
+      alert("No contacts to export");
+      return;
+    }
+    
+    const headers = ["ID", "Name", "Email", "Phone", "Message", "Submission Date", "Status"];
+    const rows = contacts.map((c) => [
+      c.id,
+      c.name,
+      c.email,
+      c.phone,
+      c.message.replace(/"/g, '""'),
+      new Date(c.date).toLocaleString(),
+      c.read ? "Read" : "Unread"
+    ]);
+    
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((r) => r.map((cell) => `"${cell}"`).join(","))
+    ].join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `iskcon_kurnool_contact_messages_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Helper for WhatsApp link
+  const getWhatsAppUrl = (phoneStr: string, nameStr: string) => {
+    const cleaned = phoneStr.replace(/[^0-9]/g, "");
+    const text = encodeURIComponent(`Hare Krishna ${nameStr}! Thank you for contacting ISKCON Kurnool. `);
+    if (cleaned.length === 10) return `https://wa.me/91${cleaned}?text=${text}`;
+    return `https://wa.me/${cleaned}?text=${text}`;
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Header Info Banner */}
-      <div className="bg-white rounded-2xl p-6 border shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h3 className="font-display text-xl font-bold text-primary">Contact Enquiries &amp; Messages</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            View, filter and manage query submissions sent from the website contact page.
-          </p>
-        </div>
-        <div className="flex gap-4">
-          <div className="px-4 py-2 bg-secondary/15 text-primary rounded-xl border border-secondary/35 text-center shrink-0">
-            <span className="text-xs uppercase tracking-wider font-semibold block text-slate-500">Unread</span>
-            <span className="text-2xl font-bold text-accent">{unreadCount}</span>
+    <div className="space-y-5 animate-fade-in font-sans">
+      {/* 1. HEADER BANNER & STATS */}
+      <div className="bg-gradient-to-r from-primary via-[#4a2282] to-primary rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full text-xs font-semibold text-amber-200 backdrop-blur-md mb-2">
+              <Mail className="h-3.5 w-3.5" />
+              <span>Inquiries &amp; Public Feedback</span>
+            </div>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight">Contact Messages</h1>
+            <p className="text-xs sm:text-sm text-white/80 mt-1 max-w-xl">
+              View and reply to messages, prayer requests, and queries sent from the website contact page.
+            </p>
           </div>
-          <div className="px-4 py-2 bg-slate-50 text-slate-700 rounded-xl border text-center shrink-0">
-            <span className="text-xs uppercase tracking-wider font-semibold block text-slate-500">Total</span>
-            <span className="text-2xl font-bold">{(contacts || []).length}</span>
+
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-2xl border border-white/15 text-center">
+              <span className="text-[10px] uppercase tracking-wider font-semibold text-white/70 block">Unread</span>
+              <span className="text-xl font-extrabold text-amber-300">{unreadCount}</span>
+            </div>
+            <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-2xl border border-white/15 text-center">
+              <span className="text-[10px] uppercase tracking-wider font-semibold text-white/70 block">Total Messages</span>
+              <span className="text-xl font-extrabold text-white">{(contacts || []).length}</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Warning note for 25-day auto reset */}
-      <div className="bg-amber-50 border border-amber-200/80 rounded-2xl p-4 flex gap-3 text-amber-800 text-sm">
-        <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5 animate-bounce" />
-        <div className="space-y-1">
-          <span className="font-semibold block text-amber-900">Automated 25-Day Reset Policy</span>
-          <p className="text-amber-800/90 leading-relaxed font-medium">
-            Contact queries are automatically pruned and deleted after <strong className="font-bold">25 days</strong>. Kindly export them to an Excel CSV sheet below if you wish to keep long-term backup archives.
+      {/* 2. AUTOMATED 25-DAY RETENTION ALERT */}
+      <div className="bg-amber-50/90 border border-amber-200/80 rounded-2xl p-3.5 flex items-center justify-between gap-3 text-amber-900 text-xs shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <AlertTriangle className="h-4.5 w-4.5 text-amber-600 shrink-0" />
+          <p className="font-medium">
+            <strong className="font-bold">Automated 25-Day Retention:</strong> Messages are automatically backed up and cleared after 25 days.
           </p>
         </div>
+        <button
+          onClick={handleExportCSV}
+          disabled={(contacts || []).length === 0}
+          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-xs transition cursor-pointer disabled:opacity-50 shrink-0"
+        >
+          <FileSpreadsheet className="h-3.5 w-3.5" /> Export Excel
+        </button>
       </div>
 
-      {/* Controls: Search, Export & Tabs */}
-      <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-white p-4 rounded-xl border shadow-sm">
-        <div className="flex gap-2 flex-wrap w-full md:w-auto">
+      {/* 3. TOOLBAR CONTROLS */}
+      <div className="bg-white rounded-2xl p-3.5 border shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        {/* Filter Pills */}
+        <div className="flex items-center gap-2">
           {(["all", "unread"] as FilterTab[]).map((t) => (
             <button
               key={t}
-              onClick={() => setTab(t)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition ${
+              onClick={() => { setTab(t); setMobileViewDetail(false); }}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
                 tab === t
-                  ? "bg-primary text-primary-foreground font-semibold shadow-sm"
-                  : "bg-surface text-foreground hover:bg-muted border border-border/80"
+                  ? "bg-primary text-white shadow-xs"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
               }`}
             >
-              {t === "all" ? "All Messages" : `Unread (${unreadCount})`}
+              {t === "all" ? `All (${(contacts || []).length})` : `Unread (${unreadCount})`}
             </button>
           ))}
+
           {unreadCount > 0 && (
             <button
               onClick={handleMarkAllRead}
-              className="px-4 py-2 text-xs font-semibold text-accent border border-accent/30 rounded-lg hover:bg-accent hover:text-white transition flex items-center gap-1.5 ml-auto md:ml-0"
+              className="px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition flex items-center gap-1 cursor-pointer"
             >
-              <ShieldCheck className="h-4 w-4" /> Mark All as Read
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> Mark All Read
             </button>
           )}
+
           {(contacts || []).length > 0 && (
             <button
               onClick={() => setShowResetWarning(true)}
-              className="px-4 py-2 text-xs font-semibold text-destructive border border-destructive/20 rounded-lg hover:bg-destructive hover:text-white transition flex items-center gap-1.5 ml-auto md:ml-0 cursor-pointer animate-fade-in"
+              className="px-3 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 border border-rose-200/60 rounded-xl transition flex items-center gap-1 cursor-pointer ml-auto"
             >
-              <RotateCcw className="h-4 w-4" /> Reset All
+              <RotateCcw className="h-3.5 w-3.5" /> Reset
             </button>
           )}
         </div>
 
-        {/* Right Controls: Export & Search */}
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-center">
-          <button
-            onClick={handleExportCSV}
-            disabled={(contacts || []).length === 0}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm cursor-pointer shrink-0"
-          >
-            <FileSpreadsheet className="h-4 w-4" /> Export to Excel
-          </button>
-
-          <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <input
-              className="w-full pl-9 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary"
-              placeholder="Search queries..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
+        {/* Search Input */}
+        <div className="relative w-full md:w-72">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+          <input
+            className="w-full pl-9 pr-7 py-1.5 border rounded-xl text-xs bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+            placeholder="Search by name, email, phone, text..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-700"
+            >
+              ✕
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Messages List Container */}
-      <div className="space-y-4">
-        {list.length === 0 ? (
-          <div className="text-center py-16 bg-white border border-dashed rounded-2xl flex flex-col items-center justify-center p-6">
-            <Inbox className="h-12 w-12 text-slate-300 mb-3" />
-            <h4 className="font-semibold text-primary text-lg">No Messages Found</h4>
-            <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-              {search
-                ? "No entries match your search filter criteria. Try typing something else."
-                : tab === "unread"
-                ? "Excellent! You have read all submissions."
-                : "No enquiries have been submitted through the Contact Form yet."}
-            </p>
+      {/* 4. MASTER-DETAIL 2-COLUMN INBOX LAYOUT */}
+      <div className="bg-white rounded-2xl border shadow-sm overflow-hidden min-h-[500px] grid grid-cols-1 md:grid-cols-12">
+        {/* LEFT COLUMN: MESSAGES LIST */}
+        <div className={`md:col-span-5 border-r border-slate-200/80 flex flex-col bg-slate-50/50 ${
+          mobileViewDetail ? "hidden md:flex" : "flex"
+        }`}>
+          <div className="p-3 border-b border-slate-200/80 bg-slate-100/60 text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+            <span>Inquiry Submissions ({list.length})</span>
+            {search && <span className="text-primary">Filtered</span>}
           </div>
-        ) : (
-          list.map((c) => (
-            <div
-              key={c.id}
-              className={`p-6 rounded-2xl border transition duration-300 bg-white ${
-                c.read
-                  ? "border-border opacity-90 shadow-sm"
-                  : "border-primary/45 shadow-[0_4px_16px_rgba(91,44,155,0.04)]"
-              }`}
-            >
-              {/* Header Information */}
-              <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border/60 pb-4 mb-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2.5">
-                    {!c.read && (
-                      <span className="h-2.5 w-2.5 rounded-full bg-accent animate-pulse shrink-0" title="Unread Message" />
-                    )}
-                    <h4 className="font-display font-bold text-lg text-primary">{c.name}</h4>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                    <a href={`mailto:${c.email}`} className="hover:text-accent font-medium">{c.email}</a>
-                    <span className="hidden md:inline text-slate-300">|</span>
-                    <a href={`tel:${c.phone}`} className="flex items-center gap-1 hover:text-accent">
-                      <Phone className="h-3.5 w-3.5" /> {c.phone}
-                    </a>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-2 text-xs font-medium text-slate-400 bg-slate-50 border px-3 py-1.5 rounded-lg select-none">
-                  <Calendar className="h-3.5 w-3.5" />
-                  {new Date(c.date).toLocaleString(undefined, {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  })}
-                </div>
-              </div>
-
-              {/* Message Content */}
-              <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100/80 mb-4">
-                <p className="text-slate-700 text-sm md:text-base leading-relaxed whitespace-pre-wrap font-sans">
-                  {c.message}
+          <div className="flex-1 overflow-y-auto max-h-[550px] divide-y divide-slate-100">
+            {list.length === 0 ? (
+              <div className="p-8 text-center space-y-2">
+                <Inbox className="h-10 w-10 text-slate-300 mx-auto" />
+                <p className="font-bold text-xs text-slate-600">No Messages Found</p>
+                <p className="text-[11px] text-slate-400">
+                  {search ? "Try searching for a different keyword." : "No inquiries submitted yet."}
                 </p>
               </div>
+            ) : (
+              list.map((item) => {
+                const isSelected = selectedId === item.id;
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => {
+                      setSelectedId(item.id);
+                      setMobileViewDetail(true);
+                      if (!item.read) handleToggleRead(item.id);
+                    }}
+                    className={`p-3.5 transition cursor-pointer relative ${
+                      isSelected
+                        ? "bg-white border-l-4 border-primary shadow-xs"
+                        : item.read
+                        ? "hover:bg-white/80 text-slate-600"
+                        : "bg-amber-50/40 hover:bg-amber-50/70 border-l-4 border-amber-400 font-semibold"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <div className="flex items-center gap-2 truncate">
+                        {!item.read && (
+                          <span className="h-2 w-2 rounded-full bg-red-600 shrink-0 animate-pulse" title="Unread" />
+                        )}
+                        <span className="font-bold text-xs text-slate-900 truncate">{item.name}</span>
+                      </div>
+                      <span className="text-[10px] text-slate-400 shrink-0">
+                        {new Date(item.date).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}
+                      </span>
+                    </div>
 
-              {/* Action Buttons */}
-              <div className="flex items-center justify-between gap-4 pt-2">
-                <button
-                  onClick={() => handleToggleRead(c.id)}
-                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${
-                    c.read
-                      ? "text-primary hover:bg-primary/5 border-primary/20"
-                      : "text-emerald-600 hover:bg-emerald-50 border-emerald-200"
-                  }`}
+                    <p className="text-[11px] text-slate-500 truncate mb-1.5 font-normal">
+                      {item.message}
+                    </p>
+
+                    <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                      <span className="truncate">{item.email}</span>
+                      <span>·</span>
+                      <span className="shrink-0">{item.phone}</span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: SELECTED MESSAGE DETAIL PANEL */}
+        <div className={`md:col-span-7 flex flex-col bg-white ${
+          !mobileViewDetail ? "hidden md:flex" : "flex"
+        }`}>
+          {selectedContact ? (
+            <div className="flex-1 flex flex-col p-4 sm:p-6 space-y-6">
+              {/* Mobile Back Button */}
+              <button
+                onClick={() => setMobileViewDetail(false)}
+                className="md:hidden inline-flex items-center gap-1.5 text-xs font-bold text-primary mb-2 self-start bg-slate-100 px-3 py-1.5 rounded-xl"
+              >
+                <ArrowLeft className="h-4 w-4" /> Back to Inbox
+              </button>
+
+              {/* Sender Info Header Card */}
+              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-2xl bg-gradient-hero text-white font-display font-bold text-lg flex items-center justify-center shadow-sm shrink-0">
+                    {selectedContact.name.substring(0, 1).toUpperCase()}
+                  </div>
+                  <div>
+                    <h2 className="font-display font-bold text-lg text-primary leading-tight">
+                      {selectedContact.name}
+                    </h2>
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 mt-1">
+                      <a href={`mailto:${selectedContact.email}`} className="hover:text-primary font-medium underline decoration-slate-300">
+                        {selectedContact.email}
+                      </a>
+                      <span>·</span>
+                      <a href={`tel:${selectedContact.phone}`} className="flex items-center gap-1 hover:text-primary font-medium">
+                        <Phone className="h-3 w-3" /> {selectedContact.phone}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 bg-white px-3 py-1.5 rounded-xl border shrink-0">
+                  <Clock className="h-3.5 w-3.5 text-slate-400" />
+                  <span>
+                    {new Date(selectedContact.date).toLocaleString("en-IN", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                  </span>
+                </div>
+              </div>
+
+              {/* Quick Reply Actions Bar */}
+              <div className="flex flex-wrap items-center gap-2 border-b pb-4">
+                {/* WhatsApp Quick Chat */}
+                <a
+                  href={getWhatsAppUrl(selectedContact.phone, selectedContact.name)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
                 >
-                  {c.read ? (
+                  <MessageCircle className="h-4 w-4" /> Reply via WhatsApp
+                </a>
+
+                {/* Email Reply */}
+                <a
+                  href={`mailto:${selectedContact.email}?subject=RE: Inquiry to ISKCON Kurnool&body=Hare Krishna ${encodeURIComponent(selectedContact.name)}!%0D%0A%0D%0AIn response to your query:%0D%0A"${encodeURIComponent(selectedContact.message)}"`}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+                >
+                  <Mail className="h-4 w-4" /> Reply via Email
+                </a>
+
+                {/* Toggle Read */}
+                <button
+                  onClick={() => handleToggleRead(selectedContact.id)}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-xs transition cursor-pointer ml-auto"
+                >
+                  {selectedContact.read ? (
                     <>
-                      <Mail className="h-3.5 w-3.5" /> Mark as Unread
+                      <Mail className="h-3.5 w-3.5 text-slate-500" /> Mark Unread
                     </>
                   ) : (
                     <>
-                      <MailOpen className="h-3.5 w-3.5" /> Mark as Read
+                      <MailOpen className="h-3.5 w-3.5 text-emerald-600" /> Mark Read
                     </>
                   )}
                 </button>
 
+                {/* Delete */}
                 <button
-                  onClick={() => handleDelete(c.id)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-destructive hover:bg-destructive/5 border border-transparent hover:border-destructive/15 transition"
-                  aria-label="Delete message"
+                  onClick={() => handleDelete(selectedContact.id)}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 font-semibold text-xs transition cursor-pointer"
+                  title="Delete message"
                 >
                   <Trash2 className="h-3.5 w-3.5" /> Delete
                 </button>
               </div>
+
+              {/* Message Content Container */}
+              <div className="flex-1 space-y-2">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Message Content / Query
+                </label>
+                <div className="p-5 rounded-2xl bg-slate-50/80 border border-slate-200/80 text-slate-800 text-sm sm:text-base leading-relaxed whitespace-pre-wrap font-sans shadow-inner max-h-[280px] sm:max-h-[340px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300">
+                  {selectedContact.message}
+                </div>
+              </div>
+
+              {/* Bottom Stamp */}
+              <div className="pt-4 border-t flex items-center justify-between text-[11px] text-slate-400">
+                <span>Message ID: {selectedContact.id}</span>
+                <span className="flex items-center gap-1 text-emerald-600 font-semibold">
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Verified Website Submission
+                </span>
+              </div>
             </div>
-          ))
-        )}
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-3">
+              <Inbox className="h-12 w-12 text-slate-300" />
+              <h3 className="font-bold text-slate-700 text-base">Select a Message to View</h3>
+              <p className="text-xs text-slate-400 max-w-xs">
+                Click on any message from the left inbox list to view full details and reply via WhatsApp or Email.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Reset all messages custom warning modal */}
+      {/* RESET ALL CONFIRMATION MODAL */}
       {showResetWarning && (
         <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full border border-destructive/20 shadow-2xl space-y-6 text-center animate-fade-in">
@@ -275,13 +428,13 @@ export default function ContactsManager() {
             <div className="space-y-2">
               <h3 className="font-display text-xl font-bold text-primary">Permanently Delete All Messages?</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                This action is irreversible. All your stored enquiry submissions and messages will be permanently deleted from the database.
+                This action is irreversible. All stored inquiry submissions will be permanently erased.
               </p>
             </div>
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setShowResetWarning(false)}
-                className="flex-1 py-3 border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl font-semibold text-sm transition"
+                className="flex-1 py-3 border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl font-semibold text-sm transition cursor-pointer"
               >
                 Cancel
               </button>
@@ -289,10 +442,11 @@ export default function ContactsManager() {
                 onClick={() => {
                   setContacts([]);
                   setShowResetWarning(false);
+                  setSelectedId(null);
                 }}
                 className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold text-sm shadow-md shadow-red-600/10 hover:shadow-red-700/25 transition cursor-pointer"
               >
-                Proceed &amp; Delete
+                Delete All
               </button>
             </div>
           </div>

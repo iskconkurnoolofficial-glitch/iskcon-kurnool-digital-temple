@@ -5,8 +5,10 @@ import {
   PaymentPage, 
   PaymentPageField, 
   PaymentPagePriceField, 
+  PaymentRecord,
   slugify 
 } from "@/context/AdminContext";
+import OfficialReceiptModal from "@/components/OfficialReceiptModal";
 import { 
   Plus, 
   Trash2, 
@@ -32,9 +34,19 @@ import {
   Palette,
   Grid,
   Layers,
-  Maximize2,
-  Crown,
-  Zap
+  Search,
+  Download,
+  FileSpreadsheet,
+  Printer,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Filter,
+  FileText,
+  Heart,
+  Tag,
+  Building2,
+  X
 } from "lucide-react";
 
 const PRESET_BANNER_IMAGES = [
@@ -57,14 +69,56 @@ const PRESET_BANNER_IMAGES = [
 ];
 
 export default function PaymentPagesManager() {
-  const { paymentPages, setPaymentPages } = useAdmin();
+  const { paymentPages, setPaymentPages, paymentRecords, setPaymentRecords, addPaymentRecord, deletePaymentRecord, markAllPaymentRecordsRead, settings, platformFee, setPlatformFee } = useAdmin();
+  
+  // Navigation Sub-tab: "records" or "pages"
+  const [subTab, setSubTab] = useState<"records" | "pages">("records");
+
+  // Records Search & Filter state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [showWithCharges, setShowWithCharges] = useState(true);
+
+  // Manual Payment Entry Modal State
+  const [showManualModal, setShowManualModal] = useState(false);
+  const [manualForm, setManualForm] = useState<{
+    donorName: string;
+    donorEmail: string;
+    donorPhone: string;
+    amount: string;
+    category: string;
+    sevaOrPageTitle: string;
+    paymentMethod: string;
+    status: "Completed" | "Pending";
+    notes: string;
+    panNumber: string;
+    address: string;
+  }>({
+    donorName: "",
+    donorEmail: "",
+    donorPhone: "",
+    amount: "",
+    category: "General Donation",
+    sevaOrPageTitle: "Nitya Annadanam / Temple Seva",
+    paymentMethod: "Cash",
+    status: "Completed",
+    notes: "",
+    panNumber: "",
+    address: "",
+  });
+
+  // Receipt Modal State
+  const [selectedReceiptRecord, setSelectedReceiptRecord] = useState<PaymentRecord | null>(null);
+
+  // Instant Payment Pages Editor State
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  // Form draft for create/edit
+  // Form draft for create/edit payment page
   const [draft, setDraft] = useState<PaymentPage>({
     id: "",
     slug: "",
@@ -95,6 +149,161 @@ export default function PaymentPagesManager() {
     ],
   });
 
+  // Helper to calculate Real Net Bank Deposit after Razorpay 2% deduction
+  const getRecordBreakdown = (r: PaymentRecord) => {
+    const feeRate = platformFee.type === "percentage" ? (platformFee.value || 2) : 2;
+    const grossAmount = r.amount || 0;
+    let fee = 0;
+    let realNet = grossAmount;
+
+    if (typeof r.platformFee === "number" && r.platformFee > 0) {
+      fee = r.platformFee;
+      realNet = r.baseAmount || Math.max(0, grossAmount - fee);
+    } else {
+      // Standard Razorpay charge deduction (e.g. 2%)
+      fee = Math.round((grossAmount * feeRate) / 100);
+      realNet = Math.max(0, grossAmount - fee);
+    }
+
+    return { grossAmount, fee, realNet };
+  };
+
+  // --- RECORD COMPUTED STATS ---
+  const completedRecords = paymentRecords.filter((r) => r.status === "Completed");
+  const totalGrossRaisedINR = completedRecords.reduce((sum, r) => sum + (r.amount || 0), 0);
+  const totalRazorpayFeeDeductedINR = completedRecords.reduce((sum, r) => sum + getRecordBreakdown(r).fee, 0);
+  const totalRealNetBankDepositINR = completedRecords.reduce((sum, r) => sum + getRecordBreakdown(r).realNet, 0);
+
+  // Filtering records
+  const filteredRecords = paymentRecords.filter((rec) => {
+    const q = searchQuery.toLowerCase().trim();
+    const matchSearch =
+      !q ||
+      rec.donorName?.toLowerCase().includes(q) ||
+      rec.donorEmail?.toLowerCase().includes(q) ||
+      rec.donorPhone?.toLowerCase().includes(q) ||
+      rec.paymentId?.toLowerCase().includes(q) ||
+      rec.sevaOrPageTitle?.toLowerCase().includes(q) ||
+      rec.category?.toLowerCase().includes(q);
+
+    const matchCat = categoryFilter === "all" || rec.category === categoryFilter;
+    const matchStatus = statusFilter === "all" || rec.status === statusFilter;
+
+    return matchSearch && matchCat && matchStatus;
+  });
+
+  // Categories list for filter dropdown
+  const categoriesList = Array.from(new Set(paymentRecords.map((r) => r.category).filter(Boolean)));
+
+  // CSV Export Handler
+  const handleExportCSV = () => {
+    if (!paymentRecords || paymentRecords.length === 0) {
+      alert("No payment records available to export.");
+      return;
+    }
+
+    const headers = [
+      "Record ID",
+      "Payment Txn ID",
+      "Date & Time",
+      "Donor Name",
+      "Email",
+      "Phone",
+      "Gross Paid (INR)",
+      "Razorpay Gateway Fee (INR)",
+      "Real Net Bank Deposit (INR)",
+      "Category",
+      "Seva / Page Title",
+      "Status",
+      "Payment Method",
+      "PAN Number",
+      "Notes / Gotram"
+    ];
+
+    const rows = paymentRecords.map((r) => {
+      const bd = getRecordBreakdown(r);
+      return [
+        r.id,
+        r.paymentId,
+        new Date(r.date).toLocaleString("en-IN"),
+        r.donorName,
+        r.donorEmail || "",
+        r.donorPhone || "",
+        bd.grossAmount,
+        bd.fee,
+        bd.realNet,
+        r.category,
+        r.sevaOrPageTitle || "",
+        r.status,
+        r.paymentMethod || "Razorpay",
+        r.panNumber || "",
+        (r.notes || "").replace(/"/g, '""')
+      ];
+    });
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `ISKCON_Kurnool_Payment_Records_${new Date().toISOString().split("T")[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Manual Payment Submit
+  const handleSaveManualPayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualForm.donorName.trim()) {
+      alert("Please enter Donor Name.");
+      return;
+    }
+    if (!manualForm.amount || Number(manualForm.amount) <= 0) {
+      alert("Please enter a valid amount.");
+      return;
+    }
+
+    setBusy(true);
+    await addPaymentRecord({
+      paymentId: `OFFLINE_${Date.now().toString().slice(-6)}`,
+      donorName: manualForm.donorName.trim(),
+      donorEmail: manualForm.donorEmail.trim(),
+      donorPhone: manualForm.donorPhone.trim(),
+      amount: Number(manualForm.amount),
+      currency: "INR",
+      category: manualForm.category.trim() || "Manual Entry",
+      sevaOrPageTitle: manualForm.sevaOrPageTitle.trim() || "Temple Donation",
+      status: manualForm.status,
+      paymentMethod: manualForm.paymentMethod,
+      notes: manualForm.notes.trim(),
+      panNumber: manualForm.panNumber.trim(),
+      address: manualForm.address.trim(),
+      taxReceiptRequested: !!manualForm.panNumber.trim(),
+    });
+    setBusy(false);
+    setShowManualModal(false);
+    setManualForm({
+      donorName: "",
+      donorEmail: "",
+      donorPhone: "",
+      amount: "",
+      category: "General Donation",
+      sevaOrPageTitle: "Nitya Annadanam / Temple Seva",
+      paymentMethod: "Cash",
+      status: "Completed",
+      notes: "",
+      panNumber: "",
+      address: "",
+    });
+  };
+
+  // --- PAYMENT PAGE MANAGEMENT HANDLERS ---
   const getFullShareUrl = (slug: string) => {
     if (typeof window === "undefined") return `/pay/${slug}`;
     return `${window.location.origin}/pay/${slug}`;
@@ -147,24 +356,26 @@ export default function PaymentPagesManager() {
     setIsEditing(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (!confirm("Are you sure you want to delete this payment page?")) return;
-    setPaymentPages(paymentPages.filter((p) => p.id !== id));
+  const handleDeletePage = (id: string) => {
+    if (confirm("Are you sure you want to delete this payment page?")) {
+      setPaymentPages(paymentPages.filter((p) => p.id !== id));
+    }
   };
 
-  const handleToggleActive = (id: string) => {
+  const togglePageActive = (id: string) => {
     setPaymentPages(
       paymentPages.map((p) => (p.id === id ? { ...p, active: !p.active } : p))
     );
   };
 
-  const handleSavePage = () => {
+  const handleSavePage = async () => {
     if (!draft.title.trim()) {
       alert("Please enter a page title.");
       return;
     }
-    const safeSlug = slugify(draft.slug || draft.title) || `page-${Date.now()}`;
-    const pageToSave = { ...draft, slug: safeSlug };
+
+    const cleanSlug = slugify(draft.slug || draft.title);
+    const pageToSave: PaymentPage = { ...draft, slug: cleanSlug };
 
     const exists = paymentPages.some((p) => p.id === draft.id);
     if (exists) {
@@ -174,843 +385,1254 @@ export default function PaymentPagesManager() {
     }
 
     setSaved(true);
-    setTimeout(() => {
-      setSaved(false);
-      setIsEditing(false);
-    }, 1200);
+    setTimeout(() => setSaved(false), 2000);
+    setIsEditing(false);
+    setEditingId(null);
   };
 
-  const handleUploadBanner = async (file: File) => {
-    setBusy(true);
-    try {
-      const url = await uploadToCloudinary(file);
-      setDraft((d) => ({ ...d, bannerImage: url }));
-    } catch (e) {
-      alert("Failed to upload banner image.");
-    }
-    setBusy(false);
-  };
-
-  const handleUploadLogo = async (file: File) => {
-    setBusy(true);
-    try {
-      const url = await uploadToCloudinary(file);
-      setDraft((d) => ({ ...d, logoUrl: url }));
-    } catch (e) {
-      alert("Failed to upload logo.");
-    }
-    setBusy(false);
-  };
-
-  // Add custom donor input field
   const handleAddField = () => {
-    const fieldId = `field_${Date.now()}`;
-    setDraft((d) => ({
-      ...d,
-      fields: [
-        ...d.fields,
-        { id: fieldId, label: "Custom Field", type: "text", required: false },
-      ],
-    }));
+    const newF: PaymentPageField = {
+      id: `f_${Date.now()}`,
+      label: "Custom Question / Field",
+      type: "text",
+      required: false,
+    };
+    setDraft({ ...draft, fields: [...draft.fields, newF] });
   };
 
   const handleRemoveField = (fieldId: string) => {
-    setDraft((d) => ({
-      ...d,
-      fields: d.fields.filter((f) => f.id !== fieldId),
-    }));
+    setDraft({ ...draft, fields: draft.fields.filter((f) => f.id !== fieldId) });
   };
 
   const handleUpdateField = (fieldId: string, updates: Partial<PaymentPageField>) => {
-    setDraft((d) => ({
-      ...d,
-      fields: d.fields.map((f) => (f.id === fieldId ? { ...f, ...updates } : f)),
-    }));
+    setDraft({
+      ...draft,
+      fields: draft.fields.map((f) => (f.id === fieldId ? { ...f, ...updates } : f)),
+    });
   };
 
-  // Preset prices handlers
   const handleAddPresetPrice = () => {
-    const prId = `pr_${Date.now()}`;
-    setDraft((d) => ({
-      ...d,
-      presetPrices: [
-        ...(d.presetPrices || []),
-        { id: prId, label: "Offering Option", amount: 1008 },
-      ],
-    }));
+    const newP: PaymentPagePriceField = {
+      id: `pr_${Date.now()}`,
+      label: "Special Seva",
+      amount: 2500,
+    };
+    setDraft({ ...draft, presetPrices: [...(draft.presetPrices || []), newP] });
   };
 
   const handleRemovePresetPrice = (prId: string) => {
-    setDraft((d) => ({
-      ...d,
-      presetPrices: (d.presetPrices || []).filter((p) => p.id !== prId),
-    }));
+    setDraft({
+      ...draft,
+      presetPrices: (draft.presetPrices || []).filter((p) => p.id !== prId),
+    });
   };
 
   const handleUpdatePresetPrice = (prId: string, updates: Partial<PaymentPagePriceField>) => {
-    setDraft((d) => ({
-      ...d,
-      presetPrices: (d.presetPrices || []).map((p) => (p.id === prId ? { ...p, ...updates } : p)),
-    }));
+    setDraft({
+      ...draft,
+      presetPrices: (draft.presetPrices || []).map((p) => (p.id === prId ? { ...p, ...updates } : p)),
+    });
   };
 
-  if (isEditing) {
-    return (
-      <div className="space-y-6 animate-fade-in max-w-6xl mx-auto pb-10">
-        {/* Editor Top Bar */}
-        <div className="bg-slate-900 text-white p-4 sm:p-5 rounded-3xl shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sticky top-0 z-30 backdrop-blur-md">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsEditing(false)}
-              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition cursor-pointer text-white/90"
-              title="Back to Pages List"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <div>
-              <div className="text-[10px] uppercase font-bold text-secondary tracking-wider flex items-center gap-1">
-                <Sparkles className="h-3 w-3" /> Modern Payment Page Builder
-              </div>
-              <h2 className="font-display text-lg font-bold text-white truncate max-w-xs sm:max-w-md">
-                {draft.title || "Untitled Payment Page"}
-              </h2>
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBusy(true);
+    try {
+      const url = await uploadToCloudinary(file);
+      setDraft((prev) => ({ ...prev, bannerImage: url }));
+    } catch (err) {
+      alert("Failed to upload image.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto space-y-6 animate-fade-in p-2 sm:p-4 font-sans">
+      {/* SECTION HEADER & DUAL SUB-TAB CONTROLS */}
+      <div className="bg-gradient-to-r from-primary via-[#4a2282] to-primary rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-xs font-medium text-amber-200 backdrop-blur-md">
+              <Heart className="h-3.5 w-3.5 fill-amber-300 text-amber-300" />
+              <span>Temple Financial &amp; Seva Management</span>
             </div>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight">Donations &amp; Payment Records</h1>
+            <p className="text-xs sm:text-sm text-white/80 max-w-xl">
+              Track all website donations, print official receipts, record offline payments, and build custom instant checkout links.
+            </p>
           </div>
 
-          <div className="flex items-center gap-2.5 self-end sm:self-auto">
-            {draft.slug && (
-              <button
-                onClick={() => handleCopyLink(draft.slug, draft.id)}
-                className="py-2.5 px-4 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-xl transition flex items-center gap-1.5 cursor-pointer"
-              >
-                {copiedId === draft.id ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
-                <span>{copiedId === draft.id ? "Copied Link!" : "Copy Share Link"}</span>
-              </button>
-            )}
-
+          {/* Sub-tab Pill Toggle */}
+          <div className="flex bg-black/30 p-1.5 rounded-2xl border border-white/15 backdrop-blur-md self-start md:self-auto">
             <button
-              onClick={handleSavePage}
-              className="py-2.5 px-6 bg-gradient-to-r from-primary to-[#3d1a6a] hover:from-primary/95 text-white font-bold text-xs rounded-xl shadow-lg shadow-primary/30 transition cursor-pointer flex items-center gap-1.5 active:scale-95"
+              onClick={() => setSubTab("records")}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                subTab === "records"
+                  ? "bg-white text-primary shadow-md"
+                  : "text-white/80 hover:text-white hover:bg-white/10"
+              }`}
             >
-              {saved ? <Check className="h-4 w-4 text-secondary" /> : <CreditCard className="h-4 w-4 text-secondary" />}
-              <span>{saved ? "Saved & Live!" : "Save and Update Page"}</span>
+              <FileSpreadsheet className="h-4 w-4" />
+              <span>Payment Records</span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${subTab === "records" ? "bg-primary/15 text-primary" : "bg-white/20 text-white"}`}>
+                {paymentRecords.length}
+              </span>
+            </button>
+            <button
+              onClick={() => setSubTab("pages")}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                subTab === "pages"
+                  ? "bg-white text-primary shadow-md"
+                  : "text-white/80 hover:text-white hover:bg-white/10"
+              }`}
+            >
+              <CreditCard className="h-4 w-4" />
+              <span>Instant Payment Pages</span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${subTab === "pages" ? "bg-primary/15 text-primary" : "bg-white/20 text-white"}`}>
+                {paymentPages.length}
+              </span>
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Split View Editor */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* LEFT COLUMN: Page Content, Images & Background Pattern (7 Cols) */}
-          <div className="lg:col-span-7 space-y-6">
-            
-            {/* LAYOUT THEME SELECTOR (Split View, Royal Dark, Minimalist Centered) */}
-            <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-              <h3 className="font-display text-base font-bold text-primary flex items-center gap-2 border-b pb-3">
-                <Layers className="h-4.5 w-4.5 text-secondary" /> Page Structure &amp; Layout Theme
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setDraft((d) => ({ ...d, layoutTheme: "split" }))}
-                  className={`p-3.5 rounded-2xl border text-left transition flex flex-col justify-between space-y-2 cursor-pointer ${
-                    (draft.layoutTheme || "split") === "split"
-                      ? "bg-amber-500/10 border-amber-500 ring-2 ring-amber-500/30 text-amber-950 font-bold"
-                      : "bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <Sparkles className="h-5 w-5 text-amber-600" />
-                    <span className="text-[9px] font-bold uppercase bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">Split View</span>
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold">🎨 Floating Glass Split</div>
-                    <div className="text-[10px] text-muted-foreground">Hero banner + 2-column split desktop card</div>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setDraft((d) => ({ ...d, layoutTheme: "royal" }))}
-                  className={`p-3.5 rounded-2xl border text-left transition flex flex-col justify-between space-y-2 cursor-pointer ${
-                    draft.layoutTheme === "royal"
-                      ? "bg-purple-500/10 border-purple-500 ring-2 ring-purple-500/30 text-purple-950 font-bold"
-                      : "bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <Crown className="h-5 w-5 text-purple-600" />
-                    <span className="text-[9px] font-bold uppercase bg-purple-200 text-purple-900 px-2 py-0.5 rounded-full">Royal Dark</span>
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold">👑 Dark Royal Temple</div>
-                    <div className="text-[10px] text-muted-foreground">Velvet dark mode &amp; metallic gold glowing borders</div>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setDraft((d) => ({ ...d, layoutTheme: "centered" }))}
-                  className={`p-3.5 rounded-2xl border text-left transition flex flex-col justify-between space-y-2 cursor-pointer ${
-                    draft.layoutTheme === "centered"
-                      ? "bg-emerald-500/10 border-emerald-500 ring-2 ring-emerald-500/30 text-emerald-950 font-bold"
-                      : "bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <Zap className="h-5 w-5 text-emerald-600" />
-                    <span className="text-[9px] font-bold uppercase bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded-full">Centered Modal</span>
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold">⚡ Minimalist Centered</div>
-                    <div className="text-[10px] text-muted-foreground">Compact centered modal &amp; 1-click checkout</div>
-                  </div>
-                </button>
+      {/* ========================================================================= */}
+      {/* SUB-TAB 1: PAYMENT RECORDS & DIGITAL RECEIPTS */}
+      {/* ========================================================================= */}
+      {subTab === "records" && (
+        <div className="space-y-6">
+          {/* STATS OVERVIEW CARDS */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Card 1: Real Net Received in Bank Account */}
+            <div className="bg-gradient-to-br from-emerald-900 to-emerald-950 text-white rounded-2xl p-5 border border-emerald-800 shadow-md space-y-2 relative overflow-hidden">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-emerald-200 font-bold uppercase tracking-wide">Real Net Received in Bank</p>
+                <div className="h-8 w-8 rounded-lg bg-emerald-500/20 text-emerald-300 flex items-center justify-center">
+                  <IndianRupee className="h-4.5 w-4.5" />
+                </div>
               </div>
+              <p className="text-2xl font-bold font-sans text-emerald-100">
+                ₹{totalRealNetBankDepositINR.toLocaleString("en-IN")}
+              </p>
+              <p className="text-[10px] text-emerald-300 font-medium">
+                Actual money deposited into temple bank account (After Razorpay {platformFee.type === "percentage" ? `${platformFee.value}%` : `₹${platformFee.value}`} fee)
+              </p>
             </div>
 
-            <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-6">
-              <h3 className="font-display text-base font-bold text-primary flex items-center gap-2 border-b pb-3">
-                <ImageIcon className="h-4.5 w-4.5 text-secondary" /> 1. Hero Image &amp; Branding
-              </h3>
-
-              {/* Title & Slug */}
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                    Page Title <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Sharandev Seva"
-                    value={draft.title}
-                    onChange={(e) => {
-                      const newTitle = e.target.value;
-                      setDraft((d) => ({
-                        ...d,
-                        title: newTitle,
-                        slug: d.slug || slugify(newTitle),
-                      }));
-                    }}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                    URL Slug <span className="text-rose-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-mono">/pay/</span>
-                    <input
-                      type="text"
-                      placeholder="sharandev"
-                      value={draft.slug}
-                      onChange={(e) => setDraft((d) => ({ ...d, slug: slugify(e.target.value) }))}
-                      className="w-full pl-13 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-primary font-bold focus:outline-none focus:border-primary"
-                    />
-                  </div>
+            {/* Card 2: Total Gross Paid by Donors */}
+            <div className="bg-white rounded-2xl p-5 border shadow-sm space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-slate-500 font-medium">Gross Paid by Donors</p>
+                <div className="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <CreditCard className="h-4.5 w-4.5" />
                 </div>
               </div>
+              <p className="text-2xl font-bold font-sans text-slate-900">
+                ₹{totalGrossRaisedINR.toLocaleString("en-IN")}
+              </p>
+              <p className="text-[10px] text-slate-500 font-medium">
+                Total online payment volume collected from devotees
+              </p>
+            </div>
 
-              {/* HERO BANNER IMAGE OPTIONS */}
-              <div className="space-y-3 pt-2">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                  Header Banner Image (Custom Upload or Preset)
-                </label>
-
-                {draft.bannerImage ? (
-                  <div className="relative rounded-2xl overflow-hidden border border-slate-200 group max-h-52 bg-slate-900 shadow-sm">
-                    <img src={draft.bannerImage} alt="Banner Preview" className="w-full h-48 object-cover" />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-xs">
-                      <button
-                        onClick={() => setDraft((d) => ({ ...d, bannerImage: "" }))}
-                        className="p-2.5 bg-rose-600 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-md hover:bg-rose-700 transition cursor-pointer"
-                      >
-                        <Trash2 className="h-4 w-4" /> Remove Image
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="border-2 border-dashed border-slate-200 hover:border-primary/40 rounded-2xl p-6 text-center transition bg-slate-50/50 space-y-3">
-                    <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
-                      <Upload className="h-6 w-6" />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs font-semibold text-slate-700">Upload high-res hero banner image</p>
-                      <p className="text-[11px] text-muted-foreground">Recommended size: 1200x600 px (JPG, PNG, WebP)</p>
-                    </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        if (e.target.files?.[0]) handleUploadBanner(e.target.files[0]);
-                      }}
-                      className="hidden"
-                      id="banner-img-upload"
-                      disabled={busy}
-                    />
-                    <label
-                      htmlFor="banner-img-upload"
-                      className={`inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl font-semibold text-xs transition cursor-pointer shadow-sm hover:bg-primary/90 ${
-                        busy ? "opacity-60 cursor-not-allowed" : ""
-                      }`}
-                    >
-                      {busy ? "Uploading image..." : "Browse Local File"}
-                    </label>
-                  </div>
-                )}
-
-                {/* Direct Image URL input */}
-                <input
-                  type="text"
-                  placeholder="Or paste image URL (e.g. https://...)"
-                  value={draft.bannerImage}
-                  onChange={(e) => setDraft((d) => ({ ...d, bannerImage: e.target.value }))}
-                  className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-primary/30"
-                />
-
-                {/* SPIRITUAL IMAGE PRESETS PICKER */}
-                <div className="pt-2">
-                  <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider block mb-2">
-                    ✨ Or Choose a Curated Spiritual Preset Image:
-                  </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                    {PRESET_BANNER_IMAGES.map((preset, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setDraft((d) => ({ ...d, bannerImage: preset.url }))}
-                        className={`relative rounded-xl overflow-hidden border-2 text-left transition group cursor-pointer ${
-                          draft.bannerImage === preset.url
-                            ? "border-primary ring-2 ring-primary/30 scale-105 shadow-md"
-                            : "border-slate-200 opacity-80 hover:opacity-100"
-                        }`}
-                      >
-                        <img src={preset.url} alt={preset.label} className="h-16 w-full object-cover" />
-                        <div className="p-1.5 bg-slate-900/90 text-[10px] font-semibold text-white leading-tight truncate">
-                          {preset.label}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
+            {/* Card 3: Razorpay Gateway Fees Deducted */}
+            <div className="bg-white rounded-2xl p-5 border shadow-sm space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-slate-500 font-medium">Razorpay Fees Deducted</p>
+                <div className="h-8 w-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                  <ShieldCheck className="h-4.5 w-4.5" />
                 </div>
               </div>
+              <p className="text-2xl font-bold font-sans text-amber-700">
+                -₹{totalRazorpayFeeDeductedINR.toLocaleString("en-IN")}
+              </p>
+              <p className="text-[10px] text-slate-500 font-medium">
+                Estimated {platformFee.type === "percentage" ? `${platformFee.value}%` : `₹${platformFee.value}`} gateway transaction charges
+              </p>
+            </div>
 
-              {/* Logo / Thumbnail Upload */}
-              <div className="space-y-1.5 pt-2 border-t">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                  Page Logo / Organization Avatar
-                </label>
-                <div className="flex items-center gap-3">
-                  {draft.logoUrl ? (
-                    <img src={draft.logoUrl} alt="Logo" className="h-12 w-12 rounded-xl object-cover ring-2 ring-primary/20" />
-                  ) : (
-                    <div className="h-12 w-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 text-xs font-bold">Logo</div>
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => e.target.files?.[0] && handleUploadLogo(e.target.files[0])}
-                    className="hidden"
-                    id="logo-upload"
-                  />
-                  <label
-                    htmlFor="logo-upload"
-                    className="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-1.5"
-                  >
-                    <Upload className="h-3.5 w-3.5" /> Upload Logo
-                  </label>
-                  {draft.logoUrl && (
-                    <button
-                      onClick={() => setDraft((d) => ({ ...d, logoUrl: "" }))}
-                      className="text-xs text-rose-600 hover:underline"
-                    >
-                      Remove
-                    </button>
-                  )}
+            {/* Card 4: Total Verified Transactions */}
+            <div className="bg-white rounded-2xl p-5 border shadow-sm space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-slate-500 font-medium">Completed Transactions</p>
+                <div className="h-8 w-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+                  <CheckCircle2 className="h-4.5 w-4.5" />
                 </div>
               </div>
-
-              {/* Goal Tracker Toggle */}
-              <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Target className="h-4 w-4 text-amber-600" />
-                    <div>
-                      <div className="text-xs font-bold text-amber-900">Goal Tracker Progress Bar</div>
-                      <div className="text-[11px] text-amber-700">Display raised vs. target amount</div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setDraft((d) => ({ ...d, enableGoalTracker: !d.enableGoalTracker }))}
-                    className={`w-11 h-6 rounded-full transition-colors p-0.5 cursor-pointer ${
-                      draft.enableGoalTracker ? "bg-amber-600" : "bg-slate-300"
-                    }`}
-                  >
-                    <div className={`w-5 h-5 rounded-full bg-white transition-transform ${draft.enableGoalTracker ? "translate-x-5" : ""}`} />
-                  </button>
-                </div>
-
-                {draft.enableGoalTracker && (
-                  <div className="grid grid-cols-2 gap-3 pt-1 border-t border-amber-200/60">
-                    <div>
-                      <label className="text-[10px] font-bold text-amber-900 uppercase block">Target Goal (₹)</label>
-                      <input
-                        type="number"
-                        value={draft.goalAmount || 100000}
-                        onChange={(e) => setDraft((d) => ({ ...d, goalAmount: Number(e.target.value) }))}
-                        className="w-full px-3 py-1.5 bg-white border border-amber-200 rounded-lg text-xs font-bold text-amber-900"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-bold text-amber-900 uppercase block">Total Raised (₹)</label>
-                      <input
-                        type="number"
-                        value={draft.raisedAmount || 0}
-                        onChange={(e) => setDraft((d) => ({ ...d, raisedAmount: Number(e.target.value) }))}
-                        className="w-full px-3 py-1.5 bg-white border border-amber-200 rounded-lg text-xs font-bold text-amber-900"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Description */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                  Page Description / Cause Details
-                </label>
-                <textarea
-                  rows={4}
-                  placeholder="Enter detailed page description, purpose of donation, or seva benefits..."
-                  value={draft.description}
-                  onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-primary"
-                />
-              </div>
-
-              {/* Contact Info */}
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-slate-700 uppercase block">Contact Email</label>
-                  <input
-                    type="email"
-                    value={draft.contactEmail || ""}
-                    onChange={(e) => setDraft((d) => ({ ...d, contactEmail: e.target.value }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-slate-700 uppercase block">Contact Phone</label>
-                  <input
-                    type="text"
-                    value={draft.contactPhone || ""}
-                    onChange={(e) => setDraft((d) => ({ ...d, contactPhone: e.target.value }))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
-                  />
-                </div>
-              </div>
-
-              {/* Visibility Settings */}
-              <div className="space-y-3 pt-2 border-t">
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border">
-                  <div>
-                    <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                      {draft.isPrivate ? <Lock className="h-3.5 w-3.5 text-amber-600" /> : <Globe className="h-3.5 w-3.5 text-emerald-600" />}
-                      <span>{draft.isPrivate ? "Private / Unlisted Link" : "Public Page"}</span>
-                    </div>
-                    <div className="text-[10px] text-muted-foreground">
-                      {draft.isPrivate ? "Only people with the direct link can access" : "Listed on public donation catalog"}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setDraft((d) => ({ ...d, isPrivate: !d.isPrivate }))}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
-                      draft.isPrivate ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
-                    }`}
-                  >
-                    {draft.isPrivate ? "Unlisted" : "Public"}
-                  </button>
-                </div>
-              </div>
+              <p className="text-2xl font-bold font-sans text-slate-900">
+                {completedRecords.length}
+              </p>
+              <p className="text-[10px] text-slate-500 font-medium">
+                Out of {paymentRecords.length} total payment attempts
+              </p>
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Pricing, Fields & Ultra-Modern Live Preview (5 Cols) */}
-          <div className="lg:col-span-5 space-y-6">
-            {/* Pricing Mode Selector & Field Config */}
-            <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-5">
-              <h3 className="font-display text-base font-bold text-primary flex items-center gap-2 border-b pb-3">
-                <IndianRupee className="h-4.5 w-4.5 text-emerald-600" /> 2. Pricing &amp; Price Fields
-              </h3>
-
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                  Pricing Mode
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setDraft((d) => ({ ...d, pricingType: "fixed" }))}
-                    className={`py-2 px-2 text-xs font-bold rounded-xl border transition cursor-pointer ${
-                      draft.pricingType === "fixed"
-                        ? "bg-primary text-white border-primary shadow-xs"
-                        : "bg-slate-50 text-slate-700 border-slate-200"
-                    }`}
-                  >
-                    Fixed Amount
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setDraft((d) => ({ ...d, pricingType: "preset" }))}
-                    className={`py-2 px-2 text-xs font-bold rounded-xl border transition cursor-pointer ${
-                      draft.pricingType === "preset"
-                        ? "bg-primary text-white border-primary shadow-xs"
-                        : "bg-slate-50 text-slate-700 border-slate-200"
-                    }`}
-                  >
-                    Preset Tiers
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setDraft((d) => ({ ...d, pricingType: "custom" }))}
-                    className={`py-2 px-2 text-xs font-bold rounded-xl border transition cursor-pointer ${
-                      draft.pricingType === "custom"
-                        ? "bg-primary text-white border-primary shadow-xs"
-                        : "bg-slate-50 text-slate-700 border-slate-200"
-                    }`}
-                  >
-                    Custom Input
-                  </button>
+          {/* PLATFORM & PAYMENT GATEWAY CHARGES CONFIGURATION CARD */}
+          <div id="gateway-charges-settings" className="bg-white rounded-2xl p-5 border shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-5 w-5 text-primary" />
+                  <h3 className="font-display font-bold text-slate-900 text-sm">Change &amp; Configure Payment Gateway Charges</h3>
                 </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Enable/disable gateway charges and set custom percentage rate or fixed fee added at checkout.
+                </p>
               </div>
-
-              {/* Fixed Amount Config */}
-              {draft.pricingType === "fixed" && (
-                <div className="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-1">
-                  <label className="text-[11px] font-bold text-emerald-900 uppercase block">Fixed Amount (₹)</label>
-                  <input
-                    type="number"
-                    value={draft.fixedAmount || 5555}
-                    onChange={(e) => setDraft((d) => ({ ...d, fixedAmount: Number(e.target.value) }))}
-                    className="w-full px-3 py-2 bg-white border border-emerald-300 rounded-xl text-sm font-bold text-emerald-900 font-sans"
+              <div className="flex items-center gap-3">
+                <span className={`text-xs font-bold ${platformFee.enabled ? "text-emerald-700" : "text-slate-500"}`}>
+                  {platformFee.enabled ? "Enabled Site-Wide" : "Disabled"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPlatformFee({ ...platformFee, enabled: !platformFee.enabled })}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    platformFee.enabled ? "bg-emerald-600" : "bg-slate-300"
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      platformFee.enabled ? "translate-x-5" : "translate-x-0"
+                    }`}
                   />
-                </div>
-              )}
+                </button>
+              </div>
+            </div>
 
-              {/* Preset Prices Config */}
-              {draft.pricingType === "preset" && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-slate-700 uppercase">Preset Offering Tiers</label>
+            {platformFee.enabled && (
+              <div className="space-y-4 animate-fade-in text-xs">
+                {/* Quick Change Presets */}
+                <div>
+                  <label className="block text-slate-600 font-semibold mb-1.5">Quick Charge Presets</label>
+                  <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
-                      onClick={handleAddPresetPrice}
-                      className="text-xs text-primary font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                      onClick={() => setPlatformFee({ ...platformFee, type: "percentage", value: 2.36 })}
+                      className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer ${
+                        platformFee.type === "percentage" && platformFee.value === 2.36
+                          ? "bg-primary text-white border-primary shadow-xs"
+                          : "bg-slate-50 text-slate-700 hover:bg-slate-100"
+                      }`}
                     >
-                      <Plus className="h-3.5 w-3.5" /> Add Tier
+                      2.36% (Standard Razorpay)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPlatformFee({ ...platformFee, type: "percentage", value: 3.0 })}
+                      className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer ${
+                        platformFee.type === "percentage" && platformFee.value === 3.0
+                          ? "bg-primary text-white border-primary shadow-xs"
+                          : "bg-slate-50 text-slate-700 hover:bg-slate-100"
+                      }`}
+                    >
+                      3.00%
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPlatformFee({ ...platformFee, type: "fixed", value: 10 })}
+                      className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer ${
+                        platformFee.type === "fixed" && platformFee.value === 10
+                          ? "bg-primary text-white border-primary shadow-xs"
+                          : "bg-slate-50 text-slate-700 hover:bg-slate-100"
+                      }`}
+                    >
+                      ₹10 Flat Fee
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPlatformFee({ ...platformFee, type: "fixed", value: 20 })}
+                      className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer ${
+                        platformFee.type === "fixed" && platformFee.value === 20
+                          ? "bg-primary text-white border-primary shadow-xs"
+                          : "bg-slate-50 text-slate-700 hover:bg-slate-100"
+                      }`}
+                    >
+                      ₹20 Flat Fee
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPlatformFee({ ...platformFee, type: "fixed", value: 50 })}
+                      className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer ${
+                        platformFee.type === "fixed" && platformFee.value === 50
+                          ? "bg-primary text-white border-primary shadow-xs"
+                          : "bg-slate-50 text-slate-700 hover:bg-slate-100"
+                      }`}
+                    >
+                      ₹50 Flat Fee
                     </button>
                   </div>
+                </div>
 
-                  <div className="space-y-2">
-                    {(draft.presetPrices || []).map((pr) => (
-                      <div key={pr.id} className="flex items-center gap-2 p-2 bg-slate-50 border rounded-xl">
-                        <input
-                          type="text"
-                          value={pr.label}
-                          placeholder="Label (e.g. Special Seva)"
-                          onChange={(e) => handleUpdatePresetPrice(pr.id, { label: e.target.value })}
-                          className="flex-1 px-2.5 py-1.5 text-xs bg-white border rounded-lg"
-                        />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+                  <div>
+                    <label className="block text-slate-600 font-medium mb-1">Charge Type</label>
+                    <div className="flex rounded-xl border p-1 bg-slate-50 gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setPlatformFee({ ...platformFee, type: "percentage" })}
+                        className={`flex-1 py-1.5 rounded-lg font-bold text-xs transition cursor-pointer ${
+                          platformFee.type === "percentage"
+                            ? "bg-white text-primary shadow-xs"
+                            : "text-slate-500 hover:text-slate-900"
+                        }`}
+                      >
+                        Percentage (%)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPlatformFee({ ...platformFee, type: "fixed" })}
+                        className={`flex-1 py-1.5 rounded-lg font-bold text-xs transition cursor-pointer ${
+                          platformFee.type === "fixed"
+                            ? "bg-white text-primary shadow-xs"
+                            : "text-slate-500 hover:text-slate-900"
+                        }`}
+                      >
+                        Fixed Amount (₹)
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-600 font-medium mb-1">
+                      Change Charge Amount ({platformFee.type === "percentage" ? "%" : "₹"})
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPlatformFee({
+                            ...platformFee,
+                            value: Math.max(0, parseFloat((platformFee.value - (platformFee.type === "percentage" ? 0.1 : 1)).toFixed(2))),
+                          })
+                        }
+                        className="h-9 w-9 rounded-xl border bg-slate-50 hover:bg-slate-100 font-bold text-slate-700 shrink-0 cursor-pointer"
+                      >
+                        -
+                      </button>
+                      <div className="relative flex-1">
                         <input
                           type="number"
-                          value={pr.amount}
-                          placeholder="Amount (₹)"
-                          onChange={(e) => handleUpdatePresetPrice(pr.id, { amount: Number(e.target.value) })}
-                          className="w-24 px-2.5 py-1.5 text-xs font-bold bg-white border rounded-lg text-emerald-700 font-sans"
+                          step={platformFee.type === "percentage" ? "0.01" : "1"}
+                          min="0"
+                          value={platformFee.value}
+                          onChange={(e) =>
+                            setPlatformFee({ ...platformFee, value: Math.max(0, parseFloat(e.target.value) || 0) })
+                          }
+                          className="w-full px-3 py-2 border rounded-xl font-sans font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 text-center"
                         />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+                          {platformFee.type === "percentage" ? "%" : "₹"}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPlatformFee({
+                            ...platformFee,
+                            value: parseFloat((platformFee.value + (platformFee.type === "percentage" ? 0.1 : 1)).toFixed(2)),
+                          })
+                        }
+                        className="h-9 w-9 rounded-xl border bg-slate-50 hover:bg-slate-100 font-bold text-slate-700 shrink-0 cursor-pointer"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-600 font-medium mb-1">Donor Checkbox Label</label>
+                    <input
+                      type="text"
+                      value={platformFee.label}
+                      onChange={(e) => setPlatformFee({ ...platformFee, label: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      placeholder="I would like to cover the payment gateway charges"
+                    />
+                  </div>
+                </div>
+
+                {/* Live Calculation Preview Banner */}
+                <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-emerald-950">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <span className="font-semibold">
+                      Live Preview on ₹1,000 Donation:
+                    </span>
+                  </div>
+                  <div className="font-sans text-xs">
+                    Base: <strong>₹1,000</strong> + Charge: <strong className="text-emerald-700">₹{platformFee.type === "percentage" ? Math.round((1000 * platformFee.value) / 100) : platformFee.value}</strong> ({platformFee.type === "percentage" ? `${platformFee.value}%` : `₹${platformFee.value}`}) = Total Payable: <strong className="text-emerald-800">₹{(1000 + (platformFee.type === "percentage" ? Math.round((1000 * platformFee.value) / 100) : platformFee.value)).toLocaleString("en-IN")}</strong>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* SEARCH, FILTER & ACTION TOOLBAR */}
+          <div className="bg-white rounded-2xl p-4 border shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+            {/* Search Input */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search donor name, phone, email, Txn ID, or seva..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 border rounded-xl text-xs bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Category & Status Filter Selects */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5 bg-slate-50 border px-3 py-2 rounded-xl text-xs">
+                <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="bg-transparent focus:outline-none text-xs text-foreground cursor-pointer font-medium"
+                >
+                  <option value="all">All Categories</option>
+                  {categoriesList.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-1.5 bg-slate-50 border px-3 py-2 rounded-xl text-xs">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="bg-transparent focus:outline-none text-xs text-foreground cursor-pointer font-medium"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Failed">Failed</option>
+                  <option value="Refunded">Refunded</option>
+                </select>
+              </div>
+
+              {paymentRecords.some((r) => !r.read) && (
+                <button
+                  onClick={markAllPaymentRecordsRead}
+                  className="px-3.5 py-2 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-xl border border-red-200 text-xs flex items-center gap-1.5 transition cursor-pointer animate-pulse"
+                  title="Mark all donations as read"
+                >
+                  <CheckCircle2 className="h-4 w-4 text-red-600" />
+                  <span>Mark All Read ({paymentRecords.filter((r) => !r.read).length})</span>
+                </button>
+              )}
+
+              <button
+                onClick={handleExportCSV}
+                className="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl border border-emerald-200 text-xs flex items-center gap-1.5 transition cursor-pointer"
+                title="Download CSV Spreadsheet"
+              >
+                <Download className="h-4 w-4" />
+                <span>Export CSV</span>
+              </button>
+
+              <button
+                onClick={() => setShowManualModal(true)}
+                className="px-4 py-2 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-sm transition cursor-pointer"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Record Offline Payment</span>
+              </button>
+            </div>
+          </div>
+
+          {/* RECORDS LIST TABLE (DESKTOP) & CARDS (MOBILE) */}
+          <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
+            {filteredRecords.length === 0 ? (
+              <div className="p-12 text-center space-y-3">
+                <div className="h-14 w-14 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-muted-foreground">
+                  <FileText className="h-7 w-7" />
+                </div>
+                <h3 className="font-display text-lg font-bold text-slate-800">No Payment Records Found</h3>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                  {searchQuery || categoryFilter !== "all" || statusFilter !== "all"
+                    ? "No records match your search query or selected filters."
+                    : "When users make payments on the website or you enter offline receipts, they will appear here automatically."}
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table View */}
+                <div className="hidden lg:block overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-slate-50 border-b text-muted-foreground font-semibold uppercase tracking-wider">
+                        <th className="py-3.5 px-4">Date &amp; Time</th>
+                        <th className="py-3.5 px-4">Payment Txn ID</th>
+                        <th className="py-3.5 px-4">Donor / Devotee Details</th>
+                        <th className="py-3.5 px-4">Seva / Category</th>
+                        <th className="py-3.5 px-4 text-right">Gross Paid (₹)</th>
+                        <th className="py-3.5 px-4 text-right text-amber-700">Razorpay Fee (₹)</th>
+                        <th className="py-3.5 px-4 text-right text-emerald-700">Real Net Bank (₹)</th>
+                        <th className="py-3.5 px-4 text-center">Status</th>
+                        <th className="py-3.5 px-4 text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {filteredRecords.map((rec) => {
+                        const bd = getRecordBreakdown(rec);
+                        return (
+                          <tr key={rec.id} className="hover:bg-slate-50/80 transition-colors">
+                            <td className="py-3.5 px-4 text-slate-600 whitespace-nowrap">
+                              <p className="font-medium text-slate-900">{new Date(rec.date).toLocaleDateString("en-IN")}</p>
+                              <p className="text-[10px] text-muted-foreground">{new Date(rec.date).toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit' })}</p>
+                            </td>
+                            <td className="py-3.5 px-4 font-mono text-[11px] font-semibold text-primary whitespace-nowrap">
+                              {rec.paymentId}
+                            </td>
+                            <td className="py-3.5 px-4">
+                              <p className="font-bold text-slate-900">{rec.donorName}</p>
+                              <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-0.5">
+                                {rec.donorPhone && <span>📞 {rec.donorPhone}</span>}
+                                {rec.donorEmail && <span>✉️ {rec.donorEmail}</span>}
+                              </div>
+                            </td>
+                            <td className="py-3.5 px-4">
+                              <span className="inline-block px-2 py-0.5 rounded bg-slate-100 text-[10px] font-semibold text-slate-700 mb-0.5">
+                                {rec.category}
+                              </span>
+                              <p className="text-slate-800 font-medium truncate max-w-[200px]">{rec.sevaOrPageTitle}</p>
+                            </td>
+                            <td className="py-3.5 px-4 text-right font-sans font-medium text-slate-700 whitespace-nowrap">
+                              ₹{bd.grossAmount.toLocaleString("en-IN")}
+                            </td>
+                            <td className="py-3.5 px-4 text-right font-sans text-xs text-amber-700 font-medium whitespace-nowrap">
+                              -₹{bd.fee.toLocaleString("en-IN")}
+                            </td>
+                            <td className="py-3.5 px-4 text-right font-sans font-bold text-sm text-emerald-700 whitespace-nowrap">
+                              ₹{bd.realNet.toLocaleString("en-IN")}
+                            </td>
+                          <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                                rec.status === "Completed"
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : rec.status === "Pending"
+                                  ? "bg-amber-100 text-amber-800"
+                                  : rec.status === "Refunded"
+                                  ? "bg-purple-100 text-purple-800"
+                                  : "bg-rose-100 text-rose-800"
+                              }`}
+                            >
+                              {rec.status === "Completed" && <CheckCircle2 className="h-3 w-3" />}
+                              {rec.status === "Pending" && <Clock className="h-3 w-3" />}
+                              {rec.status}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button
+                                onClick={() => setSelectedReceiptRecord(rec)}
+                                className="p-1.5 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg transition cursor-pointer"
+                                title="View & Print Official Receipt"
+                              >
+                                <Printer className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Delete payment record for ${rec.donorName}?`)) {
+                                    deletePaymentRecord(rec.id);
+                                  }
+                                }}
+                                className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg transition cursor-pointer"
+                                title="Delete Record"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards View */}
+                <div className="lg:hidden divide-y">
+                  {filteredRecords.map((rec) => {
+                    const bd = getRecordBreakdown(rec);
+                    return (
+                      <div key={rec.id} className="p-4 space-y-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <span className="text-[10px] font-semibold text-slate-500 block">
+                              {new Date(rec.date).toLocaleString("en-IN")}
+                            </span>
+                            <h4 className="font-bold text-slate-900 text-sm">{rec.donorName}</h4>
+                            <p className="text-xs text-primary font-mono font-semibold">{rec.paymentId}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-sans font-bold text-emerald-700 text-base">₹{bd.realNet.toLocaleString("en-IN")} <span className="text-[10px] text-emerald-800 font-normal">Net</span></p>
+                            <p className="text-[10px] text-slate-500 font-sans">Gross: ₹{bd.grossAmount.toLocaleString("en-IN")} | Fee: -₹{bd.fee.toLocaleString("en-IN")}</p>
+                            <span
+                              className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold mt-0.5 ${
+                                rec.status === "Completed"
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : "bg-amber-100 text-amber-800"
+                              }`}
+                            >
+                              {rec.status}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="bg-slate-50 p-2.5 rounded-xl text-xs space-y-1">
+                          <p><strong>Seva/Cause:</strong> {rec.sevaOrPageTitle} ({rec.category})</p>
+                          {rec.donorPhone && <p><strong>Phone:</strong> {rec.donorPhone}</p>}
+                          {rec.donorEmail && <p><strong>Email:</strong> {rec.donorEmail}</p>}
+                          {rec.notes && <p><strong>Notes:</strong> {rec.notes}</p>}
+                        </div>
+
+                      <div className="flex items-center gap-2 pt-1">
                         <button
-                          type="button"
-                          onClick={() => handleRemovePresetPrice(pr.id)}
-                          className="text-rose-500 hover:text-rose-700 p-1 cursor-pointer"
+                          onClick={() => setSelectedReceiptRecord(rec)}
+                          className="flex-1 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+                        >
+                          <Printer className="h-3.5 w-3.5" /> View Receipt
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm(`Delete payment record for ${rec.donorName}?`)) {
+                              deletePaymentRecord(rec.id);
+                            }
+                          }}
+                          className="p-2 bg-rose-50 text-rose-600 rounded-xl transition cursor-pointer"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  );
+                })}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* SUB-TAB 2: INSTANT PAYMENT PAGES BUILDER */}
+      {/* ========================================================================= */}
+      {subTab === "pages" && (
+        <div className="space-y-6">
+          {!isEditing ? (
+            <div className="space-y-6">
+              {/* Top Action Bar */}
+              <div className="bg-white rounded-2xl p-4 border shadow-sm flex items-center justify-between gap-4">
+                <div>
+                  <h3 className="font-display font-bold text-slate-800 text-base">Active Instant Payment Links</h3>
+                  <p className="text-xs text-muted-foreground">Create standalone custom payment pages with custom slugs, background patterns &amp; goal trackers.</p>
+                </div>
+                <button
+                  onClick={startCreateNew}
+                  className="px-4 py-2.5 bg-primary hover:bg-primary/90 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-2 transition cursor-pointer shrink-0"
+                >
+                  <Plus className="h-4 w-4" /> Create New Payment Page
+                </button>
+              </div>
+
+              {/* Pages Grid */}
+              {paymentPages.length === 0 ? (
+                <div className="bg-white rounded-2xl p-12 text-center border shadow-sm space-y-3">
+                  <CreditCard className="h-12 w-12 text-muted-foreground mx-auto" />
+                  <h3 className="font-display font-bold text-slate-800 text-base">No Custom Payment Pages Created</h3>
+                  <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                    Create standalone dedicated payment links for special campaigns, crowdfunding goals, or direct seva contributions.
+                  </p>
+                  <button
+                    onClick={startCreateNew}
+                    className="px-4 py-2 bg-primary text-white font-bold text-xs rounded-xl transition"
+                  >
+                    + Create First Page
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {paymentPages.map((page) => {
+                    const fullUrl = getFullShareUrl(page.slug);
+                    return (
+                      <div
+                        key={page.id}
+                        className={`bg-white rounded-2xl border shadow-sm hover:shadow-md transition overflow-hidden flex flex-col ${
+                          !page.active ? "opacity-60" : ""
+                        }`}
+                      >
+                        {/* Card Image Banner */}
+                        <div className="h-32 bg-slate-900 relative overflow-hidden">
+                          {page.bannerImage ? (
+                            <img src={page.bannerImage} alt={page.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-r from-primary to-[#3d1a6a] flex items-center justify-center text-white/40">
+                              <ImageIcon className="h-10 w-10" />
+                            </div>
+                          )}
+                          <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                page.isPrivate ? "bg-slate-900/80 text-amber-300" : "bg-emerald-600 text-white"
+                              }`}
+                            >
+                              {page.isPrivate ? "Unlisted Link" : "Public Catalog"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Card Body */}
+                        <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                          <div>
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <h3 className="font-display font-bold text-slate-900 text-base">{page.title}</h3>
+                              <button
+                                onClick={() => togglePageActive(page.id)}
+                                className={`px-2 py-0.5 rounded-md text-[10px] font-bold cursor-pointer transition ${
+                                  page.active ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-600"
+                                }`}
+                              >
+                                {page.active ? "Active" : "Inactive"}
+                              </button>
+                            </div>
+                            <p className="text-xs text-primary font-mono font-medium mb-2">/pay/{page.slug}</p>
+                            <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">{page.description}</p>
+                          </div>
+
+                          {/* Pricing Summary */}
+                          <div className="bg-slate-50 p-3 rounded-xl border text-xs space-y-1">
+                            <div className="flex justify-between font-medium text-slate-700">
+                              <span>Pricing Mode:</span>
+                              <span className="font-bold text-slate-900 uppercase text-[10px]">{page.pricingType}</span>
+                            </div>
+                            {page.pricingType === "fixed" && (
+                              <div className="flex justify-between font-bold text-emerald-700">
+                                <span>Fixed Amount:</span>
+                                <span>₹{page.fixedAmount?.toLocaleString("en-IN")}</span>
+                              </div>
+                            )}
+                            {page.enableGoalTracker && (
+                              <div className="pt-1 border-t text-[10px] text-muted-foreground flex justify-between">
+                                <span>Goal Tracker:</span>
+                                <span className="font-semibold text-slate-800">
+                                  ₹{page.raisedAmount?.toLocaleString("en-IN")} / ₹{page.goalAmount?.toLocaleString("en-IN")}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex items-center gap-2 pt-2 border-t">
+                            <button
+                              onClick={() => handleCopyLink(page.slug, page.id)}
+                              className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-xs flex items-center justify-center gap-1 transition cursor-pointer"
+                            >
+                              {copiedId === page.id ? (
+                                <>
+                                  <Check className="h-3.5 w-3.5 text-emerald-600" /> Copied!
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="h-3.5 w-3.5 text-slate-600" /> Copy Link
+                                </>
+                              )}
+                            </button>
+                            <a
+                              href={`/pay/${page.slug}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs transition cursor-pointer"
+                              title="Open Payment Link"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                            </a>
+                            <button
+                              onClick={() => startEdit(page)}
+                              className="p-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-xl transition cursor-pointer"
+                              title="Edit Page"
+                            >
+                              <Edit3 className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeletePage(page.id)}
+                              className="p-2 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-xl transition cursor-pointer"
+                              title="Delete Page"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
-
-              {/* Custom Donor Fields Builder */}
-              <div className="pt-3 border-t space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-slate-700 uppercase">Donor Form Fields</label>
+            </div>
+          ) : (
+            /* PAYMENT PAGE EDITOR FORM */
+            <div className="bg-white rounded-3xl border shadow-lg p-6 sm:p-8 space-y-8 animate-fade-in">
+              <div className="flex items-center justify-between border-b pb-4">
+                <div className="flex items-center gap-3">
                   <button
-                    type="button"
-                    onClick={handleAddField}
-                    className="text-xs text-primary font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                    onClick={() => setIsEditing(false)}
+                    className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
                   >
-                    <Plus className="h-3.5 w-3.5" /> Add Field
+                    <ArrowLeft className="h-5 w-5" />
+                  </button>
+                  <div>
+                    <h2 className="font-display font-bold text-xl text-slate-900">
+                      {editingId && paymentPages.some((p) => p.id === editingId) ? "Edit Payment Page" : "Create Instant Payment Page"}
+                    </h2>
+                    <p className="text-xs text-muted-foreground">Customize page details, preset amounts, form questions, and visual themes.</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setIsEditing(false)}
+                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSavePage}
+                    className="px-5 py-2 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl text-xs shadow-md transition cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Check className="h-4 w-4" /> Save Page
                   </button>
                 </div>
-
-                <div className="space-y-2">
-                  {draft.fields.map((f) => (
-                    <div key={f.id} className="flex items-center gap-2 p-2.5 bg-slate-50 border rounded-xl text-xs">
-                      <input
-                        type="text"
-                        value={f.label}
-                        onChange={(e) => handleUpdateField(f.id, { label: e.target.value })}
-                        className="flex-1 px-2 py-1 bg-white border rounded-lg font-medium"
-                      />
-                      <span className="text-[10px] text-muted-foreground uppercase">{f.type}</span>
-                      {f.id !== "f1" && f.id !== "f2" && f.id !== "f3" && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveField(f.id)}
-                          className="text-rose-500 hover:text-rose-700 p-1 cursor-pointer"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* ULTRA-MODERN LIVE PREVIEW CARD */}
-            <div className="bg-slate-950 p-5 rounded-3xl border border-slate-800 shadow-2xl space-y-4 relative overflow-hidden">
-              <div className="text-[11px] uppercase font-bold text-secondary tracking-wider flex items-center gap-1.5 z-10 relative">
-                <Eye className="h-3.5 w-3.5 text-secondary" /> Live Modern Devotee Page Preview ({draft.bgStyle || "gradient"})
               </div>
 
-              {/* Simulated Devotee Payment Card */}
-              <div className="bg-white rounded-3xl p-5 shadow-2xl space-y-4 border border-amber-100 relative z-10">
-                {/* Header Banner in Preview */}
-                {draft.bannerImage ? (
-                  <div className="h-28 rounded-2xl overflow-hidden relative shadow-sm">
-                    <img src={draft.bannerImage} alt="Banner" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                    <div className="absolute bottom-2 left-3 text-white">
-                      <div className="text-[10px] font-bold uppercase tracking-wider text-secondary">ISKCON Kurnool</div>
-                      <div className="text-xs font-bold font-display truncate">{draft.title || "Page Title"}</div>
-                    </div>
-                  </div>
-                ) : null}
-
-                <div className="border-b pb-2">
-                  <h4 className="font-display text-base font-bold text-primary">Payment Details</h4>
-                  <div className="w-8 h-1 bg-secondary rounded-full mt-1" />
-                </div>
-
-                {/* Amount Row (Inter Font) */}
-                <div className="flex items-center justify-between bg-gradient-to-r from-primary/5 to-amber-500/5 p-3 rounded-2xl border border-primary/10">
-                  <span className="text-xs font-bold text-slate-600">Amount</span>
-                  <span className="text-base font-extrabold text-primary font-sans">
-                    {draft.pricingType === "fixed"
-                      ? `₹${(draft.fixedAmount || 0).toLocaleString("en-IN")}.00`
-                      : draft.pricingType === "preset"
-                      ? `₹${(draft.presetPrices?.[0]?.amount || 0).toLocaleString("en-IN")}.00`
-                      : "Custom Amount"}
-                  </span>
-                </div>
-
-                {/* Input Fields */}
-                <div className="space-y-2">
-                  {draft.fields.map((f) => (
-                    <div key={f.id} className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-600 block">{f.label}</label>
-                      <div className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-400 italic">
-                        {f.label}...
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Left Column: Form Settings */}
+                <div className="lg:col-span-7 space-y-6">
+                  {/* SECTION 1: Page Info & Slug */}
+                  <div className="space-y-4 bg-slate-50/80 p-5 rounded-2xl border">
+                    <h3 className="font-display font-bold text-sm text-slate-800 flex items-center gap-2">
+                      <CreditCard className="h-4 w-4 text-primary" /> Basic Information
+                    </h3>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Page Title *</label>
+                        <input
+                          type="text"
+                          value={draft.title}
+                          onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+                          placeholder="e.g. Sharandev Seva or Annadan Seva"
+                          className="w-full px-3.5 py-2.5 border rounded-xl text-xs bg-white focus:outline-none focus:ring-2 focus:ring-primary/40"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">URL Slug *</label>
+                        <div className="flex items-center gap-1 bg-white border rounded-xl px-3 py-2 text-xs">
+                          <span className="text-muted-foreground font-mono text-[11px]">/pay/</span>
+                          <input
+                            type="text"
+                            value={draft.slug}
+                            onChange={(e) => setDraft({ ...draft, slug: slugify(e.target.value) })}
+                            className="w-full font-mono text-xs text-primary focus:outline-none font-bold"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Description / Purpose of Offering</label>
+                        <textarea
+                          rows={3}
+                          value={draft.description}
+                          onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+                          placeholder="Detailed purpose of donation, spiritual benefits..."
+                          className="w-full px-3.5 py-2.5 border rounded-xl text-xs bg-white focus:outline-none focus:ring-2 focus:ring-primary/40"
+                        />
                       </div>
                     </div>
-                  ))}
+                  </div>
+
+                  {/* SECTION 2: Banner Image & Visual Styling */}
+                  <div className="space-y-4 bg-slate-50/80 p-5 rounded-2xl border">
+                    <h3 className="font-display font-bold text-sm text-slate-800 flex items-center gap-2">
+                      <Palette className="h-4 w-4 text-primary" /> Banner &amp; Visual Theme
+                    </h3>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Banner Image URL</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={draft.bannerImage || ""}
+                            onChange={(e) => setDraft({ ...draft, bannerImage: e.target.value })}
+                            placeholder="https://images.unsplash.com/..."
+                            className="flex-1 px-3.5 py-2 border rounded-xl text-xs bg-white focus:outline-none"
+                          />
+                          <label className="px-3.5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl text-xs cursor-pointer flex items-center gap-1 transition shrink-0">
+                            <Upload className="h-3.5 w-3.5" /> Upload
+                            <input type="file" accept="image/*" onChange={handleBannerUpload} className="hidden" />
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Preset Banners */}
+                      <div>
+                        <p className="text-[11px] font-semibold text-slate-500 mb-2">Or select a preset temple banner:</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {PRESET_BANNER_IMAGES.map((img, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => setDraft({ ...draft, bannerImage: img.url })}
+                              className={`p-1.5 rounded-xl border text-left flex items-center gap-2 transition cursor-pointer ${
+                                draft.bannerImage === img.url ? "border-primary bg-primary/5 ring-1 ring-primary" : "bg-white hover:border-slate-300"
+                              }`}
+                            >
+                              <img src={img.url} alt={img.label} className="h-8 w-12 rounded-lg object-cover" />
+                              <span className="text-[10px] font-medium text-slate-700 line-clamp-1">{img.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SECTION 3: Pricing Mode & Goal Tracker */}
+                  <div className="space-y-4 bg-slate-50/80 p-5 rounded-2xl border">
+                    <h3 className="font-display font-bold text-sm text-slate-800 flex items-center gap-2">
+                      <IndianRupee className="h-4 w-4 text-primary" /> Pricing &amp; Goal Progress
+                    </h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1.5">Pricing Mode</label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {(["fixed", "preset", "custom"] as const).map((mode) => (
+                            <button
+                              key={mode}
+                              type="button"
+                              onClick={() => setDraft({ ...draft, pricingType: mode })}
+                              className={`py-2 rounded-xl border text-xs font-bold capitalize transition cursor-pointer ${
+                                draft.pricingType === mode ? "bg-primary text-white border-primary" : "bg-white text-slate-700 hover:bg-slate-100"
+                              }`}
+                            >
+                              {mode}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {draft.pricingType === "fixed" && (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">Fixed Amount (₹)</label>
+                          <input
+                            type="number"
+                            value={draft.fixedAmount || ""}
+                            onChange={(e) => setDraft({ ...draft, fixedAmount: Number(e.target.value) })}
+                            className="w-full px-3.5 py-2 border rounded-xl text-xs bg-white focus:outline-none"
+                          />
+                        </div>
+                      )}
+
+                      {draft.pricingType === "preset" && (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold text-slate-700">Preset Seva Price Tiers</label>
+                            <button
+                              type="button"
+                              onClick={handleAddPresetPrice}
+                              className="text-[11px] font-bold text-primary hover:underline"
+                            >
+                              + Add Tier
+                            </button>
+                          </div>
+                          {(draft.presetPrices || []).map((pr) => (
+                            <div key={pr.id} className="flex items-center gap-2 bg-white p-2 border rounded-xl">
+                              <input
+                                type="text"
+                                value={pr.label}
+                                onChange={(e) => handleUpdatePresetPrice(pr.id, { label: e.target.value })}
+                                placeholder="Tier Label (e.g. Annadan)"
+                                className="flex-1 px-2 py-1 text-xs border rounded-lg"
+                              />
+                              <input
+                                type="number"
+                                value={pr.amount}
+                                onChange={(e) => handleUpdatePresetPrice(pr.id, { amount: Number(e.target.value) })}
+                                className="w-24 px-2 py-1 text-xs border rounded-lg font-bold text-emerald-700"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleRemovePresetPrice(pr.id)}
+                                className="p-1 text-rose-500 hover:bg-rose-50 rounded-lg"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Goal Tracker Toggle */}
+                      <div className="pt-3 border-t space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-slate-800">Enable Goal Progress Bar</span>
+                          <input
+                            type="checkbox"
+                            checked={!!draft.enableGoalTracker}
+                            onChange={(e) => setDraft({ ...draft, enableGoalTracker: e.target.checked })}
+                            className="h-4 w-4 text-primary rounded cursor-pointer"
+                          />
+                        </div>
+                        {draft.enableGoalTracker && (
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-600">Goal Target (₹)</label>
+                              <input
+                                type="number"
+                                value={draft.goalAmount || 100000}
+                                onChange={(e) => setDraft({ ...draft, goalAmount: Number(e.target.value) })}
+                                className="w-full px-3 py-1.5 border rounded-xl text-xs bg-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-600">Raised So Far (₹)</label>
+                              <input
+                                type="number"
+                                value={draft.raisedAmount || 0}
+                                onChange={(e) => setDraft({ ...draft, raisedAmount: Number(e.target.value) })}
+                                className="w-full px-3 py-1.5 border rounded-xl text-xs bg-white"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Razorpay Button Preview */}
+                {/* Right Column: Live Link Preview Card */}
+                <div className="lg:col-span-5 space-y-4">
+                  <div className="sticky top-6">
+                    <h3 className="font-display font-bold text-sm text-slate-800 mb-2 flex items-center gap-1.5">
+                      <Eye className="h-4 w-4 text-primary" /> Live Link Preview
+                    </h3>
+                    <div className="bg-gradient-to-br from-[#1a0c2e] via-[#2d154d] to-[#120722] text-white rounded-3xl p-6 shadow-2xl border border-white/10 space-y-4">
+                      <div className="aspect-video bg-black/40 rounded-2xl overflow-hidden relative border border-white/10">
+                        {draft.bannerImage ? (
+                          <img src={draft.bannerImage} alt="Banner" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-white/30">
+                            <ImageIcon className="h-10 w-10" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-4">
+                          <h4 className="font-display font-bold text-lg text-white">{draft.title || "Page Title"}</h4>
+                        </div>
+                      </div>
+
+                      <p className="text-xs text-slate-300 leading-relaxed line-clamp-3">
+                        {draft.description || "Page description preview..."}
+                      </p>
+
+                      <div className="bg-white/10 p-3 rounded-2xl border border-white/10 space-y-2">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-slate-300">Amount:</span>
+                          <span className="font-display font-bold text-amber-300 text-sm">
+                            ₹{draft.pricingType === "fixed" ? (draft.fixedAmount || 5555).toLocaleString("en-IN") : "Select Amount"}
+                          </span>
+                        </div>
+                        <button className="w-full py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow-md cursor-default">
+                          Pay Now (Preview)
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-center gap-1 text-[10px] text-slate-400">
+                        <ShieldCheck className="h-3 w-3 text-emerald-400" /> Powered by Razorpay &amp; ISKCON Kurnool
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MANUAL OFFLINE PAYMENT RECORD MODAL */}
+      {/* ========================================================================= */}
+      {showManualModal && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border space-y-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="h-10 w-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center font-bold">
+                  <Plus className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-display font-bold text-slate-900 text-base">Record Offline Payment</h3>
+                  <p className="text-xs text-muted-foreground">Add manual cash, direct bank, or UPI contributions.</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowManualModal(false)}
+                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-500 transition cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveManualPayment} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Donor Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Radhika Rani Dasi"
+                  value={manualForm.donorName}
+                  onChange={(e) => setManualForm({ ...manualForm, donorName: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number</label>
+                  <input
+                    type="text"
+                    placeholder="+91 98765 43210"
+                    value={manualForm.donorPhone}
+                    onChange={(e) => setManualForm({ ...manualForm, donorPhone: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+                  <input
+                    type="email"
+                    placeholder="donor@example.com"
+                    value={manualForm.donorEmail}
+                    onChange={(e) => setManualForm({ ...manualForm, donorEmail: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Amount (₹) *</label>
+                  <input
+                    type="number"
+                    required
+                    placeholder="e.g. 5000"
+                    value={manualForm.amount}
+                    onChange={(e) => setManualForm({ ...manualForm, amount: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs font-bold text-emerald-700 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Payment Method</label>
+                  <select
+                    value={manualForm.paymentMethod}
+                    onChange={(e) => setManualForm({ ...manualForm, paymentMethod: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs bg-white focus:outline-none"
+                  >
+                    <option value="Cash">Cash</option>
+                    <option value="UPI">Direct UPI / QR</option>
+                    <option value="Bank Transfer">Bank Transfer (NEFT/RTGS)</option>
+                    <option value="Cheque">Cheque</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Category / Cause</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Sharandev Seva, Annadanam"
+                    value={manualForm.category}
+                    onChange={(e) => setManualForm({ ...manualForm, category: e.target.value })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">PAN Number (For 80G)</label>
+                  <input
+                    type="text"
+                    placeholder="ABCDE1234F"
+                    value={manualForm.panNumber}
+                    onChange={(e) => setManualForm({ ...manualForm, panNumber: e.target.value.toUpperCase() })}
+                    className="w-full px-3.5 py-2 border rounded-xl text-xs font-mono uppercase focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Gotram / Notes</label>
+                <input
+                  type="text"
+                  placeholder="Kashyapa Gotram / Family offering"
+                  value={manualForm.notes}
+                  onChange={(e) => setManualForm({ ...manualForm, notes: e.target.value })}
+                  className="w-full px-3.5 py-2 border rounded-xl text-xs focus:outline-none"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2 border-t">
                 <button
                   type="button"
-                  className="w-full py-3.5 bg-gradient-to-r from-primary via-[#3d1a6a] to-primary text-white rounded-2xl font-bold text-xs flex items-center justify-between px-4 shadow-lg shadow-primary/20"
+                  onClick={() => setShowManualModal(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer"
                 >
-                  <span className="text-[10px] text-white/70 tracking-wider">UPI / VISA / RuPay</span>
-                  <span className="flex items-center gap-1 font-sans font-bold">
-                    Pay {draft.pricingType === "fixed" ? `₹${(draft.fixedAmount || 0).toLocaleString("en-IN")}.00` : "Now"}
-                  </span>
+                  Cancel
                 </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // LIST VIEW: Table & Cards of existing Payment Pages
-  return (
-    <div className="space-y-6 animate-fade-in max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-primary via-[#3d1a6a] to-primary text-white p-6 sm:p-8 rounded-3xl shadow-lg relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="space-y-1 z-10">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-secondary text-xs font-bold uppercase tracking-wider border border-white/10">
-            <CreditCard className="h-3.5 w-3.5" /> Instant Payment Pages
-          </div>
-          <h2 className="font-display text-2xl sm:text-3xl font-bold">Payment Pages Builder</h2>
-          <p className="text-white/80 text-xs sm:text-sm max-w-xl">
-            Build ultra-modern standalone payment pages with custom slugs, background pattern illustrations, goal progress bars, unlisted sharing links, and direct Razorpay checkout.
-          </p>
-        </div>
-
-        <button
-          onClick={startCreateNew}
-          className="z-10 py-3 px-6 bg-secondary hover:bg-secondary/90 text-primary font-bold text-xs sm:text-sm rounded-2xl shadow-lg transition cursor-pointer flex items-center gap-2 active:scale-95 shrink-0"
-        >
-          <Plus className="h-4.5 w-4.5" /> Create New Payment Page
-        </button>
-      </div>
-
-      {/* Pages List */}
-      {paymentPages.length === 0 ? (
-        <div className="bg-white rounded-3xl p-12 text-center border border-dashed border-slate-300 space-y-4">
-          <div className="h-16 w-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
-            <CreditCard className="h-8 w-8" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="font-display text-lg font-bold text-slate-800">No Payment Pages Created Yet</h3>
-            <p className="text-xs text-muted-foreground max-w-md mx-auto">
-              Create your first instant payment page with a custom slug and share the link directly on WhatsApp or Email.
-            </p>
-          </div>
-          <button
-            onClick={startCreateNew}
-            className="py-2.5 px-5 bg-primary text-white font-bold text-xs rounded-xl hover:bg-primary/90 transition inline-flex items-center gap-1.5 cursor-pointer"
-          >
-            <Plus className="h-4 w-4" /> Create Page Now
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {paymentPages.map((page) => (
-            <div
-              key={page.id}
-              className="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-xs hover:shadow-md transition flex flex-col justify-between group"
-            >
-              {/* Banner Image Preview header */}
-              {page.bannerImage ? (
-                <div className="h-28 w-full relative overflow-hidden bg-slate-900">
-                  <img src={page.bannerImage} alt={page.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                  <div className="absolute top-3 right-3 flex items-center gap-1.5">
-                    <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-slate-900/80 text-secondary border border-white/20">
-                      {page.bgStyle || "gradient"}
-                    </span>
-                    <span
-                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase shadow-sm ${
-                        page.isPrivate ? "bg-amber-100 text-amber-900" : "bg-emerald-100 text-emerald-900"
-                      }`}
-                    >
-                      {page.isPrivate ? <Lock className="h-3 w-3" /> : <Globe className="h-3 w-3" />}
-                      {page.isPrivate ? "Unlisted" : "Public"}
-                    </span>
-                  </div>
-                </div>
-              ) : null}
-
-              <div className="p-5 space-y-3 flex-1">
-                {!page.bannerImage && (
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span
-                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                        page.isPrivate ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
-                      }`}
-                    >
-                      {page.isPrivate ? <Lock className="h-3 w-3" /> : <Globe className="h-3 w-3" />}
-                      {page.isPrivate ? "Unlisted Link" : "Public"}
-                    </span>
-
-                    <button
-                      onClick={() => handleToggleActive(page.id)}
-                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold transition cursor-pointer ${
-                        page.active ? "bg-emerald-500 text-white" : "bg-slate-200 text-slate-600"
-                      }`}
-                    >
-                      {page.active ? "Active" : "Disabled"}
-                    </button>
-                  </div>
-                )}
-
-                {/* Title & Slug */}
-                <div>
-                  <h3 className="font-display text-base font-bold text-slate-800 leading-snug line-clamp-1">
-                    {page.title}
-                  </h3>
-                  <div className="text-xs font-mono text-primary font-semibold mt-0.5">
-                    /pay/{page.slug}
-                  </div>
-                </div>
-
-                {/* Amount Info */}
-                <div className="bg-slate-50 p-3 rounded-2xl border text-xs space-y-1">
-                  <div className="text-[10px] text-muted-foreground uppercase font-bold">Pricing Mode</div>
-                  <div className="font-bold text-slate-800 flex items-center gap-1 font-sans">
-                    <IndianRupee className="h-3.5 w-3.5 text-emerald-600" />
-                    <span>
-                      {page.pricingType === "fixed"
-                        ? `₹${(page.fixedAmount || 0).toLocaleString("en-IN")} Fixed`
-                        : page.pricingType === "preset"
-                        ? `${page.presetPrices?.length || 0} Preset Tiers`
-                        : "Custom Input"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Actions Footer */}
-              <div className="p-4 bg-slate-50/80 border-t flex items-center justify-between gap-2">
                 <button
-                  onClick={() => handleCopyLink(page.slug, page.id)}
-                  className="py-2 px-3 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-1 cursor-pointer shadow-xs"
-                  title="Copy direct share link"
+                  type="submit"
+                  disabled={busy}
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md transition cursor-pointer"
                 >
-                  {copiedId === page.id ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-                  <span>{copiedId === page.id ? "Copied!" : "Copy Link"}</span>
+                  {busy ? "Saving..." : "Save Record"}
                 </button>
-
-                <div className="flex items-center gap-1">
-                  <a
-                    href={getFullShareUrl(page.slug)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 text-slate-500 hover:text-primary transition rounded-lg"
-                    title="View Page"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
-
-                  <button
-                    onClick={() => startEdit(page)}
-                    className="p-2 text-slate-500 hover:text-primary transition rounded-lg cursor-pointer"
-                    title="Edit Page"
-                  >
-                    <Edit3 className="h-4 w-4" />
-                  </button>
-
-                  <button
-                    onClick={() => handleDelete(page.id)}
-                    className="p-2 text-slate-500 hover:text-rose-600 transition rounded-lg cursor-pointer"
-                    title="Delete Page"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
               </div>
-            </div>
-          ))}
+            </form>
+          </div>
         </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* OFFICIAL DIGITAL RECEIPT & PRINT MODAL */}
+      {/* ========================================================================= */}
+      {/* OFFICIAL DIGITAL RECEIPT & PRINT MODAL */}
+      {/* ========================================================================= */}
+      {selectedReceiptRecord && (
+        <OfficialReceiptModal
+          data={{
+            receiptNo: selectedReceiptRecord.paymentId,
+            date: selectedReceiptRecord.date,
+            donorName: selectedReceiptRecord.donorName,
+            donorEmail: selectedReceiptRecord.donorEmail,
+            donorPhone: selectedReceiptRecord.donorPhone,
+            amount: selectedReceiptRecord.amount,
+            category: selectedReceiptRecord.category,
+            sevaTitle: selectedReceiptRecord.sevaOrPageTitle || selectedReceiptRecord.category,
+            notes: selectedReceiptRecord.notes,
+            panNumber: selectedReceiptRecord.panNumber,
+            paymentMethod: selectedReceiptRecord.paymentMethod,
+          }}
+          onClose={() => setSelectedReceiptRecord(null)}
+        />
       )}
     </div>
   );

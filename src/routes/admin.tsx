@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAdmin } from "@/context/AdminContext";
 import CarouselManager from "@/admin/CarouselManager";
 import GalleryManager from "@/admin/GalleryManager";
@@ -22,17 +23,18 @@ import LiveDashboardManager from "@/admin/LiveDashboardManager";
 import FeaturePopupManager from "@/admin/FeaturePopupManager";
 import PaymentPagesManager from "@/admin/PaymentPagesManager";
 import PreviewLeadsManager from "@/admin/PreviewLeadsManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard, Video } from "lucide-react";
+import TeamManager from "@/admin/TeamManager";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard, Video, Bell, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
 
-type Tab = "welcome" | "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "liveDashboard" | "featurePopup" | "paymentPages" | "previewLeads";
+type Tab = "welcome" | "team" | "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "liveDashboard" | "featurePopup" | "paymentPages" | "previewLeads";
 
 function AdminPage() {
-  const { authed, login, logout, settings, contacts, setContacts } = useAdmin();
+  const { authed, login, logout, settings, contacts, setContacts, paymentRecords, previewLeads, markAllPaymentRecordsRead, markAllPreviewLeadsRead, currentUser } = useAdmin();
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [err, setErr] = useState("");
@@ -40,6 +42,30 @@ function AdminPage() {
   const [tab, setTab] = useState<Tab>("welcome");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [drawerSearch, setDrawerSearch] = useState("");
+  const [showSplash, setShowSplash] = useState(true);
+
+  // Automatically mark section notifications as read when admin opens that section
+  useEffect(() => {
+    if (tab === "contacts" && contacts && contacts.some((c) => !c.read)) {
+      setContacts(contacts.map((c) => ({ ...c, read: true })));
+    } else if (tab === "paymentPages" && paymentRecords && paymentRecords.some((p) => !p.read)) {
+      markAllPaymentRecordsRead();
+    } else if (tab === "previewLeads" && previewLeads && previewLeads.some((l) => !l.read)) {
+      markAllPreviewLeadsRead();
+    }
+  }, [tab]);
+
+  const unreadMessagesCount = (contacts || []).filter((c) => !c.read).length;
+  const unreadDonationsCount = (paymentRecords || []).filter((p) => !p.read).length;
+  const unreadLeadsCount = (previewLeads || []).filter((l) => !l.read).length;
+  const totalUnreadCount = unreadMessagesCount + unreadDonationsCount + unreadLeadsCount;
+
+  const getBadgeCount = (id: Tab): number => {
+    if (id === "contacts") return unreadMessagesCount;
+    if (id === "paymentPages") return unreadDonationsCount;
+    if (id === "previewLeads") return unreadLeadsCount;
+    return 0;
+  };
 
   const expiredContacts = (contacts || []).filter((c) => {
     const ageMs = Date.now() - new Date(c.date).getTime();
@@ -100,16 +126,20 @@ function AdminPage() {
               setErr("");
               const res = await login(email, pw);
               setBusy(false);
-              if (!res.ok) setErr(res.error || "Invalid credentials");
+              if (res.ok) {
+                setShowSplash(true);
+              } else {
+                setErr(res.error || "Invalid credentials");
+              }
             }}
           >
             <input
-              type="email"
+              type="text"
               autoFocus
-              placeholder="Email"
+              placeholder="Email / Username (e.g. superadmin@iskconkurnool.in)"
               value={email}
               onChange={(e) => { setEmail(e.target.value); setErr(""); }}
-              className="w-full px-4 py-3 border rounded-lg mb-3"
+              className="w-full px-4 py-3 border rounded-lg mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
             <input
               type="password"
@@ -129,7 +159,7 @@ function AdminPage() {
     );
   }
 
-  const groups: {
+  const allGroups: {
     title: string;
     items: { id: Tab; label: string; icon: any }[];
   }[] = [
@@ -153,7 +183,7 @@ function AdminPage() {
     {
       title: "Devotional & Programs",
       items: [
-        { id: "paymentPages", label: "Instant Payment Pages", icon: CreditCard },
+        { id: "paymentPages", label: "Donations & Payment Records", icon: CreditCard },
         { id: "festivals", label: "Upcoming Festivals", icon: Sparkles },
         { id: "sevas", label: "Jagannath Sevas", icon: HandHeart },
         { id: "sunday", label: "Sunday Program", icon: Calendar },
@@ -175,16 +205,32 @@ function AdminPage() {
     {
       title: "Site Settings",
       items: [
+        { id: "team", label: "Team & Access Control", icon: ShieldCheck },
         { id: "contacts", label: "Contact Messages", icon: Mail },
         { id: "settings", label: "Site Settings", icon: Settings },
       ]
     }
   ];
 
+  const isSuperAdmin = !currentUser || currentUser.role === "superadmin";
+
+  const groups = allGroups.map((g) => ({
+    ...g,
+    items: g.items.filter((item) => {
+      if (isSuperAdmin) return true;
+      if (item.id === "team") return false;
+      return (currentUser?.allowedTabs || []).includes(item.id as any);
+    })
+  })).filter((g) => g.items.length > 0);
+
   const tabs = groups.flatMap((g) => g.items);
 
   return (
     <div className="h-screen w-screen flex flex-col md:flex-row bg-surface overflow-hidden relative">
+      <AnimatePresence>
+        {showSplash && <AdminIntroSplash onComplete={() => setShowSplash(false)} />}
+      </AnimatePresence>
+
       {/* Forced Export Modal when 25-day limit reached */}
       {hasExpired && (
         <div className="fixed inset-0 bg-black/85 z-[9999] flex items-center justify-center p-4 backdrop-blur-md">
@@ -237,7 +283,19 @@ function AdminPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
+          {totalUnreadCount > 0 && (
+            <button
+              onClick={() => setTab("welcome")}
+              className="relative p-2 rounded-xl text-white/90 hover:bg-white/10 active:bg-white/20 transition cursor-pointer"
+              title={`${totalUnreadCount} unread notifications`}
+            >
+              <Bell className="h-4 w-4 text-amber-300 animate-bounce" />
+              <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-extrabold text-white shadow-sm ring-2 ring-primary">
+                {totalUnreadCount}
+              </span>
+            </button>
+          )}
           <Link
             to="/"
             className="p-2 rounded-xl text-white/90 hover:bg-white/10 active:bg-white/20 transition cursor-pointer flex items-center gap-1 text-xs"
@@ -313,14 +371,21 @@ function AdminPage() {
             <nav className="flex-1 p-3 space-y-4 overflow-y-auto scrollbar-thin scrollbar-thumb-white/15">
               <button
                 onClick={() => { setTab("welcome"); setMobileMenuOpen(false); }}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs transition-all duration-200 ${
+                className={`w-full flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs transition-all duration-200 ${
                   tab === "welcome"
                     ? "bg-secondary text-primary font-bold shadow-md"
                     : "hover:bg-white/10 active:bg-white/20 text-white/90"
                 }`}
               >
-                <LayoutDashboard className="h-4.5 w-4.5 shrink-0" />
-                <span>Dashboard Home</span>
+                <div className="flex items-center gap-3">
+                  <LayoutDashboard className="h-4.5 w-4.5 shrink-0" />
+                  <span>Dashboard Home</span>
+                </div>
+                {totalUnreadCount > 0 && (
+                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-extrabold text-white shadow-sm animate-pulse">
+                    {totalUnreadCount}
+                  </span>
+                )}
               </button>
 
               {groups.map((group) => {
@@ -335,21 +400,29 @@ function AdminPage() {
                       {group.title}
                     </div>
                     <div className="space-y-1">
-                      {(drawerSearch ? filteredItems : group.items).map((t) => (
-                        <button
-                          key={t.id}
-                          onClick={() => { setTab(t.id); setMobileMenuOpen(false); }}
-                          className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs transition-all ${
-                            tab === t.id
-                              ? "bg-white/15 text-secondary font-bold border-l-4 border-secondary pl-2.5 shadow-sm"
-                              : "hover:bg-white/10 active:bg-white/15 text-white/85"
-                          }`}
-                        >
-                          <t.icon className="h-4 w-4 shrink-0" />
-                          <span className="truncate flex-1 text-left">{t.label}</span>
-                          <ChevronRight className="h-3.5 w-3.5 text-white/30" />
-                        </button>
-                      ))}
+                      {(drawerSearch ? filteredItems : group.items).map((t) => {
+                        const cnt = getBadgeCount(t.id);
+                        return (
+                          <button
+                            key={t.id}
+                            onClick={() => { setTab(t.id); setMobileMenuOpen(false); }}
+                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs transition-all ${
+                              tab === t.id
+                                ? "bg-white/15 text-secondary font-bold border-l-4 border-secondary pl-2.5 shadow-sm"
+                                : "hover:bg-white/10 active:bg-white/15 text-white/85"
+                            }`}
+                          >
+                            <t.icon className="h-4 w-4 shrink-0" />
+                            <span className="truncate flex-1 text-left">{t.label}</span>
+                            {cnt > 0 && (
+                              <span className="flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-red-600 px-1.5 text-[9px] font-extrabold text-white shadow-sm animate-pulse">
+                                {cnt}
+                              </span>
+                            )}
+                            <ChevronRight className="h-3.5 w-3.5 text-white/30" />
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 );
@@ -370,54 +443,96 @@ function AdminPage() {
       )}
 
       {/* DESKTOP SIDEBAR */}
-      <aside className="hidden md:flex w-64 h-full bg-gradient-to-b from-primary to-[#3d1a6a] text-primary-foreground flex-col shrink-0">
-        <div className="p-6 border-b border-white/10">
-          <div className="flex items-center gap-2">
-            <LayoutDashboard className="h-5 w-5" />
-            <span className="font-display font-bold">Admin Panel</span>
+      <aside className="hidden md:flex w-64 h-full bg-gradient-to-b from-[#2d1254] via-[#381668] to-[#250d46] text-white flex-col shrink-0 shadow-2xl relative z-20 border-r border-white/10">
+        <div className="p-5 border-b border-white/10 flex items-center justify-between bg-black/10">
+          <div className="flex items-center gap-3">
+            {settings.logo ? (
+              <img src={settings.logo} alt="Logo" className="h-9 w-9 rounded-full object-cover ring-2 ring-amber-400/60 shadow-md" />
+            ) : (
+              <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-amber-400 to-amber-200 text-slate-950 font-bold text-xs flex items-center justify-center shadow-md">IK</div>
+            )}
+            <div>
+              <h2 className="font-display font-bold text-sm tracking-wide text-white truncate max-w-[130px]">
+                {currentUser?.name || "ISKCON Kurnool"}
+              </h2>
+              <span className="text-[10px] text-amber-300/90 font-semibold tracking-wider uppercase block">
+                {currentUser?.role === "superadmin" ? "★ Super Admin" : "Team Member"}
+              </span>
+            </div>
           </div>
-          <div className="text-xs opacity-70 mt-1">ISKCON Kurnool</div>
         </div>
 
-        <nav className="flex-1 p-3 space-y-5 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
-          <div className="space-y-0.5 border-b border-white/10 pb-3 mb-2">
+        <nav className="flex-1 p-3 space-y-5 overflow-y-auto scrollbar-thin scrollbar-thumb-white/15">
+          <div className="space-y-0.5 border-b border-white/10 pb-3 mb-1">
             <button
               onClick={() => setTab("welcome")}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 ${
+              className={`w-full flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
                 tab === "welcome" 
-                  ? "bg-white/10 text-secondary font-semibold border-l-4 border-secondary pl-2.5 transition-all shadow-sm" 
-                  : "hover:bg-white/5 hover:translate-x-1 text-white/80 transition-all duration-200"
+                  ? "bg-amber-400 text-slate-950 shadow-md scale-[1.02]" 
+                  : "hover:bg-white/10 text-white/85 hover:translate-x-1"
               }`}
             >
-              <LayoutDashboard className="h-4 w-4 shrink-0" /> 
-              <span>Dashboard Home</span>
+              <div className="flex items-center gap-3">
+                <LayoutDashboard className="h-4 w-4 shrink-0" /> 
+                <span>Dashboard Home</span>
+              </div>
+              {totalUnreadCount > 0 && (
+                <span className={`flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-extrabold shadow-xs animate-pulse ${
+                  tab === "welcome" ? "bg-slate-950 text-amber-300" : "bg-red-600 text-white"
+                }`}>
+                  {totalUnreadCount}
+                </span>
+              )}
             </button>
           </div>
 
           {groups.map((group) => (
             <div key={group.title} className="space-y-1">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-white/40 px-3 py-1 select-none">
+              <div className="text-[10px] font-extrabold uppercase tracking-wider text-amber-300/60 px-3 py-1 select-none">
                 {group.title}
               </div>
-              <div className="space-y-0.5">
-                {group.items.map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => setTab(t.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
-                      tab === t.id 
-                        ? "bg-white/10 text-secondary font-semibold border-l-4 border-secondary pl-2.5 transition-all shadow-sm" 
-                        : "hover:bg-white/5 hover:translate-x-1 text-white/80 transition-all duration-200"
-                    }`}
-                  >
-                    <t.icon className="h-4 w-4 shrink-0" /> 
-                    <span className="truncate">{t.label}</span>
-                  </button>
-                ))}
+              <div className="space-y-1">
+                {group.items.map((t) => {
+                  const cnt = getBadgeCount(t.id);
+                  const isActive = tab === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => setTab(t.id)}
+                      className={`w-full flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs transition-all duration-200 cursor-pointer ${
+                        isActive 
+                          ? "bg-amber-400 text-slate-950 font-extrabold shadow-md scale-[1.02]" 
+                          : "hover:bg-white/10 text-white/80 hover:translate-x-1"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 truncate">
+                        <t.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-slate-950" : "text-amber-300/80"}`} /> 
+                        <span className="truncate">{t.label}</span>
+                      </div>
+                      {cnt > 0 && (
+                        <span className={`flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-extrabold shadow-xs animate-pulse ${
+                          isActive ? "bg-slate-950 text-amber-300" : "bg-red-600 text-white"
+                        }`}>
+                          {cnt}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           ))}
         </nav>
+
+        {/* Sidebar Footer Link */}
+        <div className="p-3 border-t border-white/10 bg-black/20 flex items-center justify-between text-xs">
+          <Link to="/" className="text-white/80 hover:text-white flex items-center gap-1.5 font-semibold transition">
+            <Home className="h-3.5 w-3.5 text-amber-300" /> Public Site
+          </Link>
+          <button onClick={logout} className="text-rose-300 hover:text-rose-200 flex items-center gap-1 font-semibold cursor-pointer transition">
+            <LogOut className="h-3.5 w-3.5" /> Logout
+          </button>
+        </div>
       </aside>
 
       {/* MAIN VIEWPORT CONTENT AREA */}
@@ -443,6 +558,16 @@ function AdminPage() {
             </div>
           </div>
           <div className="hidden sm:flex items-center gap-2.5 self-end sm:self-auto shrink-0">
+            {totalUnreadCount > 0 && (
+              <button
+                onClick={() => setTab("welcome")}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 transition rounded-xl text-xs font-bold shadow-sm cursor-pointer animate-pulse"
+                title={`${totalUnreadCount} total unread items`}
+              >
+                <Bell className="h-4 w-4 text-red-600 fill-red-600/20" />
+                <span>{totalUnreadCount} New</span>
+              </button>
+            )}
             <Link 
               to="/" 
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 border border-slate-200/80 bg-white hover:bg-slate-50 hover:text-primary transition rounded-xl text-xs font-semibold text-slate-700 shadow-sm"
@@ -458,28 +583,39 @@ function AdminPage() {
           </div>
         </div>
 
-        {tab === "welcome" && <WelcomeDashboard groups={groups} setTab={setTab} logoUrl={settings.logo} />}
-        {tab === "carousel" && <CarouselManager />}
-        {tab === "festivals" && <FestivalsManager />}
-        {tab === "sevas" && <SevasManager />}
-        {tab === "youth" && <YouthManager />}
-        {tab === "prahladaBadi" && <PrahladaBadiManager />}
-        {tab === "harinama" && <HarinamaManager />}
-        {tab === "ekadashi" && <EkadashiManager />}
-        {tab === "gita" && <GitaCourseManager />}
-        {tab === "sunday" && <SundayManager />}
-        {tab === "goshala" && <GoshalaManager />}
-        {tab === "contacts" && <ContactsManager />}
-        {tab === "instagram" && <InstagramManager />}
-        {tab === "classes" && <DailyClassesManager />}
-        {tab === "gallery" && <GalleryManager />}
-        {tab === "heroBanners" && <HeroBannersManager />}
-        {tab === "settings" && <SiteSettingsForm />}
-        {tab === "templeSchedule" && <TempleScheduleManager />}
-        {tab === "liveDashboard" && <LiveDashboardManager />}
-        {tab === "featurePopup" && <FeaturePopupManager />}
-        {tab === "paymentPages" && <PaymentPagesManager />}
-        {tab === "previewLeads" && <PreviewLeadsManager />}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={tab}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25 }}
+          >
+            {tab === "welcome" && <WelcomeDashboard groups={groups} setTab={setTab} logoUrl={settings.logo} />}
+            {tab === "team" && <TeamManager />}
+            {tab === "carousel" && <CarouselManager />}
+            {tab === "festivals" && <FestivalsManager />}
+            {tab === "sevas" && <SevasManager />}
+            {tab === "youth" && <YouthManager />}
+            {tab === "prahladaBadi" && <PrahladaBadiManager />}
+            {tab === "harinama" && <HarinamaManager />}
+            {tab === "ekadashi" && <EkadashiManager />}
+            {tab === "gita" && <GitaCourseManager />}
+            {tab === "sunday" && <SundayManager />}
+            {tab === "goshala" && <GoshalaManager />}
+            {tab === "contacts" && <ContactsManager />}
+            {tab === "instagram" && <InstagramManager />}
+            {tab === "classes" && <DailyClassesManager />}
+            {tab === "gallery" && <GalleryManager />}
+            {tab === "heroBanners" && <HeroBannersManager />}
+            {tab === "settings" && <SiteSettingsForm />}
+            {tab === "templeSchedule" && <TempleScheduleManager />}
+            {tab === "liveDashboard" && <LiveDashboardManager />}
+            {tab === "featurePopup" && <FeaturePopupManager />}
+            {tab === "paymentPages" && <PaymentPagesManager />}
+            {tab === "previewLeads" && <PreviewLeadsManager />}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* MOBILE STICKY BOTTOM NAVIGATION BAR */}
@@ -516,11 +652,18 @@ function AdminPage() {
 
         <button
           onClick={() => setTab("contacts")}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+          className={`relative flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
             tab === "contacts" ? "text-primary font-bold scale-105" : "text-slate-500 hover:text-slate-700"
           }`}
         >
-          <Mail className={`h-5 w-5 ${tab === "contacts" ? "text-primary stroke-[2.5]" : ""}`} />
+          <div className="relative">
+            <Mail className={`h-5 w-5 ${tab === "contacts" ? "text-primary stroke-[2.5]" : ""}`} />
+            {unreadMessagesCount > 0 && (
+              <span className="absolute -top-1 -right-2.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-extrabold text-white shadow-sm animate-pulse">
+                {unreadMessagesCount}
+              </span>
+            )}
+          </div>
           <span className="text-[10px] mt-0.5 font-medium">Messages</span>
         </button>
 
@@ -545,7 +688,20 @@ function WelcomeDashboard({
   setTab: (id: Tab) => void; 
   logoUrl?: string; 
 }) {
+  const { contacts, paymentRecords, previewLeads } = useAdmin();
   const [q, setQ] = useState("");
+  
+  const unreadMessagesCount = (contacts || []).filter((c) => !c.read).length;
+  const unreadDonationsCount = (paymentRecords || []).filter((p) => !p.read).length;
+  const unreadLeadsCount = (previewLeads || []).filter((l) => !l.read).length;
+
+  const getItemBadge = (id: Tab): number => {
+    if (id === "contacts") return unreadMessagesCount;
+    if (id === "paymentPages") return unreadDonationsCount;
+    if (id === "previewLeads") return unreadLeadsCount;
+    return 0;
+  };
+
   const allItems = groups.flatMap((g) => g.items.map((item) => ({ ...item, category: g.title })));
   
   const filtered = allItems.filter((item) => 
@@ -618,21 +774,31 @@ function WelcomeDashboard({
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                {filtered.map((item) => (
-                  <button 
-                    key={item.id}
-                    onClick={() => setTab(item.id)}
-                    className="flex items-center gap-3.5 p-3.5 sm:p-4 bg-white hover:bg-slate-50 border border-slate-100 hover:border-primary/20 rounded-2xl text-left transition-all duration-200 shadow-[0_3px_12px_rgba(0,0,0,0.01)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] active:scale-[0.98] group cursor-pointer"
-                  >
-                    <div className="h-10 w-10 rounded-xl bg-slate-50 group-hover:bg-primary/5 text-primary flex items-center justify-center shrink-0 transition-colors duration-300">
-                      <item.icon className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors duration-300">{item.label}</div>
-                      <div className="text-[10px] text-muted-foreground/80 font-medium tracking-wide mt-0.5">{item.category}</div>
-                    </div>
-                  </button>
-                ))}
+                {filtered.map((item) => {
+                  const badge = getItemBadge(item.id);
+                  return (
+                    <button 
+                      key={item.id}
+                      onClick={() => setTab(item.id)}
+                      className="flex items-center justify-between p-3.5 sm:p-4 bg-white hover:bg-slate-50 border border-slate-100 hover:border-primary/20 rounded-2xl text-left transition-all duration-200 shadow-[0_3px_12px_rgba(0,0,0,0.01)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] active:scale-[0.98] group cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3.5">
+                        <div className="h-10 w-10 rounded-xl bg-slate-50 group-hover:bg-primary/5 text-primary flex items-center justify-center shrink-0 transition-colors duration-300">
+                          <item.icon className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors duration-300">{item.label}</div>
+                          <div className="text-[10px] text-muted-foreground/80 font-medium tracking-wide mt-0.5">{item.category}</div>
+                        </div>
+                      </div>
+                      {badge > 0 && (
+                        <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-extrabold text-white shadow-sm animate-pulse">
+                          {badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -644,18 +810,28 @@ function WelcomeDashboard({
                   {group.title}
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-4">
-                  {group.items.map((item) => (
-                    <button 
-                      key={item.id}
-                      onClick={() => setTab(item.id)}
-                      className="flex items-center gap-3 p-3 sm:p-4 bg-white hover:bg-slate-50 border border-slate-100/90 hover:border-primary/15 rounded-2xl text-left transition-all duration-200 shadow-[0_3px_12px_rgba(0,0,0,0.01)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] active:scale-[0.98] group cursor-pointer"
-                    >
-                      <div className="h-8.5 w-8.5 sm:h-10 sm:w-10 rounded-xl bg-slate-50 group-hover:bg-primary/5 text-primary flex items-center justify-center shrink-0 transition-colors duration-300">
-                        <item.icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
-                      </div>
-                      <span className="font-semibold text-xs sm:text-sm text-foreground/80 group-hover:text-primary transition-colors duration-300 truncate">{item.label}</span>
-                    </button>
-                  ))}
+                  {group.items.map((item) => {
+                    const badge = getItemBadge(item.id);
+                    return (
+                      <button 
+                        key={item.id}
+                        onClick={() => setTab(item.id)}
+                        className="flex items-center justify-between p-3 sm:p-4 bg-white hover:bg-slate-50 border border-slate-100/90 hover:border-primary/15 rounded-2xl text-left transition-all duration-200 shadow-[0_3px_12px_rgba(0,0,0,0.01)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] active:scale-[0.98] group cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3 truncate">
+                          <div className="h-8.5 w-8.5 sm:h-10 sm:w-10 rounded-xl bg-slate-50 group-hover:bg-primary/5 text-primary flex items-center justify-center shrink-0 transition-colors duration-300">
+                            <item.icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
+                          </div>
+                          <span className="font-semibold text-xs sm:text-sm text-foreground/80 group-hover:text-primary transition-colors duration-300 truncate">{item.label}</span>
+                        </div>
+                        {badge > 0 && (
+                          <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-extrabold text-white shadow-sm animate-pulse ml-1">
+                            {badge}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -663,5 +839,117 @@ function WelcomeDashboard({
         )}
       </div>
     </div>
+  );
+}
+
+function AdminIntroSplash({ onComplete }: { onComplete: () => void }) {
+  const { settings } = useAdmin();
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(timer);
+          setTimeout(onComplete, 600);
+          return 100;
+        }
+        return prev + 2; // Increments by 2 every 65ms -> 3.25 seconds fill time
+      });
+    }, 65);
+
+    return () => clearInterval(timer);
+  }, [onComplete]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, scale: 1.05 }}
+      transition={{ duration: 0.4 }}
+      className="fixed inset-0 z-[99999] bg-gradient-to-b from-[#1a0836] via-[#2d1254] to-[#120526] text-white flex flex-col items-center justify-center p-6 text-center select-none overflow-hidden"
+    >
+      {/* Ambient Radial Glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-400/20 via-purple-900/30 to-transparent blur-3xl pointer-events-none animate-pulse" />
+
+      {/* Rotating Mandala Sunburst Ring */}
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ repeat: Infinity, duration: 35, ease: "linear" }}
+        className="absolute w-[380px] h-[380px] sm:w-[460px] sm:h-[460px] rounded-full border border-amber-300/15 border-dashed pointer-events-none flex items-center justify-center"
+      >
+        <div className="w-[300px] h-[300px] sm:w-[380px] sm:h-[380px] rounded-full border border-amber-400/10 border-dotted" />
+      </motion.div>
+
+      {/* Logo & Emblem */}
+      <motion.div
+        initial={{ scale: 0.4, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 220, damping: 18, delay: 0.1 }}
+        className="relative z-10 mb-6"
+      >
+        <div className="relative group cursor-pointer" onClick={onComplete} title="Click to skip">
+          <div className="absolute inset-0 rounded-full bg-amber-400/35 blur-2xl animate-pulse" />
+          {settings.logo ? (
+            <img
+              src={settings.logo}
+              alt="ISKCON Kurnool"
+              className="w-28 h-28 sm:w-36 sm:h-36 rounded-full object-cover border-4 border-amber-300/80 shadow-[0_0_50px_rgba(245,158,11,0.4)] relative z-10"
+            />
+          ) : (
+            <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-gradient-to-tr from-amber-500 via-orange-500 to-amber-300 border-4 border-amber-300 flex items-center justify-center text-slate-950 font-display text-3xl font-extrabold shadow-[0_0_50px_rgba(245,158,11,0.4)] relative z-10">
+              IK
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Welcome Title Reveal */}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="space-y-2 relative z-10 max-w-md"
+      >
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-400/15 border border-amber-400/30 text-amber-300 text-xs font-extrabold uppercase tracking-widest backdrop-blur-md">
+          <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-spin" />
+          <span>Hare Krishna · Admin Workspace</span>
+        </div>
+
+        <h1 className="font-display text-2xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-100 tracking-tight">
+          ISKCON Kurnool
+        </h1>
+
+        <p className="text-xs sm:text-sm text-white/75 font-medium">
+          Sri Sri Puri Jagannath Digital Temple Portal
+        </p>
+      </motion.div>
+
+      {/* Progress Fill Bar & Skip Hint */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4 }}
+        className="w-56 sm:w-72 mt-7 space-y-3 relative z-10"
+      >
+        <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden border border-white/15 p-0.5 backdrop-blur-sm">
+          <motion.div
+            className="h-full bg-gradient-to-r from-amber-400 via-orange-400 to-amber-300 rounded-full shadow-[0_0_12px_rgba(245,158,11,0.8)]"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <div className="flex items-center justify-between text-[10px] font-bold text-amber-200/80 tracking-wider">
+          <span>Loading admin workspace...</span>
+          <span>{progress}%</span>
+        </div>
+
+        <button
+          onClick={onComplete}
+          className="text-[10px] text-white/50 hover:text-white underline tracking-wider font-medium transition pt-1 cursor-pointer block mx-auto"
+        >
+          Click anywhere to skip intro
+        </button>
+      </motion.div>
+    </motion.div>
   );
 }

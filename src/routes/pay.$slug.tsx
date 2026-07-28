@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useAdmin, PaymentPage } from "@/context/AdminContext";
+import { useAdmin, PaymentPage, calculatePlatformFee } from "@/context/AdminContext";
+import OfficialReceiptModal from "@/components/OfficialReceiptModal";
 import { 
   Heart, 
   IndianRupee, 
@@ -50,13 +51,14 @@ const DEFAULT_BANNER = "https://images.unsplash.com/photo-1544967082-d9d25d867d6
 
 function PaymentPageRoute() {
   const { slug } = Route.useParams();
-  const { paymentPages, settings, ready } = useAdmin();
+  const { paymentPages, settings, addPaymentRecord, platformFee, ready } = useAdmin();
   
   const [page, setPage] = useState<PaymentPage | null>(null);
   const [selectedTierId, setSelectedTierId] = useState<string>("");
   const [customAmount, setCustomAmount] = useState<string>("5555");
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const [coverPlatformFee, setCoverPlatformFee] = useState(true);
 
   // Success Receipt Modal
   const [paymentSuccess, setPaymentSuccess] = useState<{
@@ -123,6 +125,9 @@ function PaymentPageRoute() {
     activeAmount = Number(customAmount) || 0;
   }
 
+  const platformChargeAmount = platformFee.enabled && coverPlatformFee ? calculatePlatformFee(activeAmount, platformFee) : 0;
+  const totalPayableAmount = activeAmount + platformChargeAmount;
+
   const handlePayNow = async () => {
     if (activeAmount <= 0) {
       alert("Please enter a valid donation amount.");
@@ -158,7 +163,7 @@ function PaymentPageRoute() {
 
     const rzp = new (window as any).Razorpay({
       key: RAZORPAY_KEY,
-      amount: Math.round(activeAmount * 100),
+      amount: Math.round(totalPayableAmount * 100),
       currency: "INR",
       name: "ISKCON Kurnool",
       description: `${page.title}`,
@@ -166,6 +171,8 @@ function PaymentPageRoute() {
       notes: {
         pageTitle: page.title,
         pageSlug: page.slug,
+        baseDonation: activeAmount,
+        platformFeeCovered: coverPlatformFee ? platformChargeAmount : 0,
         ...fieldValues,
       },
       prefill: {
@@ -176,12 +183,39 @@ function PaymentPageRoute() {
       theme: {
         color: "#5b2c9b",
       },
-      handler: function (response: any) {
+      handler: async function (response: any) {
+        const pId = response.razorpay_payment_id || `pay_${Date.now()}`;
         setPaymentSuccess({
-          paymentId: response.razorpay_payment_id || `pay_${Date.now()}`,
-          amount: activeAmount,
+          paymentId: pId,
+          amount: totalPayableAmount,
           donorName: donorNameVal,
         });
+
+        // Store payment record in Admin Panel
+        try {
+          await addPaymentRecord({
+            paymentId: pId,
+            donorName: donorNameVal,
+            donorEmail: donorEmailVal,
+            donorPhone: donorPhoneVal,
+            amount: totalPayableAmount,
+            baseAmount: activeAmount,
+            platformFee: coverPlatformFee ? platformChargeAmount : 0,
+            currency: "INR",
+            category: `Instant Page: ${page.title}`,
+            sevaOrPageTitle: page.title,
+            status: "Completed",
+            paymentMethod: "Razorpay",
+            notes: Object.entries(fieldValues)
+              .map(([k, v]) => {
+                const fieldDef = page.fields.find((f) => f.id === k);
+                return `${fieldDef ? fieldDef.label : k}: ${v}`;
+              })
+              .join(" | "),
+          });
+        } catch (err) {
+          console.error("Failed to store payment record:", err);
+        }
       },
     });
 
@@ -591,6 +625,46 @@ function PaymentPageRoute() {
                   ))}
                 </div>
 
+                {/* Platform / Gateway Charges Checkbox & Donation Summary */}
+                {platformFee.enabled && activeAmount > 0 && (
+                  <div className="pt-2 border-t border-slate-200/40 space-y-3">
+                    <label className="flex items-start gap-2.5 cursor-pointer text-xs font-semibold select-none">
+                      <input
+                        type="checkbox"
+                        checked={coverPlatformFee}
+                        onChange={(e) => setCoverPlatformFee(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 rounded text-primary focus:ring-primary cursor-pointer accent-primary"
+                      />
+                      <span className={themeMode === "royal" ? "text-slate-200" : "text-slate-700"}>
+                        {platformFee.label || "I would like to cover the payment gateway charges"}{" "}
+                        <span className="text-emerald-600 font-bold font-sans">
+                          (+₹{calculatePlatformFee(activeAmount, platformFee)})
+                        </span>
+                      </span>
+                    </label>
+
+                    {/* Donation Summary Box */}
+                    <div className={`p-3 rounded-xl border text-xs space-y-1.5 ${
+                      themeMode === "royal" ? "bg-slate-800/80 border-slate-700 text-slate-300" : "bg-slate-50 border-slate-200 text-slate-700"
+                    }`}>
+                      <div className="flex justify-between">
+                        <span>Donation Amount:</span>
+                        <span className="font-bold font-sans text-slate-800">₹{activeAmount.toLocaleString("en-IN")}.00</span>
+                      </div>
+                      {coverPlatformFee && (
+                        <div className="flex justify-between text-emerald-600 font-medium">
+                          <span>Platform Charge ({platformFee.type === "percentage" ? `${platformFee.value}%` : `₹${platformFee.value}`}):</span>
+                          <span className="font-bold font-sans">+₹{calculatePlatformFee(activeAmount, platformFee)}.00</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between font-bold border-t pt-1.5 text-slate-900 text-sm">
+                        <span>Total Payable:</span>
+                        <span className="font-sans text-primary">₹{totalPayableAmount.toLocaleString("en-IN")}.00</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Razorpay Metallic Pay Button */}
                 <button
                   type="button"
@@ -602,7 +676,7 @@ function PaymentPageRoute() {
                     <Zap className="h-3.5 w-3.5" /> Instant Payment
                   </span>
                   <span className="flex items-center gap-1.5 font-sans font-extrabold">
-                    Pay ₹{activeAmount > 0 ? activeAmount.toLocaleString("en-IN") : "0"}.00
+                    Pay ₹{totalPayableAmount > 0 ? totalPayableAmount.toLocaleString("en-IN") : "0"}.00
                   </span>
                 </button>
               </div>
@@ -689,9 +763,9 @@ function PaymentPageRoute() {
       {/* MOBILE STICKY BOTTOM PAYMENT BAR */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-900 text-white border-t border-slate-800 p-3.5 shadow-2xl flex items-center justify-between gap-3 backdrop-blur-md">
         <div>
-          <div className="text-[10px] uppercase font-bold text-secondary">Total Amount</div>
+          <div className="text-[10px] uppercase font-bold text-secondary">Total Payable</div>
           <div className="text-base font-bold font-sans text-white">
-            ₹{activeAmount > 0 ? activeAmount.toLocaleString("en-IN") : "0"}.00
+            ₹{totalPayableAmount > 0 ? totalPayableAmount.toLocaleString("en-IN") : "0"}.00
           </div>
         </div>
         <button
@@ -703,44 +777,19 @@ function PaymentPageRoute() {
         </button>
       </div>
 
-      {/* Payment Success Receipt Modal */}
+      {/* Payment Success Receipt Modal with PNG Download & Signature */}
       {paymentSuccess && (
-        <div className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full text-center border border-emerald-200 shadow-2xl space-y-6 animate-in zoom-in-95 text-slate-900">
-            <div className="h-16 w-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle2 className="h-10 w-10" />
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="font-display text-2xl font-bold text-primary">Seva Offering Received!</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Hare Krishna, <strong>{paymentSuccess.donorName}</strong>! Your divine contribution has been successfully processed.
-              </p>
-            </div>
-
-            <div className="bg-slate-50 border p-4 rounded-2xl text-left text-xs space-y-2">
-              <div className="flex justify-between border-b pb-1.5">
-                <span className="text-muted-foreground">Transaction ID:</span>
-                <span className="font-mono font-bold text-slate-800">{paymentSuccess.paymentId}</span>
-              </div>
-              <div className="flex justify-between border-b pb-1.5">
-                <span className="text-muted-foreground">Amount Paid:</span>
-                <span className="font-bold font-sans text-emerald-700">₹{paymentSuccess.amount.toLocaleString("en-IN")}.00</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Seva Purpose:</span>
-                <span className="font-semibold text-slate-800">{page.title}</span>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setPaymentSuccess(null)}
-              className="w-full py-3.5 bg-primary text-white rounded-xl font-bold text-xs shadow-md hover:bg-primary/95 transition cursor-pointer"
-            >
-              Done
-            </button>
-          </div>
-        </div>
+        <OfficialReceiptModal
+          data={{
+            receiptNo: paymentSuccess.paymentId,
+            date: new Date().toISOString(),
+            donorName: paymentSuccess.donorName,
+            amount: paymentSuccess.amount,
+            sevaTitle: page.title,
+            category: "Instant Payment Page",
+          }}
+          onClose={() => setPaymentSuccess(null)}
+        />
       )}
     </div>
   );

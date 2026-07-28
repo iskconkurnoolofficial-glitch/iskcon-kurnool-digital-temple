@@ -23,7 +23,8 @@ import {
   Youtube, 
   Facebook, 
   Instagram, 
-  MessageCircle 
+  MessageCircle,
+  Bell
 } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import LiveClassBanner from "@/components/LiveClassBanner";
@@ -79,7 +80,7 @@ const NAV: NavItem[] = [
 ];
 
 export default function Navbar() {
-  const { settings, sunday, gitaCourse, templeSchedule } = useAdmin();
+  const { settings, sunday, gitaCourse, templeSchedule, contacts, paymentRecords, previewLeads } = useAdmin();
   const liveClass = useLiveClass();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDrop, setOpenDrop] = useState<string | null>(null);
@@ -90,6 +91,11 @@ export default function Navbar() {
   
   const location = useLocation();
   const currentPath = location.pathname;
+
+  const unreadMessagesCount = (contacts || []).filter((c) => !c.read).length;
+  const unreadDonationsCount = (paymentRecords || []).filter((p) => !p.read).length;
+  const unreadLeadsCount = (previewLeads || []).filter((l) => !l.read).length;
+  const totalUnreadNotifications = unreadMessagesCount + unreadDonationsCount + unreadLeadsCount;
 
   useEffect(() => {
     const timer = setInterval(() => setTick((t) => t + 1), 10000);

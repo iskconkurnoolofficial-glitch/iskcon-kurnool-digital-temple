@@ -4,7 +4,7 @@ import { Video, Upload, Trash2, Download, Search, Play, Phone, User, Calendar, C
 import { UploadBox } from "./CarouselManager";
 
 export default function PreviewLeadsManager() {
-  const { settings, setSettings, previewLeads, setPreviewLeads } = useAdmin();
+  const { settings, setSettings, previewLeads, setPreviewLeads, markAllPreviewLeadsRead } = useAdmin();
   const [videoUrl, setVideoUrl] = useState(settings.previewVideoUrl || "");
   const [videoTitle, setVideoTitle] = useState(settings.previewVideoTitle || "Sri Sri Puri Jagannath Temple Preview");
   const [videoSubtitle, setVideoSubtitle] = useState(settings.previewVideoSubtitle || "Experience the divine preview of ISKCON Kurnool digital temple");
@@ -223,6 +223,17 @@ export default function PreviewLeadsManager() {
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
+            {previewLeads.some((l) => !l.read) && (
+              <button
+                onClick={markAllPreviewLeadsRead}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 font-bold border border-red-200 text-xs shadow transition cursor-pointer animate-pulse"
+                title="Mark all lead notifications as read"
+              >
+                <Check className="h-4 w-4 text-red-600" />
+                <span>Mark All Read ({previewLeads.filter((l) => !l.read).length})</span>
+              </button>
+            )}
+
             <button
               onClick={handleExportCSV}
               disabled={previewLeads.length === 0}

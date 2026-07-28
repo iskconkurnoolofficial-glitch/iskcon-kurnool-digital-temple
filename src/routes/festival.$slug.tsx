@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import SiteLayout from "@/components/SiteLayout";
 import { useAdmin, normalizeFestival, isFestivalLive, Festival, Seva } from "@/context/AdminContext";
+import OfficialReceiptModal, { ReceiptData } from "@/components/OfficialReceiptModal";
 import { Calendar, Heart, HandHeart, ArrowLeft, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/festival/$slug")({
@@ -112,24 +113,60 @@ function FestivalBanner({ f }: { f: Festival }) {
 }
 
 function SevaCard({ seva, festival, settings, theme }: { seva: Seva; festival: Festival; settings: any; theme: any }) {
+  const { addPaymentRecord, platformFee } = useAdmin();
   const [sel, setSel] = useState(0);
+  const [receiptSuccess, setReceiptSuccess] = useState<ReceiptData | null>(null);
+  const [coverPlatformFee, setCoverPlatformFee] = useState(true);
   const price = seva.prices[sel] ?? seva.prices[0];
 
   const donate = async () => {
     if (!price) return;
     const ok = await loadRazorpay();
     if (!ok) { alert("Unable to load payment gateway. Please try again."); return; }
+
+    const platformCharge = platformFee.enabled && coverPlatformFee ? calculatePlatformFee(price.amount, platformFee) : 0;
+    const totalPayable = price.amount + platformCharge;
+
     const rzp = new (window as any).Razorpay({
       key: RAZORPAY_KEY,
-      amount: Math.round(price.amount * 100),
+      amount: Math.round(totalPayable * 100),
       currency: "INR",
       name: "ISKCON Kurnool",
       description: `${festival.title} — ${seva.title} (${price.label})`,
       image: settings.logo || undefined,
-      notes: { festival: festival.title, seva: seva.title, option: price.label },
+      notes: { festival: festival.title, seva: seva.title, option: price.label, baseDonation: price.amount, platformFeeCovered: platformCharge },
       prefill: { contact: settings.phone?.replace(/\D/g, "") || "" },
       theme: { color: theme.primary || "#5b2c9b" },
-      handler: () => { alert(`🙏 Hare Krishna! Thank you for your ${seva.title} seva.`); },
+      handler: async (response: any) => {
+        const pId = response?.razorpay_payment_id || `pay_${Date.now()}`;
+        try {
+          await addPaymentRecord({
+            paymentId: pId,
+            donorName: "Devotee",
+            donorEmail: "",
+            donorPhone: settings.phone || "",
+            amount: totalPayable,
+            baseAmount: price.amount,
+            platformFee: platformCharge,
+            currency: "INR",
+            category: `Festival Seva: ${festival.title}`,
+            sevaOrPageTitle: `${seva.title} (${price.label})`,
+            status: "Completed",
+            paymentMethod: "Razorpay",
+          });
+        } catch (err) {
+          console.error("Failed to store festival payment record:", err);
+        }
+
+        setReceiptSuccess({
+          receiptNo: pId,
+          date: new Date().toISOString(),
+          donorName: "Devotee",
+          amount: totalPayable,
+          sevaTitle: `${seva.title} (${price.label})`,
+          category: `Festival: ${festival.title}`,
+        });
+      },
     });
     rzp.open();
   };
@@ -164,10 +201,36 @@ function SevaCard({ seva, festival, settings, theme }: { seva: Seva; festival: F
           ))}
         </div>
 
+        {platformFee.enabled && price && price.amount > 0 && (
+          <div className="mb-3 space-y-1.5 text-xs text-slate-700">
+            <label className="flex items-start gap-2 cursor-pointer font-medium select-none">
+              <input
+                type="checkbox"
+                checked={coverPlatformFee}
+                onChange={(e) => setCoverPlatformFee(e.target.checked)}
+                className="mt-0.5 h-3.5 w-3.5 rounded text-primary focus:ring-primary cursor-pointer accent-primary"
+              />
+              <span>
+                {platformFee.label || "Cover gateway fee"}{" "}
+                <span className="text-emerald-600 font-bold font-sans">
+                  (+₹{calculatePlatformFee(price.amount, platformFee)})
+                </span>
+              </span>
+            </label>
+          </div>
+        )}
+
         <button onClick={donate} className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-hero text-primary-foreground font-semibold hover:shadow-gold transition-all">
-          <Heart className="h-4 w-4" /> Donate {price ? `₹${price.amount.toLocaleString("en-IN")}` : "Now"}
+          <Heart className="h-4 w-4" /> Donate {price ? `₹${(price.amount + (platformFee.enabled && coverPlatformFee ? calculatePlatformFee(price.amount, platformFee) : 0)).toLocaleString("en-IN")}` : "Now"}
         </button>
       </div>
+
+      {receiptSuccess && (
+        <OfficialReceiptModal
+          data={receiptSuccess}
+          onClose={() => setReceiptSuccess(null)}
+        />
+      )}
     </div>
   );
 }

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate, Outlet } from "@tanstack/react-router";
 import SiteLayout, { PageHero } from "@/components/SiteLayout";
-import { useAdmin, Seva } from "@/context/AdminContext";
+import { useAdmin, Seva, calculatePlatformFee } from "@/context/AdminContext";
+import OfficialReceiptModal, { ReceiptData } from "@/components/OfficialReceiptModal";
 import { Heart, Search, HandHeart, IndianRupee, Sparkles, ArrowLeft, Lock, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/donate")({
@@ -29,11 +30,15 @@ function loadRazorpay(): Promise<boolean> {
 }
 
 export default function Page({ initialSlug }: { initialSlug?: string }) {
-  const { sevas, settings, theme, ready } = useAdmin();
+  const { sevas, settings, theme, addPaymentRecord, platformFee, ready } = useAdmin();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Record<string, number>>({});
   const [checkoutSeva, setCheckoutSeva] = useState<Seva | null>(null);
+
+  // Success Receipt Modal State
+  const [receiptSuccess, setReceiptSuccess] = useState<ReceiptData | null>(null);
+  const [coverPlatformFee, setCoverPlatformFee] = useState(true);
 
   // Form inputs
   const [donorName, setDonorName] = useState("");
@@ -79,9 +84,13 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   const donate = async (seva: Seva, amount: number, label: string) => {
     const ok = await loadRazorpay();
     if (!ok) { alert("Unable to load payment gateway. Please try again."); return; }
+
+    const platformCharge = platformFee.enabled && coverPlatformFee ? calculatePlatformFee(amount, platformFee) : 0;
+    const totalPayable = amount + platformCharge;
+
     const rzp = new (window as any).Razorpay({
       key: RAZORPAY_KEY,
-      amount: Math.round(amount * 100),
+      amount: Math.round(totalPayable * 100),
       currency: "INR",
       name: "ISKCON Kurnool",
       description: `${seva.title} — ${label}`,
@@ -89,6 +98,8 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       notes: {
         seva: seva.title,
         option: label,
+        baseDonation: amount,
+        platformFeeCovered: platformCharge,
         donorName: donorName.trim(),
         purpose: purpose.trim(),
         email: email.trim(),
@@ -101,8 +112,50 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
         contact: phone.trim() || settings.phone?.replace(/\D/g, "") || undefined
       },
       theme: { color: theme.primary || "#5b2c9b" },
-      handler: () => {
-        alert(`🙏 Hare Krishna! Thank you for your ${seva.title} seva, ${donorName.trim() || "Devotee"}.`);
+      handler: async (response: any) => {
+        const pId = response?.razorpay_payment_id || `pay_${Date.now()}`;
+        const currentDonorName = donorName.trim() || "Devotee";
+        const currentEmail = email.trim();
+        const currentPhone = phone.trim();
+        const currentPan = pan.trim();
+        const currentNotes = purpose.trim();
+
+        try {
+          await addPaymentRecord({
+            paymentId: pId,
+            donorName: currentDonorName,
+            donorEmail: currentEmail,
+            donorPhone: currentPhone,
+            amount: totalPayable,
+            baseAmount: amount,
+            platformFee: platformCharge,
+            currency: "INR",
+            category: `General Seva: ${seva.title}`,
+            sevaOrPageTitle: `${seva.title} (${label})`,
+            status: "Completed",
+            paymentMethod: "Razorpay",
+            panNumber: currentPan || undefined,
+            notes: currentNotes || undefined,
+            taxReceiptRequested: !!currentPan,
+          });
+        } catch (err) {
+          console.error("Failed to store payment record:", err);
+        }
+
+        // Show Official Downloadable Receipt Modal
+        setReceiptSuccess({
+          receiptNo: pId,
+          date: new Date().toISOString(),
+          donorName: currentDonorName,
+          donorEmail: currentEmail,
+          donorPhone: currentPhone,
+          amount: totalPayable,
+          sevaTitle: `${seva.title} (${label})`,
+          category: "General Seva",
+          notes: currentNotes,
+          panNumber: currentPan,
+        });
+
         setCheckoutSeva(null);
         setDonorName("");
         setPurpose("");
@@ -286,13 +339,53 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                     </div>
                   </div>
 
+                  {/* Platform / Gateway Charges Checkbox & Donation Summary */}
+                  {platformFee.enabled && currentPrice.amount > 0 && (
+                    <div className="pt-3 border-t border-slate-100 space-y-3">
+                      <label className="flex items-start gap-2.5 cursor-pointer text-xs font-semibold select-none text-slate-700">
+                        <input
+                          type="checkbox"
+                          checked={coverPlatformFee}
+                          onChange={(e) => setCoverPlatformFee(e.target.checked)}
+                          className="mt-0.5 h-4 w-4 rounded text-primary focus:ring-primary cursor-pointer accent-primary"
+                        />
+                        <span>
+                          {platformFee.label || "I would like to cover the payment gateway charges"}{" "}
+                          <span className="text-emerald-600 font-bold font-sans">
+                            (+₹{calculatePlatformFee(currentPrice.amount, platformFee)})
+                          </span>
+                        </span>
+                      </label>
+
+                      {/* Summary Breakdown */}
+                      <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-1.5 text-slate-700">
+                        <div className="flex justify-between">
+                          <span>Donation Amount:</span>
+                          <span className="font-bold font-sans text-slate-900">₹{currentPrice.amount.toLocaleString("en-IN")}.00</span>
+                        </div>
+                        {coverPlatformFee && (
+                          <div className="flex justify-between text-emerald-600 font-medium">
+                            <span>Platform Charge ({platformFee.type === "percentage" ? `${platformFee.value}%` : `₹${platformFee.value}`}):</span>
+                            <span className="font-bold font-sans">+₹{calculatePlatformFee(currentPrice.amount, platformFee)}.00</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between font-bold border-t border-slate-200 pt-1.5 text-slate-900 text-sm">
+                          <span>Total Payable:</span>
+                          <span className="font-sans text-primary">₹{(currentPrice.amount + (coverPlatformFee ? calculatePlatformFee(currentPrice.amount, platformFee) : 0)).toLocaleString("en-IN")}.00</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="pt-4 border-t border-slate-100 space-y-4">
                     <button
                       type="submit"
                       className="relative group overflow-hidden w-full py-4 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white font-extrabold rounded-2xl transition-all duration-300 cursor-pointer flex items-center justify-center gap-2.5 text-base tracking-wide uppercase shadow-[0_6px_22px_rgba(249,115,22,0.4)] hover:shadow-[0_8px_30px_rgba(249,115,22,0.6)] hover:scale-[1.01] active:scale-98 ring-2 ring-amber-300/30"
                     >
                       <Lock className="h-4.5 w-4.5 transition-transform group-hover:scale-110" />
-                      <span className="relative z-10">DONATE ₹{currentPrice.amount.toLocaleString("en-IN")}</span>
+                      <span className="relative z-10">
+                        DONATE ₹{(currentPrice.amount + (platformFee.enabled && coverPlatformFee ? calculatePlatformFee(currentPrice.amount, platformFee) : 0)).toLocaleString("en-IN")}
+                      </span>
                       <Heart className="h-4.5 w-4.5 fill-white/20 stroke-[2.5] text-white transition-transform duration-300 group-hover:scale-125 group-hover:fill-white" />
                       <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/35 to-transparent" />
                     </button>
@@ -395,6 +488,14 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
           </p>
         </div>
       </section>
+
+      {/* Official Downloadable Receipt Modal */}
+      {receiptSuccess && (
+        <OfficialReceiptModal
+          data={receiptSuccess}
+          onClose={() => setReceiptSuccess(null)}
+        />
+      )}
     </SiteLayout>
   );
 }

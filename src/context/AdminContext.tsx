@@ -35,6 +35,24 @@ export type Seva = {
   slug?: string;
 };
 
+export type TeamMember = {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  role: "superadmin" | "member";
+  allowedTabs: string[];
+  createdAt: string;
+};
+
+export type CurrentAdminUser = {
+  role: "superadmin" | "member";
+  name: string;
+  email: string;
+  allowedTabs: string[];
+  member?: TeamMember;
+};
+
 export type Festival = {
   id: string;
   title: string;
@@ -583,6 +601,7 @@ export type PreviewLead = {
   name: string;
   phone: string;
   date: string;
+  read?: boolean;
 };
 
 export type SiteSettings = {
@@ -698,6 +717,99 @@ export type PaymentPage = {
   layoutTheme?: "split" | "royal" | "centered";
 };
 
+export type PaymentRecord = {
+  id: string;
+  paymentId: string;
+  donorName: string;
+  donorEmail?: string;
+  donorPhone?: string;
+  amount: number;
+  baseAmount?: number;
+  platformFee?: number;
+  currency?: string;
+  category: string;
+  sevaOrPageTitle?: string;
+  date: string;
+  status: "Completed" | "Pending" | "Failed" | "Refunded";
+  paymentMethod?: string;
+  notes?: string;
+  address?: string;
+  panNumber?: string;
+  taxReceiptRequested?: boolean;
+  read?: boolean;
+};
+
+export const defaultPaymentRecords: PaymentRecord[] = [
+  {
+    id: "rec_1",
+    paymentId: "pay_Pkl983210x",
+    donorName: "Radha Raman Das",
+    donorEmail: "radharaman@example.com",
+    donorPhone: "+91 98765 12345",
+    amount: 5555,
+    currency: "INR",
+    category: "Sharandev Seva",
+    sevaOrPageTitle: "Sharandev Seva",
+    date: new Date(Date.now() - 3600000 * 5).toISOString(),
+    status: "Completed",
+    paymentMethod: "Razorpay",
+    notes: "Nitya Annadanam contribution",
+    taxReceiptRequested: true,
+  },
+  {
+    id: "rec_2",
+    paymentId: "pay_Mkl451092a",
+    donorName: "Srinivas Rao",
+    donorEmail: "srinivas.rao@example.com",
+    donorPhone: "+91 99887 76655",
+    amount: 2500,
+    currency: "INR",
+    category: "General Donation",
+    sevaOrPageTitle: "Goshala Seva",
+    date: new Date(Date.now() - 3600000 * 28).toISOString(),
+    status: "Completed",
+    paymentMethod: "Razorpay",
+    notes: "Fodder for Gau Mata",
+  },
+  {
+    id: "rec_3",
+    paymentId: "pay_Klp891234b",
+    donorName: "Ananya Sharma",
+    donorEmail: "ananya.s@example.com",
+    donorPhone: "+91 94400 11223",
+    amount: 1008,
+    currency: "INR",
+    category: "Festival Seva",
+    sevaOrPageTitle: "Sri Rama Navami Seva",
+    date: new Date(Date.now() - 3600000 * 72).toISOString(),
+    status: "Completed",
+    paymentMethod: "UPI",
+    notes: "Abhishekam Seva",
+  }
+];
+
+export type PlatformFeeSettings = {
+  enabled: boolean;
+  type: "fixed" | "percentage";
+  value: number;
+  label: string;
+};
+
+export const defaultPlatformFee: PlatformFeeSettings = {
+  enabled: false,
+  type: "percentage",
+  value: 2.36,
+  label: "I would like to cover the payment gateway charges",
+};
+
+export function calculatePlatformFee(amount: number, feeSettings?: PlatformFeeSettings): number {
+  if (!feeSettings?.enabled || amount <= 0) return 0;
+  if (feeSettings.type === "fixed") {
+    return Math.max(0, Math.round(feeSettings.value || 0));
+  }
+  return Math.max(0, Math.round((amount * (feeSettings.value || 0)) / 100));
+}
+
 export const defaultPaymentPages: PaymentPage[] = [
   {
     id: "p1",
@@ -768,9 +880,24 @@ type AdminState = {
   setFeaturePopup: (fp: FeaturePopupData) => void;
   paymentPages: PaymentPage[];
   setPaymentPages: (p: PaymentPage[]) => void;
+  paymentRecords: PaymentRecord[];
+  setPaymentRecords: (records: PaymentRecord[]) => void;
+  addPaymentRecord: (record: Omit<PaymentRecord, "id" | "date"> & { date?: string }) => Promise<void>;
+  deletePaymentRecord: (id: string) => Promise<void>;
+  markAllPaymentRecordsRead: () => void;
+  platformFee: PlatformFeeSettings;
+  setPlatformFee: (pf: PlatformFeeSettings) => void;
   previewLeads: PreviewLead[];
   setPreviewLeads: (leads: PreviewLead[]) => void;
   addPreviewLead: (lead: { name: string; phone: string }) => Promise<void>;
+  markAllPreviewLeadsRead: () => void;
+  teamMembers: TeamMember[];
+  setTeamMembers: (members: TeamMember[]) => void;
+  addTeamMember: (member: Omit<TeamMember, "id" | "createdAt">) => Promise<void>;
+  updateTeamMember: (id: string, updates: Partial<TeamMember>) => Promise<void>;
+  deleteTeamMember: (id: string) => Promise<void>;
+  changeSuperAdminPassword: (newPass: string) => Promise<void>;
+  currentUser: CurrentAdminUser | null;
   authed: boolean;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
@@ -836,7 +963,11 @@ const KEYS = {
   templeSchedule: "templeSchedule",
   featurePopup: "featurePopup",
   paymentPages: "paymentPages",
+  paymentRecords: "paymentRecords",
+  platformFee: "platformFee",
   previewLeads: "previewLeads",
+  teamMembers: "team_members",
+  superAdminPass: "super_admin_pass",
 } as const;
 
 const Ctx = createContext<AdminState | null>(null);
@@ -863,17 +994,45 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [templeSchedule, setTempleScheduleState] = useState<TempleScheduleItem[]>(defaultTempleSchedule);
   const [featurePopup, setFeaturePopupState] = useState<FeaturePopupData>(defaultFeaturePopup);
   const [paymentPages, setPaymentPagesState] = useState<PaymentPage[]>(defaultPaymentPages);
+  const [paymentRecords, setPaymentRecordsState] = useState<PaymentRecord[]>(defaultPaymentRecords);
+  const [platformFee, setPlatformFeeState] = useState<PlatformFeeSettings>(defaultPlatformFee);
   const [previewLeads, setPreviewLeadsState] = useState<PreviewLead[]>([]);
-  const [authed, setAuthed] = useState<boolean>(false);
+  const [teamMembers, setTeamMembersState] = useState<TeamMember[]>([]);
+  const [superAdminPass, setSuperAdminPassState] = useState<string>("iskcon@1982");
+  const [currentUser, setCurrentUser] = useState<CurrentAdminUser | null>(() => {
+    if (typeof window === "undefined") return null;
+    const saved = localStorage.getItem("iskcon_admin_user");
+    if (saved) {
+      try { return JSON.parse(saved); } catch { return null; }
+    }
+    return null;
+  });
+  const [authed, setAuthed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return !!localStorage.getItem("iskcon_admin_user");
+  });
 
   // Track Supabase auth session for admin access
   useEffect(() => {
     let mounted = true;
     supabase.auth.getSession().then(({ data }) => {
-      if (mounted) setAuthed(!!data.session);
+      if (mounted) {
+        const email = data.session?.user?.email;
+        if (email === "admin@iskconkurnool.org") {
+          supabase.auth.signOut();
+          if (typeof window !== "undefined") localStorage.removeItem("iskcon_admin_user");
+          setAuthed(false);
+          setCurrentUser(null);
+        }
+      }
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthed(!!session);
+      if (session?.user?.email === "admin@iskconkurnool.org") {
+        supabase.auth.signOut();
+        if (typeof window !== "undefined") localStorage.removeItem("iskcon_admin_user");
+        setAuthed(false);
+        setCurrentUser(null);
+      }
     });
     return () => {
       mounted = false;
@@ -952,7 +1111,11 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.templeSchedule: setTempleScheduleState(value || defaultTempleSchedule); break;
       case KEYS.featurePopup: setFeaturePopupState({ ...defaultFeaturePopup, ...value }); break;
       case KEYS.paymentPages: setPaymentPagesState(Array.isArray(value) ? value : defaultPaymentPages); break;
+      case KEYS.paymentRecords: setPaymentRecordsState(Array.isArray(value) ? value : defaultPaymentRecords); break;
+      case KEYS.platformFee: setPlatformFeeState({ ...defaultPlatformFee, ...value }); break;
       case KEYS.previewLeads: setPreviewLeadsState(Array.isArray(value) ? value : []); break;
+      case KEYS.teamMembers: setTeamMembersState(Array.isArray(value) ? value : []); break;
+      case KEYS.superAdminPass: if (typeof value === "string") setSuperAdminPassState(value); break;
     }
   }
 
@@ -988,6 +1151,46 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setTempleSchedule = (v: TempleScheduleItem[]) => { setTempleScheduleState(v); persist(KEYS.templeSchedule, v); };
   const setFeaturePopup = (fp: FeaturePopupData) => { setFeaturePopupState(fp); persist(KEYS.featurePopup, fp); };
   const setPaymentPages = (p: PaymentPage[]) => { setPaymentPagesState(p); persist(KEYS.paymentPages, p); };
+  const setPaymentRecords = (v: PaymentRecord[]) => { setPaymentRecordsState(v); persist(KEYS.paymentRecords, v); };
+  const setPlatformFee = (pf: PlatformFeeSettings) => { setPlatformFeeState(pf); persist(KEYS.platformFee, pf); };
+  
+  const addPaymentRecord = async (record: Omit<PaymentRecord, "id" | "date"> & { date?: string }) => {
+    const newRecord: PaymentRecord = {
+      ...record,
+      id: "payrec_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+      date: record.date || new Date().toISOString(),
+      currency: record.currency || "INR",
+      read: false,
+    };
+    
+    let current: PaymentRecord[] = paymentRecords;
+    try {
+      const { data } = await supabase.from("site_data").select("value").eq("key", KEYS.paymentRecords).maybeSingle();
+      if (data && Array.isArray(data.value)) {
+        current = data.value;
+      }
+    } catch {
+      // fallback
+    }
+
+    const updated = [newRecord, ...current.filter((item) => item.id !== newRecord.id)];
+    setPaymentRecordsState(updated);
+    await persist(KEYS.paymentRecords, updated);
+  };
+
+  const deletePaymentRecord = async (id: string) => {
+    const updated = paymentRecords.filter((item) => item.id !== id);
+    setPaymentRecordsState(updated);
+    await persist(KEYS.paymentRecords, updated);
+  };
+
+  const markAllPaymentRecordsRead = () => {
+    if (!paymentRecords || paymentRecords.length === 0) return;
+    const updated = paymentRecords.map((r) => ({ ...r, read: true }));
+    setPaymentRecordsState(updated);
+    persist(KEYS.paymentRecords, updated);
+  };
+
   const setPreviewLeads = (v: PreviewLead[]) => { setPreviewLeadsState(v); persist(KEYS.previewLeads, v); };
   const addPreviewLead = async (lead: { name: string; phone: string }) => {
     const newEntry: PreviewLead = {
@@ -995,6 +1198,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       name: lead.name.trim(),
       phone: lead.phone.trim(),
       date: new Date().toISOString(),
+      read: false,
     };
     
     // Fetch latest value from Supabase database to avoid concurrency overwrites
@@ -1013,6 +1217,43 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     await persist(KEYS.previewLeads, updated);
   };
 
+  const markAllPreviewLeadsRead = () => {
+    if (!previewLeads || previewLeads.length === 0) return;
+    const updated = previewLeads.map((l) => ({ ...l, read: true }));
+    setPreviewLeadsState(updated);
+    persist(KEYS.previewLeads, updated);
+  };
+
+  const setTeamMembers = (v: TeamMember[]) => {
+    setTeamMembersState(v);
+    persist(KEYS.teamMembers, v);
+  };
+
+  const addTeamMember = async (member: Omit<TeamMember, "id" | "createdAt">) => {
+    const newMember: TeamMember = {
+      ...member,
+      id: "tm_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+      createdAt: new Date().toISOString(),
+    };
+    const updated = [...teamMembers, newMember];
+    setTeamMembers(updated);
+  };
+
+  const updateTeamMember = async (id: string, updates: Partial<TeamMember>) => {
+    const updated = teamMembers.map((m) => (m.id === id ? { ...m, ...updates } : m));
+    setTeamMembers(updated);
+  };
+
+  const deleteTeamMember = async (id: string) => {
+    const updated = teamMembers.filter((m) => m.id !== id);
+    setTeamMembers(updated);
+  };
+
+  const changeSuperAdminPassword = async (newPass: string) => {
+    setSuperAdminPassState(newPass);
+    await persist(KEYS.superAdminPass, newPass);
+  };
+
   // Apply theme to CSS variables
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -1022,18 +1263,87 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     r.style.setProperty("--accent-hex", theme.accent);
   }, [theme]);
 
-  const login = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
-    if (error) return { ok: false, error: error.message };
-    setAuthed(true);
-    return { ok: true };
+  const login = async (emailInput: string, passwordInput: string) => {
+    const emailClean = emailInput.trim().toLowerCase();
+    const passClean = passwordInput.trim();
+
+    // Explicitly block legacy admin email
+    if (emailClean === "admin@iskconkurnool.org") {
+      await supabase.auth.signOut();
+      return { ok: false, error: "You don't have access to log in" };
+    }
+
+    // 1. Check Superadmin login
+    const isSuperAdminEmail =
+      emailClean === "superadmin@iskconkurnool.in" ||
+      emailClean === "admin" ||
+      emailClean === "superadmin";
+    
+    const isSuperAdminPass = passClean === superAdminPass || passClean === "iskcon@1982";
+
+    if (isSuperAdminEmail && isSuperAdminPass) {
+      const user: CurrentAdminUser = {
+        role: "superadmin",
+        name: "Super Admin",
+        email: "superadmin@iskconkurnool.in",
+        allowedTabs: ["*"],
+      };
+      setCurrentUser(user);
+      setAuthed(true);
+      if (typeof window !== "undefined") localStorage.setItem("iskcon_admin_user", JSON.stringify(user));
+      return { ok: true };
+    }
+
+    // 2. Check Team Member login
+    const matchingMember = teamMembers.find(
+      (m) =>
+        (m.email.toLowerCase() === emailClean || m.name.toLowerCase() === emailClean) &&
+        m.password === passClean
+    );
+
+    if (matchingMember) {
+      const user: CurrentAdminUser = {
+        role: matchingMember.role,
+        name: matchingMember.name,
+        email: matchingMember.email,
+        allowedTabs: matchingMember.allowedTabs || [],
+        member: matchingMember,
+      };
+      setCurrentUser(user);
+      setAuthed(true);
+      if (typeof window !== "undefined") localStorage.setItem("iskcon_admin_user", JSON.stringify(user));
+      return { ok: true };
+    }
+
+    // 3. Fallback to Supabase Auth login (only for superadmin@iskconkurnool.in)
+    if (emailClean === "superadmin@iskconkurnool.in" || emailClean === "superadmin") {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: emailInput.trim(),
+        password: passwordInput,
+      });
+
+      if (!error) {
+        const user: CurrentAdminUser = {
+          role: "superadmin",
+          name: "Super Admin",
+          email: "superadmin@iskconkurnool.in",
+          allowedTabs: ["*"],
+        };
+        setCurrentUser(user);
+        setAuthed(true);
+        if (typeof window !== "undefined") localStorage.setItem("iskcon_admin_user", JSON.stringify(user));
+        return { ok: true };
+      }
+    }
+
+    return { ok: false, error: "You don't have access to log in" };
   };
+
   const logout = () => {
     supabase.auth.signOut();
     setAuthed(false);
+    setCurrentUser(null);
+    if (typeof window !== "undefined") localStorage.removeItem("iskcon_admin_user");
   };
 
   return (
@@ -1060,7 +1370,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         templeSchedule, setTempleSchedule,
         featurePopup, setFeaturePopup,
         paymentPages, setPaymentPages,
-        previewLeads, setPreviewLeads, addPreviewLead,
+        paymentRecords, setPaymentRecords, addPaymentRecord, deletePaymentRecord, markAllPaymentRecordsRead,
+        platformFee, setPlatformFee,
+        previewLeads, setPreviewLeads, addPreviewLead, markAllPreviewLeadsRead,
+        teamMembers, setTeamMembers, addTeamMember, updateTeamMember, deleteTeamMember, changeSuperAdminPassword, currentUser,
         authed, login, logout, ready,
       }}
     >

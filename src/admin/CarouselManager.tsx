@@ -51,54 +51,184 @@ export default function CarouselManager() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="bg-white rounded-2xl shadow p-6 border">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display text-xl font-bold text-primary">{editingId ? "Edit Slide" : "Add New Slide"}</h3>
-          {editingId && (
-            <button onClick={resetForm} className="text-sm text-muted-foreground hover:text-primary inline-flex items-center gap-1"><X className="h-4 w-4" /> Cancel</button>
-          )}
+    <div className="space-y-6 font-sans animate-fade-in">
+      {/* SECTION HEADER BANNER */}
+      <div className="bg-gradient-to-r from-primary via-[#4a2282] to-primary rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full text-xs font-semibold text-amber-200 backdrop-blur-md mb-2">
+              <Upload className="h-3.5 w-3.5" />
+              <span>Homepage Media Slider</span>
+            </div>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight">Carousel Banners</h1>
+            <p className="text-xs sm:text-sm text-white/80 mt-1 max-w-xl">
+              Add, reorder, edit titles, and manage desktop/mobile banners or looping video slides for the main homepage carousel.
+            </p>
+          </div>
+
+          <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-2xl border border-white/15 text-center shrink-0">
+            <span className="text-[10px] uppercase tracking-wider font-semibold text-white/70 block">Total Slides</span>
+            <span className="text-xl font-extrabold text-white">{slides.length}</span>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-6 mb-4">
-          <UploadBox label="Desktop Image (4917×1750)" url={draft.desktop} onPick={(f) => upload(f, "desktop")} aspect="aspect-video" className="w-full max-w-[180px]" />
-          <UploadBox label="Mobile Image (1080×1350)" url={draft.mobile} onPick={(f) => upload(f, "mobile")} aspect="aspect-[4/5]" className="w-full max-w-[130px]" />
-          <VideoUploadBox label="Video (optional)" url={draft.video} onPick={(f) => upload(f, "video")} onClear={() => setDraft((d) => ({ ...d, video: undefined }))} aspect="aspect-video" className="w-full max-w-[180px]" />
-        </div>
-        <div className="grid md:grid-cols-2 gap-4 mt-4">
-          <input className="px-4 py-2.5 border rounded-lg" placeholder="Title (optional)" value={draft.title || ""} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
-          <input className="px-4 py-2.5 border rounded-lg" placeholder="Subtitle (optional)" value={draft.subtitle || ""} onChange={(e) => setDraft({ ...draft, subtitle: e.target.value })} />
-        </div>
-        <button disabled={busy} onClick={save} className="mt-4 px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium disabled:opacity-50">
-          {busy ? "Uploading..." : editingId ? "Update Slide" : "Add Slide"}
-        </button>
       </div>
 
-      <div>
-        <h3 className="font-display text-xl font-bold text-primary mb-4">Existing Slides ({slides.length})</h3>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {slides.map((s, i) => (
-            <div key={s.id} className={`bg-white rounded-xl shadow border overflow-hidden ${editingId === s.id ? "ring-2 ring-accent" : ""}`}>
-              {s.video ? (
-                <video src={s.video} className="w-full aspect-video object-cover" muted loop playsInline />
-              ) : (
-                <img src={s.desktop} alt="" className="w-full aspect-video object-cover" />
-              )}
-              <div className="p-3 space-y-2">
-                <div className="text-sm font-medium truncate">{s.title || "(no title)"}</div>
-                <div className="text-xs text-muted-foreground truncate">{s.subtitle}</div>
-                <div className="flex gap-1">
-                  <button onClick={() => move(i, -1)} className="p-2 rounded hover:bg-muted" aria-label="Move up"><ArrowUp className="h-4 w-4" /></button>
-                  <button onClick={() => move(i, 1)} className="p-2 rounded hover:bg-muted" aria-label="Move down"><ArrowDown className="h-4 w-4" /></button>
-                  <button onClick={() => setSlides(slides.map((x) => x.id === s.id ? { ...x, active: !x.active } : x))} className="p-2 rounded hover:bg-muted" aria-label="Toggle visible">
-                    {s.active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
-                  </button>
-                  <button onClick={() => startEdit(s)} className="p-2 rounded hover:bg-accent/10 text-accent" aria-label="Edit"><Pencil className="h-4 w-4" /></button>
-                  <button onClick={() => setSlides(slides.filter((x) => x.id !== s.id))} className="p-2 rounded hover:bg-destructive/10 text-destructive ml-auto" aria-label="Delete"><Trash2 className="h-4 w-4" /></button>
+      {/* EDIT / ADD SLIDE FORM CARD */}
+      <div className="bg-white rounded-3xl p-6 border shadow-sm space-y-6">
+        <div className="flex items-center justify-between border-b pb-4">
+          <h3 className="font-display text-xl font-bold text-primary">
+            {editingId ? "Edit Slide Configuration" : "Add New Hero Banner Slide"}
+          </h3>
+          {editingId && (
+            <button
+              onClick={resetForm}
+              className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition inline-flex items-center gap-1 cursor-pointer"
+            >
+              <X className="h-4 w-4" /> Cancel Edit
+            </button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <UploadBox
+            label="Desktop Image (4917×1750)"
+            url={draft.desktop}
+            onPick={(f) => upload(f, "desktop")}
+            aspect="aspect-video"
+            className="w-full"
+          />
+          <UploadBox
+            label="Mobile Image (1080×1350)"
+            url={draft.mobile}
+            onPick={(f) => upload(f, "mobile")}
+            aspect="aspect-[4/5]"
+            className="w-full"
+          />
+          <VideoUploadBox
+            label="Video Slide (Optional)"
+            url={draft.video}
+            onPick={(f) => upload(f, "video")}
+            onClear={() => setDraft((d) => ({ ...d, video: undefined }))}
+            aspect="aspect-video"
+            className="w-full"
+          />
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Slide Title (Optional)</label>
+            <input
+              className="w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="e.g. Welcome to ISKCON Kurnool Digital Temple"
+              value={draft.title || ""}
+              onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Subtitle (Optional)</label>
+            <input
+              className="w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="e.g. Sri Sri Puri Jagannath Temple"
+              value={draft.subtitle || ""}
+              onChange={(e) => setDraft({ ...draft, subtitle: e.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end">
+          <button
+            disabled={busy}
+            onClick={save}
+            className="px-6 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-sm shadow-md transition disabled:opacity-50 cursor-pointer"
+          >
+            {busy ? "Uploading Media..." : editingId ? "Update Slide" : "Add Slide to Carousel"}
+          </button>
+        </div>
+      </div>
+
+      {/* EXISTING SLIDES GRID */}
+      <div className="space-y-4">
+        <h3 className="font-display text-lg font-bold text-primary">Live Carousel Slides ({slides.length})</h3>
+        {slides.length === 0 ? (
+          <div className="p-12 bg-white rounded-3xl border border-dashed text-center space-y-2">
+            <p className="font-bold text-slate-600 text-sm">No Slides Created</p>
+            <p className="text-xs text-slate-400">Use the editor form above to add image or video banners to the homepage carousel.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {slides.map((s, i) => (
+              <div
+                key={s.id}
+                className={`bg-white rounded-2xl shadow-sm border overflow-hidden transition-all duration-300 ${
+                  editingId === s.id ? "ring-2 ring-primary border-primary shadow-md" : "hover:border-slate-300"
+                }`}
+              >
+                <div className="relative">
+                  {s.video ? (
+                    <video src={s.video} className="w-full aspect-video object-cover" muted loop playsInline autoPlay />
+                  ) : (
+                    <img src={s.desktop} alt="" className="w-full aspect-video object-cover" />
+                  )}
+                  <div className="absolute top-2.5 right-2.5">
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider backdrop-blur-md shadow-xs ${
+                      s.active ? "bg-emerald-600/90 text-white" : "bg-slate-900/80 text-white/80"
+                    }`}>
+                      {s.active ? "Active" : "Hidden"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-4 space-y-3">
+                  <div>
+                    <h4 className="font-bold text-sm text-slate-900 truncate">{s.title || "(Untitled Slide)"}</h4>
+                    <p className="text-xs text-slate-400 truncate mt-0.5">{s.subtitle || "No subtitle"}</p>
+                  </div>
+
+                  <div className="flex items-center gap-1 pt-2 border-t border-slate-100">
+                    <button
+                      onClick={() => move(i, -1)}
+                      disabled={i === 0}
+                      className="p-2 rounded-xl hover:bg-slate-100 disabled:opacity-30 text-slate-600 transition"
+                      title="Move Up"
+                    >
+                      <ArrowUp className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => move(i, 1)}
+                      disabled={i === slides.length - 1}
+                      className="p-2 rounded-xl hover:bg-slate-100 disabled:opacity-30 text-slate-600 transition"
+                      title="Move Down"
+                    >
+                      <ArrowDown className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => setSlides(slides.map((x) => x.id === s.id ? { ...x, active: !x.active } : x))}
+                      className="p-2 rounded-xl hover:bg-slate-100 text-slate-600 transition"
+                      title="Toggle Visibility"
+                    >
+                      {s.active ? <Eye className="h-4 w-4 text-emerald-600" /> : <EyeOff className="h-4 w-4 text-slate-400" />}
+                    </button>
+                    <button
+                      onClick={() => startEdit(s)}
+                      className="p-2 rounded-xl hover:bg-primary/10 text-primary transition"
+                      title="Edit"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => setSlides(slides.filter((x) => x.id !== s.id))}
+                      className="p-2 rounded-xl hover:bg-rose-50 text-rose-600 transition ml-auto"
+                      title="Delete"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
