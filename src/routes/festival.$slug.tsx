@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import SiteLayout from "@/components/SiteLayout";
-import { useAdmin, normalizeFestival, isFestivalLive, Festival, Seva } from "@/context/AdminContext";
+import { useAdmin, normalizeFestival, isFestivalLive, calculatePlatformFee, Festival, Seva } from "@/context/AdminContext";
 import OfficialReceiptModal, { ReceiptData } from "@/components/OfficialReceiptModal";
 import { Calendar, Heart, HandHeart, ArrowLeft, Sparkles } from "lucide-react";
 

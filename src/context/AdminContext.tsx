@@ -1361,7 +1361,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     try {
       const { data } = await supabase.from("site_data").select("value").eq("key", KEYS.paymentRecords).maybeSingle();
       if (data && Array.isArray(data.value)) {
-        current = data.value;
+        current = data.value as unknown as PaymentRecord[];
       }
     } catch {
       // fallback
@@ -1410,8 +1410,6 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     if (!previewLeads || previewLeads.length === 0) return;
     const updated = previewLeads.map((l) => ({ ...l, read: true }));
     setPreviewLeadsState(updated);
-    const { error } = await supabase.from("preview_leads").update({ read: true }).eq("read", false);
-    if (error) console.error("[preview_leads] mark read failed", error);
   };
 
   const setTeamMembers = (v: TeamMember[]) => {
