@@ -1529,7 +1529,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     supabase.auth.signOut();
     setAuthed(false);
     setCurrentUser(null);
-    if (typeof window !== "undefined") localStorage.removeItem("iskcon_admin_user");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("iskcon_admin_user");
+      localStorage.removeItem("iskcon_admin_creds");
+    }
   };
 
   return (
