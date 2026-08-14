@@ -1161,6 +1161,9 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   // Tracks keys we just wrote locally so realtime echo doesn't overwrite optimistic state.
   const pendingWrites = useRef<Map<string, number>>(new Map());
+  // Contact details of enquiries created in this browser session, used to prove
+  // ownership when finalizing a donation status server-side.
+  const donorContacts = useRef<Map<string, { email: string; phone: string }>>(new Map());
 
   // Initial load + realtime subscribe
   useEffect(() => {
