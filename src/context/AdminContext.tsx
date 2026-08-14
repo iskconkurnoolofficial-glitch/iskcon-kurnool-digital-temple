@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { mintAdminSession } from "@/lib/admin-session.functions";
+import { finalizeDonationStatus } from "@/lib/donation-status.functions";
 
 export type Slide = {
   id: string;
@@ -1160,6 +1161,9 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   // Tracks keys we just wrote locally so realtime echo doesn't overwrite optimistic state.
   const pendingWrites = useRef<Map<string, number>>(new Map());
+  // Contact details of enquiries created in this browser session, used to prove
+  // ownership when finalizing a donation status server-side.
+  const donorContacts = useRef<Map<string, { email: string; phone: string }>>(new Map());
 
   // Initial load + realtime subscribe
   useEffect(() => {
@@ -1328,16 +1332,37 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       console.error("[donation_enquiries] insert failed", error);
       return null;
     }
+    donorContacts.current.set(id, {
+      email: d.email.trim().slice(0, 200),
+      phone: d.phone.trim().slice(0, 20),
+    });
     return id;
   };
 
 
   const updateDonationStatus: AdminState["updateDonationStatus"] = async (id, status, paymentRef) => {
-    const { error } = await supabase
-      .from("donation_enquiries")
-      .update({ status, payment_ref: paymentRef ?? null })
-      .eq("id", id);
-    if (error) console.error("[donation_enquiries] status update failed", error);
+    // Admins update directly (allowed by their own access rules).
+    if (authed) {
+      const { error } = await supabase
+        .from("donation_enquiries")
+        .update({ status, payment_ref: paymentRef ?? null })
+        .eq("id", id);
+      if (error) console.error("[donation_enquiries] status update failed", error);
+      return;
+    }
+
+    // Visitors finalize through the server, which verifies they own the enquiry.
+    if (status === "initiated") return;
+    const contact = donorContacts.current.get(id);
+    if (!contact) return;
+    try {
+      const res = await finalizeDonationStatus({
+        data: { id, email: contact.email, phone: contact.phone, status, paymentRef },
+      });
+      if (!res?.ok) console.error("[donation_enquiries] status update rejected");
+    } catch (e) {
+      console.error("[donation_enquiries] status update failed", e);
+    }
   };
 
   const setInstagram = (v: InstagramData) => { setInstagramState(v); persist(KEYS.instagram, v); };
@@ -1478,51 +1503,40 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       return { ok: false, error: "You don't have access to log in" };
     }
 
-    // 1. Check Superadmin login
-    const isSuperAdminEmail =
-      emailClean === "superadmin@iskconkurnool.in" ||
-      emailClean === "admin" ||
-      emailClean === "superadmin";
-
-    const isSuperAdminPass = passClean === superAdminPass || passClean === "iskcon@1982";
-
-    if (isSuperAdminEmail && isSuperAdminPass) {
-      const user: CurrentAdminUser = {
-        role: "superadmin",
-        name: "Super Admin",
-        email: "superadmin@iskconkurnool.in",
-        allowedTabs: ["*"],
-      };
-      await openAdminDbSession(emailClean, passClean);
-      setCurrentUser(user);
-      setAuthed(true);
-      if (typeof window !== "undefined") localStorage.setItem("iskcon_admin_user", JSON.stringify(user));
-      return { ok: true };
+    // Credentials are verified server-side: the admin account list and password
+    // are no longer publicly readable.
+    let res: any;
+    try {
+      res = await mintAdminSession({ data: { email: emailClean, password: passClean } });
+    } catch (e) {
+      console.error("[admin] login failed", e);
+      return { ok: false, error: "Unable to sign in right now" };
     }
 
-    // 2. Check Team Member login
-    const matchingMember = teamMembers.find(
-      (m) =>
-        (m.email.toLowerCase() === emailClean || m.name.toLowerCase() === emailClean) &&
-        m.password === passClean
-    );
-
-    if (matchingMember) {
-      const user: CurrentAdminUser = {
-        role: matchingMember.role,
-        name: matchingMember.name,
-        email: matchingMember.email,
-        allowedTabs: matchingMember.allowedTabs || [],
-        member: matchingMember,
-      };
-      await openAdminDbSession(emailClean, passClean);
-      setCurrentUser(user);
-      setAuthed(true);
-      if (typeof window !== "undefined") localStorage.setItem("iskcon_admin_user", JSON.stringify(user));
-      return { ok: true };
+    if (!res?.ok || !res.profile) {
+      return { ok: false, error: "You don't have access to log in" };
     }
 
-    return { ok: false, error: "You don't have access to log in" };
+    if (res.tokenHash) {
+      const { error } = await supabase.auth.verifyOtp({ type: "magiclink", token_hash: res.tokenHash });
+      if (error) console.error("[admin] session exchange failed", error);
+    }
+    if (typeof window !== "undefined") {
+      localStorage.setItem("iskcon_admin_creds", JSON.stringify({ email: emailClean, password: passClean }));
+    }
+
+    const user: CurrentAdminUser = {
+      role: res.profile.role,
+      name: res.profile.name,
+      email: res.profile.email,
+      allowedTabs: res.profile.allowedTabs || [],
+      ...(res.profile.member ? { member: res.profile.member } : {}),
+    };
+
+    setCurrentUser(user);
+    setAuthed(true);
+    if (typeof window !== "undefined") localStorage.setItem("iskcon_admin_user", JSON.stringify(user));
+    return { ok: true };
   };
 
   const logout = () => {
