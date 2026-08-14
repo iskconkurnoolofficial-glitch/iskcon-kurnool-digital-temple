@@ -1332,6 +1332,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       console.error("[donation_enquiries] insert failed", error);
       return null;
     }
+    donorContacts.current.set(id, {
+      email: d.email.trim().slice(0, 200),
+      phone: d.phone.trim().slice(0, 20),
+    });
     return id;
   };
 
