@@ -1034,33 +1034,31 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   });
   const [donations, setDonationsState] = useState<DonationEntry[]>([]);
 
-  // Track Supabase auth session for admin access
+  // Re-establish the backing admin database session when an admin panel user is
+  // already logged in locally (e.g. after a page refresh). Without this session
+  // every admin write is rejected by the database security rules.
   useEffect(() => {
-    let mounted = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (mounted) {
-        const email = data.session?.user?.email;
-        if (email === "admin@iskconkurnool.org") {
-          supabase.auth.signOut();
-          if (typeof window !== "undefined") localStorage.removeItem("iskcon_admin_user");
-          setAuthed(false);
-          setCurrentUser(null);
+    if (!authed) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (cancelled || data.session) return;
+      const saved = typeof window !== "undefined" ? localStorage.getItem("iskcon_admin_creds") : null;
+      if (!saved) return;
+      try {
+        const creds = JSON.parse(saved) as { email: string; password: string };
+        const res = await mintAdminSession({ data: creds });
+        if (res?.ok && res.tokenHash) {
+          await supabase.auth.verifyOtp({ type: "magiclink", token_hash: res.tokenHash });
         }
+      } catch (e) {
+        console.error("[admin] session restore failed", e);
       }
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user?.email === "admin@iskconkurnool.org") {
-        supabase.auth.signOut();
-        if (typeof window !== "undefined") localStorage.removeItem("iskcon_admin_user");
-        setAuthed(false);
-        setCurrentUser(null);
-      }
-    });
+    })();
     return () => {
-      mounted = false;
-      sub.subscription.unsubscribe();
+      cancelled = true;
     };
-  }, []);
+  }, [authed]);
 
   // Load contact messages + donation enquiries (admin-only readable), kept live
   useEffect(() => {
