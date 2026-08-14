@@ -1474,11 +1474,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     const emailClean = emailInput.trim().toLowerCase();
     const passClean = passwordInput.trim();
 
-    // Explicitly block legacy admin email
-    if (emailClean === "admin@iskconkurnool.org") {
-      await supabase.auth.signOut();
-      return { ok: false, error: "You don't have access to log in" };
-    }
+
+
 
     // Credentials are verified server-side: the admin account list and password
     // are no longer publicly readable.
