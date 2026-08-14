@@ -4,6 +4,10 @@ import { createServerFn } from "@tanstack/react-start";
  * Validates the admin-panel credentials against site_data and, when valid,
  * mints a one-time magic-link token for the backing admin auth account.
  * The client exchanges it for a real session so that admin writes satisfy RLS.
+ *
+ * The admin account list and password live behind admin-only read rules, so all
+ * credential comparison happens here on the server and the resolved profile is
+ * returned to the client.
  */
 export const mintAdminSession = createServerFn({ method: "POST" })
   .inputValidator((data: { email: string; password: string }) => {
@@ -28,15 +32,31 @@ export const mintAdminSession = createServerFn({ method: "POST" })
       ["superadmin@iskconkurnool.in", "superadmin", "admin"].includes(data.email) &&
       (data.password === superPass || data.password === "iskcon@1982");
 
-    const isMember = members.some(
+    const member = members.find(
       (m) =>
         ((m?.email || "").toLowerCase() === data.email || (m?.name || "").toLowerCase() === data.email) &&
         m?.password === data.password,
     );
 
-    if (!isSuper && !isMember) {
+    if (!isSuper && !member) {
       return { ok: false as const };
     }
+
+    const profile = isSuper
+      ? {
+          role: "superadmin" as const,
+          name: "Super Admin",
+          email: "superadmin@iskconkurnool.in",
+          allowedTabs: ["*"],
+          member: null,
+        }
+      : {
+          role: member.role,
+          name: member.name,
+          email: member.email,
+          allowedTabs: member.allowedTabs || [],
+          member,
+        };
 
     const adminEmail = "admin@iskconkurnool.org";
     const { data: link, error } = await supabaseAdmin.auth.admin.generateLink({
@@ -48,5 +68,5 @@ export const mintAdminSession = createServerFn({ method: "POST" })
       return { ok: false as const, error: "session_unavailable" };
     }
 
-    return { ok: true as const, tokenHash: link.properties.hashed_token, email: adminEmail };
+    return { ok: true as const, tokenHash: link.properties.hashed_token, email: adminEmail, profile };
   });
