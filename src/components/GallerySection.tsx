@@ -1,6 +1,49 @@
 import { useEffect, useState } from "react";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
+
+const downloadAsPng = async (url: string, filename: string) => {
+  try {
+    const response = await fetch(url, { mode: "cors" });
+    const blob = await response.blob();
+    const imageObjectURL = URL.createObjectURL(blob);
+    
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.src = imageObjectURL;
+    image.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(image, 0, 0);
+        canvas.toBlob((pngBlob) => {
+          if (pngBlob) {
+            const pngUrl = URL.createObjectURL(pngBlob);
+            const link = document.createElement("a");
+            link.href = pngUrl;
+            link.download = `${filename.toLowerCase().replace(/[^a-z0-9]+/g, "_")}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(pngUrl);
+          }
+        }, "image/png");
+      }
+      URL.revokeObjectURL(imageObjectURL);
+    };
+  } catch (error) {
+    console.error("Direct fetch failed, falling back to new window", error);
+    const link = document.createElement("a");
+    link.href = url;
+    link.target = "_blank";
+    link.download = `${filename.toLowerCase().replace(/[^a-z0-9]+/g, "_")}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+};
 
 export default function GallerySection() {
   const { photos, categories } = useAdmin();
@@ -56,16 +99,30 @@ export default function GallerySection() {
         ) : (
           <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 [&>*]:mb-4">
             {filtered.map((p, idx) => (
-              <button
+              <div
                 key={p.id}
-                onClick={() => setLightbox(idx)}
                 className="group block w-full overflow-hidden rounded-2xl shadow-elegant relative break-inside-avoid"
               >
-                <img src={p.url} alt={p.title} loading="lazy" className="w-full h-auto group-hover:scale-105 transition duration-500" />
-                <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent opacity-0 group-hover:opacity-100 transition flex items-end p-4">
-                  <span className="text-primary-foreground font-medium text-left">{p.title}</span>
+                <button
+                  onClick={() => setLightbox(idx)}
+                  className="w-full text-left block"
+                >
+                  <img src={p.url} alt={p.title} loading="lazy" className="w-full h-auto group-hover:scale-105 transition duration-500" />
+                </button>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent opacity-0 group-hover:opacity-100 transition flex items-end justify-between p-4 pointer-events-none">
+                  <span className="text-white font-medium text-left">{p.title}</span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      downloadAsPng(p.url, p.title || "gallery_photo");
+                    }}
+                    className="p-2 bg-white/20 hover:bg-white/45 backdrop-blur-md rounded-xl text-white transition pointer-events-auto shadow-sm"
+                    title="Download as PNG"
+                  >
+                    <Download className="h-4 w-4" />
+                  </button>
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         )}
@@ -76,9 +133,18 @@ export default function GallerySection() {
           <button onClick={() => setLightbox(null)} className="absolute top-4 right-4 text-white p-2" aria-label="Close"><X className="h-7 w-7" /></button>
           <button onClick={() => setLightbox((i) => (i! - 1 + filtered.length) % filtered.length)} className="absolute left-4 text-white p-3" aria-label="Previous"><ChevronLeft className="h-8 w-8" /></button>
           <button onClick={() => setLightbox((i) => (i! + 1) % filtered.length)} className="absolute right-4 text-white p-3" aria-label="Next"><ChevronRight className="h-8 w-8" /></button>
-          <figure className="max-w-6xl max-h-[85vh] flex flex-col items-center gap-3">
-            <img src={filtered[lightbox].url} alt={filtered[lightbox].title} className="max-h-[80vh] w-auto rounded-lg" />
-            <figcaption className="text-white/90 text-sm">{filtered[lightbox].title}</figcaption>
+          <figure className="max-w-6xl max-h-[85vh] flex flex-col items-center gap-4">
+            <img src={filtered[lightbox].url} alt={filtered[lightbox].title} className="max-h-[75vh] w-auto rounded-lg shadow-2xl border border-white/10" />
+            <figcaption className="text-white/90 text-sm flex items-center gap-3 bg-white/10 backdrop-blur-md py-1.5 px-4 rounded-full border border-white/15">
+              <span>{filtered[lightbox].title}</span>
+              <button
+                onClick={() => downloadAsPng(filtered[lightbox].url, filtered[lightbox].title || "gallery_photo")}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-900 rounded-lg text-xs font-bold transition cursor-pointer"
+                title="Download as PNG"
+              >
+                <Download className="h-3.5 w-3.5" /> Download PNG
+              </button>
+            </figcaption>
           </figure>
         </div>
       )}

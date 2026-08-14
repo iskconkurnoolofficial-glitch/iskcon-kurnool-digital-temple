@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   useAdmin, uploadToCloudinary, slugify, normalizeFestival, isFestivalLive,
   Festival, Seva, SevaPrice,
@@ -38,7 +38,20 @@ export default function FestivalsManager() {
   const [draft, setDraft] = useState<Festival | null>(null);
   const [slugEdited, setSlugEdited] = useState(false);
 
-  const commit = (next: Festival[]) => setFestivals(next.map(normalizeFestival));
+  const [localList, setLocalList] = useState<Festival[]>([]);
+  const [isOrderDirty, setIsOrderDirty] = useState(false);
+
+  // Sync localList with DB list when DB list changes (unless we have unsaved order changes)
+  useEffect(() => {
+    if (!isOrderDirty) {
+      setLocalList([...list].sort((a, b) => a.order - b.order));
+    }
+  }, [list, isOrderDirty]);
+
+  const commit = (next: Festival[]) => {
+    setFestivals(next.map(normalizeFestival));
+    setIsOrderDirty(false);
+  };
 
   const openNew = () => {
     const f = blankFestival();
@@ -61,15 +74,42 @@ export default function FestivalsManager() {
   };
 
   // ----- list-level mutations -----
-  const patch = (id: string, p: Partial<Festival>) => commit(list.map((f) => (f.id === id ? { ...f, ...p } : f)));
-  const remove = (id: string) => { if (confirm("Delete this festival permanently?")) commit(list.filter((f) => f.id !== id)); };
+  const patch = (id: string, p: Partial<Festival>) => {
+    const updated = localList.map((f) => (f.id === id ? { ...f, ...p } : f));
+    setLocalList(updated);
+    commit(updated);
+  };
+
+  const remove = (id: string) => {
+    if (confirm("Delete this festival permanently?")) {
+      const updated = localList.filter((f) => f.id !== id);
+      setLocalList(updated);
+      commit(updated);
+    }
+  };
+
   const move = (id: string, dir: -1 | 1) => {
-    const sorted = [...list].sort((a, b) => a.order - b.order);
+    const sorted = [...localList].sort((a, b) => a.order - b.order);
     const i = sorted.findIndex((f) => f.id === id);
     const j = i + dir;
     if (j < 0 || j >= sorted.length) return;
-    [sorted[i].order, sorted[j].order] = [sorted[j].order, sorted[i].order];
-    commit(sorted);
+    
+    // Swap orders
+    const tempOrder = sorted[i].order;
+    sorted[i].order = sorted[j].order;
+    sorted[j].order = tempOrder;
+    
+    setLocalList(sorted.sort((a, b) => a.order - b.order));
+    setIsOrderDirty(true);
+  };
+
+  const saveOrder = () => {
+    commit(localList);
+  };
+
+  const resetOrder = () => {
+    setLocalList([...list].sort((a, b) => a.order - b.order));
+    setIsOrderDirty(false);
   };
 
   if (view === "edit" && draft) {
@@ -81,12 +121,27 @@ export default function FestivalsManager() {
     );
   }
 
-  return <FestivalList list={list} onNew={openNew} onEdit={openEdit} onPatch={patch} onRemove={remove} onMove={move} />;
+  return (
+    <FestivalList
+      list={localList}
+      isOrderDirty={isOrderDirty}
+      onSaveOrder={saveOrder}
+      onResetOrder={resetOrder}
+      onNew={openNew}
+      onEdit={openEdit}
+      onPatch={patch}
+      onRemove={remove}
+      onMove={move}
+    />
+  );
 }
 
 /* ============================ LIST / TABLE ============================ */
-function FestivalList({ list, onNew, onEdit, onPatch, onRemove, onMove }: {
+function FestivalList({ list, isOrderDirty, onSaveOrder, onResetOrder, onNew, onEdit, onPatch, onRemove, onMove }: {
   list: Festival[];
+  isOrderDirty: boolean;
+  onSaveOrder: () => void;
+  onResetOrder: () => void;
   onNew: () => void;
   onEdit: (f: Festival) => void;
   onPatch: (id: string, p: Partial<Festival>) => void;
@@ -95,7 +150,7 @@ function FestivalList({ list, onNew, onEdit, onPatch, onRemove, onMove }: {
 }) {
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft" | "hidden">("all");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [sortBy, setSortBy] = useState<"custom" | "date-asc" | "date-desc">("custom");
 
   const rows = useMemo(() => {
     let r = [...list];
@@ -104,15 +159,43 @@ function FestivalList({ list, onNew, onEdit, onPatch, onRemove, onMove }: {
     if (statusFilter === "published") r = r.filter((f) => f.status === "published" && !f.hidden);
     if (statusFilter === "draft") r = r.filter((f) => f.status === "draft");
     if (statusFilter === "hidden") r = r.filter((f) => f.hidden);
+    
     r.sort((a, b) => {
+      if (sortBy === "custom") {
+        return (a.order || 0) - (b.order || 0);
+      }
       const t = (a.date || "").localeCompare(b.date || "");
-      return sortDir === "asc" ? t : -t;
+      return sortBy === "date-asc" ? t : -t;
     });
     return r;
-  }, [list, q, statusFilter, sortDir]);
+  }, [list, q, statusFilter, sortBy]);
 
   return (
     <div className="space-y-5">
+      {/* 1. SAVE ORDER NOTIFICATION BAR */}
+      {isOrderDirty && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 animate-fade-in shadow-xs">
+          <div className="flex items-center gap-2 text-amber-900 text-sm font-semibold">
+            <Sparkles className="h-5 w-5 text-amber-500 shrink-0" />
+            <span>You modified the festival order. Save to update on the live website.</span>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={onResetOrder}
+              className="px-3.5 py-1.5 border border-amber-200 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 transition cursor-pointer"
+            >
+              Reset
+            </button>
+            <button
+              onClick={onSaveOrder}
+              className="px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              <Save className="h-3.5 w-3.5" /> Save Order
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -124,9 +207,11 @@ function FestivalList({ list, onNew, onEdit, onPatch, onRemove, onMove }: {
           <option value="draft">Draft</option>
           <option value="hidden">Hidden</option>
         </select>
-        <button onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))} className="px-3 py-2.5 border rounded-lg bg-white text-sm inline-flex items-center gap-1.5">
-          Date {sortDir === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
-        </button>
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value as any)} className="px-3 py-2.5 border rounded-lg bg-white text-sm">
+          <option value="custom">Sort by Custom Order</option>
+          <option value="date-asc">Date: Oldest First</option>
+          <option value="date-desc">Date: Newest First</option>
+        </select>
         <button onClick={onNew} className="px-4 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium inline-flex items-center gap-1.5"><Plus className="h-4 w-4" /> New Festival</button>
       </div>
 
@@ -166,7 +251,7 @@ function FestivalList({ list, onNew, onEdit, onPatch, onRemove, onMove }: {
                     <td className="px-4 py-3"><StatusBadge f={f} /></td>
                     <td className="px-4 py-3"><LiveBadge f={f} /></td>
                     <td className="px-4 py-3">
-                      <RowActions f={f} onEdit={onEdit} onPatch={onPatch} onRemove={onRemove} onMove={onMove} />
+                      <RowActions f={f} sortBy={sortBy} onEdit={onEdit} onPatch={onPatch} onRemove={onRemove} onMove={onMove} />
                     </td>
                   </tr>
                 ))}
@@ -189,7 +274,7 @@ function FestivalList({ list, onNew, onEdit, onPatch, onRemove, onMove }: {
                   </div>
                 </div>
                 <div className="mt-3 pt-3 border-t flex justify-end">
-                  <RowActions f={f} onEdit={onEdit} onPatch={onPatch} onRemove={onRemove} onMove={onMove} />
+                  <RowActions f={f} sortBy={sortBy} onEdit={onEdit} onPatch={onPatch} onRemove={onRemove} onMove={onMove} />
                 </div>
               </div>
             ))}
@@ -212,18 +297,24 @@ function LiveBadge({ f }: { f: Festival }) {
     : <span className="text-xs font-medium px-2 py-1 rounded-full bg-gray-100 text-muted-foreground">Offline</span>;
 }
 
-function RowActions({ f, onEdit, onPatch, onRemove, onMove }: {
+function RowActions({ f, sortBy, onEdit, onPatch, onRemove, onMove }: {
   f: Festival;
+  sortBy: string;
   onEdit: (f: Festival) => void;
   onPatch: (id: string, p: Partial<Festival>) => void;
   onRemove: (id: string) => void;
   onMove: (id: string, dir: -1 | 1) => void;
 }) {
   const iconBtn = "p-2 rounded hover:bg-muted transition";
+  const isCustom = sortBy === "custom";
   return (
     <div className="flex items-center justify-end gap-0.5">
-      <button onClick={() => onMove(f.id, -1)} className={iconBtn} title="Move up"><ArrowUp className="h-4 w-4" /></button>
-      <button onClick={() => onMove(f.id, 1)} className={iconBtn} title="Move down"><ArrowDown className="h-4 w-4" /></button>
+      {isCustom && (
+        <>
+          <button onClick={() => onMove(f.id, -1)} className={iconBtn} title="Move up"><ArrowUp className="h-4 w-4" /></button>
+          <button onClick={() => onMove(f.id, 1)} className={iconBtn} title="Move down"><ArrowDown className="h-4 w-4" /></button>
+        </>
+      )}
       {f.status === "published"
         ? <button onClick={() => onPatch(f.id, { status: "draft" })} className={`${iconBtn} text-amber-600`} title="Unpublish"><CircleSlash className="h-4 w-4" /></button>
         : <button onClick={() => onPatch(f.id, { status: "published", hidden: false })} className={`${iconBtn} text-green-600`} title="Publish"><CheckCircle2 className="h-4 w-4" /></button>}

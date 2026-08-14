@@ -23,7 +23,6 @@ import LiveDashboardManager from "@/admin/LiveDashboardManager";
 import FeaturePopupManager from "@/admin/FeaturePopupManager";
 import PaymentPagesManager from "@/admin/PaymentPagesManager";
 import PreviewLeadsManager from "@/admin/PreviewLeadsManager";
-import TeamManager from "@/admin/TeamManager";
 import DonationsManager from "@/admin/DonationsManager";
 import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard, Video, Bell, ShieldCheck } from "lucide-react";
 
@@ -32,7 +31,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "welcome" | "team" | "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "liveDashboard" | "featurePopup" | "paymentPages" | "previewLeads" | "donations";
+type Tab = "welcome" | "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "liveDashboard" | "featurePopup" | "paymentPages" | "previewLeads" | "donations";
 
 function AdminPage() {
   const { authed, login, logout, settings, contacts, setContacts, paymentRecords, previewLeads, markAllPaymentRecordsRead, markAllPreviewLeadsRead, currentUser } = useAdmin();
@@ -207,24 +206,13 @@ function AdminPage() {
     {
       title: "Site Settings",
       items: [
-        { id: "team", label: "Team & Access Control", icon: ShieldCheck },
         { id: "contacts", label: "Contact Messages", icon: Mail },
         { id: "settings", label: "Site Settings", icon: Settings },
       ]
     }
   ];
 
-  const isSuperAdmin = !currentUser || currentUser.role === "superadmin";
-
-  const groups = allGroups.map((g) => ({
-    ...g,
-    items: g.items.filter((item) => {
-      if (isSuperAdmin) return true;
-      if (item.id === "team") return false;
-      return (currentUser?.allowedTabs || []).includes(item.id as any);
-    })
-  })).filter((g) => g.items.length > 0);
-
+  const groups = allGroups;
   const tabs = groups.flatMap((g) => g.items);
 
   return (
@@ -458,7 +446,7 @@ function AdminPage() {
                 {currentUser?.name || "ISKCON Kurnool"}
               </h2>
               <span className="text-[10px] text-amber-300/90 font-semibold tracking-wider uppercase block">
-                {currentUser?.role === "superadmin" ? "★ Super Admin" : "Team Member"}
+                ★ Administrator
               </span>
             </div>
           </div>
@@ -594,7 +582,7 @@ function AdminPage() {
             transition={{ duration: 0.25 }}
           >
             {tab === "welcome" && <WelcomeDashboard groups={groups} setTab={setTab} logoUrl={settings.logo} />}
-            {tab === "team" && <TeamManager />}
+
             {tab === "carousel" && <CarouselManager />}
             {tab === "festivals" && <FestivalsManager />}
             {tab === "sevas" && <SevasManager />}

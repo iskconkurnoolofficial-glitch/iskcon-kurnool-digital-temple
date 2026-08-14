@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState, ReactNode } fro
 import { supabase } from "@/integrations/supabase/client";
 import { mintAdminSession } from "@/lib/admin-session.functions";
 import { finalizeDonationStatus } from "@/lib/donation-status.functions";
+import { toast } from "sonner";
 
 export type Slide = {
   id: string;
@@ -48,10 +49,10 @@ export type TeamMember = {
 };
 
 export type CurrentAdminUser = {
-  role: "superadmin" | "member";
+  role: "superadmin" | "member" | "admin";
   name: string;
   email: string;
-  allowedTabs: string[];
+  allowedTabs?: string[];
   member?: TeamMember;
 };
 
@@ -914,11 +915,7 @@ type AdminState = {
   setPreviewLeads: (leads: PreviewLead[]) => void;
   addPreviewLead: (lead: { name: string; phone: string }) => Promise<void>;
   markAllPreviewLeadsRead: () => void;
-  teamMembers: TeamMember[];
-  setTeamMembers: (members: TeamMember[]) => void;
-  addTeamMember: (member: Omit<TeamMember, "id" | "createdAt">) => Promise<void>;
-  updateTeamMember: (id: string, updates: Partial<TeamMember>) => Promise<void>;
-  deleteTeamMember: (id: string) => Promise<void>;
+
   changeSuperAdminPassword: (newPass: string) => Promise<void>;
   currentUser: CurrentAdminUser | null;
   authed: boolean;
@@ -1020,7 +1017,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [paymentRecords, setPaymentRecordsState] = useState<PaymentRecord[]>(defaultPaymentRecords);
   const [platformFee, setPlatformFeeState] = useState<PlatformFeeSettings>(defaultPlatformFee);
   const [previewLeads, setPreviewLeadsState] = useState<PreviewLead[]>([]);
-  const [teamMembers, setTeamMembersState] = useState<TeamMember[]>([]);
+
   const [superAdminPass, setSuperAdminPassState] = useState<string>("iskcon@1982");
   const [currentUser, setCurrentUser] = useState<CurrentAdminUser | null>(() => {
     if (typeof window === "undefined") return null;
@@ -1235,7 +1232,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.paymentRecords: setPaymentRecordsState(Array.isArray(value) ? value : defaultPaymentRecords); break;
       case KEYS.platformFee: setPlatformFeeState({ ...defaultPlatformFee, ...value }); break;
       case KEYS.previewLeads: setPreviewLeadsState(Array.isArray(value) ? value : []); break;
-      case KEYS.teamMembers: setTeamMembersState(Array.isArray(value) ? value : []); break;
+
       case KEYS.superAdminPass: if (typeof value === "string") setSuperAdminPassState(value); break;
     }
   }
@@ -1245,7 +1242,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase
       .from("site_data")
       .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
-    if (error) console.error("[site_data] upsert failed", key, error);
+    if (error) {
+      console.error("[site_data] upsert failed", key, error);
+      toast.error(`Database save failed for ${key}: ${error.message || error}`);
+    }
   }
 
   const setSlides = (v: Slide[]) => { setSlidesState(v); persist(KEYS.slides, v); };
@@ -1436,30 +1436,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     setPreviewLeadsState(updated);
   };
 
-  const setTeamMembers = (v: TeamMember[]) => {
-    setTeamMembersState(v);
-    persist(KEYS.teamMembers, v);
-  };
 
-  const addTeamMember = async (member: Omit<TeamMember, "id" | "createdAt">) => {
-    const newMember: TeamMember = {
-      ...member,
-      id: "tm_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
-      createdAt: new Date().toISOString(),
-    };
-    const updated = [...teamMembers, newMember];
-    setTeamMembers(updated);
-  };
-
-  const updateTeamMember = async (id: string, updates: Partial<TeamMember>) => {
-    const updated = teamMembers.map((m) => (m.id === id ? { ...m, ...updates } : m));
-    setTeamMembers(updated);
-  };
-
-  const deleteTeamMember = async (id: string) => {
-    const updated = teamMembers.filter((m) => m.id !== id);
-    setTeamMembers(updated);
-  };
 
   const changeSuperAdminPassword = async (newPass: string) => {
     setSuperAdminPassState(newPass);
@@ -1577,7 +1554,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         paymentRecords, setPaymentRecords, addPaymentRecord, deletePaymentRecord, markAllPaymentRecordsRead,
         platformFee, setPlatformFee,
         previewLeads, setPreviewLeads, addPreviewLead, markAllPreviewLeadsRead,
-        teamMembers, setTeamMembers, addTeamMember, updateTeamMember, deleteTeamMember, changeSuperAdminPassword, currentUser,
+        changeSuperAdminPassword, currentUser,
         authed, login, logout, ready,
       }}
     >
