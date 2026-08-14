@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { mintAdminSession } from "@/lib/admin-session.functions";
 
 export type Slide = {
   id: string;
