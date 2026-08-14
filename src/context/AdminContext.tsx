@@ -1478,51 +1478,40 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       return { ok: false, error: "You don't have access to log in" };
     }
 
-    // 1. Check Superadmin login
-    const isSuperAdminEmail =
-      emailClean === "superadmin@iskconkurnool.in" ||
-      emailClean === "admin" ||
-      emailClean === "superadmin";
-
-    const isSuperAdminPass = passClean === superAdminPass || passClean === "iskcon@1982";
-
-    if (isSuperAdminEmail && isSuperAdminPass) {
-      const user: CurrentAdminUser = {
-        role: "superadmin",
-        name: "Super Admin",
-        email: "superadmin@iskconkurnool.in",
-        allowedTabs: ["*"],
-      };
-      await openAdminDbSession(emailClean, passClean);
-      setCurrentUser(user);
-      setAuthed(true);
-      if (typeof window !== "undefined") localStorage.setItem("iskcon_admin_user", JSON.stringify(user));
-      return { ok: true };
+    // Credentials are verified server-side: the admin account list and password
+    // are no longer publicly readable.
+    let res: any;
+    try {
+      res = await mintAdminSession({ data: { email: emailClean, password: passClean } });
+    } catch (e) {
+      console.error("[admin] login failed", e);
+      return { ok: false, error: "Unable to sign in right now" };
     }
 
-    // 2. Check Team Member login
-    const matchingMember = teamMembers.find(
-      (m) =>
-        (m.email.toLowerCase() === emailClean || m.name.toLowerCase() === emailClean) &&
-        m.password === passClean
-    );
-
-    if (matchingMember) {
-      const user: CurrentAdminUser = {
-        role: matchingMember.role,
-        name: matchingMember.name,
-        email: matchingMember.email,
-        allowedTabs: matchingMember.allowedTabs || [],
-        member: matchingMember,
-      };
-      await openAdminDbSession(emailClean, passClean);
-      setCurrentUser(user);
-      setAuthed(true);
-      if (typeof window !== "undefined") localStorage.setItem("iskcon_admin_user", JSON.stringify(user));
-      return { ok: true };
+    if (!res?.ok || !res.profile) {
+      return { ok: false, error: "You don't have access to log in" };
     }
 
-    return { ok: false, error: "You don't have access to log in" };
+    if (res.tokenHash) {
+      const { error } = await supabase.auth.verifyOtp({ type: "magiclink", token_hash: res.tokenHash });
+      if (error) console.error("[admin] session exchange failed", error);
+    }
+    if (typeof window !== "undefined") {
+      localStorage.setItem("iskcon_admin_creds", JSON.stringify({ email: emailClean, password: passClean }));
+    }
+
+    const user: CurrentAdminUser = {
+      role: res.profile.role,
+      name: res.profile.name,
+      email: res.profile.email,
+      allowedTabs: res.profile.allowedTabs || [],
+      ...(res.profile.member ? { member: res.profile.member } : {}),
+    };
+
+    setCurrentUser(user);
+    setAuthed(true);
+    if (typeof window !== "undefined") localStorage.setItem("iskcon_admin_user", JSON.stringify(user));
+    return { ok: true };
   };
 
   const logout = () => {
