@@ -1450,6 +1450,24 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     r.style.setProperty("--accent-hex", theme.accent);
   }, [theme]);
 
+  // Opens the backing database session so admin writes are allowed to save.
+  const openAdminDbSession = async (email: string, password: string) => {
+    try {
+      const res = await mintAdminSession({ data: { email, password } });
+      if (res?.ok && res.tokenHash) {
+        const { error } = await supabase.auth.verifyOtp({ type: "magiclink", token_hash: res.tokenHash });
+        if (error) console.error("[admin] session exchange failed", error);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("iskcon_admin_creds", JSON.stringify({ email, password }));
+        }
+        return !error;
+      }
+    } catch (e) {
+      console.error("[admin] session mint failed", e);
+    }
+    return false;
+  };
+
   const login = async (emailInput: string, passwordInput: string) => {
     const emailClean = emailInput.trim().toLowerCase();
     const passClean = passwordInput.trim();
@@ -1465,7 +1483,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       emailClean === "superadmin@iskconkurnool.in" ||
       emailClean === "admin" ||
       emailClean === "superadmin";
-    
+
     const isSuperAdminPass = passClean === superAdminPass || passClean === "iskcon@1982";
 
     if (isSuperAdminEmail && isSuperAdminPass) {
@@ -1475,6 +1493,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         email: "superadmin@iskconkurnool.in",
         allowedTabs: ["*"],
       };
+      await openAdminDbSession(emailClean, passClean);
       setCurrentUser(user);
       setAuthed(true);
       if (typeof window !== "undefined") localStorage.setItem("iskcon_admin_user", JSON.stringify(user));
@@ -1496,31 +1515,11 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         allowedTabs: matchingMember.allowedTabs || [],
         member: matchingMember,
       };
+      await openAdminDbSession(emailClean, passClean);
       setCurrentUser(user);
       setAuthed(true);
       if (typeof window !== "undefined") localStorage.setItem("iskcon_admin_user", JSON.stringify(user));
       return { ok: true };
-    }
-
-    // 3. Fallback to Supabase Auth login (only for superadmin@iskconkurnool.in)
-    if (emailClean === "superadmin@iskconkurnool.in" || emailClean === "superadmin") {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: emailInput.trim(),
-        password: passwordInput,
-      });
-
-      if (!error) {
-        const user: CurrentAdminUser = {
-          role: "superadmin",
-          name: "Super Admin",
-          email: "superadmin@iskconkurnool.in",
-          allowedTabs: ["*"],
-        };
-        setCurrentUser(user);
-        setAuthed(true);
-        if (typeof window !== "undefined") localStorage.setItem("iskcon_admin_user", JSON.stringify(user));
-        return { ok: true };
-      }
     }
 
     return { ok: false, error: "You don't have access to log in" };
