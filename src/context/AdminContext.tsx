@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { mintAdminSession } from "@/lib/admin-session.functions";
 
 export type Slide = {
   id: string;
@@ -1034,33 +1035,31 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   });
   const [donations, setDonationsState] = useState<DonationEntry[]>([]);
 
-  // Track Supabase auth session for admin access
+  // Re-establish the backing admin database session when an admin panel user is
+  // already logged in locally (e.g. after a page refresh). Without this session
+  // every admin write is rejected by the database security rules.
   useEffect(() => {
-    let mounted = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (mounted) {
-        const email = data.session?.user?.email;
-        if (email === "admin@iskconkurnool.org") {
-          supabase.auth.signOut();
-          if (typeof window !== "undefined") localStorage.removeItem("iskcon_admin_user");
-          setAuthed(false);
-          setCurrentUser(null);
+    if (!authed) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (cancelled || data.session) return;
+      const saved = typeof window !== "undefined" ? localStorage.getItem("iskcon_admin_creds") : null;
+      if (!saved) return;
+      try {
+        const creds = JSON.parse(saved) as { email: string; password: string };
+        const res = await mintAdminSession({ data: creds });
+        if (res?.ok && res.tokenHash) {
+          await supabase.auth.verifyOtp({ type: "magiclink", token_hash: res.tokenHash });
         }
+      } catch (e) {
+        console.error("[admin] session restore failed", e);
       }
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user?.email === "admin@iskconkurnool.org") {
-        supabase.auth.signOut();
-        if (typeof window !== "undefined") localStorage.removeItem("iskcon_admin_user");
-        setAuthed(false);
-        setCurrentUser(null);
-      }
-    });
+    })();
     return () => {
-      mounted = false;
-      sub.subscription.unsubscribe();
+      cancelled = true;
     };
-  }, []);
+  }, [authed]);
 
   // Load contact messages + donation enquiries (admin-only readable), kept live
   useEffect(() => {
@@ -1361,7 +1360,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     try {
       const { data } = await supabase.from("site_data").select("value").eq("key", KEYS.paymentRecords).maybeSingle();
       if (data && Array.isArray(data.value)) {
-        current = data.value;
+        current = data.value as unknown as PaymentRecord[];
       }
     } catch {
       // fallback
@@ -1410,8 +1409,6 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     if (!previewLeads || previewLeads.length === 0) return;
     const updated = previewLeads.map((l) => ({ ...l, read: true }));
     setPreviewLeadsState(updated);
-    const { error } = await supabase.from("preview_leads").update({ read: true }).eq("read", false);
-    if (error) console.error("[preview_leads] mark read failed", error);
   };
 
   const setTeamMembers = (v: TeamMember[]) => {
@@ -1453,6 +1450,24 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     r.style.setProperty("--accent-hex", theme.accent);
   }, [theme]);
 
+  // Opens the backing database session so admin writes are allowed to save.
+  const openAdminDbSession = async (email: string, password: string) => {
+    try {
+      const res = await mintAdminSession({ data: { email, password } });
+      if (res?.ok && res.tokenHash) {
+        const { error } = await supabase.auth.verifyOtp({ type: "magiclink", token_hash: res.tokenHash });
+        if (error) console.error("[admin] session exchange failed", error);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("iskcon_admin_creds", JSON.stringify({ email, password }));
+        }
+        return !error;
+      }
+    } catch (e) {
+      console.error("[admin] session mint failed", e);
+    }
+    return false;
+  };
+
   const login = async (emailInput: string, passwordInput: string) => {
     const emailClean = emailInput.trim().toLowerCase();
     const passClean = passwordInput.trim();
@@ -1468,7 +1483,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       emailClean === "superadmin@iskconkurnool.in" ||
       emailClean === "admin" ||
       emailClean === "superadmin";
-    
+
     const isSuperAdminPass = passClean === superAdminPass || passClean === "iskcon@1982";
 
     if (isSuperAdminEmail && isSuperAdminPass) {
@@ -1478,6 +1493,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         email: "superadmin@iskconkurnool.in",
         allowedTabs: ["*"],
       };
+      await openAdminDbSession(emailClean, passClean);
       setCurrentUser(user);
       setAuthed(true);
       if (typeof window !== "undefined") localStorage.setItem("iskcon_admin_user", JSON.stringify(user));
@@ -1499,31 +1515,11 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         allowedTabs: matchingMember.allowedTabs || [],
         member: matchingMember,
       };
+      await openAdminDbSession(emailClean, passClean);
       setCurrentUser(user);
       setAuthed(true);
       if (typeof window !== "undefined") localStorage.setItem("iskcon_admin_user", JSON.stringify(user));
       return { ok: true };
-    }
-
-    // 3. Fallback to Supabase Auth login (only for superadmin@iskconkurnool.in)
-    if (emailClean === "superadmin@iskconkurnool.in" || emailClean === "superadmin") {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: emailInput.trim(),
-        password: passwordInput,
-      });
-
-      if (!error) {
-        const user: CurrentAdminUser = {
-          role: "superadmin",
-          name: "Super Admin",
-          email: "superadmin@iskconkurnool.in",
-          allowedTabs: ["*"],
-        };
-        setCurrentUser(user);
-        setAuthed(true);
-        if (typeof window !== "undefined") localStorage.setItem("iskcon_admin_user", JSON.stringify(user));
-        return { ok: true };
-      }
     }
 
     return { ok: false, error: "You don't have access to log in" };
@@ -1533,7 +1529,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     supabase.auth.signOut();
     setAuthed(false);
     setCurrentUser(null);
-    if (typeof window !== "undefined") localStorage.removeItem("iskcon_admin_user");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("iskcon_admin_user");
+      localStorage.removeItem("iskcon_admin_creds");
+    }
   };
 
   return (
