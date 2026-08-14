@@ -1333,11 +1333,28 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
 
   const updateDonationStatus: AdminState["updateDonationStatus"] = async (id, status, paymentRef) => {
-    const { error } = await supabase
-      .from("donation_enquiries")
-      .update({ status, payment_ref: paymentRef ?? null })
-      .eq("id", id);
-    if (error) console.error("[donation_enquiries] status update failed", error);
+    // Admins update directly (allowed by their own access rules).
+    if (authed) {
+      const { error } = await supabase
+        .from("donation_enquiries")
+        .update({ status, payment_ref: paymentRef ?? null })
+        .eq("id", id);
+      if (error) console.error("[donation_enquiries] status update failed", error);
+      return;
+    }
+
+    // Visitors finalize through the server, which verifies they own the enquiry.
+    if (status === "initiated") return;
+    const contact = donorContacts.current.get(id);
+    if (!contact) return;
+    try {
+      const res = await finalizeDonationStatus({
+        data: { id, email: contact.email, phone: contact.phone, status, paymentRef },
+      });
+      if (!res?.ok) console.error("[donation_enquiries] status update rejected");
+    } catch (e) {
+      console.error("[donation_enquiries] status update failed", e);
+    }
   };
 
   const setInstagram = (v: InstagramData) => { setInstagramState(v); persist(KEYS.instagram, v); };
