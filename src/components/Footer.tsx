@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import { safeUrl } from "@/lib/utils";
+import InstallAppButton from "@/components/InstallAppButton";
 
 export default function Footer() {
   const { settings } = useAdmin();
@@ -80,6 +81,9 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
+              <li className="pt-2">
+                <InstallAppButton variant="footer" />
+              </li>
             </ul>
           </div>
 

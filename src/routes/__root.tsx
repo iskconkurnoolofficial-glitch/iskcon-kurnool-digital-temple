@@ -86,9 +86,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:title", content: "ISKCON Kurnool" },
       { name: "twitter:description", content: "Sri Sri Puri Jagannath Temple, ISKCON Kurnool, is a spiritual center offering daily worship, devotion, cultural programs, and teachings of Krishna consciousness" },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/11ba5371-6eee-4f63-943c-aa85d3d2bb14" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/11ba5371-6eee-4f63-943c-aa85d3d2bb14" },
+      { name: "theme-color", content: "#F97316" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "ISKCON Kurnool" },
+      { name: "application-name", content: "ISKCON Kurnool" },
     ],
     links: [
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "icon", href: "/favicon.ico" },
+      { rel: "apple-touch-icon", href: "/jagannatha.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {

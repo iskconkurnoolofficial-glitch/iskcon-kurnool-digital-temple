@@ -1,0 +1,37 @@
+{
+  "name": "ISKCON Kurnool - Sri Sri Puri Jagannath Temple",
+  "short_name": "ISKCON Kurnool",
+  "description": "Official Digital Temple Application of ISKCON Kurnool. Daily Darshan, Aarti Schedules, Gita Courses, Live Classes, and Spiritual Sevas.",
+  "start_url": "/",
+  "id": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0B0217",
+  "theme_color": "#F97316",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/jagannatha.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/jagannatha.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/krishna.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}
