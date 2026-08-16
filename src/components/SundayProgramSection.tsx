@@ -88,6 +88,28 @@ export default function SundayProgramSection() {
               {sunday.description || "Join us every Sunday for a spiritually rejuvenating experience. Immerse yourself in transcendental kirtan, hear profound Vedic wisdom, and honor a delicious free vegetarian feast (prasadam) with us."}
             </p>
 
+            {/* Active Sunday Sponsor Highlight */}
+            {(() => {
+              const activeSponsor = (sunday.sponsors || []).find((s) => s.active !== false);
+              if (!activeSponsor) return null;
+              return (
+                <div className="bg-white/90 backdrop-blur-sm border border-secondary/35 rounded-2xl p-4 text-left shadow-[0_4px_20px_rgba(91,44,155,0.06)] space-y-1">
+                  <div className="flex items-center gap-1.5 text-accent text-[11px] font-bold uppercase tracking-wider">
+                    <Sparkles className="h-3.5 w-3.5 animate-pulse" /> Sunday Feast Sponsor
+                  </div>
+                  <div className="font-display font-extrabold text-base text-primary">
+                    {activeSponsor.sponsorName} {activeSponsor.familyName && <span className="text-secondary font-semibold">{activeSponsor.familyName}</span>}
+                  </div>
+                  {activeSponsor.occasion && (
+                    <p className="text-xs text-muted-foreground font-sans">
+                      Occasion: <span className="font-medium text-foreground">{activeSponsor.occasion}</span>
+                      {activeSponsor.date ? ` • ${activeSponsor.date}` : ""}
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
               <Link
                 to="/temple/sunday"

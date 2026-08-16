@@ -72,7 +72,19 @@ function PaymentPageRoute() {
       const found = paymentPages.find((p) => p.slug === slug || p.id === slug);
       if (found) {
         setPage(found);
-        if (found.pricingType === "fixed") {
+        const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+        const amountParam = searchParams?.get("amount") || searchParams?.get("amt");
+        if (amountParam && !isNaN(Number(amountParam))) {
+          setCustomAmount(amountParam);
+          if (found.pricingType === "preset" && found.presetPrices?.length) {
+            const matchingTier = found.presetPrices.find((p) => p.amount === Number(amountParam));
+            if (matchingTier) {
+              setSelectedTierId(matchingTier.id);
+            } else {
+              setSelectedTierId("");
+            }
+          }
+        } else if (found.pricingType === "fixed") {
           setCustomAmount(String(found.fixedAmount || 5555));
         } else if (found.pricingType === "preset" && found.presetPrices?.length) {
           setSelectedTierId(found.presetPrices[0].id);

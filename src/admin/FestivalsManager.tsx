@@ -81,11 +81,9 @@ export default function FestivalsManager() {
   };
 
   const remove = (id: string) => {
-    if (confirm("Delete this festival permanently?")) {
-      const updated = localList.filter((f) => f.id !== id);
-      setLocalList(updated);
-      commit(updated);
-    }
+    const updated = localList.filter((f) => f.id !== id);
+    setLocalList(updated);
+    commit(updated);
   };
 
   const move = (id: string, dir: -1 | 1) => {

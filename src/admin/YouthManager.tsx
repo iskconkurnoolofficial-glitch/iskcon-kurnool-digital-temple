@@ -100,9 +100,7 @@ function SettingsTab({ youth, update }: { youth: YouthData; update: (p: Partial<
                 <span className="text-xs font-bold text-primary">Card {i + 1}</span>
                 <button
                   onClick={() => {
-                    if (confirm(`Are you sure you want to delete "${ft.title || `Card ${i + 1}`}"?`)) {
-                      update({ features: youth.features.filter((_, idx) => idx !== i) });
-                    }
+                    update({ features: youth.features.filter((_, idx) => idx !== i) });
                   }}
                   className="text-rose-600 hover:text-rose-800 transition p-1"
                   title="Delete Card"

@@ -28,7 +28,6 @@ export default function DonationsManager() {
     .reduce((sum, d) => sum + (d.amount || 0), 0);
 
   const handleDelete = (id: string) => {
-    if (!window.confirm("Delete this donation record?")) return;
     setDonations((donations || []).filter((d) => d.id !== id));
   };
 

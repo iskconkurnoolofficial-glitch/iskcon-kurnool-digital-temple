@@ -58,9 +58,7 @@ export default function TempleScheduleManager() {
   };
 
   const remove = (id: string) => {
-    if (confirm("Are you sure you want to delete this schedule timing?")) {
-      setTempleSchedule(items.filter((item) => item.id !== id));
-    }
+    setTempleSchedule(items.filter((item) => item.id !== id));
   };
 
   const inputClass = "w-full px-4 py-2.5 border rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20";

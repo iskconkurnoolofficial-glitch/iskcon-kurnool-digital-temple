@@ -299,6 +299,18 @@ export type SundayActivityItem = {
   image?: string;
 };
 
+export type SundaySponsor = {
+  id: string;
+  sponsorName: string;
+  familyName?: string;
+  occasion: string;
+  date: string;
+  details: string;
+  active?: boolean;
+  images?: string[];
+  image?: string;
+};
+
 export type SundayData = {
   description: string;
   scheduleTitle: string;
@@ -312,11 +324,37 @@ export type SundayData = {
   buttons: SundayLinkButton[];
   timingsImage?: string;
   activities?: SundayActivityItem[];
+  sponsors?: SundaySponsor[];
+  donationCardTitle?: string;
+  donationCardDescription?: string;
+  donationCardButtonLabel?: string;
+  donationCardButtonUrl?: string;
+  donationCardSupportingLine?: string;
+  donationCardImage?: string;
+  donationCardEnabled?: boolean;
+  donationCardAmount?: string;
 };
 
 export const defaultSunday: SundayData = {
   description: "Experience a spiritually uplifting Sunday at ISKCON Kurnool. Join devotees for devotional chanting, enlightening Bhagavad Gita discourse, darshan, and delicious prasadam. Everyone is welcome.",
   scheduleTitle: "Weekly Schedule (Every Sunday)",
+  sponsors: [
+    {
+      id: "sp_default_1",
+      sponsorName: "Sri XYZ",
+      familyName: "& Family",
+      occasion: "Auspicious Occasion / General Seva",
+      date: "Upcoming Sunday",
+      details: "Sunday Feast prasadam distribution lovingly sponsored as seva for the pleasure of Sri Sri Jagannath, Baladeva, Subhadra Maharani and all visiting devotees.",
+      active: true,
+      images: [
+        "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1599422315802-911e3b6a978f?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1609137144813-7d7211bf7fc4?auto=format&fit=crop&w=800&q=80"
+      ],
+    }
+  ],
   schedule: [
     { id: "s1", time: "11:00 AM – 11:30 AM", program: "Hari Nama Sankirtana" },
     { id: "s2", time: "11:30 AM – 12:30 PM", program: "Bhagavad Gita Pravachanam" },
@@ -363,7 +401,15 @@ export const defaultSunday: SundayData = {
       description: "A sumptuous, sanctified vegetarian feast (prasadam) served with love to all visiting guests and devotees.",
       image: ""
     }
-  ]
+  ],
+  donationCardTitle: "Sponsor Sunday Feast",
+  donationCardDescription: "Help us serve a nourishing prasadam feast to devotees and guests every Sunday. Your contribution supports the preparation and serving of prasadam.",
+  donationCardButtonLabel: "Sponsor Sunday Feast",
+  donationCardButtonUrl: "/donate/sunday-feast",
+  donationCardSupportingLine: "Every contribution helps us serve more devotees.",
+  donationCardImage: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=800&q=80",
+  donationCardEnabled: true,
+  donationCardAmount: "5001"
 };
 
 export type GoshalaGalleryItem = { id: string; url: string; label: string };
@@ -991,13 +1037,30 @@ const KEYS = {
 
 const Ctx = createContext<AdminState | null>(null);
 
+export const defaultSevas: Seva[] = [
+  {
+    id: "s_default_goshala",
+    title: "Goshala Cow Service (Go-Seva)",
+    slug: "goshala-seva",
+    description: "Support cow protection and care at our temple goshala. Your contribution provides food, medical care, and shelter for Mother Cow.",
+    thumbnail: "https://images.unsplash.com/photo-1599422315802-911e3b6a978f?auto=format&fit=crop&w=800&q=80",
+    prices: [
+      { label: "Fodder for Cows (One Day)", amount: 501 },
+      { label: "Cow Care & Medical Support (Monthly)", amount: 2500 },
+      { label: "Adopt a Cow (Annual Support)", amount: 15000 }
+    ],
+    order: 1,
+    active: true
+  }
+];
+
 export function AdminProvider({ children }: { children: ReactNode }) {
   const [slides, setSlidesState] = useState<Slide[]>(defaultSlides);
   const [photos, setPhotosState] = useState<GalleryPhoto[]>([]);
   const [categories, setCategoriesState] = useState<string[]>(defaultCategories);
   const [classes, setClassesState] = useState<DailyClass[]>([]);
   const [festivals, setFestivalsState] = useState<Festival[]>([]);
-  const [sevas, setSevasState] = useState<Seva[]>([]);
+  const [sevas, setSevasState] = useState<Seva[]>(defaultSevas);
   const [youth, setYouthState] = useState<YouthData>(defaultYouth);
   const [harinama, setHarinamaState] = useState<HarinamaData>(defaultHarinama);
   const [ekadashi, setEkadashiState] = useState<EkadashiData>(defaultEkadashi);
@@ -1225,11 +1288,13 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.classes: setClassesState(value); break;
       case KEYS.festivals: setFestivalsState(value); break;
       case KEYS.sevas: {
-        const list = Array.isArray(value) ? value.map((s: any) => ({
-          ...s,
-          slug: s.slug || s.title?.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-") || s.id
-        })) : [];
-        setSevasState(list);
+        const list = Array.isArray(value) ? value
+          .filter((s: any) => s.id !== "s_default_sunday_feast" && s.slug !== "sunday-feast")
+          .map((s: any) => ({
+            ...s,
+            slug: s.slug || s.title?.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-") || s.id
+          })) : [];
+        setSevasState(list.length > 0 ? list : defaultSevas);
         break;
       }
       case KEYS.youth: setYouthState({ ...defaultYouth, ...value }); break;

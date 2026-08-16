@@ -357,9 +357,7 @@ export default function PaymentPagesManager() {
   };
 
   const handleDeletePage = (id: string) => {
-    if (confirm("Are you sure you want to delete this payment page?")) {
-      setPaymentPages(paymentPages.filter((p) => p.id !== id));
-    }
+    setPaymentPages(paymentPages.filter((p) => p.id !== id));
   };
 
   const togglePageActive = (id: string) => {
@@ -948,11 +946,7 @@ export default function PaymentPagesManager() {
                                 <Printer className="h-4 w-4" />
                               </button>
                               <button
-                                onClick={() => {
-                                  if (confirm(`Delete payment record for ${rec.donorName}?`)) {
-                                    deletePaymentRecord(rec.id);
-                                  }
-                                }}
+                                onClick={() => deletePaymentRecord(rec.id)}
                                 className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg transition cursor-pointer"
                                 title="Delete Record"
                               >
@@ -1011,11 +1005,7 @@ export default function PaymentPagesManager() {
                           <Printer className="h-3.5 w-3.5" /> View Receipt
                         </button>
                         <button
-                          onClick={() => {
-                            if (confirm(`Delete payment record for ${rec.donorName}?`)) {
-                              deletePaymentRecord(rec.id);
-                            }
-                          }}
+                          onClick={() => deletePaymentRecord(rec.id)}
                           className="p-2 bg-rose-50 text-rose-600 rounded-xl transition cursor-pointer"
                         >
                           <Trash2 className="h-4 w-4" />

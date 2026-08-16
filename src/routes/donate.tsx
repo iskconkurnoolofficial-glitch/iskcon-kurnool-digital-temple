@@ -52,6 +52,15 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       const found = sevas.find(s => s.slug === initialSlug || s.id === initialSlug);
       if (found) {
         setCheckoutSeva(found);
+        const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+        const amountParam = searchParams?.get("amount") || searchParams?.get("amt");
+        if (amountParam && !isNaN(Number(amountParam))) {
+          const amt = Number(amountParam);
+          const matchIdx = found.prices.findIndex(p => p.amount === amt);
+          if (matchIdx !== -1) {
+            setSelected(prev => ({ ...prev, [found.id]: matchIdx }));
+          }
+        }
       } else {
         setCheckoutSeva(null);
       }
@@ -59,16 +68,6 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       setCheckoutSeva(null);
     }
   }, [initialSlug, sevas]);
-
-  if (!ready) {
-    return (
-      <SiteLayout>
-        <div className="min-h-[60vh] flex items-center justify-center bg-gradient-to-b from-[#fffbf0] via-[#fdf4d4] to-[#ffffff]">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      </SiteLayout>
-    );
-  }
 
   const active = useMemo(
     () => [...sevas].filter((s) => s.active).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
@@ -80,6 +79,16 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     if (!q) return active;
     return active.filter((s) => s.title.toLowerCase().includes(q) || s.description.toLowerCase().includes(q));
   }, [active, query]);
+
+  if (!ready) {
+    return (
+      <SiteLayout>
+        <div className="min-h-[60vh] flex items-center justify-center bg-gradient-to-b from-[#fffbf0] via-[#fdf4d4] to-[#ffffff]">
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      </SiteLayout>
+    );
+  }
 
   const donate = async (seva: Seva, amount: number, label: string) => {
     // Store every submission in the admin panel before opening the gateway

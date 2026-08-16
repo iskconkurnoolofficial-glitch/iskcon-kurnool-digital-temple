@@ -396,3 +396,64 @@ body {
   mask-image: linear-gradient(to right, transparent, white 8%, white 92%, transparent);
   -webkit-mask-image: linear-gradient(to right, transparent, white 8%, white 92%, transparent);
 }
+
+/* Custom premium animation for Sponsor Sunday Feast card */
+.sponsor-card-premium {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sponsor-card-premium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.25) 30%,
+    rgba(255, 255, 255, 0.25) 70%,
+    transparent
+  );
+  transform: skewX(-25deg);
+  transition: none;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.sponsor-card-premium:hover::before {
+  left: 150%;
+  transition: all 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sponsor-card-premium:hover {
+  transform: translateY(-8px) scale(1.015);
+  box-shadow: 0 30px 70px -15px rgba(91, 44, 155, 0.12), 0 0 40px 5px rgba(217, 119, 6, 0.15);
+  border-color: rgba(217, 119, 6, 0.3);
+}
+
+/* Pulsing heart/glow for the CTA button on sponsor card */
+@keyframes buttonPulseGlow {
+  0%, 100% {
+    box-shadow: 0 4px 14px 0 rgba(217, 119, 6, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 25px 8px rgba(217, 119, 6, 0.6);
+  }
+}
+
+.animate-btn-glow {
+  animation: buttonPulseGlow 3s ease-in-out infinite;
+}
+
+/* Interactive hover scaling for image in the card */
+.sponsor-image-zoom {
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sponsor-card-premium:hover .sponsor-image-zoom {
+  transform: scale(1.06);
+}

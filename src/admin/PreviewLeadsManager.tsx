@@ -71,15 +71,11 @@ export default function PreviewLeadsManager() {
   };
 
   const handleDeleteLead = (id: string) => {
-    if (confirm("Are you sure you want to remove this lead submission?")) {
-      setPreviewLeads(previewLeads.filter((item) => item.id !== id));
-    }
+    setPreviewLeads(previewLeads.filter((item) => item.id !== id));
   };
 
   const handleClearAllLeads = () => {
-    if (confirm("WARNING: Are you sure you want to clear ALL preview unlock submissions? Make sure you have exported CSV first!")) {
-      setPreviewLeads([]);
-    }
+    setPreviewLeads([]);
   };
 
   const filteredLeads = (previewLeads || []).filter(

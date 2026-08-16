@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useAdmin, uploadToCloudinary, SundayData, SundayScheduleItem, SundayGalleryItem, SundayLinkButton, SundayActivityItem } from "@/context/AdminContext";
-import { Trash2, ArrowUp, ArrowDown, X, Check } from "lucide-react";
+import { useAdmin, uploadToCloudinary, SundayData, SundayScheduleItem, SundayGalleryItem, SundayLinkButton, SundayActivityItem, SundaySponsor } from "@/context/AdminContext";
+import { Trash2, ArrowUp, ArrowDown, X, Check, Pencil, Plus, Eye, EyeOff, Sparkles, Calendar, Heart, Gift, Users } from "lucide-react";
 import { UploadBox } from "./CarouselManager";
 
-type Tab = "settings" | "schedule" | "activities" | "gallery" | "buttons";
+type Tab = "settings" | "sponsors" | "schedule" | "activities" | "gallery";
 
 export default function SundayManager() {
   const { sunday, setSunday } = useAdmin();
@@ -14,7 +14,7 @@ export default function SundayManager() {
   return (
     <div className="space-y-6">
       <div className="flex gap-2 flex-wrap">
-        {(["settings", "schedule", "activities", "gallery", "buttons"] as Tab[]).map((t) => (
+        {(["settings", "sponsors", "schedule", "activities", "gallery"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -22,16 +22,16 @@ export default function SundayManager() {
               tab === t ? "bg-primary text-primary-foreground" : "bg-white text-foreground hover:bg-muted border border-border shadow-sm"
             }`}
           >
-            {t === "buttons" ? "custom links" : t}
+            {t === "sponsors" ? "Feast Sponsors" : t}
           </button>
         ))}
       </div>
 
       {tab === "settings" && <SettingsTab sunday={sunday} update={update} />}
+      {tab === "sponsors" && <SponsorsTab sunday={sunday} update={update} />}
       {tab === "schedule" && <ScheduleTab sunday={sunday} update={update} />}
       {tab === "activities" && <ActivitiesTab sunday={sunday} update={update} />}
       {tab === "gallery" && <GalleryTab sunday={sunday} update={update} />}
-      {tab === "buttons" && <ButtonsTab sunday={sunday} update={update} />}
     </div>
   );
 }
@@ -379,165 +379,7 @@ function GalleryTab({ sunday, update }: { sunday: SundayData; update: (p: Partia
   );
 }
 
-function ButtonsTab({ sunday, update }: { sunday: SundayData; update: (p: Partial<SundayData>) => void }) {
-  const [label, setLabel] = useState("");
-  const [url, setUrl] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editLabel, setEditLabel] = useState("");
-  const [editUrl, setEditUrl] = useState("");
 
-  const add = () => {
-    if (!label || !url) return alert("Please enter both Button Label and URL link");
-    update({
-      buttons: [
-        ...(sunday.buttons || []),
-        { id: Date.now().toString(), label, url }
-      ]
-    });
-    setLabel("");
-    setUrl("");
-  };
-
-  const startEdit = (item: SundayLinkButton) => {
-    setEditingId(item.id);
-    setEditLabel(item.label);
-    setEditUrl(item.url);
-  };
-
-  const saveEdit = () => {
-    if (!editLabel || !editUrl) return alert("Label and URL are required");
-    update({
-      buttons: (sunday.buttons || []).map((x) =>
-        x.id === editingId ? { ...x, label: editLabel, url: editUrl } : x
-      )
-    });
-    setEditingId(null);
-  };
-
-  const move = (i: number, dir: -1 | 1) => {
-    if (!sunday.buttons) return;
-    const j = i + dir;
-    if (j < 0 || j >= sunday.buttons.length) return;
-    const copy = [...sunday.buttons];
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-    update({ buttons: copy });
-  };
-
-  const list = sunday.buttons || [];
-
-  return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-2xl shadow p-6 border">
-        <h3 className="font-display text-xl font-bold text-primary mb-4">Add Custom Action Button / Link</h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Button Label (e.g. Register for Sunday Program)</label>
-            <input
-              className="w-full px-4 py-2.5 border rounded-lg"
-              placeholder="e.g. Register Now"
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Button Destination URL Link</label>
-            <input
-              className="w-full px-4 py-2.5 border rounded-lg"
-              placeholder="https://..."
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-            />
-          </div>
-        </div>
-        <button
-          onClick={add}
-          className="mt-4 px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium"
-        >
-          Add Button Link
-        </button>
-      </div>
-
-      <div className="bg-white rounded-2xl shadow p-6 border">
-        <h3 className="font-display text-xl font-bold text-primary mb-4">Custom Buttons ({list.length})</h3>
-        {list.length === 0 ? (
-          <p className="text-muted-foreground text-center py-6">No custom buttons added yet.</p>
-        ) : (
-          <div className="divide-y divide-border/60">
-            {list.map((item, i) => (
-              <div key={item.id} className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                {editingId === item.id ? (
-                  <div className="flex-1 grid md:grid-cols-2 gap-3">
-                    <input
-                      className="px-3 py-1.5 border rounded text-sm"
-                      value={editLabel}
-                      onChange={(e) => setEditLabel(e.target.value)}
-                    />
-                    <input
-                      className="px-3 py-1.5 border rounded text-sm"
-                      value={editUrl}
-                      onChange={(e) => setEditUrl(e.target.value)}
-                    />
-                  </div>
-                ) : (
-                  <div className="flex-1 flex flex-col sm:flex-row sm:items-center gap-4">
-                    <span className="font-semibold text-primary min-w-36 text-sm bg-purple-50 border border-purple-200 px-3 py-1 rounded">
-                      {item.label}
-                    </span>
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-muted-foreground hover:underline truncate"
-                    >
-                      {item.url}
-                    </a>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-1">
-                  {editingId === item.id ? (
-                    <>
-                      <button
-                        onClick={saveEdit}
-                        className="px-3 py-1.5 rounded bg-primary text-primary-foreground text-xs font-semibold inline-flex items-center gap-1"
-                      >
-                        <Check className="h-3.5 w-3.5" /> Save
-                      </button>
-                      <button
-                        onClick={() => setEditingId(null)}
-                        className="px-3 py-1.5 rounded border text-xs text-foreground"
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button onClick={() => move(i, -1)} className="p-2 rounded hover:bg-muted" aria-label="Move up"><ArrowUp className="h-4 w-4" /></button>
-                      <button onClick={() => move(i, 1)} className="p-2 rounded hover:bg-muted" aria-label="Move down"><ArrowDown className="h-4 w-4" /></button>
-                      <button
-                        onClick={() => startEdit(item)}
-                        className="px-3 py-1.5 rounded hover:bg-accent/15 text-accent text-xs font-semibold"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => update({ buttons: list.filter((x) => x.id !== item.id) })}
-                        className="p-2 rounded hover:bg-destructive/10 text-destructive ml-auto"
-                        aria-label="Delete"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 
 function ActivitiesTab({ sunday, update }: { sunday: SundayData; update: (p: Partial<SundayData>) => void }) {
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -585,9 +427,7 @@ function ActivitiesTab({ sunday, update }: { sunday: SundayData; update: (p: Par
   };
 
   const deleteActivity = (id: string) => {
-    if (confirm("Are you sure you want to delete this activity?")) {
-      update({ activities: list.filter((x) => x.id !== id) });
-    }
+    update({ activities: list.filter((x) => x.id !== id) });
   };
 
   const move = (i: number, dir: -1 | 1) => {
@@ -779,3 +619,428 @@ function ActivitiesTab({ sunday, update }: { sunday: SundayData; update: (p: Par
     </div>
   );
 }
+
+function SponsorsTab({
+  sunday,
+  update,
+}: {
+  sunday: SundayData;
+  update: (p: Partial<SundayData>) => void;
+}) {
+  const sponsors = sunday.sponsors || [];
+  const [draft, setDraft] = useState<Partial<SundaySponsor>>({
+    sponsorName: "",
+    familyName: "",
+    occasion: "Auspicious Occasion / General Seva",
+    date: "",
+    details: "Sunday Feast prasadam distribution lovingly sponsored as seva for the pleasure of Sri Sri Jagannath, Baladeva, Subhadra Maharani and all visiting devotees.",
+    active: true,
+    images: [],
+  });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [uploadingSlot, setUploadingSlot] = useState<number | null>(null);
+
+  const OCCASIONS = [
+    "Birthday",
+    "Wedding Anniversary",
+    "Memorial / In Loving Memory",
+    "Auspicious Milestone",
+    "General Seva",
+    "Custom"
+  ];
+
+  const resetForm = () => {
+    setDraft({
+      sponsorName: "",
+      familyName: "",
+      occasion: "Auspicious Occasion / General Seva",
+      date: "",
+      details: "Sunday Feast prasadam distribution lovingly sponsored as seva for the pleasure of Sri Sri Jagannath, Baladeva, Subhadra Maharani and all visiting devotees.",
+      active: true,
+      images: [],
+    });
+    setEditingId(null);
+    setUploadingSlot(null);
+  };
+
+  const handleUploadImage = async (slotIndex: number, file: File) => {
+    setUploadingSlot(slotIndex);
+    try {
+      const url = await uploadToCloudinary(file);
+      const currentImages = [...(draft.images || [])];
+      // Ensure array has enough elements
+      while (currentImages.length <= slotIndex) {
+        currentImages.push("");
+      }
+      currentImages[slotIndex] = url;
+      setDraft({ ...draft, images: currentImages.filter(Boolean) });
+    } catch (e) {
+      console.error(e);
+      alert("Failed to upload image. Please try again.");
+    } finally {
+      setUploadingSlot(null);
+    }
+  };
+
+  const handleRemoveImage = (slotIndex: number) => {
+    const currentImages = [...(draft.images || [])];
+    currentImages.splice(slotIndex, 1);
+    setDraft({ ...draft, images: currentImages.filter(Boolean) });
+  };
+
+  const save = () => {
+    if (!draft.sponsorName?.trim()) {
+      alert("Please enter the Sponsor Name.");
+      return;
+    }
+
+    const item: SundaySponsor = {
+      id: editingId || `sponsor_${Date.now()}`,
+      sponsorName: draft.sponsorName.trim(),
+      familyName: draft.familyName?.trim() || "",
+      occasion: draft.occasion?.trim() || "General Seva",
+      date: draft.date?.trim() || "",
+      details: draft.details?.trim() || "",
+      active: draft.active !== false,
+      images: (draft.images || []).filter(Boolean),
+    };
+
+    if (editingId) {
+      update({ sponsors: sponsors.map((s) => (s.id === editingId ? item : s)) });
+    } else {
+      update({ sponsors: [item, ...sponsors] });
+    }
+    resetForm();
+  };
+
+  const startEdit = (s: SundaySponsor) => {
+    setEditingId(s.id);
+    setDraft({ ...s, images: s.images || [] });
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const toggleActive = (id: string) => {
+    update({
+      sponsors: sponsors.map((s) => (s.id === id ? { ...s, active: s.active === false ? true : false } : s)),
+    });
+  };
+
+  const deleteSponsor = (id: string) => {
+    update({ sponsors: sponsors.filter((s) => s.id !== id) });
+    if (editingId === id) resetForm();
+  };
+
+  const move = (index: number, dir: -1 | 1) => {
+    const target = index + dir;
+    if (target < 0 || target >= sponsors.length) return;
+    const next = [...sponsors];
+    const [moved] = next.splice(index, 1);
+    next.splice(target, 0, moved);
+    update({ sponsors: next });
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Form: Add / Edit Sponsor */}
+      <div className="bg-white rounded-2xl shadow-sm border p-6 space-y-6">
+        <div className="flex items-center justify-between border-b pb-4">
+          <h3 className="font-display text-xl font-bold text-primary flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-accent" />
+            {editingId ? "Edit Sunday Feast Sponsor" : "Add Sunday Feast Sponsor"}
+          </h3>
+          {editingId && (
+            <button onClick={resetForm} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 font-medium">
+              <X className="h-4 w-4" /> Cancel Editing
+            </button>
+          )}
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-5">
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Sponsor Name <span className="text-destructive">*</span>
+            </label>
+            <input
+              className="w-full px-4 py-2.5 border rounded-lg bg-white"
+              value={draft.sponsorName || ""}
+              onChange={(e) => setDraft({ ...draft, sponsorName: e.target.value })}
+              placeholder="e.g. Sri Radha Raman Das or Sri XYZ"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Family Name (Optional)
+            </label>
+            <input
+              className="w-full px-4 py-2.5 border rounded-lg bg-white"
+              value={draft.familyName || ""}
+              onChange={(e) => setDraft({ ...draft, familyName: e.target.value })}
+              placeholder="e.g. & Family or Sharma Family"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Occasion / Reason</label>
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-1.5">
+                {OCCASIONS.map((occ) => (
+                  <button
+                    key={occ}
+                    type="button"
+                    onClick={() => setDraft({ ...draft, occasion: occ === "Custom" ? "" : occ })}
+                    className={`px-2.5 py-1 text-xs rounded-full border transition font-medium ${
+                      draft.occasion === occ || (occ === "Custom" && !OCCASIONS.slice(0, 5).includes(draft.occasion || ""))
+                        ? "bg-primary text-white border-primary"
+                        : "bg-surface text-foreground hover:bg-muted border-border"
+                    }`}
+                  >
+                    {occ}
+                  </button>
+                ))}
+              </div>
+              <input
+                className="w-full px-4 py-2 border rounded-lg text-sm bg-white"
+                value={draft.occasion || ""}
+                onChange={(e) => setDraft({ ...draft, occasion: e.target.value })}
+                placeholder="e.g. 50th Birthday / Wedding Anniversary / In Loving Memory of..."
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Date</label>
+            <input
+              className="w-full px-4 py-2.5 border rounded-lg bg-white font-sans text-sm"
+              value={draft.date || ""}
+              onChange={(e) => setDraft({ ...draft, date: e.target.value })}
+              placeholder="e.g. 23/08/2026 or Sunday, 23 August 2026"
+            />
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Tip: You can write "Upcoming Sunday" or a specific date like "23/08/2026".
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Feast / Sponsorship Details</label>
+          <textarea
+            rows={3}
+            className="w-full px-4 py-2.5 border rounded-lg bg-white font-sans text-sm"
+            value={draft.details || ""}
+            onChange={(e) => setDraft({ ...draft, details: e.target.value })}
+            placeholder="e.g. Sunday Feast sponsored as Seva for the pleasure of Sri Sri Jagannath..."
+          />
+        </div>
+
+        {/* 4-Image Carousel Upload Section */}
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="block text-sm font-bold text-primary">
+                Sponsor Celebration / Seva Photos (Up to 4 Images for Carousel Slider)
+              </label>
+              <p className="text-xs text-muted-foreground">
+                Upload photos of the family, deity arati, feast distribution, or occasion celebration to display in an auto-scrolling photo carousel.
+              </p>
+            </div>
+            <span className="text-xs font-semibold text-accent px-2.5 py-1 bg-accent/10 rounded-full">
+              {(draft.images || []).length}/4 Photos
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[0, 1, 2, 3].map((slotIdx) => {
+              const imgUrl = (draft.images || [])[slotIdx];
+              const isUploading = uploadingSlot === slotIdx;
+
+              return (
+                <div key={slotIdx} className="space-y-1.5">
+                  <span className="text-[11px] font-semibold text-slate-500 block">Photo {slotIdx + 1}</span>
+                  <div className="relative aspect-video sm:aspect-square bg-slate-50 rounded-xl border-2 border-dashed border-border/80 overflow-hidden group hover:border-primary transition">
+                    {imgUrl ? (
+                      <>
+                        <img src={imgUrl} alt={`Photo ${slotIdx + 1}`} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
+                          <label className="p-1.5 bg-white text-slate-900 rounded-lg hover:bg-slate-100 cursor-pointer shadow-sm" title="Change Photo">
+                            <Pencil className="h-4 w-4" />
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => e.target.files?.[0] && handleUploadImage(slotIdx, e.target.files[0])}
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(slotIdx)}
+                            className="p-1.5 bg-rose-600 text-white rounded-lg hover:bg-rose-700 shadow-sm"
+                            title="Remove Photo"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <label className="w-full h-full flex flex-col items-center justify-center p-3 text-center cursor-pointer hover:bg-primary/5 transition">
+                        {isUploading ? (
+                          <div className="text-xs font-semibold text-primary animate-pulse">Uploading...</div>
+                        ) : (
+                          <>
+                            <div className="p-2 rounded-full bg-slate-100 group-hover:bg-primary/10 group-hover:text-primary transition mb-1">
+                              <Plus className="h-4 w-4 text-slate-500 group-hover:text-primary" />
+                            </div>
+                            <span className="text-[11px] font-medium text-slate-600">Upload Image</span>
+                          </>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={isUploading}
+                          onChange={(e) => e.target.files?.[0] && handleUploadImage(slotIdx, e.target.files[0])}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between pt-2 border-t flex-wrap gap-4">
+          <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+            <input
+              type="checkbox"
+              checked={draft.active !== false}
+              onChange={(e) => setDraft({ ...draft, active: e.target.checked })}
+              className="rounded text-primary focus:ring-primary h-4 w-4"
+            />
+            Active (Display on Website)
+          </label>
+
+          <div className="flex gap-2">
+            {editingId && (
+              <button
+                type="button"
+                onClick={resetForm}
+                className="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-muted"
+              >
+                Cancel
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={save}
+              className="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/95 text-white font-semibold text-sm shadow-sm transition"
+            >
+              {editingId ? "Update Sponsor" : "Add Sponsor"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Sponsors List */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-display text-lg font-bold text-primary">
+            Configured Sunday Feast Sponsors ({sponsors.length})
+          </h3>
+        </div>
+
+        {sponsors.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-2xl border text-muted-foreground text-sm">
+            No Sunday Feast sponsors added yet. Use the form above to add the current or upcoming Sunday's sponsors.
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {sponsors.map((s, idx) => (
+              <div
+                key={s.id || idx}
+                className={`bg-white rounded-2xl border p-5 shadow-sm transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                  s.active === false ? "opacity-60 bg-slate-50" : ""
+                }`}
+              >
+                <div className="space-y-1.5 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h4 className="font-display font-bold text-lg text-primary">
+                      {s.sponsorName} {s.familyName && <span className="text-secondary font-semibold">{s.familyName}</span>}
+                    </h4>
+                    {s.active === false ? (
+                      <span className="text-[10px] uppercase font-bold bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                        Hidden
+                      </span>
+                    ) : (
+                      <span className="text-[10px] uppercase font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                        Active
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                    {s.occasion && (
+                      <span className="font-medium text-foreground bg-surface border px-2.5 py-0.5 rounded-full">
+                        {s.occasion}
+                      </span>
+                    )}
+                    {s.date && <span>📅 Date: {s.date}</span>}
+                  </div>
+
+                  {s.details && (
+                    <p className="text-xs text-slate-600 italic line-clamp-2 pt-1 font-sans">
+                      "{s.details}"
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1 shrink-0 self-end md:self-center pt-2 md:pt-0 border-t md:border-t-0 border-border/60">
+                  <button
+                    onClick={() => move(idx, -1)}
+                    disabled={idx === 0}
+                    className="p-2 rounded hover:bg-muted disabled:opacity-30"
+                    title="Move Up"
+                  >
+                    <ArrowUp className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => move(idx, 1)}
+                    disabled={idx === sponsors.length - 1}
+                    className="p-2 rounded hover:bg-muted disabled:opacity-30"
+                    title="Move Down"
+                  >
+                    <ArrowDown className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => toggleActive(s.id)}
+                    className="p-2 rounded hover:bg-muted text-foreground"
+                    title={s.active === false ? "Show on website" : "Hide from website"}
+                  >
+                    {s.active === false ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-emerald-600" />}
+                  </button>
+                  <button
+                    onClick={() => startEdit(s)}
+                    className="p-2 rounded hover:bg-accent/10 text-accent font-medium text-xs flex items-center gap-1"
+                    title="Edit"
+                  >
+                    <Pencil className="h-4 w-4" /> Edit
+                  </button>
+                  <button
+                    onClick={() => deleteSponsor(s.id)}
+                    className="p-2 rounded hover:bg-destructive/10 text-destructive font-medium text-xs flex items-center gap-1"
+                    title="Delete"
+                  >
+                    <Trash2 className="h-4 w-4" /> Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+

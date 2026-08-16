@@ -67,7 +67,6 @@ export default function ContactsManager() {
   };
 
   const handleDelete = (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this message?")) return;
     const updated = (contacts || []).filter((c) => c.id !== id);
     setContacts(updated);
     if (selectedId === id) {
