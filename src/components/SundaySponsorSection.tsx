@@ -136,7 +136,7 @@ function SponsorCarousel({ images, title }: { images: string[]; title: string })
 /* =========================================================================
    Main Sunday Feast Sponsorship Section (Side-by-Side on Large Screens)
    ========================================================================= */
-export default function SundaySponsorSection({ className = "" }: { className?: string }) {
+export default function SundaySponsorSection({ className = "", id = "sunday-sponsor-section" }: { className?: string; id?: string }) {
   const { sunday, settings } = useAdmin();
   const sponsors = (sunday.sponsors || []).filter((s) => s.active !== false);
 
@@ -148,7 +148,7 @@ export default function SundaySponsorSection({ className = "" }: { className?: s
   const cleanPhone = whatsappPhone.replace(/\D/g, "");
 
   return (
-    <section className={`py-16 md:py-24 bg-gradient-to-b from-surface via-[#fffdf9] to-background border-b border-border/40 relative overflow-hidden ${className}`}>
+    <section id={id} className={`py-16 md:py-24 bg-gradient-to-b from-surface via-[#fffdf9] to-background border-b border-border/40 relative overflow-hidden ${className}`}>
       {/* Devotional background aura */}
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none" />

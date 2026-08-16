@@ -30,7 +30,7 @@ function loadRazorpay(): Promise<boolean> {
 }
 
 export default function Page({ initialSlug }: { initialSlug?: string }) {
-  const { sevas, settings, theme, ready, addDonation, updateDonationStatus, platformFee, addPaymentRecord } = useAdmin();
+  const { sevas, settings, theme, ready, addDonation, updateDonationStatus, platformFee, addPaymentRecord, sunday } = useAdmin();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Record<string, number>>({});
@@ -48,31 +48,84 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   const [pan, setPan] = useState("");
 
   useEffect(() => {
-    if (initialSlug && sevas.length > 0) {
-      const found = sevas.find(s => s.slug === initialSlug || s.id === initialSlug);
+    if (initialSlug) {
+      let found = sevas.find(s => s.slug === initialSlug || s.id === initialSlug);
+      
+      // Fallback for Sunday Feast Seva
+      if (!found && (initialSlug === "sunday-feast-seva" || initialSlug === "sunday-feast")) {
+        const rawAmount = sunday.donationCardAmount ? parseInt(sunday.donationCardAmount.replace(/\D/g, ""), 10) : 5001;
+        const amt = isNaN(rawAmount) || rawAmount <= 0 ? 5001 : rawAmount;
+        found = {
+          id: "s_sunday_feast_fallback",
+          title: sunday.donationCardTitle || "Sunday Feast Annadana Seva",
+          slug: "sunday-feast-seva",
+          description: sunday.donationCardDescription || "Feed visiting devotees with sanctified Krishna prasadam every Sunday. Sponsoring the Sunday Feast brings immense spiritual peace, auspiciousness, and blessings for your family.",
+          thumbnail: sunday.donationCardImage || "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
+          prices: [
+            { label: "Sunday Feast Sponsorship", amount: amt }
+          ],
+          order: 1,
+          active: true
+        };
+      }
+
       if (found) {
-        setCheckoutSeva(found);
         const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
         const amountParam = searchParams?.get("amount") || searchParams?.get("amt");
+        
         if (amountParam && !isNaN(Number(amountParam))) {
           const amt = Number(amountParam);
-          const matchIdx = found.prices.findIndex(p => p.amount === amt);
-          if (matchIdx !== -1) {
-            setSelected(prev => ({ ...prev, [found.id]: matchIdx }));
+          let matchIdx = found.prices.findIndex(p => p.amount === amt);
+          if (matchIdx === -1) {
+            // Add custom amount to prices if not present
+            found = {
+              ...found,
+              prices: [{ label: `Sponsorship Amount`, amount: amt }, ...found.prices]
+            };
+            matchIdx = 0;
           }
+          setSelected(prev => ({ ...prev, [found!.id]: matchIdx }));
         }
+        setCheckoutSeva(found);
       } else {
         setCheckoutSeva(null);
       }
     } else {
       setCheckoutSeva(null);
     }
-  }, [initialSlug, sevas]);
+  }, [initialSlug, sevas, sunday]);
 
-  const active = useMemo(
-    () => [...sevas].filter((s) => s.active).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
-    [sevas],
-  );
+  const active = useMemo(() => {
+    let list = [...sevas].filter((s) => s.active);
+
+    // Automatically ensure Sunday Feast Annadana Seva is present in common donations
+    const hasSundayFeast = list.some(
+      (s) => s.slug === "sunday-feast-seva" || s.slug === "sunday-feast" || s.title.toLowerCase().includes("sunday feast")
+    );
+
+    if (!hasSundayFeast && sunday.donationCardEnabled !== false) {
+      const rawAmount = sunday.donationCardAmount ? parseInt(sunday.donationCardAmount.replace(/\D/g, ""), 10) : 5001;
+      const amt = isNaN(rawAmount) || rawAmount <= 0 ? 5001 : rawAmount;
+      const sundaySevaItem: Seva = {
+        id: "s_sunday_feast_auto",
+        title: sunday.donationCardTitle || "Sunday Feast Annadana Seva",
+        slug: "sunday-feast-seva",
+        description: sunday.donationCardDescription || "Feed visiting devotees with sanctified Krishna prasadam every Sunday. Sponsoring the Sunday Feast brings immense spiritual peace, auspiciousness, and blessings for your family.",
+        thumbnail: sunday.donationCardImage || "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
+        prices: [
+          { label: "Sunday Feast Sponsorship", amount: amt },
+          { label: "50 Devotees Prasadam Seva", amount: 1500 },
+          { label: "100 Devotees Prasadam Seva", amount: 3000 },
+          { label: "Full Grand Feast Sponsorship", amount: 11000 },
+        ],
+        order: 0,
+        active: true,
+      };
+      list = [sundaySevaItem, ...list];
+    }
+
+    return list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  }, [sevas, sunday]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();

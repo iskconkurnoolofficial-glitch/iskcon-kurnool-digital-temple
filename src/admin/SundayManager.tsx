@@ -143,6 +143,133 @@ function SettingsTab({ sunday, update }: { sunday: SundayData; update: (p: Parti
           placeholder="Experience a spiritually uplifting Sunday..."
         />
       </div>
+
+      {/* Dedicated Sunday Feast Online Sponsorship Seva Configuration */}
+      <div className="pt-6 border-t border-border space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h4 className="font-display text-lg font-bold text-primary flex items-center gap-2">
+              <Gift className="h-5 w-5 text-accent" /> Sunday Feast Online Sponsorship Seva (Single Amount)
+            </h4>
+            <p className="text-xs text-muted-foreground">
+              Configure the single fixed sponsorship amount and details displayed on the website. Devotees clicking this will be taken directly to the dedicated Sunday Feast checkout page.
+            </p>
+          </div>
+          <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+            <input
+              type="checkbox"
+              checked={sunday.donationCardEnabled !== false}
+              onChange={(e) => update({ donationCardEnabled: e.target.checked })}
+              className="rounded text-primary focus:ring-primary h-4 w-4"
+            />
+            Show Donation Section
+          </label>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border">
+          <div>
+            <label className="block text-sm font-bold mb-1">
+              Sponsorship Amount (₹) <span className="text-destructive">*</span>
+            </label>
+            <div className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 font-bold">₹</span>
+              <input
+                type="number"
+                className="w-full pl-8 pr-4 py-2.5 border rounded-lg bg-white font-sans text-base font-bold text-primary"
+                value={sunday.donationCardAmount || "5001"}
+                onChange={(e) => update({ donationCardAmount: e.target.value })}
+                placeholder="5001"
+              />
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              This exact amount will be pre-filled on the dedicated Sunday Feast checkout page.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold mb-1">Button Label</label>
+            <input
+              className="w-full px-4 py-2.5 border rounded-lg bg-white"
+              value={sunday.donationCardButtonLabel || "Sponsor Sunday Feast Online"}
+              onChange={(e) => update({ donationCardButtonLabel: e.target.value })}
+              placeholder="e.g. Sponsor Sunday Feast Online"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-bold mb-1">Seva Title</label>
+            <input
+              className="w-full px-4 py-2.5 border rounded-lg bg-white"
+              value={sunday.donationCardTitle || "Sunday Feast Annadana Seva"}
+              onChange={(e) => update({ donationCardTitle: e.target.value })}
+              placeholder="e.g. Sunday Feast Annadana Seva"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-bold mb-1">Seva Purpose & Description</label>
+            <textarea
+              className="w-full px-4 py-2.5 border rounded-lg bg-white font-sans text-sm"
+              rows={3}
+              value={sunday.donationCardDescription || "Feed visiting devotees with sanctified Krishna prasadam every Sunday. Sponsoring the Sunday Feast brings immense spiritual peace, auspiciousness, and blessings for your family."}
+              onChange={(e) => update({ donationCardDescription: e.target.value })}
+              placeholder="Explain the significance and purpose of sponsoring the Sunday Feast prasadam..."
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-bold mb-1">Dedicated Checkout Page Slug / Link (Optional)</label>
+            <input
+              className="w-full px-4 py-2.5 border rounded-lg bg-white text-sm font-mono"
+              value={sunday.donationCardButtonUrl || "/donate/sunday-feast"}
+              onChange={(e) => update({ donationCardButtonUrl: e.target.value })}
+              placeholder="/donate/sunday-feast"
+            />
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Default is <code className="text-primary font-bold">/donate/sunday-feast</code>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Live Announcement Ticker Configuration */}
+      <div className="pt-6 border-t border-border space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h4 className="font-display text-lg font-bold text-primary flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-amber-500" /> Moving Announcement Ticker
+            </h4>
+            <p className="text-xs text-muted-foreground">
+              Displays a continuous moving banner directly below the Sunday Hero banner with sponsor details and a "View" scroll button.
+            </p>
+          </div>
+          <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+            <input
+              type="checkbox"
+              checked={sunday.tickerEnabled !== false}
+              onChange={(e) => update({ tickerEnabled: e.target.checked })}
+              className="rounded text-primary focus:ring-primary h-4 w-4"
+            />
+            Enable Ticker
+          </label>
+        </div>
+
+        <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border space-y-3">
+          <label className="block text-sm font-bold mb-1">
+            Custom Ticker Announcement Text (Optional)
+          </label>
+          <textarea
+            rows={2}
+            className="w-full px-4 py-2.5 border rounded-lg bg-white font-sans text-sm"
+            value={sunday.tickerText || ""}
+            onChange={(e) => update({ tickerText: e.target.value })}
+            placeholder="Leave empty to automatically display this week's active sponsor name, date, occasion, and blessings."
+          />
+          <p className="text-[11px] text-muted-foreground">
+            💡 If left blank, it automatically shows: <em>"✨ This Sunday Feast Sponsored By: [Active Sponsor] • Date: [Feast Date] • Occasion: [Occasion] • May Sri Sri Puri Jagannath bestow abundant bhakti & peace!"</em>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

@@ -333,11 +333,15 @@ export type SundayData = {
   donationCardImage?: string;
   donationCardEnabled?: boolean;
   donationCardAmount?: string;
+  tickerText?: string;
+  tickerEnabled?: boolean;
 };
 
 export const defaultSunday: SundayData = {
   description: "Experience a spiritually uplifting Sunday at ISKCON Kurnool. Join devotees for devotional chanting, enlightening Bhagavad Gita discourse, darshan, and delicious prasadam. Everyone is welcome.",
   scheduleTitle: "Weekly Schedule (Every Sunday)",
+  tickerText: "",
+  tickerEnabled: true,
   sponsors: [
     {
       id: "sp_default_1",
@@ -876,6 +880,37 @@ export function calculatePlatformFee(amount: number, feeSettings?: PlatformFeeSe
 
 export const defaultPaymentPages: PaymentPage[] = [
   {
+    id: "p_sunday_feast",
+    slug: "sunday-feast",
+    title: "Sunday Feast Annadana Seva",
+    description: "Feed hundreds of visiting devotees with sanctified Krishna prasadam every Sunday. Sponsoring the Sunday Feast is considered one of the highest forms of Annadana and brings immense spiritual blessings for birthdays, anniversaries, or in loving memory of family members.",
+    bannerImage: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=1200&q=80",
+    logoUrl: "",
+    isPrivate: false,
+    active: true,
+    enableGoalTracker: true,
+    goalAmount: 50000,
+    raisedAmount: 18500,
+    pricingType: "preset",
+    presetPrices: [
+      { id: "pr_1", label: "50 Devotees Sunday Feast", amount: 1500 },
+      { id: "pr_2", label: "100 Devotees Sunday Feast", amount: 3000 },
+      { id: "pr_3", label: "Half Sunday Feast Sponsorship", amount: 5500 },
+      { id: "pr_4", label: "Full Grand Sunday Feast Sponsorship", amount: 11000 },
+    ],
+    contactEmail: "info@iskconkurnool.org",
+    contactPhone: "+91 94916 89255",
+    termsAndConditions: "All contributions support sacred prasadam distribution at ISKCON Kurnool. 80G tax exemption receipt is issued upon request.",
+    fields: [
+      { id: "f1", label: "Full Name", type: "text", required: true },
+      { id: "f2", label: "Email Address", type: "email", required: true },
+      { id: "f3", label: "WhatsApp Phone Number", type: "phone", required: true },
+      { id: "f4", label: "Gotram & Nakshatra", type: "text", required: false },
+      { id: "f5", label: "Occasion (Birthday / Anniversary / Memorial)", type: "text", required: false },
+      { id: "f6", label: "PAN Card Number (for 80G)", type: "pan", required: false },
+    ],
+  },
+  {
     id: "p1",
     slug: "sharandev",
     title: "Sharandev Seva",
@@ -1039,6 +1074,35 @@ const Ctx = createContext<AdminState | null>(null);
 
 export const defaultSevas: Seva[] = [
   {
+    id: "s_default_sunday_feast",
+    title: "Sunday Feast Annadana Seva",
+    slug: "sunday-feast",
+    description: "Feed visiting devotees with sanctified Krishna prasadam every Sunday. Sponsoring the Sunday Feast brings immense spiritual peace, auspiciousness, and blessings for your family.",
+    thumbnail: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
+    prices: [
+      { label: "50 Devotees Prasadam Seva", amount: 1500 },
+      { label: "100 Devotees Prasadam Seva", amount: 3000 },
+      { label: "Half Sunday Feast Sponsorship", amount: 5500 },
+      { label: "Full Grand Sunday Feast Sponsorship", amount: 11000 },
+    ],
+    order: 1,
+    active: true
+  },
+  {
+    id: "s_default_pushpalankara",
+    title: "Nitya Pushpalankara Seva",
+    slug: "nitya-pushpalankara-seva",
+    description: "Daily decoration of the Lord with fresh flowers — a fragrant offering of love and devotion.",
+    thumbnail: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80",
+    prices: [
+      { label: "One Day Flower Seva", amount: 516 },
+      { label: "One Week Flower Seva", amount: 3500 },
+      { label: "One Month Pushpalankara", amount: 15000 },
+    ],
+    order: 2,
+    active: true
+  },
+  {
     id: "s_default_goshala",
     title: "Goshala Cow Service (Go-Seva)",
     slug: "goshala-seva",
@@ -1049,7 +1113,7 @@ export const defaultSevas: Seva[] = [
       { label: "Cow Care & Medical Support (Monthly)", amount: 2500 },
       { label: "Adopt a Cow (Annual Support)", amount: 15000 }
     ],
-    order: 1,
+    order: 3,
     active: true
   }
 ];
@@ -1289,12 +1353,22 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.festivals: setFestivalsState(value); break;
       case KEYS.sevas: {
         const list = Array.isArray(value) ? value
-          .filter((s: any) => s.id !== "s_default_sunday_feast" && s.slug !== "sunday-feast")
           .map((s: any) => ({
             ...s,
             slug: s.slug || s.title?.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-") || s.id
           })) : [];
-        setSevasState(list.length > 0 ? list : defaultSevas);
+        
+        // If saved list is missing Sunday Feast or Pushpalankara, merge defaults
+        if (list.length > 0) {
+          const hasSunday = list.some((s: any) => s.slug === "sunday-feast" || s.id === "s_default_sunday_feast");
+          const hasPushpa = list.some((s: any) => s.slug === "nitya-pushpalankara-seva" || s.id === "s_default_pushpalankara");
+          let merged = [...list];
+          if (!hasSunday) merged = [defaultSevas[0], ...merged];
+          if (!hasPushpa) merged = [...merged, defaultSevas[1]];
+          setSevasState(merged);
+        } else {
+          setSevasState(defaultSevas);
+        }
         break;
       }
       case KEYS.youth: setYouthState({ ...defaultYouth, ...value }); break;

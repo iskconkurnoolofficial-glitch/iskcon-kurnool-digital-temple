@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import SiteLayout, { PageHero } from "@/components/SiteLayout";
 import { useAdmin, type SundayGalleryItem } from "@/context/AdminContext";
-import { Calendar, Clock, MapPin, Sparkles, Navigation, Link as LinkIcon, Heart, Sunrise, Sun, Sunset, Music, BookOpen, Soup, Flame, Utensils, Users } from "lucide-react";
+import { Calendar, Clock, MapPin, Sparkles, Navigation, Link as LinkIcon, Heart, Sunrise, Sun, Sunset, Music, BookOpen, Soup, Flame, Utensils, Users, HandHeart, ArrowRight } from "lucide-react";
 import { isTimeStrLive } from "@/lib/scheduleUtils";
 import SundaySponsorSection from "@/components/SundaySponsorSection";
+import SundayDonationSection from "@/components/SundayDonationSection";
+import SundaySponsorModal from "@/components/SundaySponsorModal";
 
 function getProgramIcon(program: string) {
   const name = program.toLowerCase();
@@ -70,6 +72,7 @@ function SundayPage() {
   const { sunday, settings } = useAdmin();
   const [tick, setTick] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [isSponsorModalOpen, setIsSponsorModalOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -103,7 +106,22 @@ function SundayPage() {
         title="Sunday Feast Program" 
         subtitle="Experience a spiritually uplifting Sunday at ISKCON Kurnool." 
         pageKey="sunday" 
-      />
+      >
+        <Link
+          to="/donate/sunday-feast"
+          className="inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-sans font-bold text-base shadow-[0_10px_25px_-5px_rgba(249,115,22,0.5)] hover:shadow-[0_15px_30px_-5px_rgba(249,115,22,0.65)] transition-all duration-300 hover:scale-105 border border-amber-300/40 cursor-pointer"
+        >
+          <HandHeart className="h-5 w-5 text-white" />
+          <span>Sponsor Sunday Feast</span>
+          <ArrowRight className="h-4 w-4 text-white ml-0.5" />
+        </Link>
+      </PageHero>
+
+      {/* Continuous Moving Announcement Ticker */}
+      <SundayAnnouncementTicker sunday={sunday} onOpenSponsorModal={() => setIsSponsorModalOpen(true)} />
+
+      {/* Sacred Annadana Seva — Sunday Feast Sponsorship Modal */}
+      <SundaySponsorModal isOpen={isSponsorModalOpen} onClose={() => setIsSponsorModalOpen(false)} />
 
       {/* Divine Invitation & 4 Pillars Showcase */}
       <section 
@@ -351,7 +369,7 @@ function SundayPage() {
 
                   {/* Bottom Image Caption */}
                   <div className="absolute bottom-4 left-4 right-4 text-white space-y-1">
-                    <h3 className="font-display font-extrabold text-xl leading-tight">Sri Sri Radha Damodar Temple</h3>
+                    <h3 className="font-display font-extrabold text-xl leading-tight">Sri Sri Puri Jagannath Temple</h3>
                     <p className="text-xs text-white/80 font-sans">Open to all families, youth, and visitors with free entry and prasadam.</p>
                   </div>
                 </div>
@@ -477,8 +495,11 @@ function SundayPage() {
 
 
 
-      {/* Dynamic Sunday Feast Sponsorship Section */}
+      {/* Dynamic Sunday Feast Sponsorship Display Section */}
       <SundaySponsorSection />
+
+      {/* Dedicated Sunday Feast Online Donation Section */}
+      <SundayDonationSection />
 
       {/* Auto-scrolling Gallery Section */}
       <section 
@@ -673,3 +694,85 @@ function AutoGallery({ images, direction = "left" }: { images: SundayGalleryItem
     </div>
   );
 }
+
+function SundayAnnouncementTicker({ sunday, onOpenSponsorModal }: { sunday: any; onOpenSponsorModal?: () => void }) {
+  if (sunday.tickerEnabled === false) {
+    return null;
+  }
+
+  const sponsors = (sunday.sponsors || []).filter((s: any) => s.active !== false);
+  const activeSponsor = sponsors[0] || (sunday.sponsor ? { ...sunday.sponsor, active: true } : null);
+
+  const sponsorName = activeSponsor?.name || "Sri XYZ & Family";
+  const sponsorDate = activeSponsor?.date || "This Upcoming Sunday";
+  const occasion = activeSponsor?.occasion || "Sacred Annadana Seva";
+
+  const customText = sunday.tickerText?.trim();
+
+  const tickerItem = (
+    <div className="inline-flex items-center gap-3 sm:gap-5 px-6 text-xs sm:text-sm font-sans font-medium text-amber-100/95 whitespace-nowrap">
+      {customText ? (
+        <span className="font-semibold text-white/95">{customText}</span>
+      ) : (
+        <>
+          <span className="inline-flex items-center gap-1.5 text-amber-300 font-bold">
+            <Sparkles className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
+            This Sunday Feast Sponsored By:
+          </span>
+          <span className="font-extrabold text-white bg-white/10 px-3 py-1 rounded-full border border-white/20 shadow-xs">
+            {sponsorName}
+          </span>
+          <span className="text-amber-300/50">•</span>
+          <span className="text-amber-200 font-semibold flex items-center gap-1">
+            <Calendar className="h-3 w-3 text-accent" /> {sponsorDate}
+          </span>
+          <span className="text-amber-300/50">•</span>
+          <span className="text-white/85 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-400/20">{occasion}</span>
+          <span className="text-amber-300/50">•</span>
+          <span className="text-amber-100/80">May Sri Sri Puri Jagannath bestow abundant bhakti & auspicious blessings!</span>
+        </>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="bg-[#21093a] text-white border-y-2 border-amber-400/35 py-2.5 shadow-lg relative overflow-hidden z-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3 sm:gap-4">
+        
+        {/* Left Fixed Announcement Pill Badge */}
+        <div className="shrink-0 flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-sans text-[11px] sm:text-xs font-black px-3.5 py-1.5 rounded-full shadow-sm tracking-wider uppercase">
+          <Sparkles className="h-3.5 w-3.5 animate-spin" style={{ animationDuration: "4s" }} />
+          <span>Feast Sponsor</span>
+        </div>
+
+        {/* Continuous Moving Marquee Animation */}
+        <div 
+          onClick={onOpenSponsorModal} 
+          className="flex-1 overflow-hidden relative cursor-pointer block select-none"
+          title="Click to view Sunday Feast Sponsor details"
+        >
+          <div className="flex w-max animate-[marquee_25s_linear_infinite] hover:[animation-play-state:paused] will-change-transform py-1">
+            {tickerItem}
+            {tickerItem}
+            {tickerItem}
+            {tickerItem}
+          </div>
+        </div>
+
+        {/* Right View Details Button with Shimmer Animation */}
+        <button
+          type="button"
+          onClick={onOpenSponsorModal}
+          className="relative overflow-hidden shrink-0 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-secondary hover:bg-amber-300 text-slate-950 text-xs font-black transition-all hover:scale-105 cursor-pointer shadow-md"
+        >
+          {/* Shimmer Light Sweep */}
+          <span className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/80 to-transparent pointer-events-none" />
+          <span className="relative z-10">View</span>
+          <ArrowRight className="relative z-10 h-3.5 w-3.5 text-slate-950" />
+        </button>
+
+      </div>
+    </div>
+  );
+}
+

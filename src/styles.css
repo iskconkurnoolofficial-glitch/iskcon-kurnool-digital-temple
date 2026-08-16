@@ -277,6 +277,19 @@
   animation: float 4s ease-in-out infinite;
 }
 
+@keyframes shimmer {
+  0% {
+    transform: translateX(-150%);
+  }
+  100% {
+    transform: translateX(150%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2.2s infinite;
+}
+
 /* Google Translate widget — hide default banner & keep layout intact */
 .goog-te-banner-frame.skiptranslate,
 .goog-te-gadget-icon,
