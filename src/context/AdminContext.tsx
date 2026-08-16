@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { mintAdminSession } from "@/lib/admin-session.functions";
 import { finalizeDonationStatus } from "@/lib/donation-status.functions";
 import { toast } from "sonner";
 
@@ -920,7 +919,7 @@ type AdminState = {
   currentUser: CurrentAdminUser | null;
   authed: boolean;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
   ready: boolean;
 };
 
@@ -1019,45 +1018,64 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [previewLeads, setPreviewLeadsState] = useState<PreviewLead[]>([]);
 
   const [superAdminPass, setSuperAdminPassState] = useState<string>("iskcon@1982");
-  const [currentUser, setCurrentUser] = useState<CurrentAdminUser | null>(() => {
-    if (typeof window === "undefined") return null;
-    const saved = localStorage.getItem("iskcon_admin_user");
-    if (saved) {
-      try { return JSON.parse(saved); } catch { return null; }
-    }
-    return null;
-  });
-  const [authed, setAuthed] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return !!localStorage.getItem("iskcon_admin_user");
-  });
+  const [currentUser, setCurrentUser] = useState<CurrentAdminUser | null>(null);
+  const [authed, setAuthed] = useState(false);
   const [donations, setDonationsState] = useState<DonationEntry[]>([]);
 
-  // Re-establish the backing admin database session when an admin panel user is
-  // already logged in locally (e.g. after a page refresh). Without this session
-  // every admin write is rejected by the database security rules.
+  const establishAdminState = async (userId: string, email?: string) => {
+    const { data: role, error } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    if (error || !role) {
+      setAuthed(false);
+      setCurrentUser(null);
+      return false;
+    }
+
+    setCurrentUser({
+      role: "superadmin",
+      name: "Admin",
+      email: email ?? "admin@iskconkurnool.org",
+      allowedTabs: ["*"],
+    });
+    setAuthed(true);
+    return true;
+  };
+
+  // The backend session is the only source of truth. The auth client persists it
+  // across reloads, so no password or parallel browser-only login flag is stored.
   useEffect(() => {
-    if (!authed) return;
     let cancelled = false;
     (async () => {
-      const { data } = await supabase.auth.getSession();
-      if (cancelled || data.session) return;
-      const saved = typeof window !== "undefined" ? localStorage.getItem("iskcon_admin_creds") : null;
-      if (!saved) return;
-      try {
-        const creds = JSON.parse(saved) as { email: string; password: string };
-        const res = await mintAdminSession({ data: creds });
-        if (res?.ok && res.tokenHash) {
-          await supabase.auth.verifyOtp({ type: "magiclink", token_hash: res.tokenHash });
-        }
-      } catch (e) {
-        console.error("[admin] session restore failed", e);
+      const { data, error } = await supabase.auth.getUser();
+      if (cancelled) return;
+      if (error || !data.user) {
+        setAuthed(false);
+        setCurrentUser(null);
+        return;
       }
+      await establishAdminState(data.user.id, data.user.email);
     })();
+
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (cancelled) return;
+      if (event === "SIGNED_OUT" || !session?.user) {
+        setAuthed(false);
+        setCurrentUser(null);
+      } else if (event === "SIGNED_IN" || event === "USER_UPDATED") {
+        void establishAdminState(session.user.id, session.user.email);
+      }
+    });
+
     return () => {
       cancelled = true;
+      listener.subscription.unsubscribe();
     };
-  }, [authed]);
+  }, []);
 
   // Load contact messages + donation enquiries (admin-only readable), kept live
   useEffect(() => {
@@ -1243,9 +1261,13 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       .from("site_data")
       .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
     if (error) {
+      pendingWrites.current.delete(key);
       console.error("[site_data] upsert failed", key, error);
       toast.error(`Database save failed for ${key}: ${error.message || error}`);
+      return false;
     }
+    pendingWrites.current.delete(key);
+    return true;
   }
 
   const setSlides = (v: Slide[]) => { setSlidesState(v); persist(KEYS.slides, v); };
@@ -1452,75 +1474,30 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     r.style.setProperty("--accent-hex", theme.accent);
   }, [theme]);
 
-  // Opens the backing database session so admin writes are allowed to save.
-  const openAdminDbSession = async (email: string, password: string) => {
-    try {
-      const res = await mintAdminSession({ data: { email, password } });
-      if (res?.ok && res.tokenHash) {
-        const { error } = await supabase.auth.verifyOtp({ type: "magiclink", token_hash: res.tokenHash });
-        if (error) console.error("[admin] session exchange failed", error);
-        if (typeof window !== "undefined") {
-          localStorage.setItem("iskcon_admin_creds", JSON.stringify({ email, password }));
-        }
-        return !error;
-      }
-    } catch (e) {
-      console.error("[admin] session mint failed", e);
-    }
-    return false;
-  };
-
   const login = async (emailInput: string, passwordInput: string) => {
     const emailClean = emailInput.trim().toLowerCase();
     const passClean = passwordInput.trim();
-
-
-
-
-    // Credentials are verified server-side: the admin account list and password
-    // are no longer publicly readable.
-    let res: any;
-    try {
-      res = await mintAdminSession({ data: { email: emailClean, password: passClean } });
-    } catch (e) {
-      console.error("[admin] login failed", e);
-      return { ok: false, error: "Unable to sign in right now" };
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: emailClean,
+      password: passClean,
+    });
+    if (error || !data.user || !data.session) {
+      console.error("[admin] login failed", error);
+      return { ok: false, error: "Invalid email or password" };
     }
 
-    if (!res?.ok || !res.profile) {
-      return { ok: false, error: "You don't have access to log in" };
+    const isAdmin = await establishAdminState(data.user.id, data.user.email);
+    if (!isAdmin) {
+      await supabase.auth.signOut();
+      return { ok: false, error: "This account does not have administrator access" };
     }
-
-    if (res.tokenHash) {
-      const { error } = await supabase.auth.verifyOtp({ type: "magiclink", token_hash: res.tokenHash });
-      if (error) console.error("[admin] session exchange failed", error);
-    }
-    if (typeof window !== "undefined") {
-      localStorage.setItem("iskcon_admin_creds", JSON.stringify({ email: emailClean, password: passClean }));
-    }
-
-    const user: CurrentAdminUser = {
-      role: res.profile.role,
-      name: res.profile.name,
-      email: res.profile.email,
-      allowedTabs: res.profile.allowedTabs || [],
-      ...(res.profile.member ? { member: res.profile.member } : {}),
-    };
-
-    setCurrentUser(user);
-    setAuthed(true);
-    if (typeof window !== "undefined") localStorage.setItem("iskcon_admin_user", JSON.stringify(user));
-    return { ok: true };
+    return { ok: true as const };
   };
 
-  const logout = () => {
-    supabase.auth.signOut();
+  const logout = async () => {
+    await supabase.auth.signOut();
     setAuthed(false);
     setCurrentUser(null);
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("iskcon_admin_user");
-      localStorage.removeItem("iskcon_admin_creds");
-    }
   };
 
   return (
