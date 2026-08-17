@@ -56,8 +56,10 @@ import {
   Bus,
   Train,
   Navigation,
+  Camera,
 } from "lucide-react";
 import { toast } from "sonner";
+import LiveYatraQrScannerModal from "@/components/LiveYatraQrScannerModal";
 
 type SubTab = "registrations" | "checkin" | "travel" | "eventDetails" | "timeline" | "places" | "payments" | "gallery" | "content";
 
@@ -130,6 +132,9 @@ export default function YouthYatraManager() {
   // Pickup Point modal state
   const [editingPickup, setEditingPickup] = useState<YatraPickupPoint | null>(null);
   const [isPickupModalOpen, setIsPickupModalOpen] = useState(false);
+
+  // Live Camera QR Scanner Modal State
+  const [isCameraScannerOpen, setIsCameraScannerOpen] = useState(false);
 
   // Unread registrations counter
   const unreadCount = (youthYatra.registrations || []).filter((r) => !r.read).length;
@@ -496,9 +501,39 @@ export default function YouthYatraManager() {
           {/* Quick Statistics Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white p-5 rounded-2xl border shadow-xs space-y-1">
-              <div className="text-xs text-muted-foreground font-semibold">Total Registrations</div>
-              <div className="font-display font-extrabold text-2xl text-primary">
-                {eventRegistrations.length} / {currentEvent.maxSeats || 120}
+              <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold">
+                <span>Total Registrations</span>
+                <span className="text-[10px] text-purple-600 font-bold">Total Seats (Editable)</span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <div className="font-display font-extrabold text-2xl text-primary">
+                  {eventRegistrations.length}
+                </div>
+                <div className="flex items-center gap-1.5 bg-purple-50 px-2.5 py-1 rounded-xl border border-purple-200">
+                  <span className="text-xs text-muted-foreground font-semibold">/</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={1000}
+                    defaultValue={currentEvent.maxSeats || 120}
+                    key={currentEvent.id + (currentEvent.maxSeats || 120)}
+                    onBlur={(e) => {
+                      const val = Number(e.target.value) || 120;
+                      if (val !== currentEvent.maxSeats) {
+                        updateCurrentEvent({ maxSeats: val });
+                        toast.success(`Total seat capacity updated to ${val} seats.`);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        (e.target as HTMLInputElement).blur();
+                      }
+                    }}
+                    className="w-16 px-1.5 py-0.5 text-sm font-display font-black text-purple-950 bg-white border border-purple-300 rounded-lg text-center outline-none focus:ring-2 focus:ring-purple-400"
+                    title="Edit total maximum seats"
+                  />
+                  <span className="text-[11px] font-bold text-purple-900">Seats</span>
+                </div>
               </div>
               <div className="text-[11px] text-emerald-600 font-medium">
                 {Math.max(0, (currentEvent.maxSeats || 120) - eventRegistrations.length)} seats left
@@ -807,12 +842,20 @@ export default function YouthYatraManager() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b pb-4">
               <div>
                 <h4 className="font-display font-bold text-xl text-primary flex items-center gap-2">
-                  <QrCode className="h-5 w-5 text-secondary" /> Scan Pilgrim Boarding Pass
+                  <QrCode className="h-5 w-5 text-secondary" /> Live Boarding &amp; QR Scanner Station
                 </h4>
                 <p className="text-xs text-muted-foreground">
-                  Point handheld 2D barcode scanner or type Registration ID (e.g. <strong className="font-mono">YY26-00482</strong>) / Phone Number.
+                  Scan pilgrim boarding pass with live device camera, handheld barcode scanner, or type Registration ID (e.g. <strong className="font-mono">YY26-00482</strong>).
                 </p>
               </div>
+
+              <button
+                type="button"
+                onClick={() => setIsCameraScannerOpen(true)}
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 hover:from-emerald-500 hover:to-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow-lg transition hover:scale-105 active:scale-95 cursor-pointer shrink-0"
+              >
+                <Camera className="h-4 w-4" /> Launch Live Camera Scanner
+              </button>
             </div>
 
             {/* Quick Search Form */}
@@ -924,22 +967,55 @@ export default function YouthYatraManager() {
                     <span className="font-bold text-primary font-mono">{scannedPilgrim.phone}</span>
                   </div>
 
-                  <div className="p-3 bg-white rounded-xl border">
+                  <div className="p-3 bg-white rounded-xl border space-y-1">
                     <span className="text-muted-foreground block text-[10px] uppercase font-bold">
                       Assigned Coach
                     </span>
-                    <span className="font-bold text-emerald-700">
-                      {scannedPilgrim.batch || "Batch A (Coach 1)"}
-                    </span>
+                    <select
+                      value={scannedPilgrim.batch || "Batch A (Coach 1 - Boys)"}
+                      onChange={async (e) => {
+                        const newBatch = e.target.value;
+                        await updateYatraSeatAndBatch(scannedPilgrim.id, newBatch, scannedPilgrim.seatNumber || "01");
+                        setScannedPilgrim({ ...scannedPilgrim, batch: newBatch });
+                        toast.success(`Coach updated to ${newBatch}`);
+                      }}
+                      className="w-full text-xs font-bold text-emerald-700 bg-emerald-50/70 border border-emerald-300 rounded-lg p-1 outline-none cursor-pointer"
+                    >
+                      <option value="Batch A (Coach 1 - Boys)">Coach 1 (Boys)</option>
+                      <option value="Batch B (Coach 2 - Girls)">Coach 2 (Girls)</option>
+                      <option value="Coach 3 (AC Sleeper)">Coach 3 (AC Sleeper)</option>
+                      <option value="Coach 4 (Tempo)">Coach 4 (Tempo)</option>
+                    </select>
                   </div>
 
-                  <div className="p-3 bg-white rounded-xl border">
-                    <span className="text-muted-foreground block text-[10px] uppercase font-bold">
-                      Assigned Seat
+                  <div className="p-3 bg-white rounded-xl border space-y-1">
+                    <span className="text-muted-foreground block text-[10px] uppercase font-bold flex items-center justify-between">
+                      <span>Assigned Seat</span>
+                      <span className="text-[9px] text-purple-600 font-semibold">(Editable)</span>
                     </span>
-                    <span className="font-mono font-black text-sm text-purple-900">
-                      Seat #{scannedPilgrim.seatNumber || "01"}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-purple-900 font-bold text-xs">#</span>
+                      <input
+                        type="text"
+                        defaultValue={scannedPilgrim.seatNumber || "01"}
+                        key={scannedPilgrim.id + (scannedPilgrim.seatNumber || "")}
+                        onBlur={async (e) => {
+                          const newSeat = e.target.value.trim() || "01";
+                          if (newSeat !== scannedPilgrim.seatNumber) {
+                            await updateYatraSeatAndBatch(scannedPilgrim.id, scannedPilgrim.batch || "Batch A (Coach 1 - Boys)", newSeat);
+                            setScannedPilgrim({ ...scannedPilgrim, seatNumber: newSeat });
+                            toast.success(`Seat updated to #${newSeat}`);
+                          }
+                        }}
+                        onKeyDown={async (e) => {
+                          if (e.key === "Enter") {
+                            (e.target as HTMLInputElement).blur();
+                          }
+                        }}
+                        placeholder="01"
+                        className="w-full px-2 py-0.5 font-mono font-black text-sm text-purple-900 bg-purple-50/70 border border-purple-300 rounded-lg outline-none focus:ring-2 focus:ring-purple-400"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -3347,6 +3423,23 @@ export default function YouthYatraManager() {
           </div>
         </div>
       )}
+
+      {/* ========================================================================= */}
+      {/* LIVE CAMERA QR SCANNER MODAL */}
+      {/* ========================================================================= */}
+      <LiveYatraQrScannerModal
+        isOpen={isCameraScannerOpen}
+        onClose={() => setIsCameraScannerOpen(false)}
+        registrations={youthYatra.registrations || []}
+        deskStaffName={deskStaffName}
+        onUpdateSeatAndBatch={updateYatraSeatAndBatch}
+        onCheckInSuccess={async (reg) => {
+          const res = await checkInYatraParticipant(reg.id, deskStaffName);
+          if (res.registration) {
+            setScannedPilgrim(res.registration);
+          }
+        }}
+      />
     </div>
   );
 }
