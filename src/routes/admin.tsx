@@ -18,6 +18,7 @@ import GoshalaManager from "@/admin/GoshalaManager";
 import ContactsManager from "@/admin/ContactsManager";
 import InstagramManager from "@/admin/InstagramManager";
 import PrahladaBadiManager from "@/admin/PrahladaBadiManager";
+import HouseProgrammesManager from "@/admin/HouseProgrammesManager";
 import TempleScheduleManager from "@/admin/TempleScheduleManager";
 import LiveDashboardManager from "@/admin/LiveDashboardManager";
 import FeaturePopupManager from "@/admin/FeaturePopupManager";
@@ -31,10 +32,10 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "welcome" | "carousel" | "festivals" | "sevas" | "youth" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "liveDashboard" | "featurePopup" | "paymentPages" | "previewLeads" | "donations";
+type Tab = "welcome" | "carousel" | "festivals" | "sevas" | "youth" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "liveDashboard" | "featurePopup" | "paymentPages" | "previewLeads" | "donations";
 
 function AdminPage() {
-  const { authed, login, logout, settings, contacts, setContacts, paymentRecords, previewLeads, markAllPaymentRecordsRead, markAllPreviewLeadsRead, currentUser } = useAdmin();
+  const { authed, login, logout, settings, contacts, setContacts, paymentRecords, previewLeads, houseProgrammes, markAllHouseProgrammeRequestsRead, markAllPaymentRecordsRead, markAllPreviewLeadsRead, currentUser } = useAdmin();
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [err, setErr] = useState("");
@@ -52,18 +53,22 @@ function AdminPage() {
       markAllPaymentRecordsRead();
     } else if (tab === "previewLeads" && previewLeads && previewLeads.some((l) => !l.read)) {
       markAllPreviewLeadsRead();
+    } else if (tab === "houseProgrammes" && houseProgrammes?.requests && houseProgrammes.requests.some((r) => !r.read)) {
+      markAllHouseProgrammeRequestsRead();
     }
   }, [tab]);
 
   const unreadMessagesCount = (contacts || []).filter((c) => !c.read).length;
   const unreadDonationsCount = (paymentRecords || []).filter((p) => !p.read).length;
   const unreadLeadsCount = (previewLeads || []).filter((l) => !l.read).length;
-  const totalUnreadCount = unreadMessagesCount + unreadDonationsCount + unreadLeadsCount;
+  const unreadHouseProgrammesCount = (houseProgrammes?.requests || []).filter((r) => !r.read).length;
+  const totalUnreadCount = unreadMessagesCount + unreadDonationsCount + unreadLeadsCount + unreadHouseProgrammesCount;
 
   const getBadgeCount = (id: Tab): number => {
     if (id === "contacts") return unreadMessagesCount;
     if (id === "paymentPages") return unreadDonationsCount;
     if (id === "previewLeads") return unreadLeadsCount;
+    if (id === "houseProgrammes") return unreadHouseProgrammesCount;
     return 0;
   };
 
@@ -195,6 +200,7 @@ function AdminPage() {
     {
       title: "Community Focus",
       items: [
+        { id: "houseProgrammes", label: "House Programmes", icon: Home },
         { id: "prahladaBadi", label: "Prahlada Badi", icon: Baby },
         { id: "youth", label: "Youth Festival", icon: Users },
         { id: "gita", label: "Gita Course", icon: BookOpen },
@@ -587,6 +593,7 @@ function AdminPage() {
             {tab === "festivals" && <FestivalsManager />}
             {tab === "sevas" && <SevasManager />}
             {tab === "youth" && <YouthManager />}
+            {tab === "houseProgrammes" && <HouseProgrammesManager />}
             {tab === "prahladaBadi" && <PrahladaBadiManager />}
             {tab === "harinama" && <HarinamaManager />}
             {tab === "ekadashi" && <EkadashiManager />}

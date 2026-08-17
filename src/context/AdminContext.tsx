@@ -274,6 +274,107 @@ export const defaultHarinama: HarinamaData = {
   gallery: [],
 };
 
+export type HouseProgrammeActivity = {
+  id: string;
+  title: string;
+  desc: string;
+  icon: string;
+  image?: string;
+  order: number;
+};
+
+export type HouseProgrammeStep = {
+  step: number;
+  title: string;
+  desc: string;
+  icon: string;
+};
+
+export type HouseProgrammeGalleryItem = {
+  id: string;
+  url: string;
+  title: string;
+  caption?: string;
+};
+
+export type HouseProgrammeRequest = {
+  id: string;
+  name: string;
+  phone: string;
+  locationArea: string;
+  preferredDate: string;
+  preferredTime: string;
+  participantsCount: string;
+  fullAddress: string;
+  googleMapsUrl?: string;
+  latitude?: number;
+  longitude?: number;
+  message?: string;
+  status: "pending" | "contacted" | "scheduled" | "completed" | "cancelled";
+  createdAt: string;
+  read: boolean;
+};
+
+export type HouseProgrammeData = {
+  badgeText: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  heroImage: string;
+  aboutTitle: string;
+  aboutDesc: string;
+  aboutImage: string;
+  aboutImageRight?: string;
+  activities: HouseProgrammeActivity[];
+  howItWorks: HouseProgrammeStep[];
+  gallery: HouseProgrammeGalleryItem[];
+  requests: HouseProgrammeRequest[];
+  closingQuote: string;
+  quoteImage?: string;
+  contactPhone: string;
+  whatsappNumber: string;
+};
+
+export const defaultHouseProgramme: HouseProgrammeData = {
+  badgeText: "Devotional Home Gatherings",
+  heroTitle: "House Programmes",
+  heroSubtitle: "Bring the sacred atmosphere of the temple into your home with joyful chanting, spiritual discourses, and divine prasadam.",
+  heroImage: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=1350&q=80",
+  aboutTitle: "What is a House Programme?",
+  aboutDesc: "House Programmes are devotional gatherings conducted in devotees' homes, where families, neighbours, and friends come together to practice Krishna consciousness in a simple, joyful, and uplifting atmosphere.\n\nWhether you are celebrating a special occasion, an anniversary, birthday, house warming, or simply seeking divine peace and spiritual association, temple devotees visit your home to conduct sacred kirtans, discuss timeless wisdom from the Bhagavad Gita, and share delicious Krishna prasadam.",
+  aboutImage: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=800&q=80",
+  aboutImageRight: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80",
+  activities: [
+    { id: "act_1", title: "Hare Krishna Kirtan", desc: "Group chanting and ecstatic singing of the Hare Krishna Mahamantra that purifies the atmosphere and fills hearts with spiritual joy.", icon: "🎶", order: 1, image: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=600&q=80" },
+    { id: "act_2", title: "Bhagavad Gita Discussion", desc: "Reading, explaining, and contemplating essential verses in a simple, engaging, and practical way for everyday modern life.", icon: "📖", order: 2, image: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=600&q=80" },
+    { id: "act_3", title: "Harati & Puja", desc: "Offering heartfelt prayers, sacred lamps, incense, and devotional worship to the Supreme Lord in your home altar.", icon: "🪔", order: 3, image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=600&q=80" },
+    { id: "act_4", title: "Nama Sankirtana", desc: "Congregational singing and musical glorification of Krishna's transcendental holy names with kartalas and mridanga.", icon: "🌸", order: 4, image: "https://images.unsplash.com/photo-1599422315802-911e3b6a978f?auto=format&fit=crop&w=600&q=80" },
+    { id: "act_5", title: "Spiritual Discussions", desc: "Interactive Q&A and practical insights on Krishna consciousness, mind management, positive living, and character building.", icon: "📚", order: 5, image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=600&q=80" },
+    { id: "act_6", title: "Bhajans & Devotional Songs", desc: "Soul-stirring bhajans and compositions written by exalted Vaishnava acharyas celebrating divine devotion.", icon: "🎵", order: 6, image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80" },
+    { id: "act_7", title: "Prasadam Distribution", desc: "Honouring and sharing sanctified, pure vegetarian food (prasadam) prepared with devotion and blessed by Krishna.", icon: "🍚", order: 7, image: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=600&q=80" },
+    { id: "act_8", title: "Family Spiritual Activities", desc: "Fun, meaningful activities and storytelling designed to lovingly engage children, youth, and elders alike.", icon: "👨‍👩‍👧‍👦", order: 8, image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=600&q=80" },
+    { id: "act_9", title: "Japa & Meditation Guidance", desc: "Hands-on instruction on how to chant on Tulasi beads, develop focus, reduce stress, and cultivate inner peace.", icon: "🧘", order: 9, image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=600&q=80" },
+    { id: "act_10", title: "Festival Celebrations at Home", desc: "Special devotional celebrations for Janmashtami, Rama Navami, Gaura Purnima, Govardhana Puja, and family milestones.", icon: "🎉", order: 10, image: "https://images.unsplash.com/photo-1609137144813-7d7211bf7fc4?auto=format&fit=crop&w=600&q=80" },
+  ],
+  howItWorks: [
+    { step: 1, title: "Request a Programme", desc: "Submit your details, preferred date, time, and location using our simple online form.", icon: "📝" },
+    { step: 2, title: "Connect with the Temple", desc: "Our friendly temple coordination team will contact you to confirm arrangements.", icon: "📞" },
+    { step: 3, title: "Plan the Programme", desc: "We discuss your preferred activities, prasadam coordination, and program schedule.", icon: "🗓️" },
+    { step: 4, title: "Devotees Visit Your Home", desc: "Temple devotees arrive at your home and conduct the devotional gathering with utmost love.", icon: "🚗" },
+    { step: 5, title: "Chant • Learn • Celebrate • Honour Prasadam", desc: "Your home is transformed into a spiritual sanctuary filled with transcendental joy.", icon: "✨" },
+  ],
+  gallery: [
+    { id: "g1", url: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80", title: "Joyful Home Kirtan", caption: "Family and friends chanting together" },
+    { id: "g2", url: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=800&q=80", title: "Bhagavad Gita Discourse", caption: "Devotees sharing spiritual wisdom" },
+    { id: "g3", url: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80", title: "Home Altar Harati", caption: "Offering prayers and sacred lamps" },
+    { id: "g4", url: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=800&q=80", title: "Prasadam Distribution", caption: "Honouring sanctified food together" },
+  ],
+  requests: [],
+  closingQuote: "“Bring the joy of Krishna consciousness into your home. Chant together, learn together, and experience the spiritual atmosphere of devotional service.”",
+  quoteImage: "https://images.unsplash.com/photo-1609137144813-7d7211bf7fc4?auto=format&fit=crop&w=800&q=80",
+  contactPhone: "+91 95053 77520",
+  whatsappNumber: "+91 95053 77520",
+};
+
 export type SundayScheduleItem = {
   id: string;
   time: string;
@@ -961,6 +1062,12 @@ type AdminState = {
   setSunday: (s: SundayData) => void;
   prahladaBadi: PrahladaBadiData;
   setPrahladaBadi: (p: PrahladaBadiData) => void;
+  houseProgrammes: HouseProgrammeData;
+  setHouseProgrammes: (hp: HouseProgrammeData) => void;
+  addHouseProgrammeRequest: (req: Omit<HouseProgrammeRequest, "id" | "createdAt" | "read" | "status">) => Promise<void>;
+  updateHouseProgrammeRequestStatus: (id: string, status: HouseProgrammeRequest["status"]) => Promise<void>;
+  deleteHouseProgrammeRequest: (id: string) => Promise<void>;
+  markAllHouseProgrammeRequestsRead: () => void;
   settings: SiteSettings;
   setSettings: (s: SiteSettings) => void;
   theme: ThemeSettings;
@@ -1060,6 +1167,7 @@ const KEYS = {
   contacts: "contacts",
   instagram: "instagram",
   prahladaBadi: "prahladaBadi",
+  houseProgrammes: "houseProgrammes",
   templeSchedule: "templeSchedule",
   featurePopup: "featurePopup",
   paymentPages: "paymentPages",
@@ -1131,6 +1239,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [gitaCourse, setGitaCourseState] = useState<GitaCourseData>(defaultGitaCourse);
   const [sunday, setSundayState] = useState<SundayData>(defaultSunday);
   const [prahladaBadi, setPrahladaBadiState] = useState<PrahladaBadiData>(defaultPrahladaBadi);
+  const [houseProgrammes, setHouseProgrammesState] = useState<HouseProgrammeData>(defaultHouseProgramme);
   const [settings, setSettingsState] = useState<SiteSettings>(defaultSettings);
   const [theme, setThemeState] = useState<ThemeSettings>(defaultTheme);
   const [heroBanners, setHeroBannersState] = useState<HeroBannersData>(defaultHeroBanners);
@@ -1377,6 +1486,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.gitaCourse: setGitaCourseState({ ...defaultGitaCourse, ...value }); break;
       case KEYS.sunday: setSundayState({ ...defaultSunday, ...value }); break;
       case KEYS.prahladaBadi: setPrahladaBadiState({ ...defaultPrahladaBadi, ...value }); break;
+      case KEYS.houseProgrammes: setHouseProgrammesState({ ...defaultHouseProgramme, ...value }); break;
       case KEYS.settings: setSettingsState({ ...defaultSettings, ...value }); break;
       case KEYS.theme: setThemeState(value); break;
       case KEYS.heroBanners: setHeroBannersState({ ...defaultHeroBanners, ...value }); break;
@@ -1421,6 +1531,47 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setGitaCourse = (v: GitaCourseData) => { setGitaCourseState(v); persist(KEYS.gitaCourse, v); };
   const setSunday = (v: SundayData) => { setSundayState(v); persist(KEYS.sunday, v); };
   const setPrahladaBadi = (v: PrahladaBadiData) => { setPrahladaBadiState(v); persist(KEYS.prahladaBadi, v); };
+  const setHouseProgrammes = (v: HouseProgrammeData) => { setHouseProgrammesState(v); persist(KEYS.houseProgrammes, v); };
+
+  const addHouseProgrammeRequest = async (req: Omit<HouseProgrammeRequest, "id" | "createdAt" | "read" | "status">) => {
+    const newEntry: HouseProgrammeRequest = {
+      ...req,
+      id: "hp_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+      status: "pending",
+      createdAt: new Date().toISOString(),
+      read: false,
+    };
+    const updated: HouseProgrammeData = {
+      ...houseProgrammes,
+      requests: [newEntry, ...(houseProgrammes.requests || [])],
+    };
+    setHouseProgrammesState(updated);
+    await persist(KEYS.houseProgrammes, updated);
+  };
+
+  const updateHouseProgrammeRequestStatus = async (id: string, status: HouseProgrammeRequest["status"]) => {
+    const updatedRequests = (houseProgrammes.requests || []).map((r) =>
+      r.id === id ? { ...r, status, read: true } : r
+    );
+    const updated: HouseProgrammeData = { ...houseProgrammes, requests: updatedRequests };
+    setHouseProgrammesState(updated);
+    await persist(KEYS.houseProgrammes, updated);
+  };
+
+  const deleteHouseProgrammeRequest = async (id: string) => {
+    const updatedRequests = (houseProgrammes.requests || []).filter((r) => r.id !== id);
+    const updated: HouseProgrammeData = { ...houseProgrammes, requests: updatedRequests };
+    setHouseProgrammesState(updated);
+    await persist(KEYS.houseProgrammes, updated);
+  };
+
+  const markAllHouseProgrammeRequestsRead = () => {
+    if (!houseProgrammes.requests || houseProgrammes.requests.length === 0) return;
+    const updatedRequests = houseProgrammes.requests.map((r) => ({ ...r, read: true }));
+    const updated: HouseProgrammeData = { ...houseProgrammes, requests: updatedRequests };
+    setHouseProgrammesState(updated);
+    persist(KEYS.houseProgrammes, updated);
+  };
   const setSettings = (v: SiteSettings) => { setSettingsState(v); persist(KEYS.settings, v); };
   const setTheme = (v: ThemeSettings) => { setThemeState(v); persist(KEYS.theme, v); };
   const setHeroBanners = (v: HeroBannersData) => { setHeroBannersState(v); persist(KEYS.heroBanners, v); };
@@ -1654,6 +1805,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         gitaCourse, setGitaCourse,
         sunday, setSunday,
         prahladaBadi, setPrahladaBadi,
+        houseProgrammes, setHouseProgrammes, addHouseProgrammeRequest, updateHouseProgrammeRequestStatus, deleteHouseProgrammeRequest, markAllHouseProgrammeRequestsRead,
         settings, setSettings,
         theme, setTheme,
         heroBanners, setHeroBanners,

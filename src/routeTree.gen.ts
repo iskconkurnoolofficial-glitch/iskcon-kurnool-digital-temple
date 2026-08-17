@@ -14,6 +14,7 @@ import { Route as TempleRouteImport } from './routes/temple'
 import { Route as SocialMediaRouteImport } from './routes/social-media'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as PrahladaBadiRouteImport } from './routes/prahlada-badi'
+import { Route as HouseProgrammesRouteImport } from './routes/house-programmes'
 import { Route as HarinamaRouteImport } from './routes/harinama'
 import { Route as GoshalaRouteImport } from './routes/goshala'
 import { Route as GitaCourseRouteImport } from './routes/gita-course'
@@ -59,6 +60,11 @@ const ShopRoute = ShopRouteImport.update({
 const PrahladaBadiRoute = PrahladaBadiRouteImport.update({
   id: '/prahlada-badi',
   path: '/prahlada-badi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HouseProgrammesRoute = HouseProgrammesRouteImport.update({
+  id: '/house-programmes',
+  path: '/house-programmes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HarinamaRoute = HarinamaRouteImport.update({
@@ -179,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/gita-course': typeof GitaCourseRoute
   '/goshala': typeof GoshalaRoute
   '/harinama': typeof HarinamaRoute
+  '/house-programmes': typeof HouseProgrammesRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/shop': typeof ShopRoute
   '/social-media': typeof SocialMediaRoute
@@ -206,6 +213,7 @@ export interface FileRoutesByTo {
   '/gita-course': typeof GitaCourseRoute
   '/goshala': typeof GoshalaRoute
   '/harinama': typeof HarinamaRoute
+  '/house-programmes': typeof HouseProgrammesRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/shop': typeof ShopRoute
   '/social-media': typeof SocialMediaRoute
@@ -234,6 +242,7 @@ export interface FileRoutesById {
   '/gita-course': typeof GitaCourseRoute
   '/goshala': typeof GoshalaRoute
   '/harinama': typeof HarinamaRoute
+  '/house-programmes': typeof HouseProgrammesRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/shop': typeof ShopRoute
   '/social-media': typeof SocialMediaRoute
@@ -264,6 +273,7 @@ export interface FileRouteTypes {
     | '/gita-course'
     | '/goshala'
     | '/harinama'
+    | '/house-programmes'
     | '/prahlada-badi'
     | '/shop'
     | '/social-media'
@@ -291,6 +301,7 @@ export interface FileRouteTypes {
     | '/gita-course'
     | '/goshala'
     | '/harinama'
+    | '/house-programmes'
     | '/prahlada-badi'
     | '/shop'
     | '/social-media'
@@ -318,6 +329,7 @@ export interface FileRouteTypes {
     | '/gita-course'
     | '/goshala'
     | '/harinama'
+    | '/house-programmes'
     | '/prahlada-badi'
     | '/shop'
     | '/social-media'
@@ -347,6 +359,7 @@ export interface RootRouteChildren {
   GitaCourseRoute: typeof GitaCourseRoute
   GoshalaRoute: typeof GoshalaRoute
   HarinamaRoute: typeof HarinamaRoute
+  HouseProgrammesRoute: typeof HouseProgrammesRoute
   PrahladaBadiRoute: typeof PrahladaBadiRoute
   ShopRoute: typeof ShopRoute
   SocialMediaRoute: typeof SocialMediaRoute
@@ -395,6 +408,13 @@ declare module '@tanstack/react-router' {
       path: '/prahlada-badi'
       fullPath: '/prahlada-badi'
       preLoaderRoute: typeof PrahladaBadiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/house-programmes': {
+      id: '/house-programmes'
+      path: '/house-programmes'
+      fullPath: '/house-programmes'
+      preLoaderRoute: typeof HouseProgrammesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/harinama': {
@@ -585,6 +605,7 @@ const rootRouteChildren: RootRouteChildren = {
   GitaCourseRoute: GitaCourseRoute,
   GoshalaRoute: GoshalaRoute,
   HarinamaRoute: HarinamaRoute,
+  HouseProgrammesRoute: HouseProgrammesRoute,
   PrahladaBadiRoute: PrahladaBadiRoute,
   ShopRoute: ShopRoute,
   SocialMediaRoute: SocialMediaRoute,
