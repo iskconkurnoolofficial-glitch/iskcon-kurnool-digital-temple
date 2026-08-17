@@ -425,48 +425,61 @@ function HouseProgrammesPage() {
               return true;
             });
 
+            const defaultActivityImages: Record<string, string> = {
+              act_1: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
+              act_2: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=800&q=80",
+              act_3: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80",
+              act_4: "https://images.unsplash.com/photo-1599422315802-911e3b6a978f?auto=format&fit=crop&w=800&q=80",
+              act_5: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80",
+              act_6: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80",
+              act_7: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=800&q=80",
+              act_8: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80",
+              act_9: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&q=80",
+              act_10: "https://images.unsplash.com/photo-1609137144813-7d7211bf7fc4?auto=format&fit=crop&w=800&q=80",
+            };
+
             return (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {filtered.map((act, idx) => {
                   const numStr = String(idx + 1).padStart(2, "0");
+                  const actImg =
+                    act.image ||
+                    defaultActivityImages[act.id] ||
+                    defaultActivityImages[`act_${(idx % 10) + 1}`] ||
+                    "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80";
+
                   return (
                     <motion.div
                       key={act.id}
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25, delay: idx * 0.03 }}
-                      className="group bg-white rounded-3xl border border-border/80 p-6 sm:p-7 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between hover:border-amber-400/50 relative overflow-hidden"
+                      className="group bg-white rounded-3xl border border-border/80 p-5 sm:p-6 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between hover:border-amber-400/50 relative overflow-hidden"
                     >
                       {/* Glow background on hover */}
                       <div className="absolute top-0 right-0 w-40 h-40 bg-amber-400/10 rounded-full blur-2xl group-hover:bg-amber-400/20 transition duration-500 pointer-events-none" />
 
                       <div className="space-y-4 relative z-10">
-                        {/* Top Row */}
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3.5">
-                            <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-secondary/30 via-primary/10 to-amber-200/40 text-3xl grid place-items-center shadow-inner group-hover:scale-110 group-hover:rotate-3 transition duration-300">
-                              {act.icon || "🌸"}
-                            </div>
-                            <div>
-                              <span className="text-[11px] font-bold text-amber-800 uppercase tracking-wider bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200/80">
-                                Activity {numStr}
-                              </span>
-                              <div className="text-[11px] text-muted-foreground mt-0.5 font-medium">
-                                Devotional Offering
-                              </div>
-                            </div>
-                          </div>
-
-                          <span className="text-xl font-display font-extrabold text-border group-hover:text-amber-400/60 transition font-mono">
-                            #{numStr}
-                          </span>
+                        {/* Visible Activity Image Banner (Increased Height, Crystal Clear) */}
+                        <div className="relative h-60 sm:h-64 w-full rounded-2xl overflow-hidden shadow-sm bg-muted group/img">
+                          <img
+                            src={actImg}
+                            alt={act.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
                         </div>
 
                         {/* Title & Description */}
                         <div className="space-y-2 pt-1">
-                          <h3 className="font-display text-xl sm:text-2xl font-bold text-primary group-hover:text-primary transition">
-                            {act.title}
-                          </h3>
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-display text-xl sm:text-2xl font-bold text-primary group-hover:text-primary transition">
+                              {act.title}
+                            </h3>
+                            <span className="text-lg font-display font-extrabold text-border group-hover:text-amber-400/60 transition font-mono">
+                              #{numStr}
+                            </span>
+                          </div>
                           <p className="text-sm text-foreground/80 leading-relaxed font-sans font-normal">
                             {act.desc}
                           </p>
@@ -474,17 +487,12 @@ function HouseProgrammesPage() {
                       </div>
 
                       {/* Footer Actions */}
-                      <div className="pt-5 border-t border-border/60 mt-5 flex items-center justify-between gap-2 relative z-10">
-                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/70">
-                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                          Included in Programme
-                        </span>
-
+                      <div className="pt-4 border-t border-border/60 mt-4 flex items-center justify-end relative z-10">
                         <button
                           onClick={() => handleSelectActivity(act.title)}
-                          className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:text-primary/90 bg-primary/10 hover:bg-primary/20 px-3 py-1.5 rounded-xl transition cursor-pointer"
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary-foreground hover:bg-primary bg-primary/10 px-4 py-2 rounded-xl transition duration-200 cursor-pointer shadow-xs"
                         >
-                          <span>Select this</span>
+                          <span>Request this Activity</span>
                           <ChevronRight className="h-3.5 w-3.5" />
                         </button>
                       </div>
