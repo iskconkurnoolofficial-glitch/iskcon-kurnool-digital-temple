@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as YouthYatraRouteImport } from './routes/youth-yatra'
 import { Route as YouthRouteImport } from './routes/youth'
 import { Route as TempleRouteImport } from './routes/temple'
 import { Route as SocialMediaRouteImport } from './routes/social-media'
@@ -37,6 +38,11 @@ import { Route as AboutKurnoolRouteImport } from './routes/about.kurnool'
 import { Route as AboutIskconRouteImport } from './routes/about.iskcon'
 import { Route as AboutFounderRouteImport } from './routes/about.founder'
 
+const YouthYatraRoute = YouthYatraRouteImport.update({
+  id: '/youth-yatra',
+  path: '/youth-yatra',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const YouthRoute = YouthRouteImport.update({
   id: '/youth',
   path: '/youth',
@@ -191,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/social-media': typeof SocialMediaRoute
   '/temple': typeof TempleRouteWithChildren
   '/youth': typeof YouthRoute
+  '/youth-yatra': typeof YouthYatraRoute
   '/about/founder': typeof AboutFounderRoute
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
@@ -218,6 +225,7 @@ export interface FileRoutesByTo {
   '/shop': typeof ShopRoute
   '/social-media': typeof SocialMediaRoute
   '/youth': typeof YouthRoute
+  '/youth-yatra': typeof YouthYatraRoute
   '/about/founder': typeof AboutFounderRoute
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
@@ -248,6 +256,7 @@ export interface FileRoutesById {
   '/social-media': typeof SocialMediaRoute
   '/temple': typeof TempleRouteWithChildren
   '/youth': typeof YouthRoute
+  '/youth-yatra': typeof YouthYatraRoute
   '/about/founder': typeof AboutFounderRoute
   '/about/iskcon': typeof AboutIskconRoute
   '/about/kurnool': typeof AboutKurnoolRoute
@@ -279,6 +288,7 @@ export interface FileRouteTypes {
     | '/social-media'
     | '/temple'
     | '/youth'
+    | '/youth-yatra'
     | '/about/founder'
     | '/about/iskcon'
     | '/about/kurnool'
@@ -306,6 +316,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/social-media'
     | '/youth'
+    | '/youth-yatra'
     | '/about/founder'
     | '/about/iskcon'
     | '/about/kurnool'
@@ -335,6 +346,7 @@ export interface FileRouteTypes {
     | '/social-media'
     | '/temple'
     | '/youth'
+    | '/youth-yatra'
     | '/about/founder'
     | '/about/iskcon'
     | '/about/kurnool'
@@ -365,6 +377,7 @@ export interface RootRouteChildren {
   SocialMediaRoute: typeof SocialMediaRoute
   TempleRoute: typeof TempleRouteWithChildren
   YouthRoute: typeof YouthRoute
+  YouthYatraRoute: typeof YouthYatraRoute
   AboutFounderRoute: typeof AboutFounderRoute
   AboutIskconRoute: typeof AboutIskconRoute
   AboutKurnoolRoute: typeof AboutKurnoolRoute
@@ -375,6 +388,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/youth-yatra': {
+      id: '/youth-yatra'
+      path: '/youth-yatra'
+      fullPath: '/youth-yatra'
+      preLoaderRoute: typeof YouthYatraRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/youth': {
       id: '/youth'
       path: '/youth'
@@ -611,6 +631,7 @@ const rootRouteChildren: RootRouteChildren = {
   SocialMediaRoute: SocialMediaRoute,
   TempleRoute: TempleRouteWithChildren,
   YouthRoute: YouthRoute,
+  YouthYatraRoute: YouthYatraRoute,
   AboutFounderRoute: AboutFounderRoute,
   AboutIskconRoute: AboutIskconRoute,
   AboutKurnoolRoute: AboutKurnoolRoute,

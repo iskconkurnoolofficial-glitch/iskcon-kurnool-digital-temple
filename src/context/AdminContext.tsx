@@ -375,6 +375,627 @@ export const defaultHouseProgramme: HouseProgrammeData = {
   whatsappNumber: "+91 95053 77520",
 };
 
+// ============================================================================
+// YOUTH YATRA — REUSABLE EVENT-DRIVEN SYSTEM TYPES & DEFAULT DATA
+// ============================================================================
+export type YatraTimelineDay = {
+  id: string;
+  dayNumber: number;
+  date: string;
+  title: string;
+  location: string;
+  morningProgram?: string;
+  travelDetails?: string;
+  sessions?: string;
+  activities?: string[];
+  accommodation?: string;
+  meals?: string;
+  specialEvents?: string;
+  image?: string;
+};
+
+export type YatraPlace = {
+  id: string;
+  name: string;
+  tagline?: string;
+  description: string;
+  image: string;
+  visitDate?: string;
+  mapLocationUrl?: string;
+  distanceInfo?: string;
+  highlights: string[];
+  order: number;
+};
+
+export type YatraRegistration = {
+  id: string;
+  eventId: string;
+  fullName: string;
+  age: number;
+  gender: "Male" | "Female" | "Other";
+  phone: string;
+  email: string;
+  city: string;
+  emergencyContactName: string;
+  emergencyContactRelation: string;
+  emergencyContactPhone: string;
+  accommodationRequired: boolean;
+  foodPreference: string;
+  specialRequirements?: string;
+  registrationCategory: string;
+  paymentMode: "free" | "qr" | "razorpay";
+  paymentStatus: "pending" | "verified" | "completed" | "failed";
+  amountPaid: number;
+  transactionId?: string;
+  paymentScreenshotUrl?: string;
+  registeredAt: string;
+  read: boolean;
+  status: "confirmed" | "waitlist" | "cancelled";
+  // Boarding Pass & QR Check-In Fields
+  boardingPassId?: string;
+  batch?: string;
+  seatNumber?: string;
+  checkedIn: boolean;
+  checkedInAt?: string;
+  checkedInBy?: string;
+  participantPhotoUrl?: string;
+};
+
+export type YatraGalleryItem = {
+  id: string;
+  url: string;
+  title?: string;
+  caption?: string;
+  albumCategory?: string;
+};
+
+export type YatraWhatToBringItem = {
+  id: string;
+  item: string;
+  category: string;
+  mandatory: boolean;
+};
+
+export type YatraGuideline = {
+  id: string;
+  title: string;
+  desc: string;
+  type: "rule" | "emergency" | "policy";
+};
+
+export type YatraFaq = {
+  id: string;
+  question: string;
+  answer: string;
+  category?: string;
+};
+
+export type YatraCoordinator = {
+  id: string;
+  name: string;
+  role: string;
+  phone: string;
+  whatsapp: string;
+  email?: string;
+  image?: string;
+};
+
+export type YatraVehicle = {
+  id: string;
+  vehicleName: string;
+  type: "AC Luxury Coach" | "AC Sleeper Bus" | "AC Semi-Sleeper" | "Train (3AC / Sleeper)" | "Tempo Traveller" | "Flight";
+  registrationNumber: string;
+  seatCapacity: number;
+  driverName: string;
+  driverPhone: string;
+  coachInChargeName: string;
+  coachInChargePhone: string;
+  amenities: string[];
+  batchTag: string;
+  notes?: string;
+};
+
+export type YatraTravelStep = {
+  id: string;
+  stepNumber: number;
+  time: string;
+  title: string;
+  location: string;
+  description: string;
+  instructions?: string;
+  googleMapUrl?: string;
+};
+
+export type YatraPickupPoint = {
+  id: string;
+  location: string;
+  time: string;
+  landmark: string;
+};
+
+export type YatraTravelConfig = {
+  primaryMode: string;
+  trainOptionDetails?: string;
+  departureLocationName: string;
+  departureLocationAddress: string;
+  departureGoogleMapUrl: string;
+  reportingTime: string;
+  departureTime: string;
+  pickupPoints: YatraPickupPoint[];
+  luggagePolicy: string;
+  vehicles: YatraVehicle[];
+  stepByStepGuide: YatraTravelStep[];
+};
+
+export type YatraEvent = {
+  id: string;
+  year: number;
+  title: string;
+  theme: string;
+  tagline: string;
+  description: string;
+  purpose: string;
+  whoCanJoin: string;
+  ageGroup: string;
+  organizedBy: string;
+  startDate: string;
+  endDate: string;
+  durationText: string;
+  posterUrl: string;
+  heroBannerUrl: string;
+  registrationOpen: boolean;
+  registrationDeadline?: string;
+  maxSeats: number;
+  startingPoint: string;
+  endingPoint: string;
+  routeSummary: string;
+  paymentConfig: {
+    mode: "free" | "qr" | "razorpay" | "both";
+    fee: number;
+    feeDescription?: string;
+    upiId?: string;
+    qrImageUrl?: string;
+    paymentInstructions?: string;
+    razorpayKeyId?: string;
+  };
+  timeline: YatraTimelineDay[];
+  places: YatraPlace[];
+  gallery: YatraGalleryItem[];
+  whatToBring: YatraWhatToBringItem[];
+  guidelines: YatraGuideline[];
+  faqs: YatraFaq[];
+  coordinators: YatraCoordinator[];
+  travelConfig?: YatraTravelConfig;
+  isPublished: boolean;
+  isArchived: boolean;
+};
+
+export type YouthYatraState = {
+  activeEventId: string;
+  events: YatraEvent[];
+  registrations: YatraRegistration[];
+};
+
+export const defaultYouthYatra2026: YatraEvent = {
+  id: "yatra_2026",
+  year: 2026,
+  title: "Annual Youth Yatra 2026",
+  theme: "In the Footsteps of the Acharyas",
+  tagline: "A 5-Day Divine Pilgrimage of Kirtan, Wisdom, Sacred Temples & Brotherhood",
+  description: "Join over 100+ enthusiastic youth devotees from ISKCON Kurnool on an unforgettable transcendental journey across South India's most sacred dhams. Experience morning sadhana, soul-stirring kirtans, transformative Bhagavad Gita discourses, holy ocean dips, and sumptuous Krishna prasadam.",
+  purpose: "To empower youth with spiritual culture, positive character, timeless Vedic wisdom, and deep devotional camaraderie in transcendental holy places.",
+  whoCanJoin: "Open to unmarried youth, college students, and young working professionals seeking spiritual growth, mental clarity, and divine association.",
+  ageGroup: "16 – 30 Years",
+  organizedBy: "ISKCON Kurnool Youth Forum (IYF)",
+  startDate: "2026-10-15",
+  endDate: "2026-10-19",
+  durationText: "5 Days & 4 Nights",
+  posterUrl: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=1200&q=80",
+  heroBannerUrl: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1920&q=80",
+  registrationOpen: true,
+  registrationDeadline: "2026-10-05",
+  maxSeats: 120,
+  startingPoint: "ISKCON Kurnool Temple, AP",
+  endingPoint: "ISKCON Kurnool Temple, AP",
+  routeSummary: "Kurnool → Hampi (Kishkindha) → Udupi Sri Krishna Kshetra → Murudeshwar → Gokarna Mahabaleshwar → Kurnool",
+  paymentConfig: {
+    mode: "both",
+    fee: 2500,
+    feeDescription: "Includes AC Deluxe Pushback Bus Travel, 4 Nights Hotel Accommodation (triple/quad sharing), 3 times Satvik Krishna Prasadam daily, Yatra Guide Kit, and Entry Passes.",
+    upiId: "iskconkurnool@sbi",
+    qrImageUrl: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=600&q=80",
+    paymentInstructions: "Scan the QR code with any UPI App (GPay, PhonePe, Paytm, BHIM), complete the ₹2,500 registration fee, enter the 12-digit UTR / Transaction ID below, and upload the payment screenshot.",
+    razorpayKeyId: "",
+  },
+  timeline: [
+    {
+      id: "day_1",
+      dayNumber: 1,
+      date: "Oct 15, 2026",
+      title: "Sacred Departure & The Wonders of Kishkindha (Hampi)",
+      location: "Kurnool → Hampi, Karnataka",
+      morningProgram: "5:00 AM Mangala Harati at ISKCON Kurnool, Yatra Kit Distribution & Blessings.",
+      travelDetails: "Departure by AC Deluxe Coaches at 6:00 AM. Refreshments served on board.",
+      sessions: "Evening Discourse: 'Lessons from the Ramayana & Sugriva's Surrender' on Anjanadri Hill.",
+      activities: ["Pampa Sarovar Darshan", "Anjanadri Hill (Birthplace of Sri Hanuman)", "Ecstatic Sunset Kirtan at Tungabhadra River"],
+      accommodation: "Comfortable Star Hotel at Hospet / Hampi",
+      meals: "Satvik Breakfast, Sumptuous Afternoon Feast, Light Night Prasadam",
+      specialEvents: "Grand Inaugural Kirtan & Devotee Introduction Circle",
+      image: "https://images.unsplash.com/photo-1600100397608-f010f444f4e7?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      id: "day_2",
+      dayNumber: 2,
+      date: "Oct 16, 2026",
+      title: "Historic Temples of Vijayanagara Empire & Travel to Udupi",
+      location: "Hampi → Udupi Coastal Kshetra",
+      morningProgram: "6:30 AM Japa Meditation session amidst ancient temple pillars.",
+      travelDetails: "Scenic western ghats drive towards coastal Karnataka.",
+      sessions: "Bus Satsang & Bhagavad Gita Quiz on Wheels.",
+      activities: ["Virupaksha Temple Darshan", "Vittala Temple & Musical Stone Pillars", "Laxmi Narasimha Monolith Darshan"],
+      accommodation: "Devotee Guest House / Hotel near Udupi Sri Krishna Matha",
+      meals: "Hot Breakfast at Hampi, Traditional Packed Prasadam Lunch, Coastal Karnataka Dinner Feast",
+      specialEvents: "Night Bhajan Sandhya welcoming Sri Krishna's holy abode",
+      image: "https://images.unsplash.com/photo-1599422315802-911e3b6a978f?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      id: "day_3",
+      dayNumber: 3,
+      date: "Oct 17, 2026",
+      title: "Divine Darshan of Udupi Sri Krishna & Pajaka Kshetra",
+      location: "Udupi & Pajaka (Birthplace of Sri Madhvacharya)",
+      morningProgram: "4:30 AM Nirmalya Darshan through Kanakana Kindi window at Sri Krishna Matha.",
+      travelDetails: "Local pilgrimage travel around Pajaka hills.",
+      sessions: "Seminar by Senior Sannyasi: 'Pure Devotion in the Teachings of Sri Madhvacharya'.",
+      activities: ["Sri Krishna Mahapooja & Darshan", "Pajaka Kshetra Madhva Mandira", "Malpe Beach Harinama & Ocean Sunset Japa"],
+      accommodation: "Udupi Hotel Accommodation",
+      meals: "Udupi Matha Maha Prasadam Feast, Evening Prasadam & Snacks",
+      specialEvents: "Mega Beach Sankirtana with Mridangas and Karatalas at Malpe Beach",
+      image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      id: "day_4",
+      dayNumber: 4,
+      date: "Oct 18, 2026",
+      title: "Majestic Murudeshwar & Holy Gokarna Kshetra",
+      location: "Udupi → Murudeshwar → Gokarna",
+      morningProgram: "6:00 AM Japa Meditation by Arabian Sea coast.",
+      travelDetails: "Coastal highway ride along coconut groves and ocean views.",
+      sessions: "Spiritual Reflection Workshop: 'Building Unshakeable Faith in Difficult Times'.",
+      activities: ["Murudeshwar Raja Gopura & Shiva Deity Darshan", "Gokarna Atmalinga Mahabaleshwar Temple", "Om Beach Devotional Walk"],
+      accommodation: "Resort / Hotel in Gokarna",
+      meals: "Satvik Breakfast, Temple Annadanam Feast, Special Farewell Dinner",
+      specialEvents: "Heartwarming Yatra Realizations sharing session & Bonfire Bhajan",
+      image: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      id: "day_5",
+      dayNumber: 5,
+      date: "Oct 19, 2026",
+      title: "Tungabhadra Blessings & Blissful Return to Kurnool",
+      location: "Gokarna → Hubli → ISKCON Kurnool",
+      morningProgram: "7:00 AM Holy dip and morning prayers.",
+      travelDetails: "Comfortable return journey to Kurnool with joyful kirtans and memories.",
+      sessions: "Action Plan: 'Carrying the Spiritual Charge into Your Daily Life & Studies'.",
+      activities: ["Concluding Japa Round Table", "Yatra Souvenir & Certification Distribution", "Grand Welcome at ISKCON Kurnool Altar"],
+      accommodation: "Return to Home Residence",
+      meals: "Special Travel Prasadam Breakfast, Highway Feast Lunch, Welcome Prasadam in Kurnool",
+      specialEvents: "Welcoming Harati & Group Photo at ISKCON Kurnool",
+      image: "https://images.unsplash.com/photo-1609137144813-7d7211bf7fc4?auto=format&fit=crop&w=800&q=80",
+    },
+  ],
+  places: [
+    {
+      id: "place_1",
+      name: "Hampi & Kishkindha Kshetra",
+      tagline: "The Sacred Capital of Sugriva & Sri Rama's Alliance",
+      description: "Steeped in Ramayana history, Kishkindha features the holy Pampa Sarovar, Anjanadri Hill (the divine birthplace of Sri Hanuman), and majestic stone temples that reflect eternal devotion.",
+      image: "https://images.unsplash.com/photo-1600100397608-f010f444f4e7?auto=format&fit=crop&w=800&q=80",
+      visitDate: "Day 1 (Oct 15)",
+      mapLocationUrl: "https://maps.google.com/?q=Hampi,Karnataka",
+      distanceInfo: "210 km from Kurnool (~4.5 hrs)",
+      highlights: ["Pampa Sarovar Holy Lake", "Anjanadri Hanuman Temple", "Virupaksha Historic Mandir", "Stone Chariot at Vittala Temple"],
+      order: 1,
+    },
+    {
+      id: "place_2",
+      name: "Udupi Sri Krishna Matha",
+      tagline: "The World-Renowned Abode of Balakrishna",
+      description: "Established by the great Vaishnava acharya Sri Madhvacharya in the 13th century, where Lord Krishna is lovingly worshipped through the nine-holed golden Kanakana Kindi window.",
+      image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80",
+      visitDate: "Day 2 & 3 (Oct 16 – 17)",
+      mapLocationUrl: "https://maps.google.com/?q=Sri+Krishna+Matha+Udupi",
+      distanceInfo: "320 km from Hampi (~6.5 hrs)",
+      highlights: ["Nirmalya Darshan of Lord Krishna", "Ancient Madhwa Sarovara Tank", "Seven Daily Pujas & Traditional Harati", "World-famous Annadana Maha Prasadam"],
+      order: 2,
+    },
+    {
+      id: "place_3",
+      name: "Pajaka Kshetra",
+      tagline: "The Holy Birthplace of Sri Madhvacharya",
+      description: "Nestled near the Kunjarugiri hills, Pajaka is where Sri Madhvacharya performed childhood pastimes, created holy ponds with his toe, and revealed divine Vedic truths.",
+      image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80",
+      visitDate: "Day 3 (Oct 17)",
+      mapLocationUrl: "https://maps.google.com/?q=Pajaka+Kshetra+Udupi",
+      distanceInfo: "12 km from Udupi",
+      highlights: ["Ancient Madhva Shrine", "Four Sacred Ponds (Dhanus, Bana, Gada, Chakra)", "Vadiraja Mutt Association", "Scenic Spiritual Atmosphere"],
+      order: 3,
+    },
+    {
+      id: "place_4",
+      name: "Murudeshwar Temple & Beach",
+      tagline: "Colossal Deity on the Arabian Seashore",
+      description: "Famous for the towering 123-foot Lord Shiva statue and the 20-storied Raja Gopura jutting into the blue Arabian Sea on three sides at Kanduka Giri hill.",
+      image: "https://images.unsplash.com/photo-1599422315802-911e3b6a978f?auto=format&fit=crop&w=800&q=80",
+      visitDate: "Day 4 (Oct 18)",
+      mapLocationUrl: "https://maps.google.com/?q=Murudeshwar+Temple",
+      distanceInfo: "105 km from Udupi (~2.5 hrs)",
+      highlights: ["20-Story Raja Gopura Lift View", "Seashore Sunset Harinama", "Geeta Upadesha Chariot Sculpture", "Breathtaking Ocean Panorama"],
+      order: 4,
+    },
+    {
+      id: "place_5",
+      name: "Gokarna Mahabaleshwar Kshetra",
+      tagline: "Ancient Atmalinga Pilgrimage of Lord Shiva & Ganesha",
+      description: "A sacred pilgrimage site where the divine Atmalinga was placed by Sri Ganesha. Devotees take holy dips in the sea and receive auspicious blessings for spiritual advancement.",
+      image: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
+      visitDate: "Day 4 (Oct 18)",
+      mapLocationUrl: "https://maps.google.com/?q=Mahabaleshwar+Temple+Gokarna",
+      distanceInfo: "78 km from Murudeshwar (~1.5 hrs)",
+      highlights: ["Atmalinga Temple Darshan", "Kotiteertha Sacred Water Tank", "Om Beach & Kudle Beach Nature Meditation", "Spiritual Realizations Campfire"],
+      order: 5,
+    },
+  ],
+  gallery: [
+    { id: "yg1", url: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80", title: "Joyful Harinama at Malpe Beach", caption: "Youth chanting the Holy Names together", albumCategory: "kirtan" },
+    { id: "yg2", url: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80", title: "Darshan at Udupi Sri Krishna Matha", caption: "Seeking the divine blessings of Balakrishna", albumCategory: "temples" },
+    { id: "yg3", url: "https://images.unsplash.com/photo-1600100397608-f010f444f4e7?auto=format&fit=crop&w=800&q=80", title: "Anjanadri Hill Trek", caption: "Climbing the sacred hill of Sri Hanuman", albumCategory: "places" },
+    { id: "yg4", url: "https://images.unsplash.com/photo-1599422315802-911e3b6a978f?auto=format&fit=crop&w=800&q=80", title: "Bhagavad Gita Workshop", caption: "Interactive wisdom discourse by senior devotees", albumCategory: "sessions" },
+    { id: "yg5", url: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80", title: "Honouring Satvik Prasadam", caption: "Pure, delicious sanctified food served with love", albumCategory: "prasadam" },
+    { id: "yg6", url: "https://images.unsplash.com/photo-1609137144813-7d7211bf7fc4?auto=format&fit=crop&w=800&q=80", title: "Youth Brotherhood & Devotion", caption: "Lifelong spiritual friendships created on yatra", albumCategory: "group" },
+  ],
+  whatToBring: [
+    { id: "wb1", item: "Government ID Proof (Aadhaar / Driving License / College ID) in original", category: "Documents", mandatory: true },
+    { id: "wb2", item: "Traditional devotional attire (Dhoti-Kurta / Kurta-Pyjama / modest ethnic clothing)", category: "Clothing", mandatory: true },
+    { id: "wb3", item: "Comfortable walking shoes & slip-on footwear for temple entries", category: "Footwear", mandatory: true },
+    { id: "wb4", item: "Personal Tulasi Japa Mala and bead bag", category: "Puja Essentials", mandatory: false },
+    { id: "wb5", item: "Reusable water bottle (1 Litre capacity)", category: "Essentials", mandatory: true },
+    { id: "wb6", item: "Personal toiletries (Toothbrush, soap, towel, shampoo)", category: "Personal Care", mandatory: true },
+    { id: "wb7", item: "Light bedsheet / blanket for AC travel & hotel use", category: "Bedding", mandatory: true },
+    { id: "wb8", item: "Personal medicines & first-aid (motion sickness, headache, regular prescriptions)", category: "Medical", mandatory: false },
+    { id: "wb9", item: "Mobile charger, power bank & small torch", category: "Electronics", mandatory: false },
+    { id: "wb10", item: "Small backpack / sling bag for day trips", category: "Bags", mandatory: true },
+  ],
+  guidelines: [
+    { id: "gl1", title: "Punctuality & Reporting", desc: "All participants must report at ISKCON Kurnool Temple by 5:00 AM on departure day. Please maintain strictly communicated timings at every temple stop.", type: "rule" },
+    { id: "gl2", title: "Devotional Decorum & Conduct", desc: "The Yatra is a sacred pilgrimage, not a casual picnic. Smoking, alcohol, non-vegetarian food, and gambling are strictly prohibited. Modest and clean traditional dress is expected.", type: "rule" },
+    { id: "gl3", title: "Participation in Sadhana", desc: "Active and joyful participation in morning Japa, kirtans, discourses, and group activities is an essential part of the Yatra experience.", type: "rule" },
+    { id: "gl4", title: "Safety & Group Discipline", desc: "Always move in your assigned buddy pairs. Do not venture into deep ocean waters during beach visits. Always keep coordinators updated about your location.", type: "emergency" },
+    { id: "gl5", title: "Accommodation Rules", desc: "Rooms are allotted on triple/quad sharing basis. Devotees are expected to keep rooms tidy, respect fellow roommates, and adhere to night curfew timings.", type: "rule" },
+    { id: "gl6", title: "Cancellation & Refund Policy", desc: "Cancellations made up to 7 days prior to departure will receive a 75% refund. No refunds are possible within 7 days due to prepaid bus and hotel bookings.", type: "policy" },
+  ],
+  faqs: [
+    { id: "faq1", question: "Who is eligible to participate in the Youth Yatra?", answer: "The Annual Youth Yatra is open to youth, students, and working professionals aged between 16 to 30 years. No prior formal training is required — only an open heart and desire to experience spiritual culture.", category: "Eligibility" },
+    { id: "faq2", question: "What does the registration fee of ₹2,500 cover?", answer: "The fee is all-inclusive. It covers round-trip AC Deluxe coach travel, 4 nights hotel accommodation, 3 times unlimited pure Satvik Krishna Prasadam daily, Yatra kit, temple entry passes, and spiritual mentorship.", category: "Fee & Inclusions" },
+    { id: "faq3", question: "How will room accommodation and food be arranged?", answer: "We arrange clean, verified hotels on a 3-4 sharing basis with separate blocks/rooms for boys and girls. Food is 100% pure vegetarian, freshly cooked Satvik Krishna Prasadam prepared under hygienic conditions.", category: "Logistics" },
+    { id: "faq4", question: "How do I make the payment after filling the registration form?", answer: "You can choose either QR Code UPI payment (Google Pay, PhonePe, Paytm) or Razorpay on the form. For QR payments, submit your 12-digit UTR/Transaction ID and upload the receipt screenshot. You will receive an instant Registration ID.", category: "Payment" },
+    { id: "faq5", question: "Can beginners or first-time devotees join?", answer: "Absolutely! Most participants are college students or working youth attending for the first time. The atmosphere is warm, friendly, engaging, and welcoming.", category: "Experience" },
+    { id: "faq6", question: "What is the reporting location and departure schedule?", answer: "Departure is from ISKCON Kurnool Temple (Sri Sri Puri Jagannath Temple campus) on October 15, 2026 at 6:00 AM sharp. Reporting time is 5:00 AM for Mangala Harati.", category: "Schedule" },
+    { id: "faq7", question: "Is there any age relaxation for young professionals?", answer: "Youth slightly outside the 16–30 range can contact the Yatra coordinators directly on WhatsApp for special consideration depending on seat availability.", category: "Eligibility" },
+    { id: "faq8", question: "Whom can I contact if I have questions before registering?", answer: "You can reach out directly to our Youth Forum coordinators via WhatsApp or phone call using the contact section below.", category: "Support" },
+  ],
+  coordinators: [
+    { id: "c1", name: "Ramanuja Dasa", role: "Youth Forum Head Coordinator", phone: "+91 95053 77520", whatsapp: "919505377520", email: "youth@iskconkurnool.org" },
+    { id: "c2", name: "Damodara Chaitanya Dasa", role: "Yatra Logistics & Accommodation", phone: "+91 98765 43210", whatsapp: "919876543210", email: "yatra@iskconkurnool.org" },
+    { id: "c3", name: "Keshav Krishna Dasa", role: "Registrations & Accounts Helpdesk", phone: "+91 94400 12345", whatsapp: "919440012345", email: "support@iskconkurnool.org" },
+  ],
+  travelConfig: {
+    primaryMode: "Twin 2+2 AC Deluxe Luxury Pushback Coaches",
+    trainOptionDetails: "For devotees traveling from Hyderabad/Bangalore: Direct trains to Kurnool City (KNL) available daily. Temple is 10 mins auto ride from railway station.",
+    departureLocationName: "Sri Sri Puri Jagannath Temple, ISKCON Kurnool",
+    departureLocationAddress: "NH-44 Highway, Near Birla Compound, Kurnool, Andhra Pradesh 518002",
+    departureGoogleMapUrl: "https://maps.google.com/?q=ISKCON+Kurnool",
+    reportingTime: "05:00 AM (Mangala Harati)",
+    departureTime: "06:00 AM Sharp",
+    pickupPoints: [
+      { id: "p1", location: "ISKCON Kurnool Main Altar (Boarding Point)", time: "05:00 AM", landmark: "Sri Sri Puri Jagannath Temple Campus" },
+      { id: "p2", location: "Dhone Bypass Junction", time: "06:45 AM", landmark: "Hotel Haritha / AP Tourism Crossing" },
+      { id: "p3", location: "Gooty Toll Plaza", time: "07:15 AM", landmark: "NH-44 Flyover Highway Entry" },
+      { id: "p4", location: "Anantapur Bypass (Raptadu)", time: "08:00 AM", landmark: "Raptadu Toll Gate, NH-44" },
+    ],
+    luggagePolicy: "1 Main Stowed Duffel Bag / Suitcase (Max 15 kg for coach under-chassis boot) + 1 Small Cabin/Backpack (for personal essentials, water bottle & Japa Mala inside bus).",
+    vehicles: [
+      {
+        id: "veh_1",
+        vehicleName: "Coach #1 — Luxury AC BharatBenz (Boys Batch)",
+        type: "AC Luxury Coach",
+        registrationNumber: "AP 21 TZ 4567",
+        seatCapacity: 50,
+        driverName: "M. Srinivas (Lead Captain)",
+        driverPhone: "+91 98480 12345",
+        coachInChargeName: "Ramanuja Dasa",
+        coachInChargePhone: "+91 95053 77520",
+        batchTag: "Batch A (Coach 1 - Boys)",
+        amenities: [
+          "Full Air-Conditioning with Individual Air Vents",
+          "2+2 Pushback Recliner Seats",
+          "USB Mobile Charging Ports at Every Seat",
+          "Dedicated Kirtan Microphone & PA Sound System",
+          "Large Under-Chassis Lockable Luggage Boot",
+          "First Aid Kit & Emergency Toolkit",
+          "Chilled RO Water Dispenser Onboard",
+        ],
+        notes: "Devotees seated in Coach 1 will be supervised by Ramanuja Dasa.",
+      },
+      {
+        id: "veh_2",
+        vehicleName: "Coach #2 — Luxury AC BharatBenz (Girls & Seniors Batch)",
+        type: "AC Luxury Coach",
+        registrationNumber: "AP 21 TZ 4568",
+        seatCapacity: 50,
+        driverName: "K. Narayana (Co-Captain)",
+        driverPhone: "+91 98480 67890",
+        coachInChargeName: "Damodara Chaitanya Dasa",
+        coachInChargePhone: "+91 98765 43210",
+        batchTag: "Batch B (Coach 2 - Girls & Seniors)",
+        amenities: [
+          "Full Air-Conditioning with Individual Air Vents",
+          "2+2 Pushback Recliner Seats",
+          "USB Mobile Charging Ports at Every Seat",
+          "Dedicated Kirtan Microphone & PA Sound System",
+          "Large Under-Chassis Lockable Luggage Boot",
+          "First Aid Kit & Emergency Toolkit",
+          "Chilled RO Water Dispenser Onboard",
+        ],
+        notes: "Dedicated female mataji coordinators present onboard Coach 2.",
+      },
+    ],
+    stepByStepGuide: [
+      {
+        id: "step_1",
+        stepNumber: 1,
+        time: "05:00 AM",
+        title: "Reporting at ISKCON Kurnool Main Altar",
+        location: "Sri Sri Puri Jagannath Temple, Kurnool",
+        description: "Arrive fresh at the temple sanctum. Outstation participants arriving by early morning train/bus can take autos directly to ISKCON Kurnool (10 mins from station).",
+        instructions: "Devotees can freshen up in temple guest facilities. Have your digital boarding pass QR ready on phone.",
+        googleMapUrl: "https://maps.google.com/?q=ISKCON+Kurnool",
+      },
+      {
+        id: "step_2",
+        stepNumber: 2,
+        time: "05:15 AM",
+        title: "Mangala Harati, Tulasi Puja & Yatra Sankalpa",
+        location: "Main Deity Sanctum",
+        description: "Seek transcendental blessings from Sri Sri Jagannath, Baladeva, Subhadra Maharani and Srila Prabhupada. Chanting the auspicious Yatra invocation mantras.",
+        instructions: "Join collective Japa and receive prasadam breakfast snack pack.",
+      },
+      {
+        id: "step_3",
+        stepNumber: 3,
+        time: "05:30 AM",
+        title: "Luggage Tagging & Token Handover",
+        location: "Luggage Desk (Temple Portico)",
+        description: "Hand over your main travel suitcase/duffel bag to coach marshals for under-chassis luggage loading. Collect your physical badge and baggage token.",
+        instructions: "Ensure your name and phone number tag is tied to your bag. Keep medicines and Japa Mala in your small shoulder bag.",
+      },
+      {
+        id: "step_4",
+        stepNumber: 4,
+        time: "05:45 AM",
+        title: "Board Assigned Coach & Settle in Seat",
+        location: "Temple Bus Parking Bay",
+        description: "Board Coach 1 (Batch A - Boys) or Coach 2 (Batch B - Girls). Settle into your assigned seat numbers as printed on your digital boarding pass.",
+        instructions: "Coordinators will verify attendance and ensure AC & charging ports are operational.",
+      },
+      {
+        id: "step_5",
+        stepNumber: 5,
+        time: "06:00 AM Sharp",
+        title: "Grand Yatra Flag-Off & Mahamantra Chanting",
+        location: "Temple Arch Gate (NH-44)",
+        description: "Auspicious coconut breaking ceremony at temple gate. Coaches depart onto the highway with joyous Hare Krishna Mahamantra Sankeerthana!",
+        instructions: "Strict departure time — buses will not wait past 06:00 AM.",
+      },
+    ],
+  },
+  isPublished: true,
+  isArchived: false,
+};
+
+export const defaultYouthYatra: YouthYatraState = {
+  activeEventId: "yatra_2026",
+  events: [defaultYouthYatra2026],
+  registrations: [
+    {
+      id: "YY26-00482",
+      eventId: "yatra_2026",
+      fullName: "Rahul Kumar",
+      age: 22,
+      gender: "Male",
+      phone: "+91 98765 43210",
+      email: "rahul.kumar@gmail.com",
+      city: "Kurnool",
+      emergencyContactName: "S. Venkat Rao",
+      emergencyContactRelation: "Father",
+      emergencyContactPhone: "+91 94400 12345",
+      accommodationRequired: true,
+      foodPreference: "Satvik Prasadam",
+      specialRequirements: "Room with fellow college classmates",
+      registrationCategory: "College Student",
+      paymentMode: "qr",
+      paymentStatus: "verified",
+      amountPaid: 2500,
+      transactionId: "UPI492019482012",
+      registeredAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+      read: true,
+      status: "confirmed",
+      boardingPassId: "BP26-00482",
+      batch: "Batch A (Coach 1 - Boys)",
+      seatNumber: "24",
+      checkedIn: false,
+    },
+    {
+      id: "YY26-00015",
+      eventId: "yatra_2026",
+      fullName: "Priya Sharma",
+      age: 21,
+      gender: "Female",
+      phone: "+91 98112 34567",
+      email: "priya.sharma@gmail.com",
+      city: "Hyderabad",
+      emergencyContactName: "Ramesh Sharma",
+      emergencyContactRelation: "Father",
+      emergencyContactPhone: "+91 98112 00000",
+      accommodationRequired: true,
+      foodPreference: "Satvik Prasadam",
+      specialRequirements: "No onion/garlic, front seat if possible",
+      registrationCategory: "Working Professional",
+      paymentMode: "qr",
+      paymentStatus: "verified",
+      amountPaid: 2500,
+      transactionId: "UPI381029471920",
+      registeredAt: new Date(Date.now() - 86400000 * 5).toISOString(),
+      read: true,
+      status: "confirmed",
+      boardingPassId: "BP26-00015",
+      batch: "Batch B (Coach 2 - Girls)",
+      seatNumber: "08",
+      checkedIn: false,
+    },
+    {
+      id: "YY26-00102",
+      eventId: "yatra_2026",
+      fullName: "Aditya Varma",
+      age: 24,
+      gender: "Male",
+      phone: "+91 95053 11223",
+      email: "aditya.varma@gmail.com",
+      city: "Nandyal",
+      emergencyContactName: "K. Varma",
+      emergencyContactRelation: "Brother",
+      emergencyContactPhone: "+91 95053 99887",
+      accommodationRequired: true,
+      foodPreference: "Satvik Prasadam",
+      registrationCategory: "Youth Devotee",
+      paymentMode: "qr",
+      paymentStatus: "verified",
+      amountPaid: 2500,
+      transactionId: "UPI910283746192",
+      registeredAt: new Date(Date.now() - 86400000 * 7).toISOString(),
+      read: true,
+      status: "confirmed",
+      boardingPassId: "BP26-00102",
+      batch: "Batch A (Coach 1 - Boys)",
+      seatNumber: "12",
+      checkedIn: true,
+      checkedInAt: new Date().toISOString(),
+      checkedInBy: "IYF Desk Staff",
+    },
+  ],
+};
+
+
 export type SundayScheduleItem = {
   id: string;
   time: string;
@@ -1068,6 +1689,18 @@ type AdminState = {
   updateHouseProgrammeRequestStatus: (id: string, status: HouseProgrammeRequest["status"]) => Promise<void>;
   deleteHouseProgrammeRequest: (id: string) => Promise<void>;
   markAllHouseProgrammeRequestsRead: () => void;
+  youthYatra: YouthYatraState;
+  setYouthYatra: (y: YouthYatraState) => void;
+  addYatraRegistration: (reg: Omit<YatraRegistration, "id" | "registeredAt" | "read" | "status" | "paymentStatus"> & { status?: YatraRegistration["status"]; paymentStatus?: YatraRegistration["paymentStatus"] }) => Promise<string>;
+  updateYatraRegistrationStatus: (id: string, status: YatraRegistration["status"], paymentStatus?: YatraRegistration["paymentStatus"]) => Promise<void>;
+  deleteYatraRegistration: (id: string) => Promise<void>;
+  markAllYatraRegistrationsRead: () => void;
+  saveYatraEvent: (event: YatraEvent) => Promise<void>;
+  deleteYatraEvent: (eventId: string) => Promise<void>;
+  setActiveYatraEvent: (eventId: string) => Promise<void>;
+  checkInYatraParticipant: (regIdOrQr: string, verifiedBy?: string) => Promise<{ success: boolean; registration?: YatraRegistration; message: string }>;
+  undoCheckInYatraParticipant: (regId: string) => Promise<void>;
+  updateYatraSeatAndBatch: (regId: string, batch: string, seatNumber: string) => Promise<void>;
   settings: SiteSettings;
   setSettings: (s: SiteSettings) => void;
   theme: ThemeSettings;
@@ -1168,6 +1801,7 @@ const KEYS = {
   instagram: "instagram",
   prahladaBadi: "prahladaBadi",
   houseProgrammes: "houseProgrammes",
+  youthYatra: "youthYatra",
   templeSchedule: "templeSchedule",
   featurePopup: "featurePopup",
   paymentPages: "paymentPages",
@@ -1240,6 +1874,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [sunday, setSundayState] = useState<SundayData>(defaultSunday);
   const [prahladaBadi, setPrahladaBadiState] = useState<PrahladaBadiData>(defaultPrahladaBadi);
   const [houseProgrammes, setHouseProgrammesState] = useState<HouseProgrammeData>(defaultHouseProgramme);
+  const [youthYatra, setYouthYatraState] = useState<YouthYatraState>(defaultYouthYatra);
   const [settings, setSettingsState] = useState<SiteSettings>(defaultSettings);
   const [theme, setThemeState] = useState<ThemeSettings>(defaultTheme);
   const [heroBanners, setHeroBannersState] = useState<HeroBannersData>(defaultHeroBanners);
@@ -1487,6 +2122,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.sunday: setSundayState({ ...defaultSunday, ...value }); break;
       case KEYS.prahladaBadi: setPrahladaBadiState({ ...defaultPrahladaBadi, ...value }); break;
       case KEYS.houseProgrammes: setHouseProgrammesState({ ...defaultHouseProgramme, ...value }); break;
+      case KEYS.youthYatra: setYouthYatraState({ ...defaultYouthYatra, ...value }); break;
       case KEYS.settings: setSettingsState({ ...defaultSettings, ...value }); break;
       case KEYS.theme: setThemeState(value); break;
       case KEYS.heroBanners: setHeroBannersState({ ...defaultHeroBanners, ...value }); break;
@@ -1571,6 +2207,167 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     const updated: HouseProgrammeData = { ...houseProgrammes, requests: updatedRequests };
     setHouseProgrammesState(updated);
     persist(KEYS.houseProgrammes, updated);
+  };
+
+  const setYouthYatra = (v: YouthYatraState) => { setYouthYatraState(v); persist(KEYS.youthYatra, v); };
+
+  const addYatraRegistration = async (reg: Omit<YatraRegistration, "id" | "registeredAt" | "read" | "status" | "paymentStatus"> & { status?: YatraRegistration["status"]; paymentStatus?: YatraRegistration["paymentStatus"] }): Promise<string> => {
+    const regYear = youthYatra.events.find(e => e.id === reg.eventId)?.year || new Date().getFullYear();
+    const shortYear = String(regYear).slice(-2);
+    const count = (youthYatra.registrations || []).filter(r => r.eventId === reg.eventId).length + 1;
+    const regId = `YY${shortYear}-${String(count).padStart(5, "0")}`;
+    const boardingPassId = `BP${shortYear}-${String(count).padStart(5, "0")}`;
+    
+    const newEntry: YatraRegistration = {
+      ...reg,
+      id: regId,
+      boardingPassId,
+      batch: reg.batch || (reg.gender === "Female" ? "Batch B (Coach 2 - Girls)" : "Batch A (Coach 1 - Boys)"),
+      seatNumber: reg.seatNumber || String(count),
+      checkedIn: false,
+      status: reg.status || (reg.paymentMode === "free" ? "confirmed" : "confirmed"),
+      paymentStatus: reg.paymentStatus || (reg.paymentMode === "free" ? "completed" : "pending"),
+      registeredAt: new Date().toISOString(),
+      read: false,
+    };
+    
+    const updated: YouthYatraState = {
+      ...youthYatra,
+      registrations: [newEntry, ...(youthYatra.registrations || [])],
+    };
+    setYouthYatraState(updated);
+    await persist(KEYS.youthYatra, updated);
+    return regId;
+  };
+
+  const updateYatraRegistrationStatus = async (id: string, status: YatraRegistration["status"], paymentStatus?: YatraRegistration["paymentStatus"]) => {
+    const updatedRegs = (youthYatra.registrations || []).map((r) =>
+      r.id === id ? { ...r, status, ...(paymentStatus ? { paymentStatus } : {}), read: true } : r
+    );
+    const updated: YouthYatraState = { ...youthYatra, registrations: updatedRegs };
+    setYouthYatraState(updated);
+    await persist(KEYS.youthYatra, updated);
+  };
+
+  const deleteYatraRegistration = async (id: string) => {
+    const updatedRegs = (youthYatra.registrations || []).filter((r) => r.id !== id);
+    const updated: YouthYatraState = { ...youthYatra, registrations: updatedRegs };
+    setYouthYatraState(updated);
+    await persist(KEYS.youthYatra, updated);
+  };
+
+  const markAllYatraRegistrationsRead = () => {
+    if (!youthYatra.registrations || youthYatra.registrations.length === 0) return;
+    const updatedRegs = youthYatra.registrations.map((r) => ({ ...r, read: true }));
+    const updated: YouthYatraState = { ...youthYatra, registrations: updatedRegs };
+    setYouthYatraState(updated);
+    persist(KEYS.youthYatra, updated);
+  };
+
+  const saveYatraEvent = async (event: YatraEvent) => {
+    const exists = youthYatra.events.some(e => e.id === event.id);
+    const updatedEvents = exists
+      ? youthYatra.events.map(e => e.id === event.id ? event : e)
+      : [event, ...youthYatra.events];
+    const updated: YouthYatraState = {
+      ...youthYatra,
+      events: updatedEvents,
+      activeEventId: youthYatra.activeEventId || event.id,
+    };
+    setYouthYatraState(updated);
+    await persist(KEYS.youthYatra, updated);
+  };
+
+  const deleteYatraEvent = async (eventId: string) => {
+    const updatedEvents = youthYatra.events.filter(e => e.id !== eventId);
+    const nextActive = updatedEvents[0]?.id || "";
+    const updated: YouthYatraState = {
+      ...youthYatra,
+      events: updatedEvents,
+      activeEventId: youthYatra.activeEventId === eventId ? nextActive : youthYatra.activeEventId,
+    };
+    setYouthYatraState(updated);
+    await persist(KEYS.youthYatra, updated);
+  };
+
+  const setActiveYatraEvent = async (eventId: string) => {
+    const updated: YouthYatraState = {
+      ...youthYatra,
+      activeEventId: eventId,
+    };
+    setYouthYatraState(updated);
+    await persist(KEYS.youthYatra, updated);
+  };
+
+  const checkInYatraParticipant = async (regIdOrQr: string, verifiedBy: string = "IYF Desk Staff"): Promise<{ success: boolean; registration?: YatraRegistration; message: string }> => {
+    const clean = regIdOrQr.trim().toUpperCase();
+    const found = (youthYatra.registrations || []).find(
+      (r) =>
+        r.id.toUpperCase() === clean ||
+        r.boardingPassId?.toUpperCase() === clean ||
+        r.phone.replace(/\D/g, "") === clean.replace(/\D/g, "")
+    );
+    if (!found) {
+      return { success: false, message: `No pilgrim registration found matching "${regIdOrQr}".` };
+    }
+    if (found.checkedIn) {
+      return {
+        success: true,
+        registration: found,
+        message: `Pilgrim ${found.fullName} is ALREADY checked in (at ${new Date(found.checkedInAt || "").toLocaleTimeString()} by ${found.checkedInBy || "Desk"}).`,
+      };
+    }
+    const updatedRegs = (youthYatra.registrations || []).map((r) =>
+      r.id === found.id
+        ? {
+            ...r,
+            checkedIn: true,
+            checkedInAt: new Date().toISOString(),
+            checkedInBy: verifiedBy,
+            status: "confirmed" as const,
+          }
+        : r
+    );
+    const updatedState = { ...youthYatra, registrations: updatedRegs };
+    setYouthYatraState(updatedState);
+    await persist(KEYS.youthYatra, updatedState);
+    const confirmedDevotee = updatedRegs.find((r) => r.id === found.id);
+    return {
+      success: true,
+      registration: confirmedDevotee,
+      message: `Boarding Confirmed! Welcome aboard, ${found.fullName} (${found.batch || "Batch A"}, Seat #${found.seatNumber || "Assigned"}).`,
+    };
+  };
+
+  const undoCheckInYatraParticipant = async (regId: string) => {
+    const updatedRegs = (youthYatra.registrations || []).map((r) =>
+      r.id === regId
+        ? {
+            ...r,
+            checkedIn: false,
+            checkedInAt: undefined,
+            checkedInBy: undefined,
+          }
+        : r
+    );
+    const updatedState = { ...youthYatra, registrations: updatedRegs };
+    setYouthYatraState(updatedState);
+    await persist(KEYS.youthYatra, updatedState);
+  };
+
+  const updateYatraSeatAndBatch = async (regId: string, batch: string, seatNumber: string) => {
+    const updatedRegs = (youthYatra.registrations || []).map((r) =>
+      r.id === regId
+        ? {
+            ...r,
+            batch,
+            seatNumber,
+          }
+        : r
+    );
+    const updatedState = { ...youthYatra, registrations: updatedRegs };
+    setYouthYatraState(updatedState);
+    await persist(KEYS.youthYatra, updatedState);
   };
   const setSettings = (v: SiteSettings) => { setSettingsState(v); persist(KEYS.settings, v); };
   const setTheme = (v: ThemeSettings) => { setThemeState(v); persist(KEYS.theme, v); };
@@ -1806,6 +2603,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         sunday, setSunday,
         prahladaBadi, setPrahladaBadi,
         houseProgrammes, setHouseProgrammes, addHouseProgrammeRequest, updateHouseProgrammeRequestStatus, deleteHouseProgrammeRequest, markAllHouseProgrammeRequestsRead,
+        youthYatra, setYouthYatra, addYatraRegistration, updateYatraRegistrationStatus, deleteYatraRegistration, markAllYatraRegistrationsRead, saveYatraEvent, deleteYatraEvent, setActiveYatraEvent,
+        checkInYatraParticipant, undoCheckInYatraParticipant, updateYatraSeatAndBatch,
         settings, setSettings,
         theme, setTheme,
         heroBanners, setHeroBanners,

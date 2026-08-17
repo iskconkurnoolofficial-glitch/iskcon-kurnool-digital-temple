@@ -25,7 +25,8 @@ import {
   Instagram, 
   MessageCircle,
   Bell,
-  Home
+  Home,
+  Compass
 } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import LiveClassBanner from "@/components/LiveClassBanner";
@@ -68,6 +69,7 @@ const NAV: NavItem[] = [
     { label: "Social Media", href: "/social-media", subtitle: "Connect with us online", icon: Share2 },
   ]},
   { label: "Activities", children: [
+    { label: "Annual Youth Yatra", href: "/youth-yatra", subtitle: "5-day sacred youth pilgrimage", icon: Compass },
     { label: "House Programmes", href: "/house-programmes", subtitle: "Devotional gatherings at your home", icon: Home },
     { label: "Youth Program", href: "/youth", subtitle: "Inspiring the next generation", icon: Users },
     { label: "Prahlada Badi", href: "/prahlada-badi", subtitle: "Spiritual education for children", icon: GraduationCap },

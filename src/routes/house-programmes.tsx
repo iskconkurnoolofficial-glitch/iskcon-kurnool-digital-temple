@@ -60,7 +60,6 @@ export const Route = createFileRoute("/house-programmes")({
 
 function HouseProgrammesPage() {
   const { houseProgrammes, addHouseProgrammeRequest } = useAdmin();
-  const [modalOpen, setModalOpen] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<{ url: string; title: string; caption?: string } | null>(null);
 
   // Activity Filter State
@@ -193,7 +192,6 @@ function HouseProgrammesPage() {
     setGoogleMapsUrl("");
     setLocationDetected(false);
     setSubmitted(false);
-    setModalOpen(false);
   };
 
   const timeOptions = [
@@ -204,11 +202,21 @@ function HouseProgrammesPage() {
     { label: "Flexible", time: "As Discussed" },
   ];
 
+  const scrollToForm = () => {
+    const el = document.getElementById("request-form-section");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+      setTimeout(() => {
+        document.getElementById("form-name-input")?.focus();
+      }, 400);
+    }
+  };
+
   const handleSelectActivity = (actTitle: string) => {
     setMessage((prev) =>
       prev ? `${prev}, ${actTitle}` : `I would like to request: ${actTitle}`
     );
-    setModalOpen(true);
+    scrollToForm();
   };
 
   return (
@@ -230,7 +238,7 @@ function HouseProgrammesPage() {
         pageKey="houseProgrammes"
       >
         <button
-          onClick={() => setModalOpen(true)}
+          onClick={scrollToForm}
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-secondary hover:bg-secondary/95 text-secondary-foreground font-semibold px-6 py-2.5 sm:px-7 sm:py-3 shadow-gold transition hover:scale-[1.02] text-xs sm:text-sm cursor-pointer"
         >
           <Home className="h-4 w-4 shrink-0" />
@@ -323,7 +331,7 @@ function HouseProgrammesPage() {
               {/* Centered CTA */}
               <div className="pt-2">
                 <button
-                  onClick={() => setModalOpen(true)}
+                  onClick={scrollToForm}
                   className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs sm:text-sm shadow-md transition hover:scale-105 cursor-pointer"
                 >
                   <Calendar className="h-4 w-4" /> Book for Your Home
@@ -557,7 +565,7 @@ function HouseProgrammesPage() {
           {/* Action trigger */}
           <div className="text-center pt-4">
             <button
-              onClick={() => setModalOpen(true)}
+              onClick={scrollToForm}
               className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-bold shadow-[0_0_20px_rgba(245,197,24,0.35)] text-xs sm:text-sm transition hover:scale-105 cursor-pointer"
             >
               <Send className="h-4 w-4" /> Start by Requesting a Programme
@@ -609,66 +617,276 @@ function HouseProgrammesPage() {
       )}
 
       {/* ========================================================================= */}
-      {/* 6. DEVOTIONAL CLOSING QUOTE WITH OCCUPIED RIGHT-SIDE IMAGE CARD */}
+      {/* 6. HOUSE PROGRAMME: LEFT FORM DETAILS & RIGHT SACRED SPIRITUAL ATMOSPHERE IMAGE */}
       {/* ========================================================================= */}
-      <section className="py-20 md:py-28 bg-background relative overflow-hidden">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="relative rounded-[2.5rem] p-8 sm:p-12 lg:p-14 bg-gradient-to-br from-[#280c4e] via-[#3e1374] to-[#20083c] text-white border-2 border-amber-400/40 shadow-[0_20px_60px_rgba(40,12,78,0.5)] overflow-hidden">
-            {/* Glow background */}
+      <section id="request-form-section" className="py-16 md:py-24 bg-background relative overflow-hidden scroll-mt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="relative rounded-[2.5rem] p-6 sm:p-10 lg:p-12 bg-gradient-to-br from-[#280c4e] via-[#3e1374] to-[#20083c] text-white border-2 border-amber-400/40 shadow-[0_20px_60px_rgba(40,12,78,0.5)] overflow-hidden">
+            {/* Ambient Background Glows */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-amber-400/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-              {/* Left Column: Quote & CTAs */}
-              <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
-                {/* Diya Emblem */}
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-amber-300/30 text-amber-300 text-xs font-bold uppercase tracking-wide backdrop-blur-md shadow-xs">
-                  <span>🪔</span> Sacred Spiritual Atmosphere
-                </div>
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
+              
+              {/* ================================================================= */}
+              {/* LEFT COLUMN: REQUEST FORM DETAILS FOR HOUSE PROGRAMME */}
+              {/* ================================================================= */}
+              <div className="lg:col-span-7 flex flex-col justify-between">
+                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-amber-300/30 text-foreground relative overflow-hidden h-full flex flex-col justify-between">
+                  {/* Top Accent Gradient Bar */}
+                  <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-purple-700 via-amber-400 to-orange-500" />
 
-                {/* Clean Classical Spiritual Quote Typography (No Highlights, Refined Size) */}
-                <blockquote className="font-serif italic text-lg sm:text-xl lg:text-2xl text-white/95 font-normal leading-relaxed tracking-wide drop-shadow-sm">
-                  {houseProgrammes.closingQuote ||
-                    "“Bring the joy of Krishna consciousness into your home. Chant together, learn together, and experience the spiritual atmosphere of devotional service.”"}
-                </blockquote>
+                  {submitted ? (
+                    /* Submission Success Screen */
+                    <div className="py-8 text-center space-y-6 my-auto animate-fade-in">
+                      <div className="h-20 w-20 rounded-full bg-emerald-100 text-emerald-600 grid place-items-center mx-auto shadow-inner">
+                        <CheckCircle2 className="h-10 w-10" />
+                      </div>
+                      <div className="space-y-2">
+                        <span className="text-xs font-bold text-secondary uppercase tracking-wider">
+                          Hare Krishna! 🙏
+                        </span>
+                        <h3 className="font-display text-2xl sm:text-3xl font-bold text-primary">
+                          House Programme Request Received!
+                        </h3>
+                        <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+                          Thank you, <strong className="text-foreground">{name}</strong>. Our temple coordination team will contact you shortly to plan the devotional programme for your home.
+                        </p>
+                      </div>
 
-                {/* Dual Action Buttons (Decreased Size) */}
-                <div className="flex flex-col sm:flex-row items-center gap-3 pt-2 justify-center lg:justify-start">
-                  <button
-                    onClick={() => setModalOpen(true)}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-bold px-6 py-3 shadow-[0_0_20px_rgba(245,197,24,0.4)] transition-all duration-300 hover:scale-105 active:scale-95 text-xs sm:text-sm cursor-pointer"
-                  >
-                    <Home className="h-4 w-4 shrink-0" />
-                    Request a House Programme
-                  </button>
+                      <div className="bg-surface p-4 rounded-2xl border text-xs text-foreground/80 max-w-md mx-auto space-y-1.5 text-left">
+                        <div><strong>Preferred Date:</strong> {preferredDate} ({preferredTime})</div>
+                        <div><strong>Location / Area:</strong> {locationArea}</div>
+                        {locationDetected && <div className="text-emerald-700 font-semibold">📍 Exact GPS Location coordinates attached.</div>}
+                      </div>
 
-                  <a
-                    href={contactWhatsappUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border-2 border-white/40 hover:border-amber-300 bg-white/10 hover:bg-white/20 text-white font-semibold px-5 py-2.5 sm:py-3 transition-all duration-300 hover:scale-105 text-xs sm:text-sm backdrop-blur-md shadow-sm"
-                  >
-                    <MessageCircle className="h-4 w-4 shrink-0 text-emerald-400" />
-                    Contact Us for House Programme
-                  </a>
-                </div>
+                      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                        <a
+                          href={`https://wa.me/${formattedWhatsapp}?text=${encodeURIComponent(
+                            `Hare Krishna! 🙏 I just submitted a House Programme request for ${preferredDate} at ${locationArea} under name ${name} (${phone}). Please confirm!`
+                          )}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold shadow-md transition hover:scale-105"
+                        >
+                          <MessageCircle className="h-4 w-4" /> Message on WhatsApp
+                        </a>
+                        <button
+                          onClick={resetForm}
+                          className="w-full sm:w-auto px-7 py-3.5 rounded-full border bg-white hover:bg-muted text-sm font-semibold transition cursor-pointer"
+                        >
+                          Book Another Programme
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Interactive Request Form */
+                    <div className="space-y-5">
+                      <div>
+                        <div className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wider text-secondary font-bold mb-1">
+                          <Home className="h-3.5 w-3.5" /> Book Devotional Gathering
+                        </div>
+                        <h3 className="font-display text-2xl sm:text-3xl font-bold text-primary">
+                          Request a House Programme
+                        </h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                          Fill in your details below to schedule sacred kirtan, Gita discourse, and prasadam at your residence.
+                        </p>
+                      </div>
 
-                {/* Trust Badges */}
-                <div className="pt-4 border-t border-white/15 flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-xs text-white/80 font-medium">
-                  <span className="flex items-center gap-1.5">
-                    <Check className="h-4 w-4 text-amber-300" /> Conducted with Pure Devotion
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Check className="h-4 w-4 text-amber-300" /> Open to All Families
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Check className="h-4 w-4 text-amber-300" /> Free Devotional Service
-                  </span>
+                      <form onSubmit={handleSubmit} className="space-y-4 pt-1">
+                        {/* Devotee Name & Phone */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-semibold text-foreground mb-1.5">
+                              Full Name <span className="text-rose-500">*</span>
+                            </label>
+                            <input
+                              id="form-name-input"
+                              type="text"
+                              required
+                              placeholder="e.g. Ramesh Kumar"
+                              value={name}
+                              onChange={(e) => setName(e.target.value)}
+                              className="w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-semibold text-foreground mb-1.5">
+                              Phone / WhatsApp Number <span className="text-rose-500">*</span>
+                            </label>
+                            <input
+                              type="tel"
+                              required
+                              placeholder="e.g. 9876543210"
+                              value={phone}
+                              onChange={(e) => setPhone(e.target.value)}
+                              className="w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Location / Area & Number of participants */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-semibold text-foreground mb-1.5">
+                              Location / Area in Kurnool <span className="text-rose-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. Nandyal Checkpost, Kurnool"
+                              value={locationArea}
+                              onChange={(e) => setLocationArea(e.target.value)}
+                              className="w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-semibold text-foreground mb-1.5">
+                              Number of Participants
+                            </label>
+                            <select
+                              value={participantsCount}
+                              onChange={(e) => setParticipantsCount(e.target.value)}
+                              className="w-full px-4 py-2.5 text-sm border rounded-xl bg-white focus:ring-2 focus:ring-primary/20 outline-none transition cursor-pointer"
+                            >
+                              <option value="5 – 10 Family Members">5 – 10 Family Members</option>
+                              <option value="10 – 25 Devotees">10 – 25 Devotees</option>
+                              <option value="25 – 50 Devotees">25 – 50 Devotees</option>
+                              <option value="50+ Grand Gathering">50+ Grand Gathering</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Preferred Date & Preferred Time */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-semibold text-foreground mb-1.5">
+                              Preferred Date <span className="text-rose-500">*</span>
+                            </label>
+                            <input
+                              type="date"
+                              required
+                              min={new Date().toISOString().split("T")[0]}
+                              value={preferredDate}
+                              onChange={(e) => setPreferredDate(e.target.value)}
+                              className="w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-semibold text-foreground mb-1.5">
+                              Preferred Time
+                            </label>
+                            <select
+                              value={preferredTime}
+                              onChange={(e) => setPreferredTime(e.target.value)}
+                              className="w-full px-4 py-2.5 text-sm border rounded-xl bg-white focus:ring-2 focus:ring-primary/20 outline-none transition cursor-pointer"
+                            >
+                              {timeOptions.map((opt) => (
+                                <option key={opt.time} value={`${opt.label} (${opt.time})`}>
+                                  {opt.label} ({opt.time})
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Full Address & GPS Auto-detect */}
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <label className="block text-xs font-semibold text-foreground">
+                              Full Home Address <span className="text-rose-500">*</span>
+                            </label>
+                            {/* Auto-Detect Exact GPS Location Button */}
+                            <button
+                              type="button"
+                              onClick={handleDetectLocation}
+                              disabled={isFetchingLocation}
+                              className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition border border-blue-200 cursor-pointer"
+                            >
+                              {isFetchingLocation ? (
+                                <>
+                                  <Loader2 className="h-3 w-3 animate-spin" /> Fetching GPS...
+                                </>
+                              ) : locationDetected ? (
+                                <>
+                                  <CheckCircle2 className="h-3 w-3 text-emerald-600" /> GPS Attached
+                                </>
+                              ) : (
+                                <>
+                                  <LocateFixed className="h-3 w-3" /> 📍 Auto-Detect Exact Location
+                                </>
+                              )}
+                            </button>
+                          </div>
+                          <textarea
+                            required
+                            rows={2}
+                            placeholder="House / Flat No., Street, Landmark, Kurnool..."
+                            value={fullAddress}
+                            onChange={(e) => setFullAddress(e.target.value)}
+                            className="w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
+                          />
+                          {locationDetected && latitude && longitude && (
+                            <div className="text-[11px] text-emerald-700 flex items-center gap-1.5 mt-1 font-medium bg-emerald-50 p-2 rounded-lg border border-emerald-200">
+                              <Navigation className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                              Exact GPS coordinates ({latitude.toFixed(6)}, {longitude.toFixed(6)}) captured for temple team.
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Message / Special Requirements */}
+                        <div>
+                          <label className="block text-xs font-semibold text-foreground mb-1.5">
+                            Occasion / Special Requirements (Optional)
+                          </label>
+                          <textarea
+                            rows={2}
+                            placeholder="e.g. Birthday celebration, anniversary, gotram details, or specific bhajans requested..."
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            className="w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
+                          />
+                        </div>
+
+                        {/* Submit Button */}
+                        <div className="pt-2">
+                          <button
+                            type="submit"
+                            disabled={submitting}
+                            className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-bold shadow-gold text-base transition hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                          >
+                            {submitting ? (
+                              <>
+                                <Loader2 className="h-5 w-5 animate-spin" /> Submitting Request...
+                              </>
+                            ) : (
+                              <>
+                                <Send className="h-5 w-5" /> Request a House Programme
+                              </>
+                            )}
+                          </button>
+                        </div>
+
+                        <p className="text-center text-[11px] text-muted-foreground flex items-center justify-center gap-1.5 pt-1">
+                          <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                          Your details are safe and shared only with the ISKCON Kurnool coordination team.
+                        </p>
+                      </form>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Right Column: Prominent Large Occupied Image Card */}
-              <div className="lg:col-span-6 flex justify-center w-full">
-                <div className="relative w-full rounded-3xl overflow-hidden shadow-2xl border-2 border-amber-400/40 bg-black/40 group min-h-[380px] lg:min-h-[440px] flex">
+              {/* ================================================================= */}
+              {/* RIGHT COLUMN: SACRED SPIRITUAL ATMOSPHERE IMAGE & DEVOTIONAL DETAILS */}
+              {/* ================================================================= */}
+              <div className="lg:col-span-5 flex flex-col justify-between space-y-6">
+                {/* Prominent Sacred Spiritual Atmosphere Image Card */}
+                <div className="relative w-full rounded-3xl overflow-hidden shadow-2xl border-2 border-amber-400/40 bg-black/40 group min-h-[360px] lg:min-h-[400px] flex flex-col justify-end">
                   {/* Decorative corner glow */}
                   <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-400/20 rounded-full blur-2xl pointer-events-none" />
 
@@ -680,291 +898,64 @@ function HouseProgrammesPage() {
                     alt="House Programme Devotion at Home"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 absolute inset-0"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-6 sm:p-8 text-white relative z-10">
-                    <div className="inline-flex items-center gap-1.5 text-amber-300 text-xs font-bold uppercase tracking-wider mb-1.5 bg-black/40 px-3 py-1 rounded-full w-fit backdrop-blur-sm border border-white/10">
-                      <Sparkles className="h-3.5 w-3.5" /> JAY JAGANNATH
+
+                  {/* Gradient and text overlays */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-6 sm:p-8 text-white relative z-10">
+                    <div className="inline-flex items-center gap-1.5 text-amber-300 text-xs font-bold uppercase tracking-wider mb-2 bg-black/50 px-3.5 py-1.5 rounded-full w-fit backdrop-blur-md border border-amber-300/30">
+                      <span>🪔</span> Sacred Spiritual Atmosphere
                     </div>
                     <h4 className="font-display font-bold text-xl sm:text-2xl text-white">
                       Devotional Home Atmosphere
                     </h4>
-                    <p className="text-xs sm:text-sm text-white/85 mt-1 leading-relaxed max-w-md">
+                    <p className="text-xs sm:text-sm text-white/90 mt-1.5 leading-relaxed">
                       Transform your residence into a spiritual sanctuary with the transcendental vibrations of the Holy Names.
                     </p>
                   </div>
                 </div>
+
+                {/* Devotional Closing Quote & Trust Highlights */}
+                <div className="space-y-4 text-white/95">
+                  <blockquote className="font-serif italic text-base sm:text-lg text-white/90 font-normal leading-relaxed tracking-wide bg-white/5 border border-white/10 p-5 rounded-2xl backdrop-blur-sm">
+                    {houseProgrammes.closingQuote ||
+                      "“Bring the joy of Krishna consciousness into your home. Chant together, learn together, and experience the spiritual atmosphere of devotional service.”"}
+                  </blockquote>
+
+                  {/* Trust Highlights */}
+                  <div className="grid grid-cols-1 gap-2 pt-1 text-xs text-white/85 font-medium">
+                    <div className="flex items-center gap-2 bg-white/10 px-3.5 py-2 rounded-xl border border-white/10 backdrop-blur-xs">
+                      <Check className="h-4 w-4 text-amber-300 shrink-0" />
+                      <span>Conducted with Pure Devotion &amp; Vedic Traditions</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-white/10 px-3.5 py-2 rounded-xl border border-white/10 backdrop-blur-xs">
+                      <Check className="h-4 w-4 text-amber-300 shrink-0" />
+                      <span>Open to All Families, Friends &amp; Neighbours</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-white/10 px-3.5 py-2 rounded-xl border border-white/10 backdrop-blur-xs">
+                      <Check className="h-4 w-4 text-amber-300 shrink-0" />
+                      <span>Free Devotional Service from ISKCON Kurnool</span>
+                    </div>
+                  </div>
+
+                  {/* Direct WhatsApp Call/Chat Button */}
+                  <div className="pt-2">
+                    <a
+                      href={contactWhatsappUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-emerald-400/50 hover:border-emerald-400 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 hover:text-white font-bold px-5 py-3 transition-all duration-300 text-xs sm:text-sm backdrop-blur-md shadow-sm"
+                    >
+                      <MessageCircle className="h-4 w-4 shrink-0 text-emerald-400" />
+                      Contact Us for House Programme
+                    </a>
+                  </div>
+                </div>
+
               </div>
+
             </div>
           </div>
         </div>
       </section>
-
-      {/* ========================================================================= */}
-      {/* 7. POP-UP MODAL / DIALOG FORM: REQUEST A HOUSE PROGRAMME */}
-      {/* ========================================================================= */}
-      <AnimatePresence>
-        {modalOpen && (
-          <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ duration: 0.25 }}
-              className="bg-white rounded-[2rem] max-w-2xl w-full p-6 sm:p-8 shadow-2xl border my-8 relative overflow-hidden text-foreground"
-            >
-              {/* Top Accent Gradient Bar */}
-              <div className="absolute top-0 left-0 right-0 h-2.5 bg-gradient-to-r from-purple-700 via-amber-400 to-orange-500" />
-
-              {submitted ? (
-                /* Success Screen */
-                <div className="py-8 text-center space-y-6 animate-fade-in">
-                  <div className="h-20 w-20 rounded-full bg-emerald-100 text-emerald-600 grid place-items-center mx-auto shadow-inner">
-                    <CheckCircle2 className="h-10 w-10" />
-                  </div>
-                  <div className="space-y-2">
-                    <span className="text-xs font-bold text-secondary uppercase tracking-wider">
-                      Hare Krishna!
-                    </span>
-                    <h3 className="font-display text-2xl sm:text-3xl font-bold text-primary">
-                      House Programme Request Received!
-                    </h3>
-                    <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-                      Thank you, <strong className="text-foreground">{name}</strong>. Our temple coordination team will contact you shortly to plan the devotional programme for your home.
-                    </p>
-                  </div>
-
-                  <div className="bg-surface p-4 rounded-2xl border text-xs text-foreground/80 max-w-md mx-auto space-y-1.5 text-left">
-                    <div><strong>Preferred Date:</strong> {preferredDate} ({preferredTime})</div>
-                    <div><strong>Location / Area:</strong> {locationArea}</div>
-                    {locationDetected && <div className="text-emerald-700 font-semibold">📍 Exact GPS Location coordinates attached.</div>}
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
-                    <a
-                      href={`https://wa.me/${formattedWhatsapp}?text=${encodeURIComponent(
-                        `Hare Krishna! 🙏 I just submitted a House Programme request for ${preferredDate} at ${locationArea} under name ${name} (${phone}). Please confirm!`
-                      )}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold shadow-md transition hover:scale-105"
-                    >
-                      <MessageCircle className="h-4 w-4" /> Message on WhatsApp
-                    </a>
-                    <button
-                      onClick={resetForm}
-                      className="w-full sm:w-auto px-7 py-3.5 rounded-full border bg-white hover:bg-muted text-sm font-semibold transition"
-                    >
-                      Done
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                /* Interactive Request Form */
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between border-b pb-4">
-                    <div>
-                      <div className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wider text-secondary font-bold">
-                        <Home className="h-3.5 w-3.5" /> Book Devotional Gathering
-                      </div>
-                      <h3 className="font-display text-2xl font-bold text-primary">
-                        Request a House Programme
-                      </h3>
-                    </div>
-                    <button
-                      onClick={() => setModalOpen(false)}
-                      className="p-2 rounded-full hover:bg-muted text-muted-foreground transition cursor-pointer"
-                      aria-label="Close dialog"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </div>
-
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* Devotee Name & Phone */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-foreground mb-1.5">
-                          Full Name <span className="text-rose-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. Ramesh Kumar"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          className="w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-foreground mb-1.5">
-                          Phone / WhatsApp Number <span className="text-rose-500">*</span>
-                        </label>
-                        <input
-                          type="tel"
-                          required
-                          placeholder="e.g. 9876543210"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          className="w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Location / Area & Number of participants */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-foreground mb-1.5">
-                          Location / Area <span className="text-rose-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. Nandyal Checkpost, Kurnool"
-                          value={locationArea}
-                          onChange={(e) => setLocationArea(e.target.value)}
-                          className="w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-foreground mb-1.5">
-                          Number of Participants
-                        </label>
-                        <select
-                          value={participantsCount}
-                          onChange={(e) => setParticipantsCount(e.target.value)}
-                          className="w-full px-4 py-2.5 text-sm border rounded-xl bg-white focus:ring-2 focus:ring-primary/20 outline-none transition"
-                        >
-                          <option value="5 – 10 Family Members">5 – 10 Family Members</option>
-                          <option value="10 – 25 Devotees">10 – 25 Devotees</option>
-                          <option value="25 – 50 Devotees">25 – 50 Devotees</option>
-                          <option value="50+ Grand Gathering">50+ Grand Gathering</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Preferred Date & Preferred Time */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-foreground mb-1.5">
-                          Preferred Date <span className="text-rose-500">*</span>
-                        </label>
-                        <input
-                          type="date"
-                          required
-                          min={new Date().toISOString().split("T")[0]}
-                          value={preferredDate}
-                          onChange={(e) => setPreferredDate(e.target.value)}
-                          className="w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-foreground mb-1.5">
-                          Preferred Time
-                        </label>
-                        <select
-                          value={preferredTime}
-                          onChange={(e) => setPreferredTime(e.target.value)}
-                          className="w-full px-4 py-2.5 text-sm border rounded-xl bg-white focus:ring-2 focus:ring-primary/20 outline-none transition"
-                        >
-                          {timeOptions.map((opt) => (
-                            <option key={opt.time} value={`${opt.label} (${opt.time})`}>
-                              {opt.label} ({opt.time})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Full Address & GPS Auto-detect */}
-                    <div>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <label className="block text-xs font-semibold text-foreground">
-                          Full Home Address <span className="text-rose-500">*</span>
-                        </label>
-                        {/* Auto-Detect Exact GPS Location Button */}
-                        <button
-                          type="button"
-                          onClick={handleDetectLocation}
-                          disabled={isFetchingLocation}
-                          className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition border border-blue-200 cursor-pointer"
-                        >
-                          {isFetchingLocation ? (
-                            <>
-                              <Loader2 className="h-3 w-3 animate-spin" /> Fetching GPS...
-                            </>
-                          ) : locationDetected ? (
-                            <>
-                              <CheckCircle2 className="h-3 w-3 text-emerald-600" /> GPS Location Attached
-                            </>
-                          ) : (
-                            <>
-                              <LocateFixed className="h-3 w-3" /> 📍 Auto-Detect Exact Location
-                            </>
-                          )}
-                        </button>
-                      </div>
-                      <textarea
-                        required
-                        rows={2}
-                        placeholder="House / Flat No., Street, Landmark, Kurnool..."
-                        value={fullAddress}
-                        onChange={(e) => setFullAddress(e.target.value)}
-                        className="w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition"
-                      />
-                      {locationDetected && latitude && longitude && (
-                        <div className="text-[11px] text-emerald-700 flex items-center gap-1.5 mt-1 font-medium bg-emerald-50 p-2 rounded-lg border border-emerald-200">
-                          <Navigation className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                          Exact coordinates: {latitude.toFixed(6)}, {longitude.toFixed(6)} captured for temple team.
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Message / Special Requirements */}
-                    <div>
-                      <label className="block text-xs font-semibold text-foreground mb-1.5">
-                        Message / Special Requirements (Optional)
-                      </label>
-                      <textarea
-                        rows={2}
-                        placeholder="e.g. Birthday celebration, anniversary, gotram details, or specific bhajans requested..."
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        className="w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition"
-                      />
-                    </div>
-
-                    {/* Submit Button */}
-                    <div className="pt-2">
-                      <button
-                        type="submit"
-                        disabled={submitting}
-                        className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-bold shadow-gold text-base transition hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                      >
-                        {submitting ? (
-                          <>
-                            <Loader2 className="h-5 w-5 animate-spin" /> Submitting Request...
-                          </>
-                        ) : (
-                          <>
-                            <Send className="h-5 w-5" /> Request a House Programme
-                          </>
-                        )}
-                      </button>
-                    </div>
-
-                    <p className="text-center text-[11px] text-muted-foreground flex items-center justify-center gap-1.5 pt-1">
-                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-                      Your details are safe and shared only with the ISKCON Kurnool coordination team.
-                    </p>
-                  </form>
-                </div>
-              )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* Lightbox Photo Preview */}
       <AnimatePresence>

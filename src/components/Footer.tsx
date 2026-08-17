@@ -20,6 +20,7 @@ export default function Footer() {
 
   const discoverLinks = [
     { label: "Home", href: "/" },
+    { label: "Annual Youth Yatra", href: "/youth-yatra" },
     { label: "House Programmes", href: "/house-programmes" },
     { label: "About ISKCON", href: "/about/iskcon" },
     { label: "ISKCON Kurnool", href: "/about/kurnool" },

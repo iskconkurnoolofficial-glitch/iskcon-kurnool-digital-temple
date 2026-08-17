@@ -25,17 +25,18 @@ import FeaturePopupManager from "@/admin/FeaturePopupManager";
 import PaymentPagesManager from "@/admin/PaymentPagesManager";
 import PreviewLeadsManager from "@/admin/PreviewLeadsManager";
 import DonationsManager from "@/admin/DonationsManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard, Video, Bell, ShieldCheck } from "lucide-react";
+import YouthYatraManager from "@/admin/YouthYatraManager";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard, Video, Bell, ShieldCheck, Compass } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
 
-type Tab = "welcome" | "carousel" | "festivals" | "sevas" | "youth" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "liveDashboard" | "featurePopup" | "paymentPages" | "previewLeads" | "donations";
+type Tab = "welcome" | "carousel" | "festivals" | "sevas" | "youth" | "youthYatra" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "liveDashboard" | "featurePopup" | "paymentPages" | "previewLeads" | "donations";
 
 function AdminPage() {
-  const { authed, login, logout, settings, contacts, setContacts, paymentRecords, previewLeads, houseProgrammes, markAllHouseProgrammeRequestsRead, markAllPaymentRecordsRead, markAllPreviewLeadsRead, currentUser } = useAdmin();
+  const { authed, login, logout, settings, contacts, setContacts, paymentRecords, previewLeads, houseProgrammes, markAllHouseProgrammeRequestsRead, markAllPaymentRecordsRead, markAllPreviewLeadsRead, youthYatra, markAllYatraRegistrationsRead, currentUser } = useAdmin();
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [err, setErr] = useState("");
@@ -55,6 +56,8 @@ function AdminPage() {
       markAllPreviewLeadsRead();
     } else if (tab === "houseProgrammes" && houseProgrammes?.requests && houseProgrammes.requests.some((r) => !r.read)) {
       markAllHouseProgrammeRequestsRead();
+    } else if (tab === "youthYatra" && youthYatra?.registrations && youthYatra.registrations.some((r) => !r.read)) {
+      markAllYatraRegistrationsRead();
     }
   }, [tab]);
 
@@ -62,13 +65,15 @@ function AdminPage() {
   const unreadDonationsCount = (paymentRecords || []).filter((p) => !p.read).length;
   const unreadLeadsCount = (previewLeads || []).filter((l) => !l.read).length;
   const unreadHouseProgrammesCount = (houseProgrammes?.requests || []).filter((r) => !r.read).length;
-  const totalUnreadCount = unreadMessagesCount + unreadDonationsCount + unreadLeadsCount + unreadHouseProgrammesCount;
+  const unreadYouthYatraCount = (youthYatra?.registrations || []).filter((r) => !r.read).length;
+  const totalUnreadCount = unreadMessagesCount + unreadDonationsCount + unreadLeadsCount + unreadHouseProgrammesCount + unreadYouthYatraCount;
 
   const getBadgeCount = (id: Tab): number => {
     if (id === "contacts") return unreadMessagesCount;
     if (id === "paymentPages") return unreadDonationsCount;
     if (id === "previewLeads") return unreadLeadsCount;
     if (id === "houseProgrammes") return unreadHouseProgrammesCount;
+    if (id === "youthYatra") return unreadYouthYatraCount;
     return 0;
   };
 
@@ -200,6 +205,7 @@ function AdminPage() {
     {
       title: "Community Focus",
       items: [
+        { id: "youthYatra", label: "Annual Youth Yatra", icon: Compass },
         { id: "houseProgrammes", label: "House Programmes", icon: Home },
         { id: "prahladaBadi", label: "Prahlada Badi", icon: Baby },
         { id: "youth", label: "Youth Festival", icon: Users },
@@ -593,6 +599,7 @@ function AdminPage() {
             {tab === "festivals" && <FestivalsManager />}
             {tab === "sevas" && <SevasManager />}
             {tab === "youth" && <YouthManager />}
+            {tab === "youthYatra" && <YouthYatraManager />}
             {tab === "houseProgrammes" && <HouseProgrammesManager />}
             {tab === "prahladaBadi" && <PrahladaBadiManager />}
             {tab === "harinama" && <HarinamaManager />}
