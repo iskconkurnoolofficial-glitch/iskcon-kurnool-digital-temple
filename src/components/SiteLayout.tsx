@@ -11,7 +11,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       <main 
-        className="flex-1 pb-20 lg:pb-0 transition-[padding] duration-300"
+        className="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] lg:pb-0 transition-[padding] duration-300 w-full overflow-x-hidden"
         style={{ paddingTop: "var(--site-header-height, 6rem)" }}
       >
         {children}

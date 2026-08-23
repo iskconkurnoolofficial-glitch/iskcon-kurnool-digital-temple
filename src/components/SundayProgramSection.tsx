@@ -122,21 +122,21 @@ export default function SundayProgramSection() {
 
           {/* Right Column: Modern Timeline Card (Extended) */}
           <div className="lg:col-span-8 animate-fade-up w-full">
-            <div className="bg-gradient-to-br from-[#2a1154] via-[#1c083c] to-[#0e0222] border border-white/10 rounded-[32px] p-6 sm:p-8 shadow-[0_25px_60px_-15px_rgba(42,17,84,0.3)] relative overflow-hidden">
+            <div className="bg-gradient-to-br from-[#2a1154] via-[#1c083c] to-[#0e0222] border border-white/10 rounded-[28px] sm:rounded-[32px] p-4 sm:p-8 shadow-[0_25px_60px_-15px_rgba(42,17,84,0.3)] relative overflow-hidden">
               {/* Header inside Card */}
-              <div className="flex items-center justify-between border-b border-white/10 pb-5 mb-6">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4 sm:pb-5 mb-5 sm:mb-6">
                 <div>
-                  <h3 className="font-display font-bold text-2xl text-white">Program Schedule</h3>
-                  <p className="text-sm text-white/60 mt-1">Every Sunday Afternoon</p>
+                  <h3 className="font-display font-bold text-xl sm:text-2xl text-white">Program Schedule</h3>
+                  <p className="text-xs sm:text-sm text-white/60 mt-0.5">Every Sunday Afternoon</p>
                 </div>
-                <div className="px-4 py-2 bg-secondary/20 border border-secondary/30 rounded-full text-center">
-                  <span className="text-secondary text-sm font-bold uppercase tracking-wide">Every Sunday</span>
+                <div className="px-3 sm:px-4 py-1.5 sm:py-2 bg-secondary/20 border border-secondary/30 rounded-full text-center">
+                  <span className="text-secondary text-xs sm:text-sm font-bold uppercase tracking-wide">Every Sunday</span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 items-start">
                 {/* Timeline list (Left Side) */}
-                <div className="md:col-span-7 relative border-l border-white/10 pl-6 ml-4 space-y-8">
+                <div className="md:col-span-7 relative border-l border-white/10 pl-5 sm:pl-6 ml-3 sm:ml-4 space-y-6 sm:space-y-8">
                   {groupedSchedule.map((item, idx) => {
                     // Determine best icon based on the first program in the group
                     const primaryProgram = item.programs[0] || "";

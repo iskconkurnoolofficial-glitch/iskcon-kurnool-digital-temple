@@ -315,8 +315,8 @@ function AdminPage() {
 
       {/* MOBILE HORIZONTAL SCROLL PILL TABS BAR */}
       <div 
-        className="md:hidden bg-gradient-to-r from-[#2a114e] to-[#3b1767] border-b border-white/10 px-2 py-2 overflow-x-auto flex items-center gap-1.5 shrink-0 z-25 shadow-xs" 
-        style={{ scrollbarWidth: "none" }}
+        className="md:hidden bg-gradient-to-r from-[#2a114e] to-[#3b1767] border-b border-white/10 px-2.5 py-2 overflow-x-auto flex items-center gap-2 shrink-0 z-25 shadow-xs touch-pan-x no-scrollbar overscroll-x-contain" 
+        style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
       >
         <button
           onClick={() => setTab("welcome")}

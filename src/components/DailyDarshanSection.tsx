@@ -77,7 +77,7 @@ export default function DailyDarshanSection() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
           
           {/* Left Column: Live Temple Status Card */}
-          <div className="lg:col-span-5 flex flex-col justify-between p-8 rounded-[32px] bg-white border border-border/80 shadow-elegant relative overflow-hidden">
+          <div className="lg:col-span-5 flex flex-col justify-between p-5 sm:p-8 rounded-[28px] sm:rounded-[32px] bg-white border border-border/80 shadow-elegant relative overflow-hidden">
             {/* Soft decorative background circles */}
             <div className="absolute top-0 right-0 -translate-y-1/3 translate-x-1/3 w-40 h-40 bg-accent/5 rounded-full blur-2xl pointer-events-none" />
 
