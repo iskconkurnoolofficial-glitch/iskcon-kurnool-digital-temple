@@ -7,7 +7,7 @@ import { safeUrl } from "@/lib/utils";
 
 export default function LiveClassBanner() {
   const liveClass = useLiveClass();
-  const { settings, sunday, gitaCourse } = useAdmin();
+  const { settings, sunday, gitaCourse, liveProgrammes } = useAdmin();
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
@@ -15,7 +15,65 @@ export default function LiveClassBanner() {
     return () => clearInterval(timer);
   }, []);
 
-  // 1. Check if daily class is live
+  // 1. Check if Live Programme is active from Live Programmes system
+  const activeLiveProgramme = (() => {
+    if (!liveProgrammes || !liveProgrammes.enabled) return null;
+    const nowMs = Date.now();
+    const list = (liveProgrammes.programmes || []).filter((p) => p.published !== false);
+    for (const item of list) {
+      if (item.isManualLiveOverride) return item;
+      try {
+        const [y, m, d] = item.date.split("-").map(Number);
+        const [sh, sm] = (item.startTime || "00:00").split(":").map(Number);
+        const [eh, em] = (item.endTime || "23:59").split(":").map(Number);
+
+        const startMs = new Date(y, m - 1, d, sh, sm, 0).getTime();
+        const endMs = new Date(y, m - 1, d, eh, em, 0).getTime();
+
+        if (nowMs >= startMs && nowMs < endMs) {
+          return item;
+        }
+      } catch {}
+    }
+    return null;
+  })();
+
+  if (activeLiveProgramme) {
+    return (
+      <div className="w-full bg-gradient-to-r from-red-600 via-red-500 to-orange-600 text-white shadow-md border-b border-red-400/40 relative z-50 animate-fade-in">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-2 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="relative flex h-3 w-3 shrink-0">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-white" />
+            </span>
+            <span className="text-[11px] font-extrabold tracking-[0.2em] uppercase bg-white/20 px-2.5 py-0.5 rounded-full border border-white/30 flex items-center gap-1 shadow-sm">
+              <Radio className="inline h-3.5 w-3.5 animate-pulse" /> LIVE NOW
+            </span>
+            <span className="font-bold text-sm md:text-base truncate">
+              {activeLiveProgramme.title}
+            </span>
+            <span className="hidden sm:inline text-xs text-white/80 bg-black/25 px-2.5 py-0.5 rounded-full font-medium">
+              {activeLiveProgramme.platform} Live
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <a
+              href={safeUrl(activeLiveProgramme.streamUrl, "#")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 bg-white text-red-600 font-extrabold text-xs md:text-sm px-4 py-1.5 rounded-full hover:bg-slate-100 hover:scale-105 transition-all shadow-md cursor-pointer border border-white/40"
+            >
+              Watch LIVE Stream <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Check if daily class is live
   if (liveClass) {
     return (
       <div className="w-full bg-gradient-to-r from-accent via-accent to-primary text-white">
@@ -45,36 +103,6 @@ export default function LiveClassBanner() {
               Join Class <ExternalLink className="h-3.5 w-3.5" />
             </a>
           )}
-        </div>
-      </div>
-    );
-  }
-
-  // 2. Check if general livestream is active (via liveStreamLink in Settings)
-  if (settings.liveStreamLink) {
-    return (
-      <div className="w-full bg-gradient-to-r from-red-600 via-red-500 to-amber-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-2 flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-3 min-w-0">
-            <span className="relative flex h-2.5 w-2.5 shrink-0">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-white" />
-            </span>
-            <span className="text-[11px] font-bold tracking-[0.2em] uppercase bg-white/15 px-2 py-0.5 rounded">
-              <Radio className="inline h-3 w-3 mr-1 -mt-0.5" /> Live Stream
-            </span>
-            <span className="font-semibold text-sm md:text-base truncate">
-              {settings.liveStreamTitle || "Join the Live Temple Stream now"}
-            </span>
-          </div>
-          <a
-            href={safeUrl(settings.liveStreamLink, "#")}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 bg-white text-red-600 font-bold text-xs md:text-sm px-4 py-1.5 rounded-full hover:scale-105 transition shadow cursor-pointer"
-          >
-            Watch LIVE <ExternalLink className="h-3.5 w-3.5" />
-          </a>
         </div>
       </div>
     );

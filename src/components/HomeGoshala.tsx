@@ -130,6 +130,7 @@ export default function HomeGoshala() {
                   alt="Mother Cow Protection"
                   className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover/img1:scale-103"
                   loading="lazy"
+                  decoding="async"
                 />
               </div>
 

@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation } from "@tanstack/react-router";
 import { 
   Globe, 
@@ -26,7 +27,8 @@ import {
   MessageCircle,
   Bell,
   Home,
-  Compass
+  Compass,
+  Sun
 } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import LiveClassBanner from "@/components/LiveClassBanner";
@@ -58,6 +60,7 @@ const NAV: NavItem[] = [
     { label: "Founder Acharya", href: "/about/founder", subtitle: "His Divine Grace Srila Prabhupada", icon: Heart },
   ]},
   { label: "Temple", children: [
+    { label: "Daily Darshan", href: "/daily-darshan", subtitle: "Today's deity sringara & blessings", icon: Sun },
     { label: "Temple Timings", href: "/temple", subtitle: "Daily Darshan & Aarti schedules", icon: Clock },
     { label: "Sunday Program", href: "/temple/sunday", subtitle: "Weekly feast, kirtan & lecture", icon: Calendar },
     { label: "Upcoming Festivals", href: "/festivals", subtitle: "Celebrate sacred days with us", icon: Sparkles },
@@ -65,6 +68,7 @@ const NAV: NavItem[] = [
     { label: "Shop", href: "/shop", subtitle: "Devotional books & puja items", icon: ShoppingBag },
   ]},
   { label: "Media", children: [
+    { label: "Daily Darshan", href: "/daily-darshan", subtitle: "Daily high-res deity photos", icon: Sun },
     { label: "Gallery", href: "/gallery", subtitle: "Photos of deities, events & festivals", icon: Image },
     { label: "Social Media", href: "/social-media", subtitle: "Connect with us online", icon: Share2 },
   ]},
@@ -84,7 +88,7 @@ const NAV: NavItem[] = [
 ];
 
 export default function Navbar() {
-  const { settings, sunday, gitaCourse, templeSchedule, contacts, paymentRecords, previewLeads } = useAdmin();
+  const { settings, sunday, gitaCourse, templeSchedule, contacts, paymentRecords, previewLeads, liveProgrammes } = useAdmin();
   const liveClass = useLiveClass();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDrop, setOpenDrop] = useState<string | null>(null);
@@ -92,6 +96,29 @@ export default function Navbar() {
   const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [tick, setTick] = useState(0);
+
+  // Active live broadcast detection
+  const activeLiveProgramme = (() => {
+    if (!liveProgrammes || !liveProgrammes.enabled) return null;
+    const nowMs = Date.now();
+    const list = (liveProgrammes.programmes || []).filter((p) => p.published !== false);
+    for (const item of list) {
+      if (item.isManualLiveOverride) return item;
+      try {
+        const [y, m, d] = item.date.split("-").map(Number);
+        const [sh, sm] = (item.startTime || "00:00").split(":").map(Number);
+        const [eh, em] = (item.endTime || "23:59").split(":").map(Number);
+
+        const startMs = new Date(y, m - 1, d, sh, sm, 0).getTime();
+        const endMs = new Date(y, m - 1, d, eh, em, 0).getTime();
+
+        if (nowMs >= startMs && nowMs < endMs) {
+          return item;
+        }
+      } catch {}
+    }
+    return null;
+  })();
   
   const location = useLocation();
   const currentPath = location.pathname;
@@ -101,7 +128,10 @@ export default function Navbar() {
   const unreadLeadsCount = (previewLeads || []).filter((l) => !l.read).length;
   const totalUnreadNotifications = unreadMessagesCount + unreadDonationsCount + unreadLeadsCount;
 
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
+    setMounted(true);
     const timer = setInterval(() => setTick((t) => t + 1), 10000);
     return () => clearInterval(timer);
   }, []);
@@ -144,13 +174,58 @@ export default function Navbar() {
     return false;
   };
 
+  const headerRef = useRef<HTMLElement>(null);
+
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 40);
     };
+    const handleOpenDrawer = () => {
+      setMobileOpen(true);
+    };
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("open-mobile-drawer", handleOpenDrawer);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("open-mobile-drawer", handleOpenDrawer);
+    };
   }, []);
+
+  // Dynamically update root --site-header-height CSS variable so layout never overlaps
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+
+    const updateHeight = () => {
+      const h = el.offsetHeight;
+      if (h > 0) {
+        document.documentElement.style.setProperty("--site-header-height", `${h}px`);
+      }
+    };
+
+    updateHeight();
+
+    const ro = new ResizeObserver(updateHeight);
+    ro.observe(el);
+
+    window.addEventListener("resize", updateHeight);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", updateHeight);
+    };
+  }, []);
+
+  // Lock background body scroll when mobile menu drawer is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
 
   // Animations variants for mobile staggered list items
   const listVariants = {
@@ -176,11 +251,15 @@ export default function Navbar() {
   };
 
   return (
-    <header className={`fixed top-0 inset-x-0 z-50 border-b transition-all duration-300 ${
-      scrolled 
-        ? "bg-white/90 backdrop-blur-md shadow-[0_4px_25px_rgba(91,44,155,0.06)] border-border/80" 
-        : "bg-white/95 border-transparent"
-    }`}>
+    <>
+      <header 
+        ref={headerRef}
+      className={`fixed top-0 inset-x-0 z-50 border-b transition-all duration-300 ${
+        scrolled 
+          ? "bg-white/90 backdrop-blur-md shadow-[0_4px_25px_rgba(91,44,155,0.06)] border-border/80" 
+          : "bg-white/95 border-transparent"
+      }`}
+    >
       <LiveClassBanner />
       
       {/* Desktop Layout */}
@@ -348,8 +427,24 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* Right: Donate CTA */}
-        <div className="flex items-center shrink-0">
+        {/* Right: Live Now & Donate CTAs */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          {activeLiveProgramme && (
+            <a
+              href={activeLiveProgramme.streamUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 xl:px-4 xl:py-2 rounded-full bg-red-600 hover:bg-red-700 text-white font-extrabold text-[11px] xl:text-xs tracking-wider uppercase shadow-md shadow-red-600/40 hover:scale-105 active:scale-95 transition-all border border-white/20"
+              title="Watch Live Stream"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+              </span>
+              <span>LIVE NOW</span>
+            </a>
+          )}
+
           <Link
             to="/donate"
             className="relative inline-flex items-center justify-center gap-2 px-4 py-2 xl:px-6 xl:py-2.5 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-extrabold text-xs xl:text-sm tracking-wider uppercase overflow-hidden group animate-pulse-glow transition-all duration-300 hover:scale-105 active:scale-95 ring-2 ring-amber-300/40 ring-offset-1 ring-offset-white"
@@ -388,192 +483,218 @@ export default function Navbar() {
           )}
         </Link>
 
-        <Link
-          to="/donate"
-          className="relative inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-extrabold text-xs tracking-wider uppercase animate-pulse-glow hover:scale-105 active:scale-95 transition-all duration-200 ring-2 ring-amber-300/30 overflow-hidden group"
-        >
-          <Heart className="h-3.5 w-3.5 fill-white/30 stroke-[2.5] text-white animate-heartbeat shrink-0" />
-          <span className="relative z-10">DONATE</span>
-          <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
-        </Link>
+        <div className="flex items-center gap-1.5">
+          {activeLiveProgramme && (
+            <a
+              href={activeLiveProgramme.streamUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-red-600 text-white font-extrabold text-[10px] tracking-wider uppercase shadow-sm border border-white/20"
+            >
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
+              </span>
+              <span>LIVE</span>
+            </a>
+          )}
+
+          <Link
+            to="/donate"
+            className="relative inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-extrabold text-xs tracking-wider uppercase animate-pulse-glow hover:scale-105 active:scale-95 transition-all duration-200 ring-2 ring-amber-300/30 overflow-hidden group"
+          >
+            <Heart className="h-3.5 w-3.5 fill-white/30 stroke-[2.5] text-white animate-heartbeat shrink-0" />
+            <span className="relative z-10">DONATE</span>
+            <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
+          </Link>
+        </div>
       </div>
 
-      {/* Mobile Sidebar Navigation Drawer */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden">
-            {/* Backdrop */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm" 
-              onClick={() => setMobileOpen(false)} 
-            />
-            
-            {/* Sidebar Drawer */}
-            <motion.div 
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="absolute left-0 top-0 h-full w-80 max-w-[85vw] bg-white/98 backdrop-blur-md shadow-2xl border-r border-border/50 overflow-y-auto flex flex-col"
-            >
-              {/* Drawer Header */}
-              <div className="sticky top-0 bg-gradient-to-r from-primary/5 via-transparent to-transparent px-6 py-5 flex justify-between items-center border-b border-border/40 bg-white/98 backdrop-blur-sm z-10">
-                <div className="flex items-center gap-3">
-                  {settings.logo ? (
-                    <img src={settings.logo} alt="ISKCON Kurnool" className="h-10 w-10 rounded-full object-cover ring-2 ring-secondary/40" />
-                  ) : (
-                    <div className="h-10 w-10 rounded-full bg-gradient-hero grid place-items-center text-white font-display font-bold text-sm">
-                      IK
-                    </div>
-                  )}
-                  <span className="font-display font-bold text-gray-800">Menu</span>
-                </div>
-                <button 
-                  onClick={() => setMobileOpen(false)} 
-                  className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-                  aria-label="Close menu"
-                >
-                  <X className="h-6 w-6 text-gray-600" />
-                </button>
-              </div>
+      </header>
 
-              {/* Drawer Navigation Links */}
-              <motion.nav 
-                variants={listVariants}
-                initial="closed"
-                animate="open"
-                className="py-4 px-4 space-y-2 flex-1"
+      {/* Mobile Sidebar Navigation Drawer rendered directly to document.body via Portal */}
+      {mounted && typeof document !== "undefined" && createPortal(
+        <AnimatePresence>
+          {mobileOpen && (
+            <div className="fixed inset-0 z-[100] lg:hidden">
+              {/* Backdrop */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm" 
+                onClick={() => setMobileOpen(false)} 
+              />
+              
+              {/* Sidebar Drawer Container */}
+              <motion.div 
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 220 }}
+                className="fixed left-0 top-0 bottom-0 h-full w-[310px] max-w-[85vw] bg-white shadow-2xl border-r border-slate-200 overflow-hidden flex flex-col z-[101]"
               >
-                {NAV.map((item) => {
-                  const isChildActive = item.children?.some(c => c.href === currentPath);
-                  const isActive = item.href === currentPath || isChildActive;
+                {/* Drawer Header */}
+                <div className="bg-slate-50 px-5 py-4 flex justify-between items-center border-b border-slate-200 shrink-0">
+                  <div className="flex items-center gap-3">
+                    {settings.logo ? (
+                      <img src={settings.logo} alt="ISKCON Kurnool" className="h-9 w-9 rounded-full object-cover ring-2 ring-secondary/50 shadow-xs" />
+                    ) : (
+                      <div className="h-9 w-9 rounded-full bg-primary text-secondary grid place-items-center font-display font-bold text-xs shadow-xs">
+                        IK
+                      </div>
+                    )}
+                    <div>
+                      <span className="font-display font-bold text-sm text-slate-900 block leading-tight">ISKCON Kurnool</span>
+                      <span className="text-[10px] text-slate-500 font-medium tracking-tight">Main Navigation Menu</span>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setMobileOpen(false)} 
+                    className="h-8 w-8 rounded-full bg-slate-200/80 hover:bg-slate-300 text-slate-700 grid place-items-center transition-colors cursor-pointer"
+                    aria-label="Close menu"
+                  >
+                    <X className="h-4.5 w-4.5" />
+                  </button>
+                </div>
 
-                  return (
-                    <motion.div 
-                      key={item.label}
-                      variants={itemVariants}
-                      className="overflow-hidden"
-                    >
-                      {item.children ? (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => setMobileGroupOpen((open) => (open === item.label ? null : item.label))}
-                            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-base font-medium transition-colors ${
-                              isActive ? "bg-primary/5 text-primary" : "text-gray-650 hover:bg-gray-50"
+                {/* Drawer Navigation Links Scroll Area */}
+                <nav className="py-3 px-3 space-y-1.5 flex-1 overflow-y-auto overscroll-contain">
+                  {NAV.map((item) => {
+                    const isChildActive = item.children?.some(c => c.href === currentPath);
+                    const isActive = item.href === currentPath || isChildActive;
+                    const isGroupOpen = mobileGroupOpen === item.label;
+
+                    return (
+                      <div key={item.label} className="w-full">
+                        {item.children ? (
+                          <div>
+                            <button
+                              type="button"
+                              onClick={() => setMobileGroupOpen((open) => (open === item.label ? null : item.label))}
+                              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-left text-sm font-semibold transition-all select-none active:scale-[0.99] cursor-pointer ${
+                                isActive 
+                                  ? "bg-primary/10 text-primary border border-primary/20" 
+                                  : "text-slate-700 hover:bg-slate-100/80 active:bg-primary/5"
+                              }`}
+                            >
+                              <span className="flex items-center gap-2">
+                                <span>{item.label}</span>
+                                {item.children.some(c => isLinkLive(c.href)) && (
+                                  <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+                                  </span>
+                                )}
+                              </span>
+                              <ChevronDown
+                                className={`h-4 w-4 text-slate-500 transition-transform duration-300 ${isGroupOpen ? "rotate-180 text-primary" : ""}`}
+                              />
+                            </button>
+                            
+                            {/* Smooth CSS Grid Accordion Container */}
+                            <div 
+                              className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
+                                isGroupOpen ? "grid-rows-[1fr] opacity-100 mt-1" : "grid-rows-[0fr] opacity-0 pointer-events-none"
+                              }`}
+                            >
+                              <div className="overflow-hidden">
+                                <div className="pl-2 pr-1 py-1 space-y-1 bg-slate-50/90 rounded-xl border border-slate-200/60 my-1">
+                                  {item.children.map((child) => {
+                                    const isSubActive = child.href === currentPath;
+                                    const ChildIcon = child.icon;
+                                    return (
+                                      <Link
+                                        key={child.label + child.href}
+                                        to={child.href}
+                                        onClick={() => {
+                                          setMobileOpen(false);
+                                          setMobileGroupOpen(null);
+                                        }}
+                                        className={`flex items-start gap-3 p-2.5 rounded-lg text-xs transition-all duration-150 active:scale-[0.98] ${
+                                          isSubActive 
+                                            ? "bg-primary text-white font-bold shadow-xs" 
+                                            : "text-slate-700 hover:bg-white hover:text-primary active:bg-slate-200/60"
+                                        }`}
+                                      >
+                                        <div className={`p-1.5 rounded-md shrink-0 mt-0.5 ${isSubActive ? "bg-white/20 text-white" : "bg-primary/10 text-primary"}`}>
+                                          <ChildIcon className="h-3.5 w-3.5" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <div className="flex items-center justify-between gap-1.5 font-semibold leading-snug">
+                                            <span className="truncate">{child.label}</span>
+                                            {isLinkLive(child.href) && (
+                                              <span className="inline-flex items-center gap-1 bg-red-600 text-white text-[8px] font-extrabold uppercase px-1.5 py-0.2 rounded shadow-xs shrink-0 animate-pulse">
+                                                Live
+                                              </span>
+                                            )}
+                                          </div>
+                                          <div className={`text-[10px] line-clamp-1 mt-0.5 ${isSubActive ? "text-white/80" : "text-slate-500"}`}>
+                                            {child.subtitle}
+                                          </div>
+                                        </div>
+                                      </Link>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <Link
+                            to={item.href!}
+                            onClick={() => setMobileOpen(false)}
+                            className={`block px-3.5 py-3 text-sm font-semibold rounded-xl transition-all duration-150 active:scale-[0.99] select-none ${
+                              isActive 
+                                ? "bg-primary text-white font-bold shadow-xs" 
+                                : "text-slate-700 hover:bg-slate-100/80 active:bg-primary/5"
                             }`}
                           >
-                            <span className={`flex items-center gap-1.5 ${isActive ? "font-semibold text-primary" : ""}`}>
-                              {item.label}
-                              {item.children.some(c => isLinkLive(c.href)) && (
-                                <span className="relative flex h-1.5 w-1.5">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-600"></span>
-                                </span>
-                              )}
-                            </span>
-                            <ChevronDown
-                              className={`h-4 w-4 text-gray-500 transition-transform duration-250 ${mobileGroupOpen === item.label ? "rotate-180" : ""}`}
-                            />
-                          </button>
-                          
-                          {/* Collapsible Sub-menu Accordion using Framer Motion */}
-                          <motion.div 
-                            initial={false}
-                            animate={{ 
-                              height: mobileGroupOpen === item.label ? "auto" : 0, 
-                              opacity: mobileGroupOpen === item.label ? 1 : 0 
-                            }}
-                            transition={{ duration: 0.28, ease: [0.04, 0.62, 0.23, 0.98] }}
-                            className="overflow-hidden"
-                          >
-                            <div className="pl-3 pr-1 py-1.5 space-y-1 bg-muted/30 rounded-xl mt-1 border-l-2 border-primary/20">
-                              {item.children.map((child) => {
-                                const isSubActive = child.href === currentPath;
-                                const ChildIcon = child.icon;
-                                return (
-                                  <Link
-                                    key={child.label + child.href}
-                                    to={child.href}
-                                    onClick={() => {
-                                      setMobileOpen(false);
-                                      setMobileGroupOpen(null);
-                                    }}
-                                    className={`flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-all duration-200 ${
-                                      isSubActive 
-                                        ? "bg-primary text-white font-semibold shadow-sm" 
-                                        : "text-muted-foreground hover:text-primary hover:bg-primary/5"
-                                    }`}
-                                  >
-                                    <ChildIcon className={`h-4 w-4 shrink-0 ${isSubActive ? "text-white" : "text-primary/70"}`} />
-                                    <span className="flex-1 flex items-center justify-between gap-1.5">
-                                      <span>{child.label}</span>
-                                      {isLinkLive(child.href) && (
-                                        <span className="inline-flex items-center gap-1 bg-red-600 text-white text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shadow-sm animate-pulse">
-                                          <span className="h-1 w-1 rounded-full bg-white" /> Live
-                                        </span>
-                                      )}
-                                    </span>
-                                  </Link>
-                                );
-                              })}
-                            </div>
-                          </motion.div>
-                        </>
-                      ) : (
-                        <Link
-                          to={item.href!}
-                          onClick={() => setMobileOpen(false)}
-                          className={`block px-3 py-2.5 text-base font-medium rounded-xl transition-all duration-200 ${
-                            isActive ? "bg-primary text-white font-semibold shadow-sm" : "text-gray-600 hover:bg-primary/5 hover:text-primary"
-                          }`}
-                        >
-                          {item.label}
-                        </Link>
-                      )}
-                    </motion.div>
-                  );
-                })}
-              </motion.nav>
+                            {item.label}
+                          </Link>
+                        )}
+                      </div>
+                    );
+                  })}
+                </nav>
 
-              {/* Drawer Footer Section */}
-              <div className="border-t border-border/80 bg-muted/30 p-5 space-y-4">
-                <LanguageToggle className="w-full justify-center" />
-                
-                {/* Social Quick Links */}
-                <div className="flex justify-center gap-4 py-2 border-b border-border/40 pb-4">
-                  <a href={safeUrl(settings.youtube, "https://youtube.com")} target="_blank" rel="noreferrer" aria-label="YouTube" className="h-9 w-9 rounded-full bg-primary/5 hover:bg-secondary hover:text-primary grid place-items-center transition duration-200">
-                    <Youtube className="h-4 w-4 text-primary" />
-                  </a>
-                  <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook" className="h-9 w-9 rounded-full bg-primary/5 hover:bg-secondary hover:text-primary grid place-items-center transition duration-200">
-                    <Facebook className="h-4 w-4 text-primary" />
-                  </a>
-                  <a href={safeUrl(settings.instagram, "https://instagram.com")} target="_blank" rel="noreferrer" aria-label="Instagram" className="h-9 w-9 rounded-full bg-primary/5 hover:bg-secondary hover:text-primary grid place-items-center transition duration-200">
-                    <Instagram className="h-4 w-4 text-primary" />
-                  </a>
-                  <a href={`https://wa.me/${(settings.whatsapp || "919505377520").replace(/\D/g, "")}`} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="h-9 w-9 rounded-full bg-primary/5 hover:bg-secondary hover:text-primary grid place-items-center transition duration-200">
-                    <MessageCircle className="h-4 w-4 text-primary" />
-                  </a>
+                {/* Drawer Footer Section */}
+                <div className="border-t border-slate-200 bg-slate-50 p-4 space-y-3 shrink-0">
+                  <LanguageToggle className="w-full justify-center" />
+                  
+                  {/* Social Quick Links */}
+                  <div className="flex justify-center gap-3 py-1 border-b border-slate-200/80 pb-3">
+                    <a href={safeUrl(settings.youtube, "https://youtube.com")} target="_blank" rel="noreferrer" aria-label="YouTube" className="h-8.5 w-8.5 rounded-full bg-white border border-slate-200 text-primary hover:bg-secondary hover:text-primary grid place-items-center transition duration-200 shadow-2xs">
+                      <Youtube className="h-4 w-4" />
+                    </a>
+                    <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook" className="h-8.5 w-8.5 rounded-full bg-white border border-slate-200 text-primary hover:bg-secondary hover:text-primary grid place-items-center transition duration-200 shadow-2xs">
+                      <Facebook className="h-4 w-4" />
+                    </a>
+                    <a href={safeUrl(settings.instagram, "https://instagram.com")} target="_blank" rel="noreferrer" aria-label="Instagram" className="h-8.5 w-8.5 rounded-full bg-white border border-slate-200 text-primary hover:bg-secondary hover:text-primary grid place-items-center transition duration-200 shadow-2xs">
+                      <Instagram className="h-4 w-4" />
+                    </a>
+                    <a href={`https://wa.me/${(settings.whatsapp || "919505377520").replace(/\D/g, "")}`} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="h-8.5 w-8.5 rounded-full bg-white border border-slate-200 text-primary hover:bg-secondary hover:text-primary grid place-items-center transition duration-200 shadow-2xs">
+                      <MessageCircle className="h-4 w-4" />
+                    </a>
+                  </div>
+
+                  <Link
+                    to="/donate"
+                    onClick={() => setMobileOpen(false)}
+                    className="relative flex items-center justify-center gap-2 w-full text-center px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-extrabold text-xs tracking-wider uppercase animate-pulse-glow hover:scale-[1.01] active:scale-98 transition-all duration-200 ring-2 ring-amber-300/30 overflow-hidden group shadow-md"
+                  >
+                    <Heart className="h-4 w-4 fill-white/30 stroke-[2.5] text-white animate-heartbeat shrink-0" />
+                    <span className="relative z-10 font-bold">DONATE NOW</span>
+                    <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
+                  </Link>
                 </div>
-
-                <Link
-                  to="/donate"
-                  onClick={() => setMobileOpen(false)}
-                  className="relative flex items-center justify-center gap-2 w-full text-center px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-extrabold text-sm tracking-wider uppercase animate-pulse-glow hover:scale-[1.02] active:scale-98 transition-all duration-200 ring-2 ring-amber-300/30 overflow-hidden group"
-                >
-                  <Heart className="h-4 w-4 fill-white/30 stroke-[2.5] text-white animate-heartbeat shrink-0" />
-                  <span className="relative z-10">DONATE NOW</span>
-                  <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
-                </Link>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-    </header>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+    </>
   );
 }

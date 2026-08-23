@@ -470,3 +470,59 @@ body {
 .sponsor-card-premium:hover .sponsor-image-zoom {
   transform: scale(1.06);
 }
+
+/* ========================================================================= */
+/* Animated Rotating Red Gradient Border Effect                              */
+/* ========================================================================= */
+@keyframes movingRedBorder {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animated-red-border-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  padding: 3px;
+  background: #fee2e2;
+  box-shadow: 0 10px 30px -5px rgba(220, 38, 38, 0.25), 0 0 25px 2px rgba(239, 68, 68, 0.2);
+  transition: all 0.3s ease;
+}
+
+.animated-red-border-wrapper:hover {
+  box-shadow: 0 15px 40px -5px rgba(220, 38, 38, 0.4), 0 0 35px 5px rgba(239, 68, 68, 0.35);
+  transform: translateY(-2px);
+}
+
+.animated-red-border-wrapper::before {
+  content: '';
+  position: absolute;
+  top: -60%;
+  left: -60%;
+  width: 220%;
+  height: 220%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 200deg,
+    #f87171 250deg,
+    #ef4444 290deg,
+    #dc2626 330deg,
+    #b91c1c 360deg
+  );
+  animation: movingRedBorder 3.5s linear infinite;
+  z-index: 0;
+}
+
+.animated-red-border-inner {
+  position: relative;
+  z-index: 1;
+  background: #ffffff;
+  border-radius: calc(1.5rem - 3px);
+  width: 100%;
+  height: 100%;
+}

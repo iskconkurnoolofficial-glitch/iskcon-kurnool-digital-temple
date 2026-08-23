@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useAdmin, defaultTempleSchedule, TempleScheduleItem } from "@/context/AdminContext";
-import { Trash2, Plus, Clock, Sunrise, Sun, Sunset, AlertCircle } from "lucide-react";
+import AdminModal from "./AdminModal";
+import { 
+  Trash2, Plus, Clock, Sunrise, Sun, Sunset, Pencil, Eye 
+} from "lucide-react";
+import { toast } from "sonner";
 
 export default function TempleScheduleManager() {
   const { templeSchedule, setTempleSchedule } = useAdmin();
@@ -10,13 +14,29 @@ export default function TempleScheduleManager() {
   const [iconName, setIconName] = useState("sunrise");
   const [order, setOrder] = useState<number>(1);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [periodFilter, setPeriodFilter] = useState<string>("all");
 
   const items = templeSchedule && templeSchedule.length > 0 ? templeSchedule : defaultTempleSchedule;
   const sorted = [...items].sort((a, b) => (a.order || 0) - (b.order || 0));
 
+  const resetForm = () => {
+    setName("");
+    setTime("");
+    setPeriod("Morning");
+    setIconName("sunrise");
+    setOrder(items.length + 1);
+    setEditingId(null);
+  };
+
+  const openNew = () => {
+    resetForm();
+    setIsModalOpen(true);
+  };
+
   const save = () => {
-    if (!name || !time) {
-      alert("Name and Time are required");
+    if (!name.trim() || !time.trim()) {
+      toast.error("Activity name and time are required");
       return;
     }
 
@@ -27,7 +47,7 @@ export default function TempleScheduleManager() {
           : item
       );
       setTempleSchedule(updated);
-      setEditingId(null);
+      toast.success("Schedule timing updated!");
     } else {
       const newItem: TempleScheduleItem = {
         id: "ts_" + Date.now().toString(),
@@ -38,14 +58,11 @@ export default function TempleScheduleManager() {
         order: Number(order) || (items.length + 1),
       };
       setTempleSchedule([...items, newItem]);
+      toast.success("✨ New schedule timing added!");
     }
 
-    // Reset inputs
-    setName("");
-    setTime("");
-    setPeriod("Morning");
-    setIconName("sunrise");
-    setOrder(items.length + 2);
+    setIsModalOpen(false);
+    resetForm();
   };
 
   const startEdit = (item: TempleScheduleItem) => {
@@ -55,172 +72,259 @@ export default function TempleScheduleManager() {
     setPeriod(item.period);
     setIconName(item.iconName);
     setOrder(item.order);
+    setIsModalOpen(true);
   };
 
-  const remove = (id: string) => {
-    setTempleSchedule(items.filter((item) => item.id !== id));
+  const remove = (id: string, itemName: string) => {
+    if (confirm(`Remove "${itemName}" from temple schedule?`)) {
+      setTempleSchedule(items.filter((item) => item.id !== id));
+      if (editingId === id) {
+        setIsModalOpen(false);
+        resetForm();
+      }
+      toast.success("Schedule timing removed");
+    }
   };
 
-  const inputClass = "w-full px-4 py-2.5 border rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20";
-  const labelClass = "block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5";
+  const filteredItems = sorted.filter((item) => {
+    if (periodFilter !== "all" && item.period !== periodFilter) return false;
+    return true;
+  });
+
+  const getIcon = (ic: string) => {
+    if (ic === "sun") return <Sun className="h-4 w-4 text-amber-500" />;
+    if (ic === "sunset") return <Sunset className="h-4 w-4 text-orange-500" />;
+    return <Sunrise className="h-4 w-4 text-rose-500" />;
+  };
 
   return (
     <div className="space-y-6 font-sans animate-fade-in">
-      {/* SECTION HEADER BANNER */}
-      <div className="bg-gradient-to-r from-primary via-[#4a2282] to-primary rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full text-xs font-semibold text-amber-200 backdrop-blur-md mb-2">
-              <Clock className="h-3.5 w-3.5" />
-              <span>Daily Darshan &amp; Arati Schedule</span>
+      {/* Top Banner & Quick Metrics */}
+      <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/5 rounded-3xl p-6 sm:p-8 border border-amber-300/40 shadow-sm">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3.5 bg-amber-500/20 text-amber-800 rounded-2xl shrink-0 shadow-xs">
+              <Clock className="h-7 w-7" />
             </div>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight">Temple Schedule Manager</h1>
-            <p className="text-xs sm:text-sm text-white/80 mt-1 max-w-xl">
-              Configure daily Mangala Arati, Bhagavatam Pravachana, Rajbhoga Arati, and Gaura Arati timings.
-            </p>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-display text-2xl font-bold text-primary">Daily Temple Schedule</h2>
+                <span className="bg-amber-100 text-amber-800 text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full border border-amber-300">
+                  Nitya Seva Timings
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1 max-w-2xl leading-relaxed">
+                Manage daily darshan, arati, and discourse timings from Mangala Arati (4:30 AM) to Shayana Arati (8:30 PM).
+              </p>
+            </div>
           </div>
 
-          <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-2xl border border-white/15 text-center shrink-0">
-            <span className="text-[10px] uppercase tracking-wider font-semibold text-white/70 block">Total Timings</span>
-            <span className="text-xl font-extrabold text-white">{items.length}</span>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="bg-white/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-amber-200 shadow-2xs text-center">
+              <span className="text-xs text-muted-foreground block font-medium">Total Events</span>
+              <strong className="font-display text-lg text-primary">{items.length}</strong>
+            </div>
+            <button
+              type="button"
+              onClick={openNew}
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs sm:text-sm shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            >
+              <Plus className="h-4 w-4" /> Add Timing
+            </button>
+            <a
+              href="/#schedule"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs sm:text-sm border border-slate-200 shadow-xs transition-all cursor-pointer"
+            >
+              <Eye className="h-4 w-4 text-accent" /> View on Homepage
+            </a>
           </div>
         </div>
       </div>
 
-      {/* FORM CARD */}
-      <div className="bg-white rounded-3xl shadow-sm p-6 border space-y-4">
-        <h3 className="font-display text-xl font-bold text-primary flex items-center gap-2 border-b pb-3">
-          <Clock className="h-5 w-5 text-accent" />
-          {editingId ? "Edit Temple Schedule Activity" : "Add New Temple Schedule Activity"}
-        </h3>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-2">
+        {["all", "Morning", "Afternoon", "Evening"].map((p) => (
+          <button
+            key={p}
+            type="button"
+            onClick={() => setPeriodFilter(p)}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              periodFilter === p
+                ? "bg-primary text-white shadow-xs"
+                : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+            }`}
+          >
+            {p === "all" ? "All Timings" : p}
+          </button>
+        ))}
+      </div>
+
+      {/* Schedule Timetable List */}
+      <div className="bg-white rounded-3xl shadow-elegant border border-slate-200/80 overflow-hidden">
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+          <h3 className="font-display text-base sm:text-lg font-bold text-foreground">
+            Current Daily Schedule ({filteredItems.length})
+          </h3>
+        </div>
+
+        <div className="divide-y divide-slate-100">
+          {filteredItems.map((item) => (
+            <div
+              key={item.id}
+              className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/80 transition-colors"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="p-2.5 rounded-2xl bg-slate-100 border border-slate-200/60 shrink-0">
+                  {getIcon(item.iconName)}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-display font-bold text-sm sm:text-base text-foreground">
+                      {item.name}
+                    </h4>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                      {item.period}
+                    </span>
+                  </div>
+                  <span className="text-xs font-bold text-accent font-mono block mt-0.5">
+                    {item.time}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 self-end sm:self-center">
+                <span className="text-xs text-muted-foreground font-medium px-2 py-1 bg-slate-50 rounded-lg">
+                  Order: #{item.order}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => startEdit(item)}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-foreground text-xs font-bold transition-colors cursor-pointer"
+                >
+                  <Pencil className="h-3.5 w-3.5" /> Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => remove(item.id, item.name)}
+                  className="p-1.5 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
+                  title="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* POPUP MODAL FOR ADD / EDIT TIMING */}
+      <AdminModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          resetForm();
+        }}
+        title={editingId ? "Edit Schedule Activity" : "Add New Schedule Activity"}
+        subtitle="Configure activity name, time slot, period, and display order"
+        icon={Clock}
+        maxWidth="lg"
+      >
+        <div className="space-y-4">
           <div>
-            <label className={labelClass}>Activity Name</label>
+            <label className="block text-xs font-bold font-sans uppercase tracking-wider text-foreground mb-1">
+              Activity Name <span className="text-destructive">*</span>
+            </label>
             <input
-              type="text"
-              placeholder="e.g. Darshan Arati"
-              className={inputClass}
+              className="w-full px-3.5 py-2.5 border rounded-xl bg-white text-xs sm:text-sm font-sans focus:ring-2 focus:ring-primary/20 focus:outline-none"
+              placeholder="e.g. Mangala Arati & Kirtan"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              required
             />
           </div>
-          <div>
-            <label className={labelClass}>Time String</label>
-            <input
-              type="text"
-              placeholder="e.g. 7:30 AM"
-              className={inputClass}
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className={labelClass}>Period</label>
-            <select
-              className={inputClass}
-              value={period}
-              onChange={(e) => setPeriod(e.target.value as any)}
-            >
-              <option value="Morning">Morning</option>
-              <option value="Afternoon">Afternoon</option>
-              <option value="Evening">Evening</option>
-            </select>
-          </div>
-          <div>
-            <label className={labelClass}>Icon</label>
-            <select
-              className={inputClass}
-              value={iconName}
-              onChange={(e) => setIconName(e.target.value)}
-            >
-              <option value="sunrise">Sunrise (Morning)</option>
-              <option value="sun">Sun (Midday)</option>
-              <option value="sunset">Sunset (Evening)</option>
-              <option value="clock">Clock (Default)</option>
-            </select>
-          </div>
-          <div>
-            <label className={labelClass}>Order Index</label>
-            <input
-              type="number"
-              placeholder="e.g. 1"
-              className={inputClass}
-              value={order}
-              onChange={(e) => setOrder(Number(e.target.value))}
-            />
-          </div>
-        </div>
 
-        <div className="mt-4 flex gap-2 justify-end">
-          <button
-            onClick={save}
-            className="px-6 py-2.5 bg-primary hover:bg-primary/95 text-white text-xs font-bold rounded-xl shadow-xs transition cursor-pointer"
-          >
-            {editingId ? "Save Activity Changes" : "Add Schedule Activity"}
-          </button>
-          {editingId && (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold font-sans uppercase tracking-wider text-foreground mb-1">
+                Time (IST) <span className="text-destructive">*</span>
+              </label>
+              <input
+                className="w-full px-3.5 py-2.5 border rounded-xl bg-white text-xs sm:text-sm font-sans focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                placeholder="e.g. 04:30 AM"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold font-sans uppercase tracking-wider text-foreground mb-1">
+                Period
+              </label>
+              <select
+                className="w-full px-3.5 py-2.5 border rounded-xl bg-white text-xs font-sans focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                value={period}
+                onChange={(e) => setPeriod(e.target.value as any)}
+              >
+                <option value="Morning">Morning</option>
+                <option value="Afternoon">Afternoon</option>
+                <option value="Evening">Evening</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold font-sans uppercase tracking-wider text-foreground mb-1">
+                Icon Style
+              </label>
+              <select
+                className="w-full px-3.5 py-2.5 border rounded-xl bg-white text-xs font-sans focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                value={iconName}
+                onChange={(e) => setIconName(e.target.value)}
+              >
+                <option value="sunrise">Sunrise</option>
+                <option value="sun">Sun</option>
+                <option value="sunset">Sunset</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold font-sans uppercase tracking-wider text-foreground mb-1">
+                Display Order
+              </label>
+              <input
+                type="number"
+                min={1}
+                className="w-full px-3.5 py-2.5 border rounded-xl bg-white text-xs font-sans focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                value={order}
+                onChange={(e) => setOrder(Number(e.target.value))}
+              />
+            </div>
+          </div>
+
+          <div className="pt-4 border-t flex items-center justify-between gap-3">
             <button
-              onClick={() => {
-                setEditingId(null);
-                setName("");
-                setTime("");
-                setPeriod("Morning");
-                setIconName("sunrise");
-                setOrder(1);
-              }}
-              className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition cursor-pointer"
+              type="button"
+              onClick={save}
+              className="px-8 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white font-bold text-xs sm:text-sm shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer"
             >
-              Cancel Edit
+              {editingId ? "Save Changes" : "Add Activity"}
             </button>
-          )}
+            <button
+              type="button"
+              onClick={() => {
+                setIsModalOpen(false);
+                resetForm();
+              }}
+              className="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-muted-foreground transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
-      </div>
+      </AdminModal>
 
-      {/* SCHEDULE TABLE LIST CARD */}
-      <div className="bg-white rounded-3xl shadow-sm p-6 border space-y-4">
-        <h3 className="font-display text-lg font-bold text-primary">Configured Daily Schedule ({sorted.length})</h3>
-        <div className="overflow-x-auto rounded-2xl border border-slate-200">
-          <table className="w-full text-left border-collapse text-xs sm:text-sm">
-            <thead>
-              <tr className="bg-slate-50 border-b text-slate-500 text-xs font-bold uppercase tracking-wider">
-                <th className="py-3.5 px-4">Order</th>
-                <th className="py-3.5 px-4">Activity Name</th>
-                <th className="py-3.5 px-4">Timing</th>
-                <th className="py-3.5 px-4">Period</th>
-                <th className="py-3.5 px-4">Icon</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 font-sans">
-              {sorted.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-50/80 transition">
-                  <td className="py-3.5 px-4 font-bold text-slate-400">{item.order}</td>
-                  <td className="py-3.5 px-4 font-bold text-slate-800">{item.name}</td>
-                  <td className="py-3.5 px-4 font-mono font-bold text-accent">{item.time}</td>
-                  <td className="py-3.5 px-4 font-semibold text-slate-600">{item.period}</td>
-                  <td className="py-3.5 px-4 capitalize font-semibold text-slate-500">{item.iconName}</td>
-                  <td className="py-3.5 px-4 text-right space-x-2">
-                    <button
-                      onClick={() => startEdit(item)}
-                      className="px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-xs font-bold transition cursor-pointer"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => remove(item.id)}
-                      className="px-3 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-bold transition cursor-pointer"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
   );
 }

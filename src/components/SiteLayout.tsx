@@ -10,7 +10,12 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      <main className="flex-1 pt-20 md:pt-24 pb-20 lg:pb-0">{children}</main>
+      <main 
+        className="flex-1 pb-20 lg:pb-0 transition-[padding] duration-300"
+        style={{ paddingTop: "var(--site-header-height, 6rem)" }}
+      >
+        {children}
+      </main>
       <Footer />
       <FloatingWhatsApp />
       <LanguageToggle layout="vertical-sticky" />

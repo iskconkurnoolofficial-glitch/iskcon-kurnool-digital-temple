@@ -62,7 +62,7 @@ export default function SundayProgramSection() {
   ];
 
   const adminImages = (sunday.gallery || []).map((img) => ({ url: img.url, label: img.label || img.label }));
-  const displayImages = [...adminImages, ...fallbacks].slice(0, 4);
+  const displayImages = (adminImages.length > 0 ? adminImages : fallbacks).slice(0, 4);
 
   return (
     <section className="relative py-12 md:py-16 bg-gradient-to-b from-[#fffaf0] via-[#fdf3d1] to-[#fff8eb] overflow-hidden border-t border-border/40">
@@ -174,7 +174,7 @@ export default function SundayProgramSection() {
                 </div>
 
                 {/* 4 Images Bento Layout (Right Side) */}
-                <div className="md:col-span-5 grid grid-cols-2 grid-rows-3 gap-2.5 h-[340px] sm:h-[380px] self-center">
+                <div className="md:col-span-5 grid grid-cols-2 grid-rows-3 gap-2.5 h-[280px] sm:h-[380px] self-center">
                   
                   {/* Image 1 — tall left, spans 2 rows */}
                   {displayImages[0] && (
@@ -182,6 +182,8 @@ export default function SundayProgramSection() {
                       <img
                         src={displayImages[0].url}
                         alt={displayImages[0].label}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover/img:scale-110"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex items-end p-3">
@@ -196,6 +198,8 @@ export default function SundayProgramSection() {
                       <img
                         src={displayImages[1].url}
                         alt={displayImages[1].label}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover/img:scale-110"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex items-end p-2.5">
@@ -210,6 +214,8 @@ export default function SundayProgramSection() {
                       <img
                         src={displayImages[2].url}
                         alt={displayImages[2].label}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover/img:scale-110"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex items-end p-2.5">
@@ -224,6 +230,8 @@ export default function SundayProgramSection() {
                       <img
                         src={displayImages[3].url}
                         alt={displayImages[3].label}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover/img:scale-110"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex items-end p-3">

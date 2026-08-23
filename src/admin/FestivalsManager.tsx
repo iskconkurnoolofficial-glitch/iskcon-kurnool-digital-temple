@@ -4,9 +4,11 @@ import {
   Festival, Seva, SevaPrice,
 } from "@/context/AdminContext";
 import RichTextEditor from "@/components/RichTextEditor";
+import AdminModal from "./AdminModal";
 import {
   Plus, Trash2, Pencil, Eye, EyeOff, Upload, Calendar, Clock, Search,
   ArrowUp, ArrowDown, X, GripVertical, Sparkles, Save, CheckCircle2, CircleSlash,
+  Flame, PartyPopper, ChevronRight
 } from "lucide-react";
 import { UploadBox } from "./CarouselManager";
 
@@ -25,7 +27,7 @@ function blankFestival(): Festival {
   return {
     id: Date.now().toString(),
     title: "", slug: "", date: "", thumbnail: "", desktopBanner: "", mobileBanner: "",
-    description: "", shortDescription: "", sevas: [], status: "draft", hidden: false,
+    description: "", shortDescription: "", sevas: [], status: "published", hidden: false,
     publishAt: undefined, unpublishAt: undefined, order: 0,
   };
 }
@@ -34,7 +36,6 @@ export default function FestivalsManager() {
   const { festivals, setFestivals } = useAdmin();
   const list = useMemo(() => festivals.map(normalizeFestival), [festivals]);
 
-  const [view, setView] = useState<"list" | "edit">("list");
   const [draft, setDraft] = useState<Festival | null>(null);
   const [slugEdited, setSlugEdited] = useState(false);
 
@@ -56,9 +57,13 @@ export default function FestivalsManager() {
   const openNew = () => {
     const f = blankFestival();
     f.order = list.length;
-    setDraft(f); setSlugEdited(false); setView("edit");
+    setDraft(f);
+    setSlugEdited(false);
   };
-  const openEdit = (f: Festival) => { setDraft({ ...f }); setSlugEdited(true); setView("edit"); };
+  const openEdit = (f: Festival) => {
+    setDraft({ ...f });
+    setSlugEdited(true);
+  };
 
   const saveDraft = () => {
     if (!draft) return;
@@ -70,7 +75,7 @@ export default function FestivalsManager() {
     const next = { ...draft, slug: finalSlug };
     const exists = list.some((f) => f.id === draft.id);
     commit(exists ? list.map((f) => (f.id === draft.id ? next : f)) : [...list, next]);
-    setView("list"); setDraft(null);
+    setDraft(null);
   };
 
   // ----- list-level mutations -----
@@ -81,9 +86,12 @@ export default function FestivalsManager() {
   };
 
   const remove = (id: string) => {
-    const updated = localList.filter((f) => f.id !== id);
-    setLocalList(updated);
-    commit(updated);
+    if (confirm("Are you sure you want to delete this festival?")) {
+      const updated = localList.filter((f) => f.id !== id);
+      setLocalList(updated);
+      commit(updated);
+      if (draft?.id === id) setDraft(null);
+    }
   };
 
   const move = (id: string, dir: -1 | 1) => {
@@ -110,27 +118,41 @@ export default function FestivalsManager() {
     setIsOrderDirty(false);
   };
 
-  if (view === "edit" && draft) {
-    return (
-      <FestivalEditor
-        draft={draft} setDraft={setDraft} slugEdited={slugEdited} setSlugEdited={setSlugEdited}
-        onSave={saveDraft} onCancel={() => { setView("list"); setDraft(null); }}
-      />
-    );
-  }
-
   return (
-    <FestivalList
-      list={localList}
-      isOrderDirty={isOrderDirty}
-      onSaveOrder={saveOrder}
-      onResetOrder={resetOrder}
-      onNew={openNew}
-      onEdit={openEdit}
-      onPatch={patch}
-      onRemove={remove}
-      onMove={move}
-    />
+    <>
+      <FestivalList
+        list={localList}
+        isOrderDirty={isOrderDirty}
+        onSaveOrder={saveOrder}
+        onResetOrder={resetOrder}
+        onNew={openNew}
+        onEdit={openEdit}
+        onPatch={patch}
+        onRemove={remove}
+        onMove={move}
+      />
+
+      {/* Popup Edit / Add Modal */}
+      <AdminModal
+        isOpen={!!draft}
+        onClose={() => setDraft(null)}
+        title={draft?.id && list.some((x) => x.id === draft.id) ? "Edit Festival" : "Add New Festival"}
+        subtitle="Manage festival details, dates, banners, and seva tiers"
+        icon={PartyPopper}
+        maxWidth="4xl"
+      >
+        {draft && (
+          <FestivalEditor
+            draft={draft}
+            setDraft={setDraft}
+            slugEdited={slugEdited}
+            setSlugEdited={setSlugEdited}
+            onSave={saveDraft}
+            onCancel={() => setDraft(null)}
+          />
+        )}
+      </AdminModal>
+    </>
   );
 }
 
@@ -168,8 +190,51 @@ function FestivalList({ list, isOrderDirty, onSaveOrder, onResetOrder, onNew, on
     return r;
   }, [list, q, statusFilter, sortBy]);
 
+  const totalCount = list.length;
+  const publishedCount = list.filter((f) => f.status === "published" && !f.hidden).length;
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
+      {/* Top Banner & Quick Metrics */}
+      <div className="bg-gradient-to-r from-purple-500/15 via-indigo-500/10 to-amber-500/5 rounded-3xl p-6 sm:p-8 border border-purple-200/50 shadow-sm">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3.5 bg-purple-500/20 text-purple-800 rounded-2xl shrink-0 shadow-xs">
+              <PartyPopper className="h-7 w-7" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-display text-2xl font-bold text-primary">Festivals & Celebrations</h2>
+                <span className="bg-purple-100 text-purple-800 text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full border border-purple-300">
+                  Utsavas
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1 max-w-2xl leading-relaxed">
+                Manage grand temple celebrations like Janmashtami, Ratha Yatra, and Gaura Purnima. Configure banners, schedules, and sponsorship seva tiers.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="bg-white/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-purple-200 shadow-2xs text-center">
+              <span className="text-xs text-muted-foreground block font-medium">Total Festivals</span>
+              <strong className="font-display text-lg text-primary">{totalCount}</strong>
+            </div>
+            <div className="bg-white/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-purple-200 shadow-2xs text-center">
+              <span className="text-xs text-muted-foreground block font-medium">Published Live</span>
+              <strong className="font-display text-lg text-green-600">{publishedCount}</strong>
+            </div>
+            <button
+              type="button"
+              onClick={onNew}
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-primary via-purple-700 to-indigo-700 hover:from-primary/90 hover:to-indigo-800 text-white font-bold text-xs sm:text-sm shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            >
+              <Plus className="h-4 w-4" /> Add Festival
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* 1. SAVE ORDER NOTIFICATION BAR */}
       {isOrderDirty && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 animate-fade-in shadow-xs">
@@ -197,20 +262,19 @@ function FestivalList({ list, isOrderDirty, onSaveOrder, onResetOrder, onNew, on
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search festivals..." className="w-full pl-10 pr-3 py-2.5 border rounded-lg bg-white" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search festivals..." className="w-full pl-10 pr-3 py-2.5 border rounded-xl bg-white focus:ring-2 focus:ring-primary/20 focus:outline-none" />
         </div>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as any)} className="px-3 py-2.5 border rounded-lg bg-white text-sm">
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as any)} className="px-3 py-2.5 border rounded-xl bg-white text-xs font-bold">
           <option value="all">All status</option>
           <option value="published">Published</option>
           <option value="draft">Draft</option>
           <option value="hidden">Hidden</option>
         </select>
-        <select value={sortBy} onChange={(e) => setSortBy(e.target.value as any)} className="px-3 py-2.5 border rounded-lg bg-white text-sm">
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value as any)} className="px-3 py-2.5 border rounded-xl bg-white text-xs font-bold">
           <option value="custom">Sort by Custom Order</option>
           <option value="date-asc">Date: Oldest First</option>
           <option value="date-desc">Date: Newest First</option>
         </select>
-        <button onClick={onNew} className="px-4 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium inline-flex items-center gap-1.5"><Plus className="h-4 w-4" /> New Festival</button>
       </div>
 
       {rows.length === 0 ? (

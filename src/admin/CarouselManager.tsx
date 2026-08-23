@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useAdmin, uploadToCloudinary, Slide } from "@/context/AdminContext";
-import { Trash2, Eye, EyeOff, ArrowUp, ArrowDown, Upload, Pencil, X, Play } from "lucide-react";
+import AdminModal from "./AdminModal";
+import { Trash2, Eye, EyeOff, ArrowUp, ArrowDown, Upload, Pencil, X, Play, Plus, Sparkles, Image as ImageIcon } from "lucide-react";
+import { toast } from "sonner";
 
 export default function CarouselManager() {
   const { slides, setSlides } = useAdmin();
   const [busy, setBusy] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [draft, setDraft] = useState<Partial<Slide>>({ title: "", subtitle: "", active: true });
 
   const upload = async (file: File, key: "desktop" | "mobile" | "video") => {
@@ -13,33 +16,51 @@ export default function CarouselManager() {
     try {
       const url = await uploadToCloudinary(file);
       setDraft((d) => ({ ...d, [key]: url }));
-    } catch (e) { alert("Upload failed"); }
+      toast.success(`${key.toUpperCase()} media uploaded!`);
+    } catch (e) { 
+      toast.error("Upload failed"); 
+    }
     setBusy(false);
   };
 
-  const resetForm = () => { setDraft({ title: "", subtitle: "", active: true }); setEditingId(null); };
+  const resetForm = () => { 
+    setDraft({ title: "", subtitle: "", active: true }); 
+    setEditingId(null); 
+  };
+
+  const openNew = () => {
+    resetForm();
+    setIsModalOpen(true);
+  };
 
   const save = () => {
-    if (!draft.desktop && !draft.video) { alert("Upload a desktop image or a video first"); return; }
+    if (!draft.desktop && !draft.video) { 
+      toast.error("Upload a desktop image or a video first"); 
+      return; 
+    }
     if (editingId) {
       setSlides(slides.map((s) => s.id === editingId ? { ...s, ...draft, desktop: draft.desktop || "", mobile: draft.mobile || draft.desktop || "" } as Slide : s));
+      toast.success("Slide updated successfully!");
     } else {
       setSlides([...slides, {
         id: Date.now().toString(),
         desktop: draft.desktop || "",
         mobile: draft.mobile || draft.desktop || "",
         video: draft.video,
-        title: draft.title, subtitle: draft.subtitle,
+        title: draft.title, 
+        subtitle: draft.subtitle,
         active: true,
       }]);
+      toast.success("✨ New slide added successfully!");
     }
+    setIsModalOpen(false);
     resetForm();
   };
 
   const startEdit = (s: Slide) => {
     setEditingId(s.id);
     setDraft({ ...s });
-    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+    setIsModalOpen(true);
   };
 
   const move = (i: number, dir: -1 | 1) => {
@@ -50,102 +71,155 @@ export default function CarouselManager() {
     setSlides(copy);
   };
 
+  const totalCount = slides.length;
+  const activeCount = slides.filter((s) => s.active !== false).length;
+
   return (
     <div className="space-y-6 font-sans animate-fade-in">
       {/* SECTION HEADER BANNER */}
-      <div className="bg-gradient-to-r from-primary via-[#4a2282] to-primary rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full text-xs font-semibold text-amber-200 backdrop-blur-md mb-2">
-              <Upload className="h-3.5 w-3.5" />
-              <span>Homepage Media Slider</span>
+      <div className="bg-gradient-to-r from-purple-500/15 via-indigo-500/10 to-amber-500/5 rounded-3xl p-6 sm:p-8 border border-purple-200/50 shadow-sm">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3.5 bg-purple-500/20 text-purple-800 rounded-2xl shrink-0 shadow-xs">
+              <ImageIcon className="h-7 w-7" />
             </div>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight">Carousel Banners</h1>
-            <p className="text-xs sm:text-sm text-white/80 mt-1 max-w-xl">
-              Add, reorder, edit titles, and manage desktop/mobile banners or looping video slides for the main homepage carousel.
-            </p>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-display text-2xl font-bold text-primary">Hero Carousel Banners</h2>
+                <span className="bg-purple-100 text-purple-800 text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full border border-purple-300">
+                  Homepage Media
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1 max-w-2xl leading-relaxed">
+                Add, reorder, and edit desktop & mobile banners or looping background video slides for the main homepage banner carousel.
+              </p>
+            </div>
           </div>
 
-          <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-2xl border border-white/15 text-center shrink-0">
-            <span className="text-[10px] uppercase tracking-wider font-semibold text-white/70 block">Total Slides</span>
-            <span className="text-xl font-extrabold text-white">{slides.length}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* EDIT / ADD SLIDE FORM CARD */}
-      <div className="bg-white rounded-3xl p-6 border shadow-sm space-y-6">
-        <div className="flex items-center justify-between border-b pb-4">
-          <h3 className="font-display text-xl font-bold text-primary">
-            {editingId ? "Edit Slide Configuration" : "Add New Hero Banner Slide"}
-          </h3>
-          {editingId && (
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="bg-white/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-purple-200 shadow-2xs text-center">
+              <span className="text-xs text-muted-foreground block font-medium">Total Slides</span>
+              <strong className="font-display text-lg text-primary">{totalCount}</strong>
+            </div>
+            <div className="bg-white/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-purple-200 shadow-2xs text-center">
+              <span className="text-xs text-muted-foreground block font-medium">Active Slides</span>
+              <strong className="font-display text-lg text-green-600">{activeCount}</strong>
+            </div>
             <button
-              onClick={resetForm}
-              className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition inline-flex items-center gap-1 cursor-pointer"
+              type="button"
+              onClick={openNew}
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-primary via-purple-700 to-indigo-700 hover:from-primary/90 hover:to-indigo-800 text-white font-bold text-xs sm:text-sm shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer"
             >
-              <X className="h-4 w-4" /> Cancel Edit
+              <Plus className="h-4 w-4" /> Add New Slide
             </button>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <UploadBox
-            label="Desktop Image (4917×1750)"
-            url={draft.desktop}
-            onPick={(f) => upload(f, "desktop")}
-            aspect="aspect-video"
-            className="w-full"
-          />
-          <UploadBox
-            label="Mobile Image (1080×1350)"
-            url={draft.mobile}
-            onPick={(f) => upload(f, "mobile")}
-            aspect="aspect-[4/5]"
-            className="w-full"
-          />
-          <VideoUploadBox
-            label="Video Slide (Optional)"
-            url={draft.video}
-            onPick={(f) => upload(f, "video")}
-            onClear={() => setDraft((d) => ({ ...d, video: undefined }))}
-            aspect="aspect-video"
-            className="w-full"
-          />
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Slide Title (Optional)</label>
-            <input
-              className="w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-              placeholder="e.g. Welcome to ISKCON Kurnool Digital Temple"
-              value={draft.title || ""}
-              onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-            />
+            <a
+              href="/"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs sm:text-sm border border-slate-200 shadow-xs transition-all cursor-pointer"
+            >
+              <Eye className="h-4 w-4 text-accent" /> View Homepage
+            </a>
           </div>
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Subtitle (Optional)</label>
-            <input
-              className="w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-              placeholder="e.g. Sri Sri Puri Jagannath Temple"
-              value={draft.subtitle || ""}
-              onChange={(e) => setDraft({ ...draft, subtitle: e.target.value })}
-            />
-          </div>
-        </div>
-
-        <div className="flex justify-end">
-          <button
-            disabled={busy}
-            onClick={save}
-            className="px-6 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-sm shadow-md transition disabled:opacity-50 cursor-pointer"
-          >
-            {busy ? "Uploading Media..." : editingId ? "Update Slide" : "Add Slide to Carousel"}
-          </button>
         </div>
       </div>
+
+      {/* POPUP MODAL FOR ADD / EDIT SLIDE */}
+      <AdminModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          resetForm();
+        }}
+        title={editingId ? "Edit Slide Configuration" : "Add New Hero Banner Slide"}
+        subtitle="Upload desktop/mobile images or looping video and configure titles"
+        icon={ImageIcon}
+        maxWidth="3xl"
+      >
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <UploadBox
+              label="Desktop Image (4917×1750)"
+              url={draft.desktop}
+              onPick={(f) => upload(f, "desktop")}
+              aspect="aspect-video"
+              className="w-full"
+            />
+            <UploadBox
+              label="Mobile Image (1080×1350)"
+              url={draft.mobile}
+              onPick={(f) => upload(f, "mobile")}
+              aspect="aspect-[4/5]"
+              className="w-full"
+            />
+            <UploadBox
+              label="Video (optional .mp4)"
+              url={draft.video}
+              onPick={(f) => upload(f, "video")}
+              aspect="aspect-video"
+              className="w-full"
+            />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold font-sans uppercase tracking-wider text-foreground mb-1">
+                Slide Headline Title
+              </label>
+              <input
+                className="w-full px-3.5 py-2.5 border rounded-xl bg-white text-xs sm:text-sm font-sans focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                placeholder="e.g. Sri Sri Radha Govinda Mandir"
+                value={draft.title || ""}
+                onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold font-sans uppercase tracking-wider text-foreground mb-1">
+                Subtitle / Description
+              </label>
+              <input
+                className="w-full px-3.5 py-2.5 border rounded-xl bg-white text-xs sm:text-sm font-sans focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                placeholder="e.g. Experience Spiritual Serenity & Vedic Wisdom"
+                value={draft.subtitle || ""}
+                onChange={(e) => setDraft({ ...draft, subtitle: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-2">
+            <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-foreground">
+              <input
+                type="checkbox"
+                checked={draft.active !== false}
+                onChange={(e) => setDraft({ ...draft, active: e.target.checked })}
+                className="rounded border-slate-300 text-primary focus:ring-primary h-4 w-4"
+              />
+              <span>Active in Carousel</span>
+            </label>
+          </div>
+
+          <div className="pt-4 border-t flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={save}
+              disabled={busy}
+              className="px-8 py-3 rounded-2xl bg-gradient-to-r from-primary via-purple-700 to-indigo-700 text-white font-bold text-xs sm:text-sm shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+            >
+              {busy ? "Saving..." : (editingId ? "Save Slide Changes" : "Add Slide")}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsModalOpen(false);
+                resetForm();
+              }}
+              className="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-muted-foreground transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </AdminModal>
 
       {/* EXISTING SLIDES GRID */}
       <div className="space-y-4">

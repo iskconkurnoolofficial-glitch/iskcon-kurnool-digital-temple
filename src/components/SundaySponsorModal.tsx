@@ -280,7 +280,8 @@ export default function SundaySponsorModal({
           {/* Bottom Action CTA */}
           <div className="pt-2 text-center flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
-              to="/donate/sunday-feast"
+              to="/donate/$slug"
+              params={{ slug: "sunday-feast" }}
               onClick={onClose}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-sans font-bold text-sm shadow-md transition hover:scale-105"
             >

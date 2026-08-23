@@ -23,6 +23,7 @@ import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as FestivalsRouteImport } from './routes/festivals'
 import { Route as EkadashiRouteImport } from './routes/ekadashi'
 import { Route as DonateRouteImport } from './routes/donate'
+import { Route as DailyDarshanRouteImport } from './routes/daily-darshan'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -108,6 +109,11 @@ const DonateRoute = DonateRouteImport.update({
   path: '/donate',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DailyDarshanRoute = DailyDarshanRouteImport.update({
+  id: '/daily-darshan',
+  path: '/daily-darshan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CoursesRoute = CoursesRouteImport.update({
   id: '/courses',
   path: '/courses',
@@ -184,6 +190,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
+  '/daily-darshan': typeof DailyDarshanRoute
   '/donate': typeof DonateRouteWithChildren
   '/ekadashi': typeof EkadashiRoute
   '/festivals': typeof FestivalsRoute
@@ -214,6 +221,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
+  '/daily-darshan': typeof DailyDarshanRoute
   '/ekadashi': typeof EkadashiRoute
   '/festivals': typeof FestivalsRoute
   '/gallery': typeof GalleryRoute
@@ -243,6 +251,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
+  '/daily-darshan': typeof DailyDarshanRoute
   '/donate': typeof DonateRouteWithChildren
   '/ekadashi': typeof EkadashiRoute
   '/festivals': typeof FestivalsRoute
@@ -275,6 +284,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/connect'
     | '/courses'
+    | '/daily-darshan'
     | '/donate'
     | '/ekadashi'
     | '/festivals'
@@ -305,6 +315,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/connect'
     | '/courses'
+    | '/daily-darshan'
     | '/ekadashi'
     | '/festivals'
     | '/gallery'
@@ -333,6 +344,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/connect'
     | '/courses'
+    | '/daily-darshan'
     | '/donate'
     | '/ekadashi'
     | '/festivals'
@@ -364,6 +376,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   ConnectRoute: typeof ConnectRoute
   CoursesRoute: typeof CoursesRoute
+  DailyDarshanRoute: typeof DailyDarshanRoute
   DonateRoute: typeof DonateRouteWithChildren
   EkadashiRoute: typeof EkadashiRoute
   FestivalsRoute: typeof FestivalsRoute
@@ -484,6 +497,13 @@ declare module '@tanstack/react-router' {
       path: '/donate'
       fullPath: '/donate'
       preLoaderRoute: typeof DonateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/daily-darshan': {
+      id: '/daily-darshan'
+      path: '/daily-darshan'
+      fullPath: '/daily-darshan'
+      preLoaderRoute: typeof DailyDarshanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/courses': {
@@ -618,6 +638,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   ConnectRoute: ConnectRoute,
   CoursesRoute: CoursesRoute,
+  DailyDarshanRoute: DailyDarshanRoute,
   DonateRoute: DonateRouteWithChildren,
   EkadashiRoute: EkadashiRoute,
   FestivalsRoute: FestivalsRoute,

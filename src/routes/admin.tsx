@@ -20,20 +20,21 @@ import InstagramManager from "@/admin/InstagramManager";
 import PrahladaBadiManager from "@/admin/PrahladaBadiManager";
 import HouseProgrammesManager from "@/admin/HouseProgrammesManager";
 import TempleScheduleManager from "@/admin/TempleScheduleManager";
-import LiveDashboardManager from "@/admin/LiveDashboardManager";
 import FeaturePopupManager from "@/admin/FeaturePopupManager";
 import PaymentPagesManager from "@/admin/PaymentPagesManager";
 import PreviewLeadsManager from "@/admin/PreviewLeadsManager";
 import DonationsManager from "@/admin/DonationsManager";
 import YouthYatraManager from "@/admin/YouthYatraManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard, Video, Bell, ShieldCheck, Compass } from "lucide-react";
+import DailyDarshanManager from "@/admin/DailyDarshanManager";
+import LiveProgrammeManager from "@/admin/LiveProgrammeManager";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard, Video, Bell, ShieldCheck, Compass, Sun, Tv } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
 
-type Tab = "welcome" | "carousel" | "festivals" | "sevas" | "youth" | "youthYatra" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "liveDashboard" | "featurePopup" | "paymentPages" | "previewLeads" | "donations";
+type Tab = "welcome" | "dailyDarshan" | "liveProgrammes" | "carousel" | "festivals" | "sevas" | "youth" | "youthYatra" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "featurePopup" | "paymentPages" | "previewLeads" | "donations";
 
 function AdminPage() {
   const { authed, login, logout, settings, contacts, setContacts, paymentRecords, previewLeads, houseProgrammes, markAllHouseProgrammeRequestsRead, markAllPaymentRecordsRead, markAllPreviewLeadsRead, youthYatra, markAllYatraRegistrationsRead, currentUser } = useAdmin();
@@ -185,15 +186,12 @@ function AdminPage() {
         { id: "instagram", label: "Instagram Feed", icon: Instagram },
       ]
     },
-    {
-      title: "Live Operations",
-      items: [
-        { id: "liveDashboard", label: "LIVE Dashboard", icon: Radio },
-      ]
-    },
+
     {
       title: "Devotional & Programs",
       items: [
+        { id: "dailyDarshan", label: "Daily Darshan", icon: Sun },
+        { id: "liveProgrammes", label: "Live Broadcasts", icon: Tv },
         { id: "paymentPages", label: "Donations & Payment Records", icon: CreditCard },
         { id: "festivals", label: "Upcoming Festivals", icon: Sparkles },
         { id: "sevas", label: "Jagannath Sevas", icon: HandHeart },
@@ -314,6 +312,47 @@ function AdminPage() {
           </button>
         </div>
       </header>
+
+      {/* MOBILE HORIZONTAL SCROLL PILL TABS BAR */}
+      <div 
+        className="md:hidden bg-gradient-to-r from-[#2a114e] to-[#3b1767] border-b border-white/10 px-2 py-2 overflow-x-auto flex items-center gap-1.5 shrink-0 z-25 shadow-xs" 
+        style={{ scrollbarWidth: "none" }}
+      >
+        <button
+          onClick={() => setTab("welcome")}
+          className={`px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
+            tab === "welcome"
+              ? "bg-secondary text-primary shadow-sm ring-1 ring-white/20"
+              : "bg-white/10 text-white/85 hover:bg-white/20"
+          }`}
+        >
+          <LayoutDashboard className="h-3.5 w-3.5" />
+          <span>Dashboard</span>
+        </button>
+        {tabs.map((t) => {
+          const Icon = t.icon;
+          const cnt = getBadgeCount(t.id);
+          return (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
+                tab === t.id
+                  ? "bg-secondary text-primary shadow-sm ring-1 ring-white/20"
+                  : "bg-white/10 text-white/85 hover:bg-white/20"
+              }`}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              <span>{t.label}</span>
+              {cnt > 0 && (
+                <span className="flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-red-600 px-1 text-[8px] font-extrabold text-white">
+                  {cnt}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
 
       {/* MOBILE SLIDE-OVER APP DRAWER SHEET */}
       {mobileMenuOpen && (
@@ -595,6 +634,8 @@ function AdminPage() {
           >
             {tab === "welcome" && <WelcomeDashboard groups={groups} setTab={setTab} logoUrl={settings.logo} />}
 
+            {tab === "dailyDarshan" && <DailyDarshanManager />}
+            {tab === "liveProgrammes" && <LiveProgrammeManager />}
             {tab === "carousel" && <CarouselManager />}
             {tab === "festivals" && <FestivalsManager />}
             {tab === "sevas" && <SevasManager />}
@@ -615,7 +656,6 @@ function AdminPage() {
             {tab === "heroBanners" && <HeroBannersManager />}
             {tab === "settings" && <SiteSettingsForm />}
             {tab === "templeSchedule" && <TempleScheduleManager />}
-            {tab === "liveDashboard" && <LiveDashboardManager />}
             {tab === "featurePopup" && <FeaturePopupManager />}
             {tab === "paymentPages" && <PaymentPagesManager />}
             {tab === "previewLeads" && <PreviewLeadsManager />}
@@ -636,12 +676,12 @@ function AdminPage() {
         </button>
 
         <button
-          onClick={() => setTab("liveDashboard")}
+          onClick={() => setTab("liveProgrammes")}
           className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
-            tab === "liveDashboard" ? "text-primary font-bold scale-105" : "text-slate-500 hover:text-slate-700"
+            tab === "liveProgrammes" ? "text-primary font-bold scale-105" : "text-slate-500 hover:text-slate-700"
           }`}
         >
-          <Radio className={`h-5 w-5 ${tab === "liveDashboard" ? "text-primary stroke-[2.5]" : ""}`} />
+          <Radio className={`h-5 w-5 ${tab === "liveProgrammes" ? "text-primary stroke-[2.5]" : ""}`} />
           <span className="text-[10px] mt-0.5 font-medium">LIVE</span>
         </button>
 

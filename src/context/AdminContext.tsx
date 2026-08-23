@@ -274,6 +274,136 @@ export const defaultHarinama: HarinamaData = {
   gallery: [],
 };
 
+export type DailyDarshanItem = {
+  id: string;
+  /** ISO date: YYYY-MM-DD */
+  date: string;
+  title: string;
+  imageUrl: string;
+  additionalImages?: string[];
+  description: string;
+  officialSourceName?: string;
+  officialSourceUrl?: string;
+  photographerCredit?: string;
+  published: boolean;
+  order?: number;
+  createdAt?: string;
+};
+
+export type DailyDarshanData = {
+  headerTitle: string;
+  headerSubtitle: string;
+  badgeText: string;
+  noticeBanner?: string;
+  entries: DailyDarshanItem[];
+};
+
+export type LivePlatform = "YouTube" | "Facebook" | "Instagram" | "Other";
+
+export type LiveProgrammeItem = {
+  id: string;
+  title: string;
+  description?: string;
+  /** ISO date: YYYY-MM-DD */
+  date: string;
+  /** 24-hr time string "HH:mm" e.g. "07:30" */
+  startTime: string;
+  /** 24-hr time string "HH:mm" e.g. "08:30" */
+  endTime: string;
+  thumbnailUrl?: string;
+  platform: LivePlatform;
+  streamUrl: string;
+  /** When true, admin overrides smart schedule and forces "LIVE NOW" status */
+  isManualLiveOverride?: boolean;
+  enableReminders?: boolean;
+  published: boolean;
+  speakerOrPerformer?: string;
+  order?: number;
+  createdAt?: string;
+};
+
+export type LiveProgrammeData = {
+  enabled: boolean;
+  sectionTitle: string;
+  sectionSubtitle: string;
+  badgeText: string;
+  programmes: LiveProgrammeItem[];
+};
+
+export const defaultLiveProgrammes: LiveProgrammeData = {
+  enabled: true,
+  sectionTitle: "Live Temple Broadcast",
+  sectionSubtitle: "Tune into daily transcendental discourses, ecstatic sankirtana, and sacred deity aartis live from Sri Sri Puri Jagannath Mandir, ISKCON Kurnool.",
+  badgeText: "Temple Broadcast • Live Stream",
+  programmes: []
+};
+
+export const defaultDailyDarshan: DailyDarshanData = {
+  headerTitle: "Sri Sri Jagannath Baladev Subhadra Daily Darshan",
+  headerSubtitle: "Behold the transcendental beauty and divine blessings of Their Lordships at ISKCON Kurnool.",
+  badgeText: "Nitya Darshan • Daily Deity Darshan",
+  noticeBanner: "Darshan photos are refreshed every morning after Sringara Harati.",
+  entries: [
+    {
+      id: "dd_today",
+      date: "2026-08-23",
+      title: "Sri Sri Jagannath, Baladeva & Subhadra Maharani Rajadhiraja Sringara Darshan",
+      imageUrl: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=1600&q=85",
+      additionalImages: [
+        "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1600100397608-f010f444f4e7?auto=format&fit=crop&w=1200&q=80"
+      ],
+      description: "“jaya jaya jagannātha śacīra nandana, tribhuvana kare yāṅra caraṇa vandana” — Today Their Lordships are adorned in royal saffron silk, embellished with fragrant jasmine garlands, fresh tulasi manjari, and shimmering golden crowns. May the merciful glance of Lord Jagannath bestow devotion, protection, and eternal auspiciousness upon all devotees.",
+      officialSourceName: "Official Instagram (@iskconkurnool)",
+      officialSourceUrl: "https://instagram.com/iskconkurnool",
+      photographerCredit: "ISKCON Kurnool Media Team",
+      published: true,
+      order: 1,
+      createdAt: "2026-08-23T07:30:00.000Z"
+    },
+    {
+      id: "dd_yesterday",
+      date: "2026-08-22",
+      title: "Sri Sri Radha Govinda & Jagannath Parivara Pushpalankara Sringara",
+      imageUrl: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1600&q=85",
+      additionalImages: [
+        "https://images.unsplash.com/photo-1599422315802-911e3b6a978f?auto=format&fit=crop&w=1200&q=80"
+      ],
+      description: "Auspicious morning Sringara darshan adorned with sacred lotuses, rose garlands, and divine chandan tilak. Devotees gathered during Mangala Harati to chant the holy names of Hare Krishna.",
+      officialSourceName: "Official Instagram (@iskconkurnool)",
+      officialSourceUrl: "https://instagram.com/iskconkurnool",
+      photographerCredit: "ISKCON Kurnool Media Team",
+      published: true,
+      order: 2,
+      createdAt: "2026-08-22T07:30:00.000Z"
+    },
+    {
+      id: "dd_day_before",
+      date: "2026-08-21",
+      title: "Sri Sri Jagannath Baladev Subhadra Pitambara Alankara",
+      imageUrl: "https://images.unsplash.com/photo-1600100397608-f010f444f4e7?auto=format&fit=crop&w=1600&q=85",
+      description: "Divine Friday darshan with velvet yellow silks, fragrant champaka flowers, and peacock feather crowns. Salutations to the Lord of the Universe.",
+      officialSourceName: "Temple Media Channel",
+      officialSourceUrl: "https://instagram.com/iskconkurnool",
+      published: true,
+      order: 3,
+      createdAt: "2026-08-21T07:30:00.000Z"
+    },
+    {
+      id: "dd_day_4",
+      date: "2026-08-20",
+      title: "Sri Sri Jagannath Swami Mangala Alankara & Tulasi Archana",
+      imageUrl: "https://images.unsplash.com/photo-1599422315802-911e3b6a978f?auto=format&fit=crop&w=1600&q=85",
+      description: "Early morning Mangala Harati darshan with 108 fragrant Tulasi leaves offering and special sweet rice bhoga.",
+      officialSourceName: "Official Instagram (@iskconkurnool)",
+      officialSourceUrl: "https://instagram.com/iskconkurnool",
+      published: true,
+      order: 4,
+      createdAt: "2026-08-20T07:30:00.000Z"
+    }
+  ]
+};
+
 export type HouseProgrammeActivity = {
   id: string;
   title: string;
@@ -1024,10 +1154,14 @@ export type SundayActivityItem = {
 export type SundaySponsor = {
   id: string;
   sponsorName: string;
+  name?: string;
   familyName?: string;
+  familyMembers?: string;
   occasion: string;
   date: string;
   details: string;
+  quote?: string;
+  blessing?: string;
   active?: boolean;
   images?: string[];
   image?: string;
@@ -1471,7 +1605,7 @@ export const defaultFeaturePopup: FeaturePopupData = {
 export type PaymentPageField = {
   id: string;
   label: string;
-  type: "text" | "email" | "phone" | "number" | "select";
+  type: "text" | "email" | "phone" | "number" | "select" | "pan";
   required: boolean;
   options?: string[];
 };
@@ -1689,9 +1823,19 @@ type AdminState = {
   updateHouseProgrammeRequestStatus: (id: string, status: HouseProgrammeRequest["status"]) => Promise<void>;
   deleteHouseProgrammeRequest: (id: string) => Promise<void>;
   markAllHouseProgrammeRequestsRead: () => void;
+  dailyDarshan: DailyDarshanData;
+  setDailyDarshan: (dd: DailyDarshanData) => void;
+  addDailyDarshanEntry: (entry: Omit<DailyDarshanItem, "id" | "createdAt">) => Promise<string>;
+  updateDailyDarshanEntry: (id: string, updates: Partial<DailyDarshanItem>) => Promise<void>;
+  deleteDailyDarshanEntry: (id: string) => Promise<void>;
+  liveProgrammes: LiveProgrammeData;
+  setLiveProgrammesData: (lp: LiveProgrammeData) => void;
+  addLiveProgramme: (prog: Omit<LiveProgrammeItem, "id" | "createdAt">) => Promise<string>;
+  updateLiveProgramme: (id: string, updates: Partial<LiveProgrammeItem>) => Promise<void>;
+  deleteLiveProgramme: (id: string) => Promise<void>;
   youthYatra: YouthYatraState;
   setYouthYatra: (y: YouthYatraState) => void;
-  addYatraRegistration: (reg: Omit<YatraRegistration, "id" | "registeredAt" | "read" | "status" | "paymentStatus"> & { status?: YatraRegistration["status"]; paymentStatus?: YatraRegistration["paymentStatus"] }) => Promise<string>;
+  addYatraRegistration: (reg: Omit<YatraRegistration, "id" | "registeredAt" | "read" | "status" | "paymentStatus" | "checkedIn"> & { status?: YatraRegistration["status"]; paymentStatus?: YatraRegistration["paymentStatus"]; checkedIn?: boolean }) => Promise<string>;
   updateYatraRegistrationStatus: (id: string, status: YatraRegistration["status"], paymentStatus?: YatraRegistration["paymentStatus"]) => Promise<void>;
   deleteYatraRegistration: (id: string) => Promise<void>;
   markAllYatraRegistrationsRead: () => void;
@@ -1801,6 +1945,8 @@ const KEYS = {
   instagram: "instagram",
   prahladaBadi: "prahladaBadi",
   houseProgrammes: "houseProgrammes",
+  dailyDarshan: "dailyDarshan",
+  liveProgrammes: "liveProgrammes",
   youthYatra: "youthYatra",
   templeSchedule: "templeSchedule",
   featurePopup: "featurePopup",
@@ -1860,33 +2006,57 @@ export const defaultSevas: Seva[] = [
   }
 ];
 
+function getCached<T>(key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const raw = localStorage.getItem("iskcon_cache_" + key);
+    if (raw !== null) {
+      const parsed = JSON.parse(raw);
+      if (key === KEYS.liveProgrammes && parsed?.programmes) {
+        parsed.programmes = parsed.programmes.filter((p: any) => p.id !== "live_sandhya_arati" && p.id !== "live_sb_class" && p.id !== "live_sunday_feast");
+      }
+      return parsed;
+    }
+  } catch {}
+  return fallback;
+}
+
+function setCache(key: string, value: any) {
+  if (typeof window === "undefined" || value == null) return;
+  try {
+    localStorage.setItem("iskcon_cache_" + key, JSON.stringify(value));
+  } catch {}
+}
+
 export function AdminProvider({ children }: { children: ReactNode }) {
-  const [slides, setSlidesState] = useState<Slide[]>(defaultSlides);
-  const [photos, setPhotosState] = useState<GalleryPhoto[]>([]);
-  const [categories, setCategoriesState] = useState<string[]>(defaultCategories);
-  const [classes, setClassesState] = useState<DailyClass[]>([]);
-  const [festivals, setFestivalsState] = useState<Festival[]>([]);
-  const [sevas, setSevasState] = useState<Seva[]>(defaultSevas);
-  const [youth, setYouthState] = useState<YouthData>(defaultYouth);
-  const [harinama, setHarinamaState] = useState<HarinamaData>(defaultHarinama);
-  const [ekadashi, setEkadashiState] = useState<EkadashiData>(defaultEkadashi);
-  const [gitaCourse, setGitaCourseState] = useState<GitaCourseData>(defaultGitaCourse);
-  const [sunday, setSundayState] = useState<SundayData>(defaultSunday);
-  const [prahladaBadi, setPrahladaBadiState] = useState<PrahladaBadiData>(defaultPrahladaBadi);
-  const [houseProgrammes, setHouseProgrammesState] = useState<HouseProgrammeData>(defaultHouseProgramme);
-  const [youthYatra, setYouthYatraState] = useState<YouthYatraState>(defaultYouthYatra);
-  const [settings, setSettingsState] = useState<SiteSettings>(defaultSettings);
-  const [theme, setThemeState] = useState<ThemeSettings>(defaultTheme);
-  const [heroBanners, setHeroBannersState] = useState<HeroBannersData>(defaultHeroBanners);
-  const [goshala, setGoshalaState] = useState<GoshalaData>(defaultGoshala);
+  const [slides, setSlidesState] = useState<Slide[]>(() => getCached(KEYS.slides, defaultSlides));
+  const [photos, setPhotosState] = useState<GalleryPhoto[]>(() => getCached(KEYS.photos, []));
+  const [categories, setCategoriesState] = useState<string[]>(() => getCached(KEYS.categories, defaultCategories));
+  const [classes, setClassesState] = useState<DailyClass[]>(() => getCached(KEYS.classes, []));
+  const [festivals, setFestivalsState] = useState<Festival[]>(() => getCached(KEYS.festivals, []));
+  const [sevas, setSevasState] = useState<Seva[]>(() => getCached(KEYS.sevas, defaultSevas));
+  const [youth, setYouthState] = useState<YouthData>(() => getCached(KEYS.youth, defaultYouth));
+  const [harinama, setHarinamaState] = useState<HarinamaData>(() => getCached(KEYS.harinama, defaultHarinama));
+  const [ekadashi, setEkadashiState] = useState<EkadashiData>(() => getCached(KEYS.ekadashi, defaultEkadashi));
+  const [gitaCourse, setGitaCourseState] = useState<GitaCourseData>(() => getCached(KEYS.gitaCourse, defaultGitaCourse));
+  const [sunday, setSundayState] = useState<SundayData>(() => getCached(KEYS.sunday, defaultSunday));
+  const [prahladaBadi, setPrahladaBadiState] = useState<PrahladaBadiData>(() => getCached(KEYS.prahladaBadi, defaultPrahladaBadi));
+  const [houseProgrammes, setHouseProgrammesState] = useState<HouseProgrammeData>(() => getCached(KEYS.houseProgrammes, defaultHouseProgramme));
+  const [dailyDarshan, setDailyDarshanState] = useState<DailyDarshanData>(() => getCached(KEYS.dailyDarshan, defaultDailyDarshan));
+  const [liveProgrammes, setLiveProgrammesState] = useState<LiveProgrammeData>(() => getCached(KEYS.liveProgrammes, defaultLiveProgrammes));
+  const [youthYatra, setYouthYatraState] = useState<YouthYatraState>(() => getCached(KEYS.youthYatra, defaultYouthYatra));
+  const [settings, setSettingsState] = useState<SiteSettings>(() => getCached(KEYS.settings, defaultSettings));
+  const [theme, setThemeState] = useState<ThemeSettings>(() => getCached(KEYS.theme, defaultTheme));
+  const [heroBanners, setHeroBannersState] = useState<HeroBannersData>(() => getCached(KEYS.heroBanners, defaultHeroBanners));
+  const [goshala, setGoshalaState] = useState<GoshalaData>(() => getCached(KEYS.goshala, defaultGoshala));
   const [contacts, setContactsState] = useState<ContactEntry[]>([]);
-  const [instagram, setInstagramState] = useState<InstagramData>(defaultInstagram);
-  const [templeSchedule, setTempleScheduleState] = useState<TempleScheduleItem[]>(defaultTempleSchedule);
-  const [featurePopup, setFeaturePopupState] = useState<FeaturePopupData>(defaultFeaturePopup);
-  const [paymentPages, setPaymentPagesState] = useState<PaymentPage[]>(defaultPaymentPages);
-  const [paymentRecords, setPaymentRecordsState] = useState<PaymentRecord[]>(defaultPaymentRecords);
-  const [platformFee, setPlatformFeeState] = useState<PlatformFeeSettings>(defaultPlatformFee);
-  const [previewLeads, setPreviewLeadsState] = useState<PreviewLead[]>([]);
+  const [instagram, setInstagramState] = useState<InstagramData>(() => getCached(KEYS.instagram, defaultInstagram));
+  const [templeSchedule, setTempleScheduleState] = useState<TempleScheduleItem[]>(() => getCached(KEYS.templeSchedule, defaultTempleSchedule));
+  const [featurePopup, setFeaturePopupState] = useState<FeaturePopupData>(() => getCached(KEYS.featurePopup, defaultFeaturePopup));
+  const [paymentPages, setPaymentPagesState] = useState<PaymentPage[]>(() => getCached(KEYS.paymentPages, defaultPaymentPages));
+  const [paymentRecords, setPaymentRecordsState] = useState<PaymentRecord[]>(() => getCached(KEYS.paymentRecords, defaultPaymentRecords));
+  const [platformFee, setPlatformFeeState] = useState<PlatformFeeSettings>(() => getCached(KEYS.platformFee, defaultPlatformFee));
+  const [previewLeads, setPreviewLeadsState] = useState<PreviewLead[]>(() => getCached(KEYS.previewLeads, []));
 
   const [superAdminPass, setSuperAdminPassState] = useState<string>("iskcon@1982");
   const [currentUser, setCurrentUser] = useState<CurrentAdminUser | null>(null);
@@ -2089,6 +2259,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   function applyRow(key: string, value: any) {
     if (value == null) return;
+    setCache(key, value);
     switch (key) {
       case KEYS.slides: setSlidesState(value); break;
       case KEYS.photos: setPhotosState(value); break;
@@ -2122,6 +2293,13 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.sunday: setSundayState({ ...defaultSunday, ...value }); break;
       case KEYS.prahladaBadi: setPrahladaBadiState({ ...defaultPrahladaBadi, ...value }); break;
       case KEYS.houseProgrammes: setHouseProgrammesState({ ...defaultHouseProgramme, ...value }); break;
+      case KEYS.dailyDarshan: setDailyDarshanState({ ...defaultDailyDarshan, ...value, entries: Array.isArray(value?.entries) ? value.entries : defaultDailyDarshan.entries }); break;
+      case KEYS.liveProgrammes: {
+        const rawProgs = Array.isArray(value?.programmes) ? value.programmes : [];
+        const cleanedProgs = rawProgs.filter((p: any) => p.id !== "live_sandhya_arati" && p.id !== "live_sb_class" && p.id !== "live_sunday_feast");
+        setLiveProgrammesState({ ...defaultLiveProgrammes, ...value, programmes: cleanedProgs });
+        break;
+      }
       case KEYS.youthYatra: setYouthYatraState({ ...defaultYouthYatra, ...value }); break;
       case KEYS.settings: setSettingsState({ ...defaultSettings, ...value }); break;
       case KEYS.theme: setThemeState(value); break;
@@ -2141,6 +2319,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   }
 
   async function persist(key: string, value: any) {
+    setCache(key, value);
     pendingWrites.current.set(key, Date.now());
     const { error } = await supabase
       .from("site_data")
@@ -2168,6 +2347,108 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setSunday = (v: SundayData) => { setSundayState(v); persist(KEYS.sunday, v); };
   const setPrahladaBadi = (v: PrahladaBadiData) => { setPrahladaBadiState(v); persist(KEYS.prahladaBadi, v); };
   const setHouseProgrammes = (v: HouseProgrammeData) => { setHouseProgrammesState(v); persist(KEYS.houseProgrammes, v); };
+
+  const setDailyDarshan = (v: DailyDarshanData) => { setDailyDarshanState(v); persist(KEYS.dailyDarshan, v); };
+
+  const addDailyDarshanEntry = async (entry: Omit<DailyDarshanItem, "id" | "createdAt">): Promise<string> => {
+    const id = "dd_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
+    const newEntry: DailyDarshanItem = {
+      ...entry,
+      id,
+      createdAt: new Date().toISOString(),
+    };
+    const updatedEntries = [newEntry, ...(dailyDarshan.entries || [])].sort((a, b) => {
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
+    const updated: DailyDarshanData = {
+      ...dailyDarshan,
+      entries: updatedEntries,
+    };
+    setDailyDarshanState(updated);
+    await persist(KEYS.dailyDarshan, updated);
+    return id;
+  };
+
+  const updateDailyDarshanEntry = async (id: string, updates: Partial<DailyDarshanItem>) => {
+    const updatedEntries = (dailyDarshan.entries || []).map((e) =>
+      e.id === id ? { ...e, ...updates } : e
+    ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const updated: DailyDarshanData = {
+      ...dailyDarshan,
+      entries: updatedEntries,
+    };
+    setDailyDarshanState(updated);
+    await persist(KEYS.dailyDarshan, updated);
+  };
+
+  const deleteDailyDarshanEntry = async (id: string) => {
+    const updatedEntries = (dailyDarshan.entries || []).filter((e) => e.id !== id);
+    const updated: DailyDarshanData = {
+      ...dailyDarshan,
+      entries: updatedEntries,
+    };
+    setDailyDarshanState(updated);
+    await persist(KEYS.dailyDarshan, updated);
+  };
+
+  const setLiveProgrammesData = (v: LiveProgrammeData) => {
+    setLiveProgrammesState(v);
+    persist(KEYS.liveProgrammes, v);
+  };
+
+  const addLiveProgramme = async (prog: Omit<LiveProgrammeItem, "id" | "createdAt">): Promise<string> => {
+    const id = "live_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
+    const newProg: LiveProgrammeItem = {
+      ...prog,
+      id,
+      createdAt: new Date().toISOString(),
+    };
+    // If new programme has manual live override, clear override on all others (only 1 live at a time)
+    const existingProgrammes = (liveProgrammes.programmes || []).map((p) =>
+      newProg.isManualLiveOverride ? { ...p, isManualLiveOverride: false } : p
+    );
+    const updatedProgrammes = [newProg, ...existingProgrammes].sort((a, b) => {
+      return new Date(`${a.date}T${a.startTime}`).getTime() - new Date(`${b.date}T${b.startTime}`).getTime();
+    });
+    const updated: LiveProgrammeData = {
+      ...liveProgrammes,
+      programmes: updatedProgrammes,
+    };
+    setLiveProgrammesState(updated);
+    await persist(KEYS.liveProgrammes, updated);
+    return id;
+  };
+
+  const updateLiveProgramme = async (id: string, updates: Partial<LiveProgrammeItem>) => {
+    const updatedProgrammes = (liveProgrammes.programmes || []).map((p) => {
+      if (p.id === id) {
+        return { ...p, ...updates };
+      }
+      // If setting this programme to manual live override, turn off manual override on all other items (only 1 live at a time)
+      if (updates.isManualLiveOverride) {
+        return { ...p, isManualLiveOverride: false };
+      }
+      return p;
+    }).sort((a, b) => {
+      return new Date(`${a.date}T${a.startTime}`).getTime() - new Date(`${b.date}T${b.startTime}`).getTime();
+    });
+    const updated: LiveProgrammeData = {
+      ...liveProgrammes,
+      programmes: updatedProgrammes,
+    };
+    setLiveProgrammesState(updated);
+    await persist(KEYS.liveProgrammes, updated);
+  };
+
+  const deleteLiveProgramme = async (id: string) => {
+    const updatedProgrammes = (liveProgrammes.programmes || []).filter((p) => p.id !== id);
+    const updated: LiveProgrammeData = {
+      ...liveProgrammes,
+      programmes: updatedProgrammes,
+    };
+    setLiveProgrammesState(updated);
+    await persist(KEYS.liveProgrammes, updated);
+  };
 
   const addHouseProgrammeRequest = async (req: Omit<HouseProgrammeRequest, "id" | "createdAt" | "read" | "status">) => {
     const newEntry: HouseProgrammeRequest = {
@@ -2211,7 +2492,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   const setYouthYatra = (v: YouthYatraState) => { setYouthYatraState(v); persist(KEYS.youthYatra, v); };
 
-  const addYatraRegistration = async (reg: Omit<YatraRegistration, "id" | "registeredAt" | "read" | "status" | "paymentStatus"> & { status?: YatraRegistration["status"]; paymentStatus?: YatraRegistration["paymentStatus"] }): Promise<string> => {
+  const addYatraRegistration = async (reg: Omit<YatraRegistration, "id" | "registeredAt" | "read" | "status" | "paymentStatus" | "checkedIn"> & { status?: YatraRegistration["status"]; paymentStatus?: YatraRegistration["paymentStatus"]; checkedIn?: boolean }): Promise<string> => {
     const regYear = youthYatra.events.find(e => e.id === reg.eventId)?.year || new Date().getFullYear();
     const shortYear = String(regYear).slice(-2);
     const count = (youthYatra.registrations || []).filter(r => r.eventId === reg.eventId).length + 1;
@@ -2603,6 +2884,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         sunday, setSunday,
         prahladaBadi, setPrahladaBadi,
         houseProgrammes, setHouseProgrammes, addHouseProgrammeRequest, updateHouseProgrammeRequestStatus, deleteHouseProgrammeRequest, markAllHouseProgrammeRequestsRead,
+        dailyDarshan, setDailyDarshan, addDailyDarshanEntry, updateDailyDarshanEntry, deleteDailyDarshanEntry,
+        liveProgrammes, setLiveProgrammesData, addLiveProgramme, updateLiveProgramme, deleteLiveProgramme,
         youthYatra, setYouthYatra, addYatraRegistration, updateYatraRegistrationStatus, deleteYatraRegistration, markAllYatraRegistrationsRead, saveYatraEvent, deleteYatraEvent, setActiveYatraEvent,
         checkInYatraParticipant, undoCheckInYatraParticipant, updateYatraSeatAndBatch,
         settings, setSettings,

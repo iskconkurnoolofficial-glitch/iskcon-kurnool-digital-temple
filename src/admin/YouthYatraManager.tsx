@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   useAdmin,
   uploadToCloudinary,
@@ -56,8 +56,70 @@ import {
   Bus,
   Train,
   Navigation,
+  Camera,
+  CameraOff,
+  Video,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
+
+// Web Audio API Synth Sounds (Zero external asset download, 0ms latency)
+function playSuccessChime() {
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    if (ctx.state === "suspended") ctx.resume();
+
+    // High melodic chime: Note 1 (587 Hz / D5) -> Note 2 (880 Hz / A5)
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.type = "sine";
+    osc1.frequency.setValueAtTime(587.33, ctx.currentTime);
+    gain1.gain.setValueAtTime(0.18, ctx.currentTime);
+    gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    osc1.start(ctx.currentTime);
+    osc1.stop(ctx.currentTime + 0.15);
+
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = "sine";
+    osc2.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
+    gain2.gain.setValueAtTime(0.22, ctx.currentTime + 0.1);
+    gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    osc2.start(ctx.currentTime + 0.1);
+    osc2.stop(ctx.currentTime + 0.45);
+
+    if (navigator.vibrate) navigator.vibrate([60, 40, 90]);
+  } catch {}
+}
+
+function playErrorBuzzer() {
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    if (ctx.state === "suspended") ctx.resume();
+
+    // Low alert double buzzer (160 Hz sawtooth)
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(160, ctx.currentTime);
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.35);
+
+    if (navigator.vibrate) navigator.vibrate([180, 80, 180]);
+  } catch {}
+}
 
 type SubTab = "registrations" | "checkin" | "travel" | "eventDetails" | "timeline" | "places" | "payments" | "gallery" | "content";
 
@@ -84,6 +146,97 @@ export default function YouthYatraManager() {
   const [deskStaffName, setDeskStaffName] = useState("IYF Desk Staff");
   const [checkInFilter, setCheckInFilter] = useState<"all" | "boarded" | "pending">("all");
   const [checkInBatchFilter, setCheckInBatchFilter] = useState<string>("all");
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [autoCheckInOnScan, setAutoCheckInOnScan] = useState(true);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+
+  // Real-time camera QR scanner effect
+  useEffect(() => {
+    let qrScanner: any = null;
+    let isMounted = true;
+
+    if (isCameraActive && activeTab === "checkin") {
+      setCameraError(null);
+      const scannerId = "yatra-live-qr-scanner-box";
+
+      const timer = setTimeout(async () => {
+        try {
+          const scannerElement = document.getElementById(scannerId);
+          if (!scannerElement) return;
+
+          const { Html5Qrcode } = await import("html5-qrcode");
+          if (!isMounted) return;
+
+          qrScanner = new Html5Qrcode(scannerId);
+
+          qrScanner
+            .start(
+              { facingMode: "environment" },
+              {
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0,
+              },
+              async (decodedText: string) => {
+                if (!isMounted) return;
+                const clean = decodedText.trim().toUpperCase();
+                setCheckInScanInput(clean);
+
+                const found = (youthYatra.registrations || []).find(
+                  (r) =>
+                    r.id.toUpperCase() === clean ||
+                    r.boardingPassId?.toUpperCase() === clean ||
+                    r.phone.replace(/\D/g, "") === clean.replace(/\D/g, "") ||
+                    (r.email && r.email.toUpperCase() === clean)
+                );
+
+                if (found) {
+                  playSuccessChime();
+                  setScannedPilgrim(found);
+                  if (autoCheckInOnScan && !found.checkedIn) {
+                    const res = await checkInYatraParticipant(found.id, deskStaffName);
+                    if (res.success && res.registration) {
+                      setScannedPilgrim(res.registration);
+                      toast.success(`🎉 ${res.message}`);
+                    }
+                  } else {
+                    toast.info(`Scanned: ${found.fullName}`);
+                  }
+                } else {
+                  playErrorBuzzer();
+                  toast.error(`Unregistered QR pass: "${clean.slice(0, 25)}"`);
+                }
+              },
+              () => {}
+            )
+            .catch((err: any) => {
+              console.error("Camera scanner error:", err);
+              if (isMounted) {
+                setCameraError("Camera access denied or unavailable. Please enable camera permission in your browser or use manual ID lookup.");
+                setIsCameraActive(false);
+              }
+            });
+        } catch (e: any) {
+          console.error("Scanner init error:", e);
+          if (isMounted) {
+            setCameraError(e.message || "Failed to initialize camera.");
+            setIsCameraActive(false);
+          }
+        }
+      }, 250);
+
+      return () => {
+        isMounted = false;
+        clearTimeout(timer);
+        if (qrScanner) {
+          qrScanner
+            .stop()
+            .then(() => qrScanner?.clear())
+            .catch(() => {});
+        }
+      };
+    }
+  }, [isCameraActive, activeTab, youthYatra.registrations, autoCheckInOnScan, deskStaffName]);
 
   // Selected event to edit
   const events = youthYatra.events || [];
@@ -804,16 +957,80 @@ export default function YouthYatraManager() {
           {/* QUICK SCAN & SEARCH VERIFICATION BOX */}
           {/* ========================================================================= */}
           <div className="bg-white rounded-3xl p-6 sm:p-8 border shadow-xs space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b pb-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-4">
               <div>
                 <h4 className="font-display font-bold text-xl text-primary flex items-center gap-2">
                   <QrCode className="h-5 w-5 text-secondary" /> Scan Pilgrim Boarding Pass
                 </h4>
-                <p className="text-xs text-muted-foreground">
-                  Point handheld 2D barcode scanner or type Registration ID (e.g. <strong className="font-mono">YY26-00482</strong>) / Phone Number.
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Use device live camera, 2D barcode scanner gun, or enter Registration ID / Devotee Phone.
                 </p>
               </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={autoCheckInOnScan}
+                    onChange={(e) => setAutoCheckInOnScan(e.target.checked)}
+                    className="h-4 w-4 rounded accent-emerald-600 cursor-pointer"
+                  />
+                  <Zap className={`h-3.5 w-3.5 ${autoCheckInOnScan ? "text-amber-500 fill-amber-500" : "text-slate-400"}`} />
+                  <span>Instant Auto-Board on Scan</span>
+                </label>
+
+                <button
+                  type="button"
+                  onClick={() => setIsCameraActive((active) => !active)}
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer ${
+                    isCameraActive
+                      ? "bg-rose-600 hover:bg-rose-700 text-white"
+                      : "bg-emerald-600 hover:bg-emerald-700 text-white animate-pulse"
+                  }`}
+                >
+                  {isCameraActive ? (
+                    <>
+                      <CameraOff className="h-4 w-4" /> Stop Camera Scanner
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="h-4 w-4" /> 📷 Open Camera Scanner
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
+
+            {/* Live Camera Viewfinder Stream */}
+            {isCameraActive && (
+              <div className="p-4 bg-slate-950 rounded-3xl border-2 border-emerald-500/80 shadow-2xl space-y-3 animate-scale-in text-center">
+                <div className="flex items-center justify-between text-xs text-emerald-400 font-bold px-2">
+                  <span className="flex items-center gap-1.5">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    </span>
+                    Live Video QR Scanner Active
+                  </span>
+                  <span className="text-slate-400 font-mono text-[11px]">Aim at Pilgrim QR Code</span>
+                </div>
+
+                <div className="relative max-w-sm mx-auto overflow-hidden rounded-2xl bg-black border border-slate-700">
+                  <div id="yatra-live-qr-scanner-box" className="w-full min-h-[260px] bg-black" />
+                </div>
+
+                <p className="text-[11px] text-slate-300">
+                  Align the QR code from the devotee's physical or digital boarding pass within the center box.
+                </p>
+              </div>
+            )}
+
+            {cameraError && (
+              <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
+                <span>{cameraError}</span>
+              </div>
+            )}
 
             {/* Quick Search Form */}
             <form
@@ -828,8 +1045,10 @@ export default function YouthYatraManager() {
                     r.phone.replace(/\D/g, "") === clean.replace(/\D/g, "")
                 );
                 if (found) {
+                  playSuccessChime();
                   setScannedPilgrim(found);
                 } else {
+                  playErrorBuzzer();
                   toast.error(`No pilgrim record found for "${checkInScanInput}".`);
                 }
               }}
@@ -961,6 +1180,7 @@ export default function YouthYatraManager() {
                       onClick={async () => {
                         const res = await checkInYatraParticipant(scannedPilgrim.id, deskStaffName);
                         if (res.success && res.registration) {
+                          playSuccessChime();
                           setScannedPilgrim(res.registration);
                           toast.success(res.message);
                         }
@@ -1120,6 +1340,7 @@ export default function YouthYatraManager() {
                           {!r.checkedIn ? (
                             <button
                               onClick={() => {
+                                playSuccessChime();
                                 checkInYatraParticipant(r.id, deskStaffName);
                                 toast.success(`Boarded: ${r.fullName}`);
                               }}

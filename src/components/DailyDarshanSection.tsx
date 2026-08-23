@@ -126,21 +126,29 @@ export default function DailyDarshanSection() {
               </div>
             </div>
 
-            <div className="mt-8 flex flex-col sm:flex-row gap-3">
+            <div className="mt-8 flex flex-col gap-2.5">
               <Link
-                to="/temple"
-                className="flex-1 text-center py-3.5 rounded-2xl bg-primary text-primary-foreground font-semibold hover:bg-primary/95 transition-all text-xs font-sans shadow-sm"
+                to="/daily-darshan"
+                className="w-full text-center py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white font-bold hover:scale-[1.01] transition-all text-xs font-sans shadow-gold flex items-center justify-center gap-1.5"
               >
-                Detailed Daily Schedule
+                <Sun className="h-4 w-4" /> View Today's Daily Darshan Photos
               </Link>
-              <a
-                href="https://maps.app.goo.gl/yJpP11F8Q8ZqT76W9"
-                target="_blank"
-                rel="noreferrer"
-                className="flex-1 text-center py-3.5 rounded-2xl border hover:bg-surface/5 transition-all text-xs font-semibold text-foreground font-sans flex items-center justify-center gap-1.5"
-              >
-                Get Directions <ArrowRight className="h-3.5 w-3.5" />
-              </a>
+              <div className="flex flex-col sm:flex-row gap-2.5">
+                <Link
+                  to="/temple"
+                  className="flex-1 text-center py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/95 transition-all text-xs font-sans shadow-2xs"
+                >
+                  Daily Schedule
+                </Link>
+                <a
+                  href="https://maps.app.goo.gl/yJpP11F8Q8ZqT76W9"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 text-center py-3 rounded-xl border hover:bg-surface/5 transition-all text-xs font-semibold text-foreground font-sans flex items-center justify-center gap-1.5"
+                >
+                  Get Directions <ArrowRight className="h-3.5 w-3.5" />
+                </a>
+              </div>
             </div>
           </div>
 

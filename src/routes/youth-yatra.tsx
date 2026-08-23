@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import SiteLayout from "@/components/SiteLayout";
-import { useAdmin, YatraEvent, YatraTimelineDay, YatraPlace, YatraGalleryItem } from "@/context/AdminContext";
+import { useAdmin, YatraEvent, YatraTimelineDay, YatraPlace, YatraGalleryItem, YatraRegistration } from "@/context/AdminContext";
 import {
   Calendar,
   Clock,

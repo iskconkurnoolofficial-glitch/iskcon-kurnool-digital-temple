@@ -107,7 +107,7 @@ export default function GallerySection() {
                   onClick={() => setLightbox(idx)}
                   className="w-full text-left block"
                 >
-                  <img src={p.url} alt={p.title} loading="lazy" className="w-full h-auto group-hover:scale-105 transition duration-500" />
+                  <img src={p.url} alt={p.title} loading="lazy" decoding="async" className="w-full h-auto group-hover:scale-105 transition duration-500" />
                 </button>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent opacity-0 group-hover:opacity-100 transition flex items-end justify-between p-4 pointer-events-none">
                   <span className="text-white font-medium text-left">{p.title}</span>

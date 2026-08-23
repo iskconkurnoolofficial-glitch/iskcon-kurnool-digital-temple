@@ -15,7 +15,7 @@ function FestivalCard({ f }: { f: Festival }) {
     <article className="group bg-white rounded-2xl overflow-hidden border border-border shadow-sm hover:shadow-elegant transition-all duration-300 flex flex-col h-full">
       <div className="relative w-full overflow-hidden">
         {f.thumbnail ? (
-          <img src={f.thumbnail} alt={f.title} loading="lazy" className="w-full h-auto block group-hover:scale-105 transition-transform duration-500" />
+          <img src={f.thumbnail} alt={f.title} loading="lazy" decoding="async" className="w-full h-auto block group-hover:scale-105 transition-transform duration-500" />
         ) : (
           <div className="aspect-[4/3] w-full grid place-items-center text-muted-foreground bg-muted"><Sparkles className="h-10 w-10" /></div>
         )}

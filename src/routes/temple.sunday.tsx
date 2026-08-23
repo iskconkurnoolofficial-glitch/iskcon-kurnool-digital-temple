@@ -108,7 +108,8 @@ function SundayPage() {
         pageKey="sunday" 
       >
         <Link
-          to="/donate/sunday-feast"
+          to="/donate/$slug"
+          params={{ slug: "sunday-feast" }}
           className="inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-sans font-bold text-base shadow-[0_10px_25px_-5px_rgba(249,115,22,0.5)] hover:shadow-[0_15px_30px_-5px_rgba(249,115,22,0.65)] transition-all duration-300 hover:scale-105 border border-amber-300/40 cursor-pointer"
         >
           <HandHeart className="h-5 w-5 text-white" />
