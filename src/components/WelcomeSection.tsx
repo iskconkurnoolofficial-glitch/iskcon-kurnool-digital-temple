@@ -22,11 +22,11 @@ export default function WelcomeSection() {
               Sri Sri Puri Jagannath Temple
             </span>
 
-            <h1 className="font-display font-black text-5xl md:text-7xl text-primary tracking-[-0.02em] leading-[0.95]">
+            <h1 className="font-display font-black text-5xl md:text-7xl text-[#5b2c9b] tracking-[-0.02em] leading-[0.95]">
               Hare <span className="italic font-light text-accent">Krishna!</span>
             </h1>
 
-            <h2 className="font-display font-medium text-2xl md:text-3xl text-foreground/75 tracking-tight font-sans">
+            <h2 className="font-display font-bold text-2xl md:text-3xl text-[#5b2c9b] tracking-tight font-sans">
               Welcome to ISKCON Kurnool
             </h2>
 

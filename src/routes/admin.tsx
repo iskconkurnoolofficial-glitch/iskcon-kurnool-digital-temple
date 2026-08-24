@@ -27,17 +27,20 @@ import DonationsManager from "@/admin/DonationsManager";
 import YouthYatraManager from "@/admin/YouthYatraManager";
 import DailyDarshanManager from "@/admin/DailyDarshanManager";
 import LiveProgrammeManager from "@/admin/LiveProgrammeManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard, Video, Bell, ShieldCheck, Compass, Sun, Tv } from "lucide-react";
+import BhaktiStepsManager from "@/admin/BhaktiStepsManager";
+import TermsManager from "@/admin/TermsManager";
+import PrivacyManager from "@/admin/PrivacyManager";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard, Video, Bell, ShieldCheck, Compass, Sun, Tv, Award, FileText, Lock } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
 
-type Tab = "welcome" | "dailyDarshan" | "liveProgrammes" | "carousel" | "festivals" | "sevas" | "youth" | "youthYatra" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "featurePopup" | "paymentPages" | "previewLeads" | "donations";
+type Tab = "welcome" | "dailyDarshan" | "liveProgrammes" | "carousel" | "festivals" | "sevas" | "bhaktiSteps" | "youth" | "youthYatra" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "terms" | "privacy" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "featurePopup" | "paymentPages" | "previewLeads" | "donations";
 
 function AdminPage() {
-  const { authed, login, logout, settings, contacts, setContacts, paymentRecords, previewLeads, houseProgrammes, markAllHouseProgrammeRequestsRead, markAllPaymentRecordsRead, markAllPreviewLeadsRead, youthYatra, markAllYatraRegistrationsRead, currentUser } = useAdmin();
+  const { authed, login, logout, settings, contacts, setContacts, paymentRecords, previewLeads, houseProgrammes, markAllHouseProgrammeRequestsRead, markAllPaymentRecordsRead, markAllPreviewLeadsRead, youthYatra, markAllYatraRegistrationsRead, bhaktiSteps, markAllBhaktiStepsRegistrationsRead, currentUser } = useAdmin();
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [err, setErr] = useState("");
@@ -59,6 +62,8 @@ function AdminPage() {
       markAllHouseProgrammeRequestsRead();
     } else if (tab === "youthYatra" && youthYatra?.registrations && youthYatra.registrations.some((r) => !r.read)) {
       markAllYatraRegistrationsRead();
+    } else if (tab === "bhaktiSteps" && bhaktiSteps?.registrations && bhaktiSteps.registrations.some((r) => !r.read)) {
+      markAllBhaktiStepsRegistrationsRead();
     }
   }, [tab]);
 
@@ -67,7 +72,8 @@ function AdminPage() {
   const unreadLeadsCount = (previewLeads || []).filter((l) => !l.read).length;
   const unreadHouseProgrammesCount = (houseProgrammes?.requests || []).filter((r) => !r.read).length;
   const unreadYouthYatraCount = (youthYatra?.registrations || []).filter((r) => !r.read).length;
-  const totalUnreadCount = unreadMessagesCount + unreadDonationsCount + unreadLeadsCount + unreadHouseProgrammesCount + unreadYouthYatraCount;
+  const unreadBhaktiStepsCount = (bhaktiSteps?.registrations || []).filter((r) => !r.read).length;
+  const totalUnreadCount = unreadMessagesCount + unreadDonationsCount + unreadLeadsCount + unreadHouseProgrammesCount + unreadYouthYatraCount + unreadBhaktiStepsCount;
 
   const getBadgeCount = (id: Tab): number => {
     if (id === "contacts") return unreadMessagesCount;
@@ -75,6 +81,7 @@ function AdminPage() {
     if (id === "previewLeads") return unreadLeadsCount;
     if (id === "houseProgrammes") return unreadHouseProgrammesCount;
     if (id === "youthYatra") return unreadYouthYatraCount;
+    if (id === "bhaktiSteps") return unreadBhaktiStepsCount;
     return 0;
   };
 
@@ -203,6 +210,7 @@ function AdminPage() {
     {
       title: "Community Focus",
       items: [
+        { id: "bhaktiSteps", label: "Bhakti Steps (5 Levels)", icon: Award },
         { id: "youthYatra", label: "Annual Youth Yatra", icon: Compass },
         { id: "houseProgrammes", label: "House Programmes", icon: Home },
         { id: "prahladaBadi", label: "Prahlada Badi", icon: Baby },
@@ -218,6 +226,8 @@ function AdminPage() {
       items: [
         { id: "contacts", label: "Contact Messages", icon: Mail },
         { id: "settings", label: "Site Settings", icon: Settings },
+        { id: "terms", label: "Terms & Conditions", icon: FileText },
+        { id: "privacy", label: "Privacy Policy", icon: ShieldCheck },
       ]
     }
   ];
@@ -639,6 +649,7 @@ function AdminPage() {
             {tab === "carousel" && <CarouselManager />}
             {tab === "festivals" && <FestivalsManager />}
             {tab === "sevas" && <SevasManager />}
+            {tab === "bhaktiSteps" && <BhaktiStepsManager />}
             {tab === "youth" && <YouthManager />}
             {tab === "youthYatra" && <YouthYatraManager />}
             {tab === "houseProgrammes" && <HouseProgrammesManager />}
@@ -655,6 +666,8 @@ function AdminPage() {
             {tab === "gallery" && <GalleryManager />}
             {tab === "heroBanners" && <HeroBannersManager />}
             {tab === "settings" && <SiteSettingsForm />}
+            {tab === "terms" && <TermsManager />}
+            {tab === "privacy" && <PrivacyManager />}
             {tab === "templeSchedule" && <TempleScheduleManager />}
             {tab === "featurePopup" && <FeaturePopupManager />}
             {tab === "paymentPages" && <PaymentPagesManager />}

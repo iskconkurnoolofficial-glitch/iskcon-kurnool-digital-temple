@@ -28,7 +28,8 @@ import {
   Bell,
   Home,
   Compass,
-  Sun
+  Sun,
+  Award
 } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import LiveClassBanner from "@/components/LiveClassBanner";
@@ -73,6 +74,7 @@ const NAV: NavItem[] = [
     { label: "Social Media", href: "/social-media", subtitle: "Connect with us online", icon: Share2 },
   ]},
   { label: "Activities", children: [
+    { label: "Bhakti Steps", href: "/bhakti-steps", subtitle: "5-level progressive spiritual path", icon: Award },
     { label: "Annual Youth Yatra", href: "/youth-yatra", subtitle: "5-day sacred youth pilgrimage", icon: Compass },
     { label: "House Programmes", href: "/house-programmes", subtitle: "Devotional gatherings at your home", icon: Home },
     { label: "Youth Program", href: "/youth", subtitle: "Inspiring the next generation", icon: Users },
@@ -81,6 +83,7 @@ const NAV: NavItem[] = [
     { label: "Hari Nama Sankeerthana", href: "/harinama", subtitle: "Congregational chanting", icon: Music },
   ]},
   { label: "Courses", children: [
+    { label: "Bhakti Steps", href: "/bhakti-steps", subtitle: "Recognize • Revitalize • Progress", icon: Award },
     { label: "Bhagavad Gita", href: "/gita-course", subtitle: "Journey into self-realization", icon: BookOpen },
     { label: "Daily Classes", href: "/courses", subtitle: "Srimad Bhagavatam & classes", icon: Calendar },
   ]},

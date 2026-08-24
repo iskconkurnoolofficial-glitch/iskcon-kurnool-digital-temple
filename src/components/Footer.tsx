@@ -20,6 +20,7 @@ export default function Footer() {
 
   const discoverLinks = [
     { label: "Home", href: "/" },
+    { label: "Bhakti Steps (5 Levels)", href: "/bhakti-steps" },
     { label: "Annual Youth Yatra", href: "/youth-yatra" },
     { label: "House Programmes", href: "/house-programmes" },
     { label: "About ISKCON", href: "/about/iskcon" },
@@ -152,8 +153,8 @@ export default function Footer() {
             © {currentYear} ISKCON Kurnool. All Rights Reserved.
           </div>
           <div className="flex gap-6 items-center">
-            <Link to="/connect" className="hover:text-secondary transition-colors">Privacy Policy</Link>
-            <Link to="/connect" className="hover:text-secondary transition-colors">Terms of Use</Link>
+            <Link to="/privacy" className="hover:text-secondary transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-secondary transition-colors">Terms &amp; Conditions</Link>
             <a href="#" className="hover:text-secondary flex items-center gap-1 transition-colors">
               Back to Top <ArrowUp className="h-3.5 w-3.5" />
             </a>

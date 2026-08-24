@@ -256,7 +256,7 @@ export default function LiveProgrammeSection() {
             <Radio className="h-3.5 w-3.5 text-accent animate-pulse" />
             <span>{liveProgrammes.badgeText || "Temple Broadcast • Live Stream"}</span>
           </div>
-          <h2 className="font-display font-extrabold text-3xl sm:text-4xl text-primary tracking-tight">
+          <h2 className="font-display font-extrabold text-3xl sm:text-4xl text-[#5b2c9b] tracking-tight">
             {liveProgrammes.sectionTitle || "Live Temple Broadcast"}
           </h2>
           <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed">

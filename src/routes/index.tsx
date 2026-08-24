@@ -4,12 +4,15 @@ import HeroCarousel from "@/components/HeroCarousel";
 import WelcomeSection from "@/components/WelcomeSection";
 import DailyDarshanSection from "@/components/DailyDarshanSection";
 import LiveProgrammeSection from "@/components/LiveProgrammeSection";
-import FeaturedOfferingsSection from "@/components/FeaturedOfferingsSection";
 import UpcomingFestivals from "@/components/UpcomingFestivals";
 import SundayProgramSection from "@/components/SundayProgramSection";
 import HomeGallery from "@/components/HomeGallery";
 import HomeGoshala from "@/components/HomeGoshala";
 import SocialMediaSection from "@/components/SocialMediaSection";
+import HomeHouseProgrammesSection from "@/components/HomeHouseProgrammesSection";
+import HomeYouthSection from "@/components/HomeYouthSection";
+import HomeHarinamaSection from "@/components/HomeHarinamaSection";
+import FeaturedOfferingsSection from "@/components/FeaturedOfferingsSection";
 import ConnectSection from "@/components/ConnectSection";
 
 export const Route = createFileRoute("/")({
@@ -34,6 +37,9 @@ function Home() {
       <HomeGallery />
       <HomeGoshala />
       <SocialMediaSection />
+      <HomeHouseProgrammesSection />
+      <HomeYouthSection />
+      <HomeHarinamaSection />
       <FeaturedOfferingsSection />
       <ConnectSection />
     </SiteLayout>

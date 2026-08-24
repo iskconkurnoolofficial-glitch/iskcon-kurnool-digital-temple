@@ -79,7 +79,7 @@ export default function SundayProgramSection() {
               <Calendar className="h-4 w-4" /> Weekly Sunday Feast
             </span>
             
-            <h2 className="font-display font-extrabold text-4xl md:text-5xl text-primary tracking-tight leading-tight">
+            <h2 className="font-display font-extrabold text-4xl md:text-5xl text-[#5b2c9b] tracking-tight leading-tight">
               Sunday Feast <br className="hidden lg:block" />
               & Program
             </h2>

@@ -66,7 +66,7 @@ export default function DailyDarshanSection() {
           <span className="inline-flex items-center gap-2 text-secondary font-semibold uppercase text-xs tracking-wider">
             Daily Temple Schedule
           </span>
-          <h2 className="font-display font-extrabold text-4xl md:text-5xl text-primary tracking-tight">
+          <h2 className="font-display font-extrabold text-4xl md:text-5xl text-[#5b2c9b] tracking-tight">
             Daily Darshan & Aarti Timings
           </h2>
           <p className="text-muted-foreground text-sm font-sans max-w-md mx-auto">

@@ -39,14 +39,14 @@ export default function HomeGoshala() {
           {/* Left Column: Content Details */}
           <div className="lg:col-span-6 space-y-8">
             <div className="space-y-4">
-              <span className="inline-flex items-center gap-3 text-accent font-semibold uppercase text-xs tracking-[0.35em]">
-                <span className="h-px w-8 bg-accent/30" />
+              <span className="inline-flex items-center gap-3 text-purple-900 font-semibold uppercase text-xs tracking-[0.35em]">
+                <span className="h-px w-8 bg-purple-400" />
                 {goshala.eyebrow || "Go-Seva"}
               </span>
-              <h2 className="font-display text-4xl sm:text-5xl font-black text-primary tracking-tight leading-tight">
+              <h2 className="font-display text-4xl sm:text-5xl font-black text-[#5b2c9b] tracking-tight leading-tight">
                 {goshala.title || "Goshala Seva"}
               </h2>
-              <p className="text-muted-foreground text-sm sm:text-base font-sans tracking-wide">
+              <p className="text-[#4a1d40]/85 text-sm sm:text-base font-sans tracking-wide">
                 {goshala.subtitle || "Maintained by ISKCON Kurnool"}
               </p>
             </div>

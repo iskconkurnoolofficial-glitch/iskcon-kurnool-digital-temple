@@ -11,9 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as YouthYatraRouteImport } from './routes/youth-yatra'
 import { Route as YouthRouteImport } from './routes/youth'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TempleRouteImport } from './routes/temple'
 import { Route as SocialMediaRouteImport } from './routes/social-media'
 import { Route as ShopRouteImport } from './routes/shop'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PrahladaBadiRouteImport } from './routes/prahlada-badi'
 import { Route as HouseProgrammesRouteImport } from './routes/house-programmes'
 import { Route as HarinamaRouteImport } from './routes/harinama'
@@ -26,6 +28,7 @@ import { Route as DonateRouteImport } from './routes/donate'
 import { Route as DailyDarshanRouteImport } from './routes/daily-darshan'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as ConnectRouteImport } from './routes/connect'
+import { Route as BhaktiStepsRouteImport } from './routes/bhakti-steps'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TempleIndexRouteImport } from './routes/temple.index'
@@ -49,6 +52,11 @@ const YouthRoute = YouthRouteImport.update({
   path: '/youth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TempleRoute = TempleRouteImport.update({
   id: '/temple',
   path: '/temple',
@@ -62,6 +70,11 @@ const SocialMediaRoute = SocialMediaRouteImport.update({
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrahladaBadiRoute = PrahladaBadiRouteImport.update({
@@ -122,6 +135,11 @@ const CoursesRoute = CoursesRouteImport.update({
 const ConnectRoute = ConnectRouteImport.update({
   id: '/connect',
   path: '/connect',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BhaktiStepsRoute = BhaktiStepsRouteImport.update({
+  id: '/bhakti-steps',
+  path: '/bhakti-steps',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -188,6 +206,7 @@ const AboutFounderRoute = AboutFounderRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/bhakti-steps': typeof BhaktiStepsRoute
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
   '/daily-darshan': typeof DailyDarshanRoute
@@ -200,9 +219,11 @@ export interface FileRoutesByFullPath {
   '/harinama': typeof HarinamaRoute
   '/house-programmes': typeof HouseProgrammesRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
+  '/privacy': typeof PrivacyRoute
   '/shop': typeof ShopRoute
   '/social-media': typeof SocialMediaRoute
   '/temple': typeof TempleRouteWithChildren
+  '/terms': typeof TermsRoute
   '/youth': typeof YouthRoute
   '/youth-yatra': typeof YouthYatraRoute
   '/about/founder': typeof AboutFounderRoute
@@ -219,6 +240,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/bhakti-steps': typeof BhaktiStepsRoute
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
   '/daily-darshan': typeof DailyDarshanRoute
@@ -230,8 +252,10 @@ export interface FileRoutesByTo {
   '/harinama': typeof HarinamaRoute
   '/house-programmes': typeof HouseProgrammesRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
+  '/privacy': typeof PrivacyRoute
   '/shop': typeof ShopRoute
   '/social-media': typeof SocialMediaRoute
+  '/terms': typeof TermsRoute
   '/youth': typeof YouthRoute
   '/youth-yatra': typeof YouthYatraRoute
   '/about/founder': typeof AboutFounderRoute
@@ -249,6 +273,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/bhakti-steps': typeof BhaktiStepsRoute
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
   '/daily-darshan': typeof DailyDarshanRoute
@@ -261,9 +286,11 @@ export interface FileRoutesById {
   '/harinama': typeof HarinamaRoute
   '/house-programmes': typeof HouseProgrammesRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
+  '/privacy': typeof PrivacyRoute
   '/shop': typeof ShopRoute
   '/social-media': typeof SocialMediaRoute
   '/temple': typeof TempleRouteWithChildren
+  '/terms': typeof TermsRoute
   '/youth': typeof YouthRoute
   '/youth-yatra': typeof YouthYatraRoute
   '/about/founder': typeof AboutFounderRoute
@@ -282,6 +309,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/bhakti-steps'
     | '/connect'
     | '/courses'
     | '/daily-darshan'
@@ -294,9 +322,11 @@ export interface FileRouteTypes {
     | '/harinama'
     | '/house-programmes'
     | '/prahlada-badi'
+    | '/privacy'
     | '/shop'
     | '/social-media'
     | '/temple'
+    | '/terms'
     | '/youth'
     | '/youth-yatra'
     | '/about/founder'
@@ -313,6 +343,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/bhakti-steps'
     | '/connect'
     | '/courses'
     | '/daily-darshan'
@@ -324,8 +355,10 @@ export interface FileRouteTypes {
     | '/harinama'
     | '/house-programmes'
     | '/prahlada-badi'
+    | '/privacy'
     | '/shop'
     | '/social-media'
+    | '/terms'
     | '/youth'
     | '/youth-yatra'
     | '/about/founder'
@@ -342,6 +375,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/bhakti-steps'
     | '/connect'
     | '/courses'
     | '/daily-darshan'
@@ -354,9 +388,11 @@ export interface FileRouteTypes {
     | '/harinama'
     | '/house-programmes'
     | '/prahlada-badi'
+    | '/privacy'
     | '/shop'
     | '/social-media'
     | '/temple'
+    | '/terms'
     | '/youth'
     | '/youth-yatra'
     | '/about/founder'
@@ -374,6 +410,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  BhaktiStepsRoute: typeof BhaktiStepsRoute
   ConnectRoute: typeof ConnectRoute
   CoursesRoute: typeof CoursesRoute
   DailyDarshanRoute: typeof DailyDarshanRoute
@@ -386,9 +423,11 @@ export interface RootRouteChildren {
   HarinamaRoute: typeof HarinamaRoute
   HouseProgrammesRoute: typeof HouseProgrammesRoute
   PrahladaBadiRoute: typeof PrahladaBadiRoute
+  PrivacyRoute: typeof PrivacyRoute
   ShopRoute: typeof ShopRoute
   SocialMediaRoute: typeof SocialMediaRoute
   TempleRoute: typeof TempleRouteWithChildren
+  TermsRoute: typeof TermsRoute
   YouthRoute: typeof YouthRoute
   YouthYatraRoute: typeof YouthYatraRoute
   AboutFounderRoute: typeof AboutFounderRoute
@@ -415,6 +454,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof YouthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/temple': {
       id: '/temple'
       path: '/temple'
@@ -434,6 +480,13 @@ declare module '@tanstack/react-router' {
       path: '/shop'
       fullPath: '/shop'
       preLoaderRoute: typeof ShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/prahlada-badi': {
@@ -518,6 +571,13 @@ declare module '@tanstack/react-router' {
       path: '/connect'
       fullPath: '/connect'
       preLoaderRoute: typeof ConnectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bhakti-steps': {
+      id: '/bhakti-steps'
+      path: '/bhakti-steps'
+      fullPath: '/bhakti-steps'
+      preLoaderRoute: typeof BhaktiStepsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -636,6 +696,7 @@ const TempleRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  BhaktiStepsRoute: BhaktiStepsRoute,
   ConnectRoute: ConnectRoute,
   CoursesRoute: CoursesRoute,
   DailyDarshanRoute: DailyDarshanRoute,
@@ -648,9 +709,11 @@ const rootRouteChildren: RootRouteChildren = {
   HarinamaRoute: HarinamaRoute,
   HouseProgrammesRoute: HouseProgrammesRoute,
   PrahladaBadiRoute: PrahladaBadiRoute,
+  PrivacyRoute: PrivacyRoute,
   ShopRoute: ShopRoute,
   SocialMediaRoute: SocialMediaRoute,
   TempleRoute: TempleRouteWithChildren,
+  TermsRoute: TermsRoute,
   YouthRoute: YouthRoute,
   YouthYatraRoute: YouthYatraRoute,
   AboutFounderRoute: AboutFounderRoute,
