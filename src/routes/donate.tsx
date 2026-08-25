@@ -17,7 +17,8 @@ import {
   User, 
   Phone, 
   Mail, 
-  Plus
+  Plus,
+  FileText
 } from "lucide-react";
 
 export const Route = createFileRoute("/donate")({
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/donate")({
   component: () => <Outlet />,
 });
 
-const RAZORPAY_KEY = "rzp_live_TTxJXHnvmVNCF8";
+const RAZORPAY_KEY = "rzp_test_SwEw3kkyiffJww";
 
 function loadRazorpay(): Promise<boolean> {
   return new Promise((resolve) => {
@@ -44,8 +45,8 @@ function loadRazorpay(): Promise<boolean> {
   });
 }
 
-// Simple quick amount suggestions
-const QUICK_SUGGESTIONS = [108, 501, 1000, 2500, 5000];
+// Quick amount suggestions
+const QUICK_SUGGESTIONS = [108, 251, 501, 1008, 2500, 5001, 11000];
 
 export default function Page({ initialSlug }: { initialSlug?: string }) {
   const { sevas, settings, theme, ready, addDonation, updateDonationStatus, platformFee, addPaymentRecord, sunday } = useAdmin();
@@ -58,18 +59,22 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   const [isCustomCheckoutAmount, setIsCustomCheckoutAmount] = useState(false);
   const [customCheckoutAmount, setCustomCheckoutAmount] = useState<string>("1008");
 
-  // Simple Quick Donate State (on main page)
+  // Quick Donate State with All Details
   const [quickAmount, setQuickAmount] = useState<number>(501);
   const [quickCustomInput, setQuickCustomInput] = useState<string>("501");
   const [quickDonorName, setQuickDonorName] = useState("");
   const [quickPhone, setQuickPhone] = useState("");
+  const [quickEmail, setQuickEmail] = useState("");
+  const [quickPurpose, setQuickPurpose] = useState("");
+  const [quickPan, setQuickPan] = useState("");
+  const [quickCoverFee, setQuickCoverFee] = useState(true);
   const [quickIsSubmitting, setQuickIsSubmitting] = useState(false);
 
   // Success Receipt Modal State
   const [receiptSuccess, setReceiptSuccess] = useState<ReceiptData | null>(null);
   const [coverPlatformFee, setCoverPlatformFee] = useState(true);
 
-  // Form inputs for standard checkout
+  // Form inputs for standard seva checkout
   const [donorName, setDonorName] = useState("");
   const [purpose, setPurpose] = useState("");
   const [email, setEmail] = useState("");
@@ -194,7 +199,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     const curEmail = (customDetails?.email ?? email).trim() || `${curPhone.replace(/\D/g, "") || "devotee"}@iskconkurnool.org`;
     const curPan = (customDetails?.pan ?? pan).trim();
     const curPurpose = (customDetails?.purpose ?? purpose).trim();
-    const curCoverFee = customDetails ? (customDetails.coverFee ?? false) : coverPlatformFee;
+    const curCoverFee = customDetails ? (customDetails.coverFee ?? true) : coverPlatformFee;
 
     // Store every submission in the admin panel before opening the gateway
     const enquiryId = await addDonation({
@@ -297,12 +302,15 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
         setPan("");
         setQuickDonorName("");
         setQuickPhone("");
+        setQuickEmail("");
+        setQuickPurpose("");
+        setQuickPan("");
       },
     });
     rzp.open();
   };
 
-  // Handle Quick Donate Form Submit
+  // Handle Quick Donate Form Submit with all details
   const handleQuickPayNow = async (e: React.FormEvent) => {
     e.preventDefault();
     const finalAmount = Number(quickAmount);
@@ -311,11 +319,15 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       return;
     }
     if (!quickDonorName.trim()) {
-      alert("Please enter your Name.");
+      alert("Please enter Devotee / Donor Name.");
       return;
     }
     if (!quickPhone.trim()) {
-      alert("Please enter your Phone Number.");
+      alert("Please enter WhatsApp Phone Number.");
+      return;
+    }
+    if (!quickEmail.trim()) {
+      alert("Please enter Email Address.");
       return;
     }
 
@@ -328,8 +340,10 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
         {
           donorName: quickDonorName,
           phone: quickPhone,
-          purpose: "Quick Devotional Donation",
-          coverFee: false
+          email: quickEmail,
+          pan: quickPan,
+          purpose: quickPurpose || "Quick Devotional Offering",
+          coverFee: quickCoverFee
         }
       );
     } finally {
@@ -654,9 +668,11 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   }
 
   // ==========================================
-  // MAIN DONATE DIRECTORY & 2-LINE QUICK DONATE
+  // MAIN DONATE DIRECTORY & COMPLETE QUICK DONATE
   // ==========================================
   const currentQuickAmountNum = Number(quickAmount) || 0;
+  const quickPlatformCharge = platformFee.enabled && quickCoverFee ? calculatePlatformFee(currentQuickAmountNum, platformFee) : 0;
+  const quickTotalPayable = currentQuickAmountNum + quickPlatformCharge;
 
   return (
     <SiteLayout>
@@ -668,97 +684,250 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       />
 
       {/* ========================================= */}
-      {/* SIMPLE 2-LINE QUICK DONATE SECTION */}
+      {/* COMPLETE QUICK DONATE SECTION */}
       {/* ========================================= */}
-      <section className="py-6 bg-gradient-to-b from-[#fff7e6] to-[#fffbf0] border-b border-amber-200/80">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="bg-white rounded-2xl border-2 border-amber-300/90 shadow-md p-4 sm:p-5 space-y-3.5">
+      <section className="py-8 bg-gradient-to-b from-[#fff7e6] via-[#fffbf0] to-[#fdf4d4] border-b border-amber-200/80">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="bg-white rounded-3xl border-2 border-amber-300/90 shadow-lg p-5 sm:p-7 space-y-6">
             
-            {/* LINE 1: Amount Suggestions + Custom Amount */}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-              <span className="text-xs font-black uppercase tracking-wider text-amber-900 shrink-0 flex items-center gap-1.5 mr-1">
-                <Zap className="h-4 w-4 text-amber-600 fill-amber-500" />
-                <span>Quick Donate:</span>
-              </span>
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xs">
+                  <Zap className="h-4 w-4 fill-white" />
+                </div>
+                <div>
+                  <h2 className="font-display font-extrabold text-xl sm:text-2xl text-primary leading-tight">
+                    Quick Devotional Offering
+                  </h2>
+                  <p className="text-xs text-slate-500 font-sans">
+                    Choose an amount or enter your wish amount, enter your details, and donate securely.
+                  </p>
+                </div>
+              </div>
 
-              {/* Amount Chips */}
-              {QUICK_SUGGESTIONS.map((amt) => {
-                const isSelected = quickAmount === amt && quickCustomInput === String(amt);
-                return (
-                  <button
-                    key={amt}
-                    type="button"
-                    onClick={() => {
-                      setQuickAmount(amt);
-                      setQuickCustomInput(String(amt));
-                    }}
-                    className={`px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center gap-1 shrink-0 ${isSelected
-                      ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm scale-105"
-                      : "bg-slate-100 hover:bg-amber-100/80 text-slate-800 border border-slate-200"
-                      }`}
-                  >
-                    {isSelected && <Check className="h-3 w-3" />}
-                    ₹{amt.toLocaleString("en-IN")}
-                  </button>
-                );
-              })}
-
-              {/* Inline Custom Amount Input */}
-              <div className="relative flex-1 min-w-[130px] max-w-[200px]">
-                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-600">₹</span>
-                <input
-                  type="number"
-                  min="1"
-                  placeholder="Custom ₹..."
-                  value={quickCustomInput}
-                  onChange={(e) => {
-                    setQuickCustomInput(e.target.value);
-                    setQuickAmount(Number(e.target.value) || 0);
-                  }}
-                  className="w-full pl-6 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                />
+              <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200/80 shrink-0 self-start sm:self-auto">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                <span>80G Tax Exemption Eligible</span>
               </div>
             </div>
 
-            {/* LINE 2: Details & Pay Now Button */}
-            <form onSubmit={handleQuickPayNow} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-2 border-t border-slate-100">
-              {/* Devotee Name */}
-              <div className="relative flex-1">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                <input
-                  type="text"
-                  required
-                  placeholder="Devotee Name *"
-                  value={quickDonorName}
-                  onChange={(e) => setQuickDonorName(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans"
-                />
+            {/* Grid Layout: Left (Form) & Right (Admin Uploaded Image) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-stretch">
+              
+              {/* Left Column: Form & Amounts */}
+              <div className="lg:col-span-7 xl:col-span-8 space-y-5">
+                {/* Quick Amount Suggestions + Custom Amount */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider font-sans">
+                    1. Select Offering Amount (₹)
+                  </label>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {QUICK_SUGGESTIONS.map((amt) => {
+                      const isSelected = quickAmount === amt && quickCustomInput === String(amt);
+                      return (
+                        <button
+                          key={amt}
+                          type="button"
+                          onClick={() => {
+                            setQuickAmount(amt);
+                            setQuickCustomInput(String(amt));
+                          }}
+                          className={`px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center gap-1.5 ${isSelected
+                            ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md scale-105 ring-2 ring-amber-300"
+                            : "bg-slate-100 hover:bg-amber-100/80 text-slate-800 border border-slate-200"
+                            }`}
+                        >
+                          {isSelected && <Check className="h-3.5 w-3.5" />}
+                          ₹{amt.toLocaleString("en-IN")}
+                        </button>
+                      );
+                    })}
+
+                    {/* Inline Custom Amount Input */}
+                    <div className="relative flex-1 min-w-[140px] max-w-[200px]">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-amber-600">₹</span>
+                      <input
+                        type="number"
+                        min="1"
+                        placeholder="Custom amount..."
+                        value={quickCustomInput}
+                        onChange={(e) => {
+                          setQuickCustomInput(e.target.value);
+                          setQuickAmount(Number(e.target.value) || 0);
+                        }}
+                        className="w-full pl-7 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-2xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Donor Details & Pay Form */}
+                <form onSubmit={handleQuickPayNow} className="space-y-4 pt-3 border-t border-slate-100">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider font-sans">
+                    2. Devotee & Receipt Details
+                  </label>
+
+                  {/* Row 1: Name, Phone */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 mb-1 font-sans">
+                        Devotee Name *
+                      </label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                        <input
+                          type="text"
+                          required
+                          placeholder="Full Name"
+                          value={quickDonorName}
+                          onChange={(e) => setQuickDonorName(e.target.value)}
+                          className="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 mb-1 font-sans">
+                        WhatsApp Phone Number *
+                      </label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                        <input
+                          type="tel"
+                          required
+                          placeholder="+91 9876543210"
+                          value={quickPhone}
+                          onChange={(e) => setQuickPhone(e.target.value)}
+                          className="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Row 2: Email, Purpose */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 mb-1 font-sans">
+                        Email Address *
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                        <input
+                          type="email"
+                          required
+                          placeholder="donor@example.com"
+                          value={quickEmail}
+                          onChange={(e) => setQuickEmail(e.target.value)}
+                          className="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 mb-1 font-sans">
+                        Purpose / Sankalpa (Optional)
+                      </label>
+                      <div className="relative">
+                        <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                        <input
+                          type="text"
+                          placeholder="e.g. Birthday, Family Welfare..."
+                          value={quickPurpose}
+                          onChange={(e) => setQuickPurpose(e.target.value)}
+                          className="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Row 3: PAN Card */}
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1 font-sans">
+                      PAN Card (Optional for 80G Tax Exemption)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="ABCDE1234F"
+                      value={quickPan}
+                      onChange={(e) => setQuickPan(e.target.value.toUpperCase())}
+                      className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs uppercase tracking-wider font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans"
+                    />
+                  </div>
+
+                  {/* Row 4: Platform Fee Checkbox & Total & Pay Button */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2">
+                    <div>
+                      {platformFee.enabled && currentQuickAmountNum > 0 && (
+                        <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700">
+                          <input
+                            type="checkbox"
+                            checked={quickCoverFee}
+                            onChange={(e) => setQuickCoverFee(e.target.checked)}
+                            className="h-4 w-4 rounded text-primary focus:ring-primary accent-primary cursor-pointer"
+                          />
+                          <span>
+                            Cover payment gateway charges (+₹{quickPlatformCharge})
+                          </span>
+                        </label>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                      <div className="text-right shrink-0">
+                        <span className="text-[11px] text-slate-500 font-sans block leading-none">Total:</span>
+                        <span className="text-lg font-black text-primary font-display">
+                          ₹{quickTotalPayable.toLocaleString("en-IN")}
+                        </span>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={quickIsSubmitting || currentQuickAmountNum <= 0}
+                        className="flex-1 sm:flex-none px-6 py-2.5 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 disabled:opacity-50 disabled:pointer-events-none text-white font-black rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 text-sm uppercase tracking-wide shadow-md shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-[1.02] active:scale-98"
+                      >
+                        <Lock className="h-4 w-4" />
+                        <span>DONATE ₹{quickTotalPayable.toLocaleString("en-IN")} NOW</span>
+                        <Heart className="h-4 w-4 fill-white/20 text-white" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider pt-1">
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+                    <span>100% Secure via Razorpay · Instant Official Downloadable 80G Receipt</span>
+                  </div>
+                </form>
               </div>
 
-              {/* Phone Number */}
-              <div className="relative flex-1">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                <input
-                  type="tel"
-                  required
-                  placeholder="WhatsApp Phone Number *"
-                  value={quickPhone}
-                  onChange={(e) => setQuickPhone(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans"
-                />
+              {/* Right Column: Admin Uploaded Image Banner */}
+              <div className="lg:col-span-5 xl:col-span-4 flex flex-col justify-between rounded-2xl overflow-hidden bg-gradient-to-b from-amber-500/10 via-orange-500/5 to-amber-50/50 border border-amber-200/70 p-3 sm:p-4">
+                <div className="relative aspect-[4/3] lg:aspect-auto lg:h-[300px] w-full rounded-xl overflow-hidden bg-slate-100 shadow-sm border border-amber-200/50">
+                  <img
+                    src={settings.quickDonateImage || "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80"}
+                    alt="Devotional Offering"
+                    className="w-full h-full object-cover rounded-xl transition-transform duration-500 hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-3">
+                    <div className="text-white space-y-0.5">
+                      <span className="text-[10px] font-bold text-amber-300 uppercase tracking-widest block">Sri Sri Jagannath Seva</span>
+                      <p className="text-xs font-semibold text-white/95 leading-tight">Every offering made in pure love brings divine peace & blessings.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-3 text-center space-y-1">
+                  <div className="inline-flex items-center gap-1.5 text-xs font-bold text-primary">
+                    <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                    <span>ISKCON Kurnool Digital Temple</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 font-sans">
+                    Sanctified Annadana, Deity Worship & Vedic Education
+                  </p>
+                </div>
               </div>
 
-              {/* Pay Now Button */}
-              <button
-                type="submit"
-                disabled={quickIsSubmitting || currentQuickAmountNum <= 0}
-                className="px-6 py-2 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 disabled:opacity-50 disabled:pointer-events-none text-white font-black rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wide shadow-md shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-[1.02] active:scale-98 whitespace-nowrap"
-              >
-                <Lock className="h-3.5 w-3.5" />
-                <span>PAY NOW · ₹{currentQuickAmountNum.toLocaleString("en-IN")}</span>
-                <Heart className="h-3.5 w-3.5 fill-white/20 text-white" />
-              </button>
-            </form>
+            </div>
 
           </div>
         </div>

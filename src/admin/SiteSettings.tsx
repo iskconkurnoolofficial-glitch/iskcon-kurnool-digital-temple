@@ -22,6 +22,10 @@ export default function SiteSettingsForm() {
     try { const url = await uploadToCloudinary(f); setS((p) => ({ ...p, welcomeImage: url })); } catch { alert("Upload failed"); }
   };
 
+  const onQuickDonateImage = async (f: File) => {
+    try { const url = await uploadToCloudinary(f); setS((p) => ({ ...p, quickDonateImage: url })); } catch { alert("Upload failed"); }
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow p-6 border space-y-6 max-w-3xl">
       <h3 className="font-display text-xl font-bold text-primary">Site Settings</h3>
@@ -61,6 +65,14 @@ export default function SiteSettingsForm() {
           url={s.welcomeImage || ""}
           onPick={onWelcomeImage}
           aspect="aspect-[4/3]"
+          className="max-w-[200px] w-full"
+        />
+
+        <UploadBox
+          label="Quick Donate Right Image"
+          url={s.quickDonateImage || ""}
+          onPick={onQuickDonateImage}
+          aspect="aspect-square"
           className="max-w-[200px] w-full"
         />
       </div>

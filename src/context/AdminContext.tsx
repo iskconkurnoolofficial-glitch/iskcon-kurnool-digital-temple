@@ -2051,6 +2051,7 @@ export type SiteSettings = {
   logo: string;
   facebook?: string;
   welcomeImage?: string;
+  quickDonateImage?: string;
   launchPageActive?: boolean;
   launchDate?: string;
   launchBypassCode?: string;
@@ -3046,6 +3047,7 @@ const defaultSettings: SiteSettings = {
   logo: "",
   facebook: "https://facebook.com/iskconkurnool",
   welcomeImage: "",
+  quickDonateImage: "",
   launchPageActive: false,
   launchDate: "2026-07-15T09:00:00",
   launchBypassCode: "108",
