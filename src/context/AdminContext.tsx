@@ -2046,6 +2046,7 @@ export type SiteSettings = {
   instagram: string;
   youtube: string;
   mapEmbed: string;
+  googleMapUrl?: string;
   address: string;
   footer: string;
   logo: string;
@@ -3042,6 +3043,7 @@ const defaultSettings: SiteSettings = {
   youtube: "https://youtube.com/@iskconkurnool",
   mapEmbed:
     "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3849.123!2d78.0373!3d15.8281!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTXCsDQ5JzQxLjIiTiA3OMKwMDInMTQuMyJF!5e0!3m2!1sen!2sin!4v1700000000000",
+  googleMapUrl: "https://maps.app.goo.gl/yJpP11F8Q8ZqT76W9",
   address: "ISKCON Kurnool\nSri Sri Jagannath Baladev Subhadra Temple\nKurnool, Andhra Pradesh\nIndia",
   footer: "© 2025 ISKCON Kurnool. All Rights Reserved.",
   logo: "",

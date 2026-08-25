@@ -114,16 +114,16 @@ export default function Footer() {
             <div>
               <h4 className="font-display font-bold text-secondary text-sm uppercase tracking-wider mb-5">Connect With Us</h4>
               <div className="flex gap-2.5">
-                <a href={safeUrl(settings.youtube, "https://youtube.com")} target="_blank" rel="noreferrer" aria-label="YouTube" className="h-9 w-9 rounded-xl bg-white/5 border border-white/10 hover:border-secondary hover:bg-secondary hover:text-primary flex items-center justify-center transition-all duration-300 hover:scale-105">
+                <a href={safeUrl(settings.youtube, "https://youtube.com/@iskconkurnool")} target="_blank" rel="noreferrer" aria-label="YouTube" className="h-9 w-9 rounded-xl bg-white/5 border border-white/10 hover:border-secondary hover:bg-secondary hover:text-primary flex items-center justify-center transition-all duration-300 hover:scale-105">
                   <Youtube className="h-4 w-4" />
                 </a>
-                <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook" className="h-9 w-9 rounded-xl bg-white/5 border border-white/10 hover:border-secondary hover:bg-secondary hover:text-primary flex items-center justify-center transition-all duration-300 hover:scale-105">
+                <a href={safeUrl(settings.facebook, "https://facebook.com/iskconkurnool")} target="_blank" rel="noreferrer" aria-label="Facebook" className="h-9 w-9 rounded-xl bg-white/5 border border-white/10 hover:border-secondary hover:bg-secondary hover:text-primary flex items-center justify-center transition-all duration-300 hover:scale-105">
                   <Facebook className="h-4 w-4" />
                 </a>
-                <a href={safeUrl(settings.instagram, "https://instagram.com")} target="_blank" rel="noreferrer" aria-label="Instagram" className="h-9 w-9 rounded-xl bg-white/5 border border-white/10 hover:border-secondary hover:bg-secondary hover:text-primary flex items-center justify-center transition-all duration-300 hover:scale-105">
+                <a href={safeUrl(settings.instagram, "https://instagram.com/iskconkurnool")} target="_blank" rel="noreferrer" aria-label="Instagram" className="h-9 w-9 rounded-xl bg-white/5 border border-white/10 hover:border-secondary hover:bg-secondary hover:text-primary flex items-center justify-center transition-all duration-300 hover:scale-105">
                   <Instagram className="h-4 w-4" />
                 </a>
-                <a href={`https://wa.me/${(settings.whatsapp || "919505377520").replace(/\D/g, "")}`} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="h-9 w-9 rounded-xl bg-white/5 border border-white/10 hover:border-secondary hover:bg-secondary hover:text-primary flex items-center justify-center transition-all duration-300 hover:scale-105">
+                <a href={`https://wa.me/${(settings.whatsapp || "+919505377520").replace(/\D/g, "")}`} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="h-9 w-9 rounded-xl bg-white/5 border border-white/10 hover:border-secondary hover:bg-secondary hover:text-primary flex items-center justify-center transition-all duration-300 hover:scale-105">
                   <MessageCircle className="h-4 w-4" />
                 </a>
               </div>
@@ -132,15 +132,19 @@ export default function Footer() {
             <div className="space-y-3.5 text-xs text-footer-foreground/80">
               <div className="flex items-start gap-2.5">
                 <MapPin className="h-4 w-4 text-secondary shrink-0 mt-0.5" />
-                <span>ISKCON Kurnool, Andhra Pradesh, India</span>
+                <span className="whitespace-pre-line">{settings.address || "ISKCON Kurnool, Andhra Pradesh, India"}</span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Phone className="h-4 w-4 text-secondary shrink-0" />
-                <span>+91 95053 77520</span>
+                <a href={`tel:${(settings.phone || "+919505377520").replace(/\D/g, "")}`} className="hover:text-secondary transition-colors">
+                  {settings.phone || "+91 95053 77520"}
+                </a>
               </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="h-4 w-4 text-secondary shrink-0" />
-                <span>info@iskconkurnool.org</span>
+                <a href={`mailto:${settings.email || "info@iskconkurnool.org"}`} className="hover:text-secondary transition-colors">
+                  {settings.email || "info@iskconkurnool.org"}
+                </a>
               </div>
             </div>
           </div>
@@ -150,7 +154,7 @@ export default function Footer() {
         {/* Footer Bottom Copyright & Utility Bar */}
         <div className="mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-xs opacity-75">
           <div>
-            © {currentYear} ISKCON Kurnool. All Rights Reserved.
+            {settings.footer || `© ${currentYear} ISKCON Kurnool. All Rights Reserved.`}
           </div>
           <div className="flex gap-6 items-center">
             <Link to="/privacy" className="hover:text-secondary transition-colors">Privacy Policy</Link>

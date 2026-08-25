@@ -1,129 +1,416 @@
 import { useState, useEffect } from "react";
 import { useAdmin, uploadToCloudinary, SiteSettings as Settings } from "@/context/AdminContext";
 import { UploadBox } from "./CarouselManager";
+import { 
+  Phone, 
+  MessageCircle, 
+  Mail, 
+  Instagram, 
+  Youtube, 
+  Facebook, 
+  MapPin, 
+  Navigation, 
+  Globe, 
+  Image as ImageIcon, 
+  Sparkles, 
+  Check, 
+  Lock, 
+  Calendar, 
+  Save, 
+  FileText, 
+  ShieldCheck 
+} from "lucide-react";
+import { toast } from "sonner";
 
 export default function SiteSettingsForm() {
   const { settings, setSettings } = useAdmin();
   const [s, setS] = useState<Settings>(settings);
   const [saved, setSaved] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     setS(settings);
   }, [settings]);
 
-  const update = (k: keyof Settings, v: string) => setS((prev) => ({ ...prev, [k]: v }));
-  const save = () => { setSettings(s); setSaved(true); setTimeout(() => setSaved(false), 2000); };
+  const update = (k: keyof Settings, v: any) => setS((prev) => ({ ...prev, [k]: v }));
+
+  const save = () => {
+    setSettings(s);
+    setSaved(true);
+    toast.success("Site Settings saved! All site-wide links, logos, and contacts updated.");
+    setTimeout(() => setSaved(false), 2500);
+  };
 
   const onLogo = async (f: File) => {
-    try { const url = await uploadToCloudinary(f); setS((p) => ({ ...p, logo: url })); } catch { alert("Upload failed"); }
+    setBusy(true);
+    try {
+      const url = await uploadToCloudinary(f);
+      setS((p) => ({ ...p, logo: url }));
+      toast.success("Logo uploaded successfully.");
+    } catch {
+      toast.error("Logo upload failed.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const onWelcomeImage = async (f: File) => {
-    try { const url = await uploadToCloudinary(f); setS((p) => ({ ...p, welcomeImage: url })); } catch { alert("Upload failed"); }
+    setBusy(true);
+    try {
+      const url = await uploadToCloudinary(f);
+      setS((p) => ({ ...p, welcomeImage: url }));
+      toast.success("Welcome section image uploaded.");
+    } catch {
+      toast.error("Upload failed.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const onQuickDonateImage = async (f: File) => {
-    try { const url = await uploadToCloudinary(f); setS((p) => ({ ...p, quickDonateImage: url })); } catch { alert("Upload failed"); }
+    setBusy(true);
+    try {
+      const url = await uploadToCloudinary(f);
+      setS((p) => ({ ...p, quickDonateImage: url }));
+      toast.success("Quick donate image uploaded.");
+    } catch {
+      toast.error("Upload failed.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow p-6 border space-y-6 max-w-3xl">
-      <h3 className="font-display text-xl font-bold text-primary">Site Settings</h3>
+    <div className="max-w-5xl mx-auto space-y-8 animate-fade-in font-sans pb-12">
+      
+      {/* Top Banner Header */}
+      <div className="bg-gradient-to-r from-primary via-[#4a2282] to-primary rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-xs font-semibold text-amber-300 backdrop-blur-md">
+            <Sparkles className="h-3.5 w-3.5 fill-amber-300 text-amber-300" />
+            <span>Central Site-Wide Master Control</span>
+          </div>
+          <h1 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight">
+            Master Site Settings
+          </h1>
+          <p className="text-xs sm:text-sm text-white/80 max-w-xl">
+            When you update your phone number, WhatsApp, social channels, maps link, address, or logo here, it instantly updates across every single page and component on the entire website!
+          </p>
+        </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
-        <Input label="Phone Number" value={s.phone} onChange={(v) => update("phone", v)} />
-        <Input label="WhatsApp Number" value={s.whatsapp} onChange={(v) => update("whatsapp", v)} />
-        <Input label="Email Address" type="email" value={s.email} onChange={(v) => update("email", v)} />
-        <Input label="Instagram URL" value={s.instagram} onChange={(v) => update("instagram", v)} />
-        <Input label="YouTube Channel URL" value={s.youtube} onChange={(v) => update("youtube", v)} />
+        <button
+          onClick={save}
+          disabled={busy}
+          className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-secondary text-primary hover:bg-amber-300 font-extrabold text-sm shadow-lg hover:shadow-xl transition-all cursor-pointer shrink-0 self-start md:self-auto"
+        >
+          {saved ? <Check className="h-4.5 w-4.5 stroke-[3]" /> : <Save className="h-4.5 w-4.5" />}
+          <span>{saved ? "Saved ✓" : "Save All Changes"}</span>
+        </button>
       </div>
 
-      <label className="block">
-        <span className="text-sm font-medium text-foreground/80 mb-1 block">Google Maps Embed URL</span>
-        <input className="w-full px-4 py-2.5 border rounded-lg" value={s.mapEmbed} onChange={(e) => update("mapEmbed", e.target.value)} />
-        <span className="text-xs text-muted-foreground">Use the iframe src from Google Maps → Share → Embed.</span>
-      </label>
+      {/* SECTION 1: CONTACT NUMBERS & EMAIL */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+        <div className="border-b border-slate-100 pb-4 flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <Phone className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-display font-bold text-lg text-slate-900">Temple Contact Numbers &amp; Email</h3>
+            <p className="text-xs text-muted-foreground">Connected to navbar, footer, contact page, floating call buttons, and receipt printouts.</p>
+          </div>
+        </div>
 
-      <label className="block">
-        <span className="text-sm font-medium text-foreground/80 mb-1 block">Temple Address</span>
-        <textarea className="w-full px-4 py-2.5 border rounded-lg" rows={4} value={s.address} onChange={(e) => update("address", e.target.value)} />
-      </label>
-
-      <Input label="Footer Copyright Text" value={s.footer} onChange={(v) => update("footer", v)} />
-
-      <div className="flex flex-col sm:flex-row gap-6 border-t pt-4">
-        <UploadBox
-          label="Temple Logo"
-          url={s.logo}
-          onPick={onLogo}
-          aspect="aspect-square"
-          className="w-20 shrink-0"
-        />
-
-        <UploadBox
-          label="Homepage Welcome Image"
-          url={s.welcomeImage || ""}
-          onPick={onWelcomeImage}
-          aspect="aspect-[4/3]"
-          className="max-w-[200px] w-full"
-        />
-
-        <UploadBox
-          label="Quick Donate Right Image"
-          url={s.quickDonateImage || ""}
-          onPick={onQuickDonateImage}
-          aspect="aspect-square"
-          className="max-w-[200px] w-full"
-        />
-      </div>
-
-      {/* Coming Soon / Launch Page Settings */}
-      <div className="border-t pt-6 space-y-4">
-        <h4 className="font-display text-base font-bold text-primary">Coming Soon Launch Page</h4>
-        
-        <label className="flex items-center gap-2.5 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={!!s.launchPageActive}
-            onChange={(e) => setS((prev) => ({ ...prev, launchPageActive: e.target.checked }))}
-            className="h-4.5 w-4.5 rounded text-accent focus:ring-accent border-border"
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <InputField
+            icon={Phone}
+            label="Phone Number"
+            placeholder="e.g. +91 95053 77520"
+            value={s.phone}
+            onChange={(v) => update("phone", v)}
+            hint="Used for click-to-call links across the site."
           />
-          <span className="text-sm font-semibold text-foreground/80">Enable Coming Soon Page (Locks Website)</span>
-        </label>
 
-        <div className="grid md:grid-cols-2 gap-4">
-          <label className="block">
-            <span className="text-sm font-medium text-foreground/80 mb-1 block">Launch Date & Time</span>
-            <input
-              type="datetime-local"
-              className="w-full px-4 py-2.5 border rounded-lg font-medium text-foreground bg-white"
-              value={s.launchDate ? s.launchDate.substring(0, 16) : ""}
-              onChange={(e) => update("launchDate", e.target.value)}
-            />
-            <span className="text-xs text-muted-foreground">Select when the website will officially launch.</span>
-          </label>
+          <InputField
+            icon={MessageCircle}
+            label="WhatsApp Number / Link"
+            placeholder="e.g. +91 95053 77520 or 919505377520"
+            value={s.whatsapp}
+            onChange={(v) => update("whatsapp", v)}
+            hint="Controls the Floating WhatsApp button and all chat links."
+          />
 
-          <Input
-            label="Launch Bypass Passcode"
-            value={s.launchBypassCode || "108"}
-            onChange={(v) => update("launchBypassCode", v)}
+          <InputField
+            icon={Mail}
+            label="Email Address"
+            type="email"
+            placeholder="e.g. info@iskconkurnool.org"
+            value={s.email}
+            onChange={(v) => update("email", v)}
+            hint="Displayed in footer, contact form, and official communications."
           />
         </div>
       </div>
 
-      <div className="flex items-center gap-3 border-t pt-4">
-        <button onClick={save} className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium cursor-pointer">Save Changes</button>
-        {saved && <span className="text-sm text-green-600">Saved ✓</span>}
+      {/* SECTION 2: SOCIAL MEDIA CHANNELS */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+        <div className="border-b border-slate-100 pb-4 flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+            <Globe className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-display font-bold text-lg text-slate-900">Official Social Media Channels</h3>
+            <p className="text-xs text-muted-foreground">Updated in the footer, mobile navigation drawer, social reels bar, and connect sections.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <InputField
+            icon={Instagram}
+            label="Instagram Profile URL"
+            placeholder="https://instagram.com/iskcon_kurnool"
+            value={s.instagram}
+            onChange={(v) => update("instagram", v)}
+          />
+
+          <InputField
+            icon={Youtube}
+            label="YouTube Channel URL"
+            placeholder="https://youtube.com/@iskconkurnool"
+            value={s.youtube}
+            onChange={(v) => update("youtube", v)}
+          />
+
+          <InputField
+            icon={Facebook}
+            label="Facebook Page URL"
+            placeholder="https://facebook.com/iskconkurnool"
+            value={s.facebook || ""}
+            onChange={(v) => update("facebook", v)}
+          />
+        </div>
       </div>
+
+      {/* SECTION 3: LOCATION & MAPS */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+        <div className="border-b border-slate-100 pb-4 flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <MapPin className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-display font-bold text-lg text-slate-900">Temple Physical Location &amp; Google Maps</h3>
+            <p className="text-xs text-muted-foreground">Governs the interactive map, directions buttons, and full physical address.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <InputField
+            icon={Navigation}
+            label="Google Maps Direct Link / Share URL"
+            placeholder="https://maps.app.goo.gl/yJpP11F8Q8ZqT76W9"
+            value={s.googleMapUrl || ""}
+            onChange={(v) => update("googleMapUrl", v)}
+            hint="Opens Google Maps directly when devotees click 'Open in Maps'."
+          />
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center gap-1.5">
+              <MapPin className="h-3.5 w-3.5 text-primary" />
+              <span>Google Maps Embed Iframe URL</span>
+            </label>
+            <input
+              type="text"
+              className="w-full px-4 py-3 border border-slate-200 rounded-xl text-xs sm:text-sm bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+              placeholder="https://www.google.com/maps/embed?pb=..."
+              value={s.mapEmbed}
+              onChange={(e) => update("mapEmbed", e.target.value)}
+            />
+            <span className="text-[11px] text-muted-foreground mt-1 block">
+              From Google Maps → Share → Embed a map → copy only the `src="..."` URL.
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center gap-1.5">
+            <FileText className="h-3.5 w-3.5 text-primary" />
+            <span>Full Temple Physical Address</span>
+          </label>
+          <textarea
+            rows={3}
+            className="w-full px-4 py-3 border border-slate-200 rounded-xl text-xs sm:text-sm bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+            placeholder="ISKCON Kurnool, Sri Sri Jagannath Baladev Subhadra Temple..."
+            value={s.address}
+            onChange={(e) => update("address", e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* SECTION 4: BRANDING, LOGOS & VISUAL ASSETS */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+        <div className="border-b border-slate-100 pb-4 flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <ImageIcon className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-display font-bold text-lg text-slate-900">Temple Logo, Footer &amp; Homepage Images</h3>
+            <p className="text-xs text-muted-foreground">Upload and manage visual assets displayed across the entire site.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="space-y-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-600 block">Temple Logo</span>
+            <UploadBox
+              label="Temple Logo"
+              url={s.logo}
+              onPick={onLogo}
+              aspect="aspect-square"
+              className="w-full"
+            />
+            <p className="text-[11px] text-muted-foreground">Used in header, navbar, footer, admin login, and PDF receipts.</p>
+          </div>
+
+          <div className="space-y-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-600 block">Homepage Welcome Image</span>
+            <UploadBox
+              label="Welcome Section"
+              url={s.welcomeImage || ""}
+              onPick={onWelcomeImage}
+              aspect="aspect-[4/3]"
+              className="w-full"
+            />
+            <p className="text-[11px] text-muted-foreground">Featured in the home Welcome to ISKCON Kurnool intro block.</p>
+          </div>
+
+          <div className="space-y-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-600 block">Quick Donate Section Image</span>
+            <UploadBox
+              label="Quick Donate Right"
+              url={s.quickDonateImage || ""}
+              onPick={onQuickDonateImage}
+              aspect="aspect-square"
+              className="w-full"
+            />
+            <p className="text-[11px] text-muted-foreground">Featured in the right side card of Quick Donation.</p>
+          </div>
+        </div>
+
+        <div className="pt-2">
+          <InputField
+            icon={FileText}
+            label="Footer Copyright &amp; Legal Text"
+            placeholder="© 2025 ISKCON Kurnool. All Rights Reserved."
+            value={s.footer}
+            onChange={(v) => update("footer", v)}
+          />
+        </div>
+      </div>
+
+      {/* SECTION 5: COMING SOON / LAUNCH MODE */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+        <div className="border-b border-slate-100 pb-4 flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+              <Lock className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="font-display font-bold text-lg text-slate-900">Coming Soon / Website Launch Lock</h3>
+              <p className="text-xs text-muted-foreground">Optionally lock public visitors behind a countdown launch page.</p>
+            </div>
+          </div>
+
+          <label className="flex items-center gap-2.5 cursor-pointer bg-slate-50 border px-4 py-2 rounded-xl hover:bg-slate-100 transition">
+            <input
+              type="checkbox"
+              checked={!!s.launchPageActive}
+              onChange={(e) => update("launchPageActive", e.target.checked)}
+              className="h-4.5 w-4.5 rounded text-accent focus:ring-accent border-slate-300"
+            />
+            <span className="text-xs font-bold text-slate-800">
+              {s.launchPageActive ? "Launch Lock: ACTIVE" : "Launch Lock: Disabled"}
+            </span>
+          </label>
+        </div>
+
+        {s.launchPageActive && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 animate-fade-in bg-amber-50/50 p-4 rounded-2xl border border-amber-200/60">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5 text-primary" />
+                <span>Scheduled Launch Date &amp; Time</span>
+              </label>
+              <input
+                type="datetime-local"
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition font-medium"
+                value={s.launchDate ? s.launchDate.substring(0, 16) : ""}
+                onChange={(e) => update("launchDate", e.target.value)}
+              />
+            </div>
+
+            <InputField
+              icon={Lock}
+              label="Admin Bypass Secret Code"
+              placeholder="108"
+              value={s.launchBypassCode || "108"}
+              onChange={(v) => update("launchBypassCode", v)}
+              hint="Admins/Devotees enter this code on the coming soon screen to preview the full site."
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Floating / Bottom Sticky Save Bar */}
+      <div className="sticky bottom-4 z-30 flex items-center justify-between p-4 sm:p-5 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200 shadow-2xl">
+        <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-600">
+          <ShieldCheck className="h-5 w-5 text-emerald-600" />
+          <span>All changes take effect in real time across the entire site upon saving.</span>
+        </div>
+
+        <button
+          onClick={save}
+          disabled={busy}
+          className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl bg-primary hover:bg-[#4a2282] text-white font-extrabold text-sm shadow-lg hover:shadow-xl transition-all cursor-pointer shrink-0"
+        >
+          {saved ? <Check className="h-4.5 w-4.5 stroke-[3]" /> : <Save className="h-4.5 w-4.5" />}
+          <span>{saved ? "Saved Successfully ✓" : "Save Settings"}</span>
+        </button>
+      </div>
+
     </div>
   );
 }
 
-function Input({ label, value, onChange, type = "text" }: { label: string; value: string; onChange: (v: string) => void; type?: string }) {
+function InputField({
+  label,
+  value,
+  onChange,
+  type = "text",
+  placeholder,
+  icon: Icon,
+  hint
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  placeholder?: string;
+  icon?: any;
+  hint?: string;
+}) {
   return (
-    <label className="block">
-      <span className="text-sm font-medium text-foreground/80 mb-1 block">{label}</span>
-      <input type={type} className="w-full px-4 py-2.5 border rounded-lg" value={value} onChange={(e) => onChange(e.target.value)} />
-    </label>
+    <div>
+      <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center gap-1.5">
+        {Icon && <Icon className="h-3.5 w-3.5 text-primary" />}
+        <span>{label}</span>
+      </label>
+      <input
+        type={type}
+        className="w-full px-4 py-3 border border-slate-200 rounded-xl text-xs sm:text-sm bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+        placeholder={placeholder}
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      {hint && <span className="text-[11px] text-muted-foreground mt-1 block">{hint}</span>}
+    </div>
   );
 }

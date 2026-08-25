@@ -91,7 +91,7 @@ const NAV: NavItem[] = [
 ];
 
 export default function Navbar() {
-  const { settings, sunday, gitaCourse, templeSchedule, contacts, paymentRecords, previewLeads, liveProgrammes } = useAdmin();
+  const { settings, sunday, gitaCourse, templeSchedule, contacts, paymentRecords, liveProgrammes } = useAdmin();
   const liveClass = useLiveClass();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDrop, setOpenDrop] = useState<string | null>(null);
@@ -128,8 +128,7 @@ export default function Navbar() {
 
   const unreadMessagesCount = (contacts || []).filter((c) => !c.read).length;
   const unreadDonationsCount = (paymentRecords || []).filter((p) => !p.read).length;
-  const unreadLeadsCount = (previewLeads || []).filter((l) => !l.read).length;
-  const totalUnreadNotifications = unreadMessagesCount + unreadDonationsCount + unreadLeadsCount;
+  const totalUnreadNotifications = unreadMessagesCount + unreadDonationsCount;
 
   const [mounted, setMounted] = useState(false);
 
@@ -668,16 +667,16 @@ export default function Navbar() {
                   
                   {/* Social Quick Links */}
                   <div className="flex justify-center gap-3 py-1 border-b border-slate-200/80 pb-3">
-                    <a href={safeUrl(settings.youtube, "https://youtube.com")} target="_blank" rel="noreferrer" aria-label="YouTube" className="h-8.5 w-8.5 rounded-full bg-white border border-slate-200 text-primary hover:bg-secondary hover:text-primary grid place-items-center transition duration-200 shadow-2xs">
+                    <a href={safeUrl(settings.youtube, "https://youtube.com/@iskconkurnool")} target="_blank" rel="noreferrer" aria-label="YouTube" className="h-8.5 w-8.5 rounded-full bg-white border border-slate-200 text-primary hover:bg-secondary hover:text-primary grid place-items-center transition duration-200 shadow-2xs">
                       <Youtube className="h-4 w-4" />
                     </a>
-                    <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook" className="h-8.5 w-8.5 rounded-full bg-white border border-slate-200 text-primary hover:bg-secondary hover:text-primary grid place-items-center transition duration-200 shadow-2xs">
+                    <a href={safeUrl(settings.facebook, "https://facebook.com/iskconkurnool")} target="_blank" rel="noreferrer" aria-label="Facebook" className="h-8.5 w-8.5 rounded-full bg-white border border-slate-200 text-primary hover:bg-secondary hover:text-primary grid place-items-center transition duration-200 shadow-2xs">
                       <Facebook className="h-4 w-4" />
                     </a>
-                    <a href={safeUrl(settings.instagram, "https://instagram.com")} target="_blank" rel="noreferrer" aria-label="Instagram" className="h-8.5 w-8.5 rounded-full bg-white border border-slate-200 text-primary hover:bg-secondary hover:text-primary grid place-items-center transition duration-200 shadow-2xs">
+                    <a href={safeUrl(settings.instagram, "https://instagram.com/iskconkurnool")} target="_blank" rel="noreferrer" aria-label="Instagram" className="h-8.5 w-8.5 rounded-full bg-white border border-slate-200 text-primary hover:bg-secondary hover:text-primary grid place-items-center transition duration-200 shadow-2xs">
                       <Instagram className="h-4 w-4" />
                     </a>
-                    <a href={`https://wa.me/${(settings.whatsapp || "919505377520").replace(/\D/g, "")}`} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="h-8.5 w-8.5 rounded-full bg-white border border-slate-200 text-primary hover:bg-secondary hover:text-primary grid place-items-center transition duration-200 shadow-2xs">
+                    <a href={`https://wa.me/${(settings.whatsapp || "+919505377520").replace(/\D/g, "")}`} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="h-8.5 w-8.5 rounded-full bg-white border border-slate-200 text-primary hover:bg-secondary hover:text-primary grid place-items-center transition duration-200 shadow-2xs">
                       <MessageCircle className="h-4 w-4" />
                     </a>
                   </div>

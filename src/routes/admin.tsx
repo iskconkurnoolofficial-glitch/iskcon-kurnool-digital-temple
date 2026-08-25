@@ -22,8 +22,6 @@ import HouseProgrammesManager from "@/admin/HouseProgrammesManager";
 import TempleScheduleManager from "@/admin/TempleScheduleManager";
 import FeaturePopupManager from "@/admin/FeaturePopupManager";
 import PaymentPagesManager from "@/admin/PaymentPagesManager";
-import PreviewLeadsManager from "@/admin/PreviewLeadsManager";
-import DonationsManager from "@/admin/DonationsManager";
 import YouthYatraManager from "@/admin/YouthYatraManager";
 import DailyDarshanManager from "@/admin/DailyDarshanManager";
 import LiveProgrammeManager from "@/admin/LiveProgrammeManager";
@@ -37,10 +35,10 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "welcome" | "dailyDarshan" | "liveProgrammes" | "carousel" | "festivals" | "sevas" | "bhaktiSteps" | "youth" | "youthYatra" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "terms" | "privacy" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "featurePopup" | "paymentPages" | "previewLeads" | "donations";
+type Tab = "welcome" | "dailyDarshan" | "liveProgrammes" | "carousel" | "festivals" | "sevas" | "bhaktiSteps" | "youth" | "youthYatra" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "terms" | "privacy" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "featurePopup" | "paymentPages";
 
 function AdminPage() {
-  const { authed, login, logout, settings, contacts, setContacts, paymentRecords, previewLeads, houseProgrammes, markAllHouseProgrammeRequestsRead, markAllPaymentRecordsRead, markAllPreviewLeadsRead, youthYatra, markAllYatraRegistrationsRead, bhaktiSteps, markAllBhaktiStepsRegistrationsRead, currentUser } = useAdmin();
+  const { authed, login, logout, settings, contacts, setContacts, paymentRecords, houseProgrammes, markAllHouseProgrammeRequestsRead, markAllPaymentRecordsRead, youthYatra, markAllYatraRegistrationsRead, bhaktiSteps, markAllBhaktiStepsRegistrationsRead, currentUser } = useAdmin();
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [err, setErr] = useState("");
@@ -56,8 +54,6 @@ function AdminPage() {
       setContacts(contacts.map((c) => ({ ...c, read: true })));
     } else if (tab === "paymentPages" && paymentRecords && paymentRecords.some((p) => !p.read)) {
       markAllPaymentRecordsRead();
-    } else if (tab === "previewLeads" && previewLeads && previewLeads.some((l) => !l.read)) {
-      markAllPreviewLeadsRead();
     } else if (tab === "houseProgrammes" && houseProgrammes?.requests && houseProgrammes.requests.some((r) => !r.read)) {
       markAllHouseProgrammeRequestsRead();
     } else if (tab === "youthYatra" && youthYatra?.registrations && youthYatra.registrations.some((r) => !r.read)) {
@@ -69,16 +65,14 @@ function AdminPage() {
 
   const unreadMessagesCount = (contacts || []).filter((c) => !c.read).length;
   const unreadDonationsCount = (paymentRecords || []).filter((p) => !p.read).length;
-  const unreadLeadsCount = (previewLeads || []).filter((l) => !l.read).length;
   const unreadHouseProgrammesCount = (houseProgrammes?.requests || []).filter((r) => !r.read).length;
   const unreadYouthYatraCount = (youthYatra?.registrations || []).filter((r) => !r.read).length;
   const unreadBhaktiStepsCount = (bhaktiSteps?.registrations || []).filter((r) => !r.read).length;
-  const totalUnreadCount = unreadMessagesCount + unreadDonationsCount + unreadLeadsCount + unreadHouseProgrammesCount + unreadYouthYatraCount + unreadBhaktiStepsCount;
+  const totalUnreadCount = unreadMessagesCount + unreadDonationsCount + unreadHouseProgrammesCount + unreadYouthYatraCount + unreadBhaktiStepsCount;
 
   const getBadgeCount = (id: Tab): number => {
     if (id === "contacts") return unreadMessagesCount;
     if (id === "paymentPages") return unreadDonationsCount;
-    if (id === "previewLeads") return unreadLeadsCount;
     if (id === "houseProgrammes") return unreadHouseProgrammesCount;
     if (id === "youthYatra") return unreadYouthYatraCount;
     if (id === "bhaktiSteps") return unreadBhaktiStepsCount;
@@ -184,8 +178,6 @@ function AdminPage() {
     {
       title: "Main Content",
       items: [
-        { id: "previewLeads", label: "Preview Video & Leads", icon: Video },
-        { id: "donations", label: "Donation Submissions", icon: CreditCard },
         { id: "featurePopup", label: "Feature Pop-Up", icon: Megaphone },
         { id: "carousel", label: "Carousel Banners", icon: Image },
         { id: "heroBanners", label: "Hero Banners", icon: Images },
@@ -660,7 +652,6 @@ function AdminPage() {
             {tab === "sunday" && <SundayManager />}
             {tab === "goshala" && <GoshalaManager />}
             {tab === "contacts" && <ContactsManager />}
-            {tab === "donations" && <DonationsManager />}
             {tab === "instagram" && <InstagramManager />}
             {tab === "classes" && <DailyClassesManager />}
             {tab === "gallery" && <GalleryManager />}
@@ -671,7 +662,6 @@ function AdminPage() {
             {tab === "templeSchedule" && <TempleScheduleManager />}
             {tab === "featurePopup" && <FeaturePopupManager />}
             {tab === "paymentPages" && <PaymentPagesManager />}
-            {tab === "previewLeads" && <PreviewLeadsManager />}
           </motion.div>
         </AnimatePresence>
       </main>
@@ -746,17 +736,15 @@ function WelcomeDashboard({
   setTab: (id: Tab) => void; 
   logoUrl?: string; 
 }) {
-  const { contacts, paymentRecords, previewLeads } = useAdmin();
+  const { contacts, paymentRecords } = useAdmin();
   const [q, setQ] = useState("");
   
   const unreadMessagesCount = (contacts || []).filter((c) => !c.read).length;
   const unreadDonationsCount = (paymentRecords || []).filter((p) => !p.read).length;
-  const unreadLeadsCount = (previewLeads || []).filter((l) => !l.read).length;
 
   const getItemBadge = (id: Tab): number => {
     if (id === "contacts") return unreadMessagesCount;
     if (id === "paymentPages") return unreadDonationsCount;
-    if (id === "previewLeads") return unreadLeadsCount;
     return 0;
   };
 
