@@ -3,7 +3,22 @@ import { createFileRoute, Link, useNavigate, Outlet } from "@tanstack/react-rout
 import SiteLayout, { PageHero } from "@/components/SiteLayout";
 import { useAdmin, Seva, calculatePlatformFee } from "@/context/AdminContext";
 import OfficialReceiptModal, { ReceiptData } from "@/components/OfficialReceiptModal";
-import { Heart, Search, HandHeart, IndianRupee, Sparkles, ArrowLeft, Lock, ShieldCheck } from "lucide-react";
+import { 
+  Heart, 
+  Search, 
+  HandHeart, 
+  IndianRupee, 
+  Sparkles, 
+  ArrowLeft, 
+  Lock, 
+  ShieldCheck, 
+  Zap, 
+  Check, 
+  User, 
+  Phone, 
+  Mail, 
+  Plus
+} from "lucide-react";
 
 export const Route = createFileRoute("/donate")({
   head: () => ({
@@ -29,6 +44,9 @@ function loadRazorpay(): Promise<boolean> {
   });
 }
 
+// Simple quick amount suggestions
+const QUICK_SUGGESTIONS = [108, 501, 1000, 2500, 5000];
+
 export default function Page({ initialSlug }: { initialSlug?: string }) {
   const { sevas, settings, theme, ready, addDonation, updateDonationStatus, platformFee, addPaymentRecord, sunday } = useAdmin();
   const navigate = useNavigate();
@@ -36,11 +54,22 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   const [selected, setSelected] = useState<Record<string, number>>({});
   const [checkoutSeva, setCheckoutSeva] = useState<Seva | null>(null);
 
+  // Custom Amount state inside Checkout
+  const [isCustomCheckoutAmount, setIsCustomCheckoutAmount] = useState(false);
+  const [customCheckoutAmount, setCustomCheckoutAmount] = useState<string>("1008");
+
+  // Simple Quick Donate State (on main page)
+  const [quickAmount, setQuickAmount] = useState<number>(501);
+  const [quickCustomInput, setQuickCustomInput] = useState<string>("501");
+  const [quickDonorName, setQuickDonorName] = useState("");
+  const [quickPhone, setQuickPhone] = useState("");
+  const [quickIsSubmitting, setQuickIsSubmitting] = useState(false);
+
   // Success Receipt Modal State
   const [receiptSuccess, setReceiptSuccess] = useState<ReceiptData | null>(null);
   const [coverPlatformFee, setCoverPlatformFee] = useState(true);
 
-  // Form inputs
+  // Form inputs for standard checkout
   const [donorName, setDonorName] = useState("");
   const [purpose, setPurpose] = useState("");
   const [email, setEmail] = useState("");
@@ -77,14 +106,14 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
           const amt = Number(amountParam);
           let matchIdx = found.prices.findIndex(p => p.amount === amt);
           if (matchIdx === -1) {
-            // Add custom amount to prices if not present
-            found = {
-              ...found,
-              prices: [{ label: `Sponsorship Amount`, amount: amt }, ...found.prices]
-            };
-            matchIdx = 0;
+            setIsCustomCheckoutAmount(true);
+            setCustomCheckoutAmount(String(amt));
+          } else {
+            setIsCustomCheckoutAmount(false);
+            setSelected(prev => ({ ...prev, [found!.id]: matchIdx }));
           }
-          setSelected(prev => ({ ...prev, [found!.id]: matchIdx }));
+        } else {
+          setIsCustomCheckoutAmount(false);
         }
         setCheckoutSeva(found);
       } else {
@@ -98,7 +127,6 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   const active = useMemo(() => {
     let list = [...sevas].filter((s) => s.active);
 
-    // Automatically ensure Sunday Feast Annadana Seva is present in common donations
     const hasSundayFeast = list.some(
       (s) => s.slug === "sunday-feast-seva" || s.slug === "sunday-feast" || s.title.toLowerCase().includes("sunday feast")
     );
@@ -143,23 +171,50 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     );
   }
 
-  const donate = async (seva: Seva, amount: number, label: string) => {
+  const donate = async (
+    seva: { title: string }, 
+    amount: number, 
+    label: string, 
+    customDetails?: {
+      donorName: string;
+      phone: string;
+      email?: string;
+      pan?: string;
+      purpose?: string;
+      coverFee?: boolean;
+    }
+  ) => {
+    if (amount <= 0 || isNaN(amount)) {
+      alert("Please enter a valid donation amount.");
+      return;
+    }
+
+    const curDonorName = (customDetails?.donorName ?? donorName).trim();
+    const curPhone = (customDetails?.phone ?? phone).trim();
+    const curEmail = (customDetails?.email ?? email).trim() || `${curPhone.replace(/\D/g, "") || "devotee"}@iskconkurnool.org`;
+    const curPan = (customDetails?.pan ?? pan).trim();
+    const curPurpose = (customDetails?.purpose ?? purpose).trim();
+    const curCoverFee = customDetails ? (customDetails.coverFee ?? false) : coverPlatformFee;
+
     // Store every submission in the admin panel before opening the gateway
     const enquiryId = await addDonation({
-      donorName: donorName.trim(),
-      email: email.trim(),
-      phone: phone.trim(),
-      pan: pan.trim(),
-      purpose: purpose.trim(),
+      donorName: curDonorName,
+      email: curEmail,
+      phone: curPhone,
+      pan: curPan,
+      purpose: curPurpose,
       sevaTitle: seva.title,
       optionLabel: label,
       amount,
     });
 
     const ok = await loadRazorpay();
-    if (!ok) { alert("Unable to load payment gateway. Please try again."); return; }
+    if (!ok) { 
+      alert("Unable to load payment gateway. Please check your internet connection and try again."); 
+      return; 
+    }
 
-    const platformCharge = platformFee.enabled && coverPlatformFee ? calculatePlatformFee(amount, platformFee) : 0;
+    const platformCharge = platformFee.enabled && curCoverFee ? calculatePlatformFee(amount, platformFee) : 0;
     const totalPayable = amount + platformCharge;
 
     const rzp = new (window as any).Razorpay({
@@ -174,25 +229,21 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
         option: label,
         baseDonation: amount,
         platformFeeCovered: platformCharge,
-        donorName: donorName.trim(),
-        purpose: purpose.trim(),
-        email: email.trim(),
-        phone: phone.trim(),
-        pan: pan.trim()
+        donorName: curDonorName,
+        purpose: curPurpose,
+        email: curEmail,
+        phone: curPhone,
+        pan: curPan
       },
       prefill: {
-        name: donorName.trim() || undefined,
-        email: email.trim() || undefined,
-        contact: phone.trim() || settings.phone?.replace(/\D/g, "") || undefined
+        name: curDonorName || undefined,
+        email: curEmail || undefined,
+        contact: curPhone || settings.phone?.replace(/\D/g, "") || undefined
       },
       theme: { color: theme.primary || "#5b2c9b" },
       handler: async (response: any) => {
         const pId = response?.razorpay_payment_id || `pay_${Date.now()}`;
-        const currentDonorName = donorName.trim() || "Devotee";
-        const currentEmail = email.trim();
-        const currentPhone = phone.trim();
-        const currentPan = pan.trim();
-        const currentNotes = purpose.trim();
+        const finalDonorName = curDonorName || "Devotee";
 
         if (enquiryId) {
           try {
@@ -205,9 +256,9 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
         try {
           await addPaymentRecord({
             paymentId: pId,
-            donorName: currentDonorName,
-            donorEmail: currentEmail,
-            donorPhone: currentPhone,
+            donorName: finalDonorName,
+            donorEmail: curEmail,
+            donorPhone: curPhone,
             amount: totalPayable,
             baseAmount: amount,
             platformFee: platformCharge,
@@ -216,9 +267,9 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
             sevaOrPageTitle: `${seva.title} (${label})`,
             status: "Completed",
             paymentMethod: "Razorpay",
-            panNumber: currentPan || undefined,
-            notes: currentNotes || undefined,
-            taxReceiptRequested: !!currentPan,
+            panNumber: curPan || undefined,
+            notes: curPurpose || undefined,
+            taxReceiptRequested: !!curPan,
           });
         } catch (err) {
           console.error("Failed to store payment record:", err);
@@ -228,14 +279,14 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
         setReceiptSuccess({
           receiptNo: pId,
           date: new Date().toISOString(),
-          donorName: currentDonorName,
-          donorEmail: currentEmail,
-          donorPhone: currentPhone,
+          donorName: finalDonorName,
+          donorEmail: curEmail,
+          donorPhone: curPhone,
           amount: totalPayable,
           sevaTitle: `${seva.title} (${label})`,
           category: "General Seva",
-          notes: currentNotes,
-          panNumber: currentPan,
+          notes: curPurpose,
+          panNumber: curPan,
         });
 
         setCheckoutSeva(null);
@@ -244,14 +295,60 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
         setEmail("");
         setPhone("");
         setPan("");
+        setQuickDonorName("");
+        setQuickPhone("");
       },
     });
     rzp.open();
   };
 
+  // Handle Quick Donate Form Submit
+  const handleQuickPayNow = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const finalAmount = Number(quickAmount);
+    if (!finalAmount || finalAmount <= 0 || isNaN(finalAmount)) {
+      alert("Please enter a valid donation amount.");
+      return;
+    }
+    if (!quickDonorName.trim()) {
+      alert("Please enter your Name.");
+      return;
+    }
+    if (!quickPhone.trim()) {
+      alert("Please enter your Phone Number.");
+      return;
+    }
+
+    setQuickIsSubmitting(true);
+    try {
+      await donate(
+        { title: "General Temple Seva & Deity Offering" },
+        finalAmount,
+        `Quick Donation (₹${finalAmount.toLocaleString("en-IN")})`,
+        {
+          donorName: quickDonorName,
+          phone: quickPhone,
+          purpose: "Quick Devotional Donation",
+          coverFee: false
+        }
+      );
+    } finally {
+      setQuickIsSubmitting(false);
+    }
+  };
+
+  // ==========================================
+  // SINGLE SEVA CHECKOUT VIEW
+  // ==========================================
   if (checkoutSeva) {
     const selIdx = selected[checkoutSeva.id] ?? 0;
-    const currentPrice = checkoutSeva.prices[selIdx] ?? checkoutSeva.prices[0];
+    const standardPrice = checkoutSeva.prices[selIdx] ?? checkoutSeva.prices[0];
+    
+    const customAmtNum = Number(customCheckoutAmount) || 0;
+    const finalAmount = isCustomCheckoutAmount ? customAmtNum : (standardPrice?.amount || 0);
+    const finalLabel = isCustomCheckoutAmount 
+      ? `Custom Offering (₹${finalAmount.toLocaleString("en-IN")})` 
+      : (standardPrice?.label || "Seva Offering");
 
     const handleFormSubmit = (e: React.FormEvent) => {
       e.preventDefault();
@@ -259,8 +356,16 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       if (!email.trim()) { alert("Please enter Email Address."); return; }
       if (!phone.trim()) { alert("Please enter WhatsApp Phone Number."); return; }
 
-      donate(checkoutSeva, currentPrice.amount, currentPrice.label);
+      if (isCustomCheckoutAmount && (!finalAmount || finalAmount <= 0)) {
+        alert("Please enter a valid offering amount (minimum ₹1).");
+        return;
+      }
+
+      donate(checkoutSeva, finalAmount, finalLabel);
     };
+
+    const platformCharge = platformFee.enabled && coverPlatformFee ? calculatePlatformFee(finalAmount, platformFee) : 0;
+    const totalPayable = finalAmount + platformCharge;
 
     return (
       <SiteLayout>
@@ -282,7 +387,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-              {/* Left Column: Thumbnail and selection */}
+              {/* Left Column */}
               <div className="lg:col-span-5 space-y-6">
                 <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-6">
                   <div className="rounded-2xl overflow-hidden">
@@ -307,15 +412,18 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Select Option / Amount</label>
                     <div className="grid grid-cols-1 gap-2.5">
                       {checkoutSeva.prices.map((p, i) => {
-                        const isSel = i === selIdx;
+                        const isSel = !isCustomCheckoutAmount && i === selIdx;
                         return (
                           <button
                             key={i}
                             type="button"
-                            onClick={() => setSelected((m) => ({ ...m, [checkoutSeva.id]: i }))}
+                            onClick={() => {
+                              setIsCustomCheckoutAmount(false);
+                              setSelected((m) => ({ ...m, [checkoutSeva.id]: i }));
+                            }}
                             className={`w-full text-left p-3.5 rounded-xl border flex items-center justify-between transition-all duration-200 cursor-pointer ${isSel
                               ? "border-primary bg-primary/5 ring-1 ring-primary/20 shadow-sm"
-                              : "border-slate-200 hover:border-slate-350 hover:bg-slate-50"
+                              : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
                               }`}
                           >
                             <span className={`text-xs font-bold font-sans ${isSel ? "text-primary" : "text-slate-700"}`}>
@@ -327,9 +435,67 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                           </button>
                         );
                       })}
+
+                      {/* Custom Amount Selection Option */}
+                      <button
+                        type="button"
+                        onClick={() => setIsCustomCheckoutAmount(true)}
+                        className={`w-full text-left p-3.5 rounded-xl border flex items-center justify-between transition-all duration-200 cursor-pointer ${isCustomCheckoutAmount
+                          ? "border-amber-500 bg-amber-50/50 ring-2 ring-amber-500/20 shadow-sm"
+                          : "border-dashed border-amber-300/80 bg-amber-50/20 hover:border-amber-500 hover:bg-amber-50/40"
+                          }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-amber-600" />
+                          <span className={`text-xs font-bold font-sans ${isCustomCheckoutAmount ? "text-amber-800" : "text-amber-700"}`}>
+                            Custom Amount (Donate as You Wish)
+                          </span>
+                        </div>
+                        <span className="text-xs font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-md">
+                          Enter Wish
+                        </span>
+                      </button>
                     </div>
+
+                    {/* Custom Amount Input Field */}
+                    {isCustomCheckoutAmount && (
+                      <div className="p-4 bg-gradient-to-br from-amber-50/90 to-orange-50/60 rounded-2xl border border-amber-200/80 space-y-3">
+                        <label className="block text-xs font-bold text-amber-900 uppercase tracking-wider">
+                          Enter Offering Amount of Your Wish (₹)
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-base font-extrabold text-amber-700">₹</span>
+                          <input
+                            type="number"
+                            min="1"
+                            placeholder="e.g. 1008, 2500, 5000..."
+                            value={customCheckoutAmount}
+                            onChange={(e) => setCustomCheckoutAmount(e.target.value)}
+                            className="w-full pl-8 pr-4 py-2.5 bg-white border border-amber-300 rounded-xl text-base font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-600 shadow-inner"
+                          />
+                        </div>
+                        
+                        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                          <span className="text-[11px] font-semibold text-amber-800 mr-1">Add:</span>
+                          {[100, 500, 1000, 2500, 5000].map((addVal) => (
+                            <button
+                              key={addVal}
+                              type="button"
+                              onClick={() => {
+                                const current = Number(customCheckoutAmount) || 0;
+                                setCustomCheckoutAmount(String(current + addVal));
+                              }}
+                              className="text-[11px] font-bold px-2 py-1 bg-white hover:bg-amber-100/80 text-amber-800 border border-amber-200 rounded-lg shadow-2xs transition-colors flex items-center gap-0.5 cursor-pointer"
+                            >
+                              <Plus className="h-2.5 w-2.5" /> ₹{addVal.toLocaleString("en-IN")}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
+                  {/* Summary Box */}
                   <div className="bg-slate-50 rounded-2xl p-4.5 space-y-2.5 border border-slate-100">
                     <div className="flex justify-between items-center text-xs text-slate-600 font-sans">
                       <span>Selected Seva:</span>
@@ -337,12 +503,12 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                     </div>
                     <div className="flex justify-between items-center text-xs text-slate-600 font-sans">
                       <span>Option:</span>
-                      <span className="font-semibold text-slate-800 text-right">{currentPrice.label}</span>
+                      <span className="font-semibold text-slate-800 text-right">{finalLabel}</span>
                     </div>
                     <div className="h-px bg-slate-200/60 my-2" />
                     <div className="flex justify-between items-center text-sm font-bold text-primary font-display">
-                      <span>DONATE Amount:</span>
-                      <span className="text-base text-accent">₹{currentPrice.amount.toLocaleString("en-IN")}</span>
+                      <span>Base Donation:</span>
+                      <span className="text-base text-accent">₹{finalAmount.toLocaleString("en-IN")}</span>
                     </div>
                   </div>
                 </div>
@@ -362,7 +528,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                       <input
                         type="text"
                         required
-                        placeholder="Enter full name of the donor"
+                        placeholder="Enter full name of the devotee"
                         value={donorName}
                         onChange={(e) => setDonorName(e.target.value)}
                         className="w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary font-sans bg-white"
@@ -370,7 +536,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-sans">Purpose of Donation</label>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-sans">Purpose of Donation / Sankalpa</label>
                       <input
                         type="text"
                         placeholder="e.g. For good health, family welfare, birthdays..."
@@ -421,8 +587,8 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                     </div>
                   </div>
 
-                  {/* Platform / Gateway Charges Checkbox & Donation Summary */}
-                  {platformFee.enabled && currentPrice.amount > 0 && (
+                  {/* Platform / Gateway Charges Checkbox */}
+                  {platformFee.enabled && finalAmount > 0 && (
                     <div className="pt-3 border-t border-slate-100 space-y-3">
                       <label className="flex items-start gap-2.5 cursor-pointer text-xs font-semibold select-none text-slate-700">
                         <input
@@ -434,26 +600,25 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                         <span>
                           {platformFee.label || "I would like to cover the payment gateway charges"}{" "}
                           <span className="text-emerald-600 font-bold font-sans">
-                            (+₹{calculatePlatformFee(currentPrice.amount, platformFee)})
+                            (+₹{calculatePlatformFee(finalAmount, platformFee)})
                           </span>
                         </span>
                       </label>
 
-                      {/* Summary Breakdown */}
                       <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-1.5 text-slate-700">
                         <div className="flex justify-between">
                           <span>Donation Amount:</span>
-                          <span className="font-bold font-sans text-slate-900">₹{currentPrice.amount.toLocaleString("en-IN")}.00</span>
+                          <span className="font-bold font-sans text-slate-900">₹{finalAmount.toLocaleString("en-IN")}.00</span>
                         </div>
                         {coverPlatformFee && (
                           <div className="flex justify-between text-emerald-600 font-medium">
                             <span>Platform Charge ({platformFee.type === "percentage" ? `${platformFee.value}%` : `₹${platformFee.value}`}):</span>
-                            <span className="font-bold font-sans">+₹{calculatePlatformFee(currentPrice.amount, platformFee)}.00</span>
+                            <span className="font-bold font-sans">+₹{calculatePlatformFee(finalAmount, platformFee)}.00</span>
                           </div>
                         )}
                         <div className="flex justify-between font-bold border-t border-slate-200 pt-1.5 text-slate-900 text-sm">
                           <span>Total Payable:</span>
-                          <span className="font-sans text-primary">₹{(currentPrice.amount + (coverPlatformFee ? calculatePlatformFee(currentPrice.amount, platformFee) : 0)).toLocaleString("en-IN")}.00</span>
+                          <span className="font-sans text-primary">₹{totalPayable.toLocaleString("en-IN")}.00</span>
                         </div>
                       </div>
                     </div>
@@ -462,11 +627,12 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                   <div className="pt-4 border-t border-slate-100 space-y-4">
                     <button
                       type="submit"
-                      className="relative group overflow-hidden w-full py-4 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white font-extrabold rounded-2xl transition-all duration-300 cursor-pointer flex items-center justify-center gap-2.5 text-base tracking-wide uppercase shadow-[0_6px_22px_rgba(249,115,22,0.4)] hover:shadow-[0_8px_30px_rgba(249,115,22,0.6)] hover:scale-[1.01] active:scale-98 ring-2 ring-amber-300/30"
+                      disabled={finalAmount <= 0}
+                      className="relative group overflow-hidden w-full py-4 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 disabled:opacity-50 disabled:pointer-events-none text-white font-extrabold rounded-2xl transition-all duration-300 cursor-pointer flex items-center justify-center gap-2.5 text-base tracking-wide uppercase shadow-[0_6px_22px_rgba(249,115,22,0.4)] hover:shadow-[0_8px_30px_rgba(249,115,22,0.6)] hover:scale-[1.01] active:scale-98 ring-2 ring-amber-300/30"
                     >
                       <Lock className="h-4.5 w-4.5 transition-transform group-hover:scale-110" />
                       <span className="relative z-10">
-                        DONATE ₹{(currentPrice.amount + (platformFee.enabled && coverPlatformFee ? calculatePlatformFee(currentPrice.amount, platformFee) : 0)).toLocaleString("en-IN")}
+                        DONATE ₹{totalPayable.toLocaleString("en-IN")}
                       </span>
                       <Heart className="h-4.5 w-4.5 fill-white/20 stroke-[2.5] text-white transition-transform duration-300 group-hover:scale-125 group-hover:fill-white" />
                       <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/35 to-transparent" />
@@ -474,7 +640,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
 
                     <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                       <ShieldCheck className="h-4.5 w-4.5 text-emerald-500" />
-                      <span>Secure Payments by Razorpay</span>
+                      <span>100% Secure Payments by Razorpay</span>
                     </div>
                   </div>
                 </form>
@@ -487,6 +653,11 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     );
   }
 
+  // ==========================================
+  // MAIN DONATE DIRECTORY & 2-LINE QUICK DONATE
+  // ==========================================
+  const currentQuickAmountNum = Number(quickAmount) || 0;
+
   return (
     <SiteLayout>
       <PageHero
@@ -496,8 +667,119 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
         pageKey="donate"
       />
 
-      <section className="py-14 md:py-16 bg-gradient-to-b from-[#fffbf0] via-[#fdf4d4] to-[#ffffff]">
+      {/* ========================================= */}
+      {/* SIMPLE 2-LINE QUICK DONATE SECTION */}
+      {/* ========================================= */}
+      <section className="py-6 bg-gradient-to-b from-[#fff7e6] to-[#fffbf0] border-b border-amber-200/80">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="bg-white rounded-2xl border-2 border-amber-300/90 shadow-md p-4 sm:p-5 space-y-3.5">
+            
+            {/* LINE 1: Amount Suggestions + Custom Amount */}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+              <span className="text-xs font-black uppercase tracking-wider text-amber-900 shrink-0 flex items-center gap-1.5 mr-1">
+                <Zap className="h-4 w-4 text-amber-600 fill-amber-500" />
+                <span>Quick Donate:</span>
+              </span>
+
+              {/* Amount Chips */}
+              {QUICK_SUGGESTIONS.map((amt) => {
+                const isSelected = quickAmount === amt && quickCustomInput === String(amt);
+                return (
+                  <button
+                    key={amt}
+                    type="button"
+                    onClick={() => {
+                      setQuickAmount(amt);
+                      setQuickCustomInput(String(amt));
+                    }}
+                    className={`px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center gap-1 shrink-0 ${isSelected
+                      ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm scale-105"
+                      : "bg-slate-100 hover:bg-amber-100/80 text-slate-800 border border-slate-200"
+                      }`}
+                  >
+                    {isSelected && <Check className="h-3 w-3" />}
+                    ₹{amt.toLocaleString("en-IN")}
+                  </button>
+                );
+              })}
+
+              {/* Inline Custom Amount Input */}
+              <div className="relative flex-1 min-w-[130px] max-w-[200px]">
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-600">₹</span>
+                <input
+                  type="number"
+                  min="1"
+                  placeholder="Custom ₹..."
+                  value={quickCustomInput}
+                  onChange={(e) => {
+                    setQuickCustomInput(e.target.value);
+                    setQuickAmount(Number(e.target.value) || 0);
+                  }}
+                  className="w-full pl-6 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                />
+              </div>
+            </div>
+
+            {/* LINE 2: Details & Pay Now Button */}
+            <form onSubmit={handleQuickPayNow} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-2 border-t border-slate-100">
+              {/* Devotee Name */}
+              <div className="relative flex-1">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                <input
+                  type="text"
+                  required
+                  placeholder="Devotee Name *"
+                  value={quickDonorName}
+                  onChange={(e) => setQuickDonorName(e.target.value)}
+                  className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans"
+                />
+              </div>
+
+              {/* Phone Number */}
+              <div className="relative flex-1">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                <input
+                  type="tel"
+                  required
+                  placeholder="WhatsApp Phone Number *"
+                  value={quickPhone}
+                  onChange={(e) => setQuickPhone(e.target.value)}
+                  className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans"
+                />
+              </div>
+
+              {/* Pay Now Button */}
+              <button
+                type="submit"
+                disabled={quickIsSubmitting || currentQuickAmountNum <= 0}
+                className="px-6 py-2 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 disabled:opacity-50 disabled:pointer-events-none text-white font-black rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wide shadow-md shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-[1.02] active:scale-98 whitespace-nowrap"
+              >
+                <Lock className="h-3.5 w-3.5" />
+                <span>PAY NOW · ₹{currentQuickAmountNum.toLocaleString("en-IN")}</span>
+                <Heart className="h-3.5 w-3.5 fill-white/20 text-white" />
+              </button>
+            </form>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================= */}
+      {/* ALL TEMPLE SEVAS & OFFERINGS DIRECTORY */}
+      {/* ========================================= */}
+      <section className="py-12 bg-gradient-to-b from-[#fffbf0] via-[#fdf4d4] to-[#ffffff]">
         <div className="max-w-6xl mx-auto px-5 sm:px-6">
+
+          {/* Section Header */}
+          <div className="text-center max-w-2xl mx-auto mb-8 space-y-1.5">
+            <span className="text-xs font-extrabold uppercase tracking-widest text-accent">Temple Sevas</span>
+            <h3 className="font-display font-extrabold text-2xl sm:text-3xl text-primary">
+              All Divine Seva Offerings
+            </h3>
+            <p className="text-xs text-muted-foreground font-sans">
+              Choose from specific dedicated sevas, deity worship, and anna-daan sponsorships below.
+            </p>
+          </div>
 
           {/* Search */}
           <div className="max-w-md mx-auto mb-10">
@@ -507,7 +789,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search sevas..."
-                className="w-full pl-11 pr-4 py-3 rounded-full border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-sm"
+                className="w-full pl-11 pr-4 py-2.5 rounded-full border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-sm text-sm"
               />
             </div>
           </div>
@@ -523,8 +805,8 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                 const selIdx = selected[s.id] ?? 0;
                 const price = s.prices[selIdx] ?? s.prices[0];
                 return (
-                  <div key={s.id} className="group bg-white rounded-2xl border border-border overflow-hidden flex flex-col shadow-sm hover:shadow-elegant transition-all duration-300">
-                    <div className="relative aspect-square overflow-hidden flex items-center justify-center p-3">
+                  <div key={s.id} className="group bg-white rounded-2xl border border-border overflow-hidden flex flex-col shadow-sm hover:shadow-elegant transition-all duration-300 hover:-translate-y-1">
+                    <div className="relative aspect-square overflow-hidden flex items-center justify-center p-3 bg-amber-50/20">
                       {s.thumbnail ? (
                         <img src={s.thumbnail} alt={s.title} loading="lazy" className="w-full h-full object-contain rounded-2xl group-hover:scale-105 transition-transform duration-500" />
                       ) : (
@@ -532,18 +814,19 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                       )}
                     </div>
                     <div className="p-5 flex-1 flex flex-col">
-                      <h3 className="font-display font-bold text-lg text-primary mb-1.5">{s.title}</h3>
-                      {s.description && <p className="text-sm text-muted-foreground leading-relaxed mb-4 line-clamp-3">{s.description}</p>}
+                      <h3 className="font-display font-bold text-lg text-primary mb-1.5 leading-snug">{s.title}</h3>
+                      {s.description && <p className="text-xs text-muted-foreground leading-relaxed mb-4 line-clamp-3">{s.description}</p>}
 
                       {/* Price options */}
-                      <div className="flex flex-wrap gap-2 mb-4 mt-auto">
+                      <div className="flex flex-wrap gap-1.5 mb-4 mt-auto">
                         {s.prices.map((p, i) => {
                           const isSel = i === selIdx;
                           return (
                             <button
                               key={i}
+                              type="button"
                               onClick={() => setSelected((m) => ({ ...m, [s.id]: i }))}
-                              className={`text-xs font-medium px-3 py-1.5 rounded-full border transition ${isSel ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-surface text-foreground border-border hover:border-primary/50"
+                              className={`text-xs font-semibold px-2.5 py-1 rounded-full border transition cursor-pointer ${isSel ? "bg-primary text-primary-foreground border-primary shadow-xs" : "bg-surface text-foreground border-border hover:border-primary/50"
                                 }`}
                             >
                               {p.label} · ₹{p.amount.toLocaleString("en-IN")}
@@ -552,12 +835,15 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                         })}
                       </div>
 
-                      <button
-                        onClick={() => navigate({ to: "/donate/$slug", params: { slug: s.slug || s.id } })}
-                        className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-hero text-primary-foreground font-semibold hover:shadow-gold transition-all"
-                      >
-                        <Heart className="h-4 w-4" /> Donate ₹{price.amount.toLocaleString("en-IN")}
-                      </button>
+                      <div className="space-y-2 pt-2 border-t border-slate-100">
+                        <button
+                          type="button"
+                          onClick={() => navigate({ to: "/donate/$slug", params: { slug: s.slug || s.id } })}
+                          className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-hero text-primary-foreground font-bold hover:shadow-gold transition-all cursor-pointer text-sm"
+                        >
+                          <Heart className="h-4 w-4" /> Sponsor Seva ₹{price?.amount?.toLocaleString("en-IN") || ""}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -566,7 +852,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
           )}
 
           <p className="mt-12 text-center text-xs text-muted-foreground inline-flex items-center justify-center gap-1.5 w-full">
-            <Sparkles className="h-3.5 w-3.5 text-secondary" /> Secure payments powered by Razorpay
+            <Sparkles className="h-3.5 w-3.5 text-secondary" /> Secure 256-bit encrypted payments powered by Razorpay · Tax Exempted under 80G
           </p>
         </div>
       </section>
