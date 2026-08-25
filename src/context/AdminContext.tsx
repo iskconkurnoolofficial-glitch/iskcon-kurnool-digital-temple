@@ -735,7 +735,7 @@ export const defaultYouthYatra2026: YatraEvent = {
     upiId: "iskconkurnool@sbi",
     qrImageUrl: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=600&q=80",
     paymentInstructions: "Scan the QR code with any UPI App (GPay, PhonePe, Paytm, BHIM), complete the ₹2,500 registration fee, enter the 12-digit UTR / Transaction ID below, and upload the payment screenshot.",
-    razorpayKeyId: "",
+    razorpayKeyId: "rzp_live_TTxJXHnvmVNCF8",
   },
   timeline: [
     {
