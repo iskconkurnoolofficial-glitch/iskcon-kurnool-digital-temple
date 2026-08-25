@@ -31,7 +31,7 @@ export const Route = createFileRoute("/donate")({
   component: () => <Outlet />,
 });
 
-const RAZORPAY_KEY = "rzp_test_SwEw3kkyiffJww";
+const RAZORPAY_KEY = "rzp_live_TTxJXHnvmVNCF8";
 
 function loadRazorpay(): Promise<boolean> {
   return new Promise((resolve) => {
