@@ -62,7 +62,9 @@ function FestivalCard({ f }: { f: Festival }) {
   const daysRemaining = getDaysRemaining(f.date);
   const minSevaAmount = useMemo(() => {
     if (!f.sevas || f.sevas.length === 0) return null;
-    const amounts = f.sevas.map((s) => s.amount).filter((a) => typeof a === "number" && a > 0);
+    const amounts = f.sevas
+      .flatMap((s) => (s.prices ?? []).map((p) => p.amount))
+      .filter((a) => typeof a === "number" && a > 0);
     if (!amounts.length) return null;
     return Math.min(...amounts);
   }, [f.sevas]);
