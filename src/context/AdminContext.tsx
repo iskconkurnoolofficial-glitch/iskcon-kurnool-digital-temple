@@ -31,11 +31,24 @@ export type Seva = {
   thumbnail: string;
   title: string;
   description: string;
+  category?: string;
+  categories?: string[];
   prices: SevaPrice[];
   order: number;
   active: boolean;
   slug?: string;
 };
+
+export function getSevaCategories(s?: Partial<Seva> | null): string[] {
+  if (!s) return ["Regular Sevas"];
+  if (Array.isArray(s.categories) && s.categories.length > 0) {
+    return s.categories.filter(Boolean);
+  }
+  if (s.category && s.category.trim()) {
+    return s.category.split(",").map((c) => c.trim()).filter(Boolean);
+  }
+  return ["Regular Sevas"];
+}
 
 export type TeamMember = {
   id: string;
@@ -4165,5 +4178,16 @@ export async function uploadToCloudinary(file: File): Promise<string> {
   });
   if (!res.ok) throw new Error("Cloudinary upload failed");
   const data = await res.json();
-  return data.secure_url as string;
+  const secureUrl = data.secure_url as string;
+  if (secureUrl) {
+    try {
+      const raw = localStorage.getItem("iskcon_uploaded_images_history");
+      const list: string[] = raw ? JSON.parse(raw) : [];
+      if (!list.includes(secureUrl)) {
+        list.unshift(secureUrl);
+        localStorage.setItem("iskcon_uploaded_images_history", JSON.stringify(list.slice(0, 300)));
+      }
+    } catch {}
+  }
+  return secureUrl;
 }

@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { createFileRoute, Link, useNavigate, Outlet } from "@tanstack/react-router";
 import SiteLayout, { PageHero } from "@/components/SiteLayout";
-import { useAdmin, Seva, calculatePlatformFee } from "@/context/AdminContext";
+import { useAdmin, Seva, calculatePlatformFee, getSevaCategories } from "@/context/AdminContext";
 import OfficialReceiptModal, { ReceiptData } from "@/components/OfficialReceiptModal";
 import { 
   Heart, 
@@ -10,6 +10,7 @@ import {
   IndianRupee, 
   Sparkles, 
   ArrowLeft, 
+  ArrowRight,
   Lock, 
   ShieldCheck, 
   Zap, 
@@ -18,7 +19,11 @@ import {
   Phone, 
   Mail, 
   Plus,
-  FileText
+  Minus,
+  FileText,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 
 export const Route = createFileRoute("/donate")({
@@ -52,12 +57,14 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   const { sevas, settings, theme, ready, addDonation, updateDonationStatus, platformFee, addPaymentRecord, sunday } = useAdmin();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selected, setSelected] = useState<Record<string, number>>({});
   const [checkoutSeva, setCheckoutSeva] = useState<Seva | null>(null);
 
   // Custom Amount state inside Checkout
   const [isCustomCheckoutAmount, setIsCustomCheckoutAmount] = useState(false);
   const [customCheckoutAmount, setCustomCheckoutAmount] = useState<string>("1008");
+  const [quantity, setQuantity] = useState<number>(1);
 
   // Quick Donate State with All Details
   const [quickAmount, setQuickAmount] = useState<number>(501);
@@ -82,6 +89,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   const [pan, setPan] = useState("");
 
   useEffect(() => {
+    setQuantity(1);
     if (initialSlug) {
       let found = sevas.find(s => s.slug === initialSlug || s.id === initialSlug);
       
@@ -93,6 +101,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
           id: "s_sunday_feast_fallback",
           title: sunday.donationCardTitle || "Sunday Feast Annadana Seva",
           slug: "sunday-feast-seva",
+          category: "Annadana Sevas",
           description: sunday.donationCardDescription || "Feed visiting devotees with sanctified Krishna prasadam every Sunday. Sponsoring the Sunday Feast brings immense spiritual peace, auspiciousness, and blessings for your family.",
           thumbnail: sunday.donationCardImage || "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
           prices: [
@@ -143,6 +152,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
         id: "s_sunday_feast_auto",
         title: sunday.donationCardTitle || "Sunday Feast Annadana Seva",
         slug: "sunday-feast-seva",
+        category: "Annadana Sevas",
         description: sunday.donationCardDescription || "Feed visiting devotees with sanctified Krishna prasadam every Sunday. Sponsoring the Sunday Feast brings immense spiritual peace, auspiciousness, and blessings for your family.",
         thumbnail: sunday.donationCardImage || "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
         prices: [
@@ -160,11 +170,104 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     return list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }, [sevas, sunday]);
 
+  // Extract all categories
+  const categories = useMemo(() => {
+    let masterList: string[] = [];
+    try {
+      const saved = localStorage.getItem("iskcon_seva_custom_categories");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) masterList = parsed;
+      }
+    } catch {}
+
+    const set = new Set<string>();
+    set.add("All Sevas");
+    
+    if (masterList.length > 0) {
+      masterList.forEach((c) => set.add(c));
+    } else {
+      active.forEach((s) => {
+        if (s.category && s.category.trim()) {
+          set.add(s.category.trim());
+        }
+      });
+    }
+    return Array.from(set);
+  }, [active]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return active;
-    return active.filter((s) => s.title.toLowerCase().includes(q) || s.description.toLowerCase().includes(q));
-  }, [active, query]);
+    return active.filter((s) => {
+      const sevaCats = getSevaCategories(s);
+      const matchesCategory = 
+        selectedCategory === "All" || 
+        selectedCategory === "All Sevas" || 
+        sevaCats.some((c) => c.toLowerCase() === selectedCategory.toLowerCase());
+      
+      if (!matchesCategory) return false;
+      if (!q) return true;
+      return (
+        s.title.toLowerCase().includes(q) || 
+        s.description.toLowerCase().includes(q) ||
+        sevaCats.some((c) => c.toLowerCase().includes(q))
+      );
+    });
+  }, [active, query, selectedCategory]);
+
+  // Group sevas by categories for horizontal scrolling sections
+  const categorySections = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    
+    // Filter active sevas by search query
+    const searchFiltered = active.filter((s) => {
+      if (!q) return true;
+      const sevaCats = getSevaCategories(s);
+      return (
+        s.title.toLowerCase().includes(q) ||
+        s.description.toLowerCase().includes(q) ||
+        sevaCats.some((c) => c.toLowerCase().includes(q))
+      );
+    });
+
+    // Extract all unique categories present
+    const rawCategories = categories.filter((c) => c !== "All Sevas" && c !== "All");
+
+    // Desired priority order: Regular Sevas first, then Janmashtami, etc.
+    const priorityOrder = ["Regular Sevas", "Janmashtami Sevas", "Janmastami Sevas", "Radhashtami Sevas", "Annadana Sevas", "Deity Worship Sevas"];
+    const orderedCategories = [...rawCategories].sort((a, b) => {
+      const idxA = priorityOrder.findIndex((p) => p.toLowerCase() === a.toLowerCase());
+      const idxB = priorityOrder.findIndex((p) => p.toLowerCase() === b.toLowerCase());
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return a.localeCompare(b);
+    });
+
+    // If a specific category tab is selected, only show that category
+    const targetCategories = (selectedCategory === "All" || selectedCategory === "All Sevas")
+      ? orderedCategories
+      : [selectedCategory];
+
+    const result: { category: string; sevas: Seva[] }[] = [];
+
+    targetCategories.forEach((cat) => {
+      const sevasInCat = searchFiltered.filter((s) => {
+        const sevaCats = getSevaCategories(s);
+        return sevaCats.some((c) => c.toLowerCase() === cat.toLowerCase());
+      });
+      if (sevasInCat.length > 0) {
+        result.push({ category: cat, sevas: sevasInCat });
+      }
+    });
+
+    // Fallback if query didn't match any categorized bucket
+    if (result.length === 0 && searchFiltered.length > 0) {
+      result.push({ category: selectedCategory === "All" ? "Divine Sevas" : selectedCategory, sevas: searchFiltered });
+    }
+
+    return result;
+  }, [active, categories, selectedCategory, query]);
 
   if (!ready) {
     return (
@@ -359,10 +462,11 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     const standardPrice = checkoutSeva.prices[selIdx] ?? checkoutSeva.prices[0];
     
     const customAmtNum = Number(customCheckoutAmount) || 0;
-    const finalAmount = isCustomCheckoutAmount ? customAmtNum : (standardPrice?.amount || 0);
+    const basePrice = standardPrice?.amount || 0;
+    const finalAmount = isCustomCheckoutAmount ? customAmtNum : (basePrice * quantity);
     const finalLabel = isCustomCheckoutAmount 
       ? `Custom Offering (₹${finalAmount.toLocaleString("en-IN")})` 
-      : (standardPrice?.label || "Seva Offering");
+      : (quantity > 1 ? `${standardPrice?.label} × ${quantity}` : (standardPrice?.label || "Seva Offering"));
 
     const handleFormSubmit = (e: React.FormEvent) => {
       e.preventDefault();
@@ -402,7 +506,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
               {/* Left Column */}
-              <div className="lg:col-span-5 space-y-6">
+              <div className="lg:col-span-5 space-y-6 font-sans">
                 <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-6">
                   <div className="rounded-2xl overflow-hidden">
                     {checkoutSeva.thumbnail ? (
@@ -415,82 +519,143 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                   </div>
 
                   <div className="space-y-2">
-                    <span className="text-[10px] font-bold text-accent tracking-widest uppercase">Selected Devotional Offering</span>
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-800 text-[11px] font-bold uppercase tracking-wider font-sans">
+                      <span>Step 1 of 2: Choose Offering</span>
+                    </div>
                     <h3 className="font-display font-extrabold text-2xl text-primary leading-tight">{checkoutSeva.title}</h3>
                     {checkoutSeva.description && (
                       <p className="text-xs text-slate-500 leading-relaxed font-sans">{checkoutSeva.description}</p>
                     )}
                   </div>
 
-                  <div className="space-y-3 pt-4 border-t border-slate-100">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Select Option / Amount</label>
-                    <div className="grid grid-cols-1 gap-2.5">
-                      {checkoutSeva.prices.map((p, i) => {
-                        const isSel = !isCustomCheckoutAmount && i === selIdx;
-                        return (
+                  <div className="space-y-3 pt-4 border-t border-slate-100 font-sans">
+                    {/* If multiple price options exist */}
+                    {checkoutSeva.prices.length > 1 ? (
+                      <>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider font-sans">
+                          Select Seva Option
+                        </label>
+                        <div className="grid grid-cols-2 gap-2.5 font-sans">
+                          {checkoutSeva.prices.map((p, i) => {
+                            const isSel = !isCustomCheckoutAmount && i === selIdx;
+                            return (
+                              <button
+                                key={i}
+                                type="button"
+                                onClick={() => {
+                                  setIsCustomCheckoutAmount(false);
+                                  setSelected((m) => ({ ...m, [checkoutSeva.id]: i }));
+                                }}
+                                className={`p-3.5 rounded-2xl border flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer font-sans ${isSel
+                                  ? "border-primary bg-primary text-white shadow-md ring-2 ring-primary/20 scale-[1.02]"
+                                  : "border-slate-200 bg-slate-50 hover:bg-amber-50/70 hover:border-amber-300 text-slate-800"
+                                  }`}
+                              >
+                                <span className={`text-xs font-bold leading-tight line-clamp-2 ${isSel ? "text-white/90" : "text-slate-700"}`}>
+                                  {p.label || "Offering"}
+                                </span>
+                                <span className={`text-base font-black mt-1 font-sans tracking-tight ${isSel ? "text-amber-300" : "text-primary"}`}>
+                                  ₹{p.amount.toLocaleString("en-IN")}
+                                </span>
+                              </button>
+                            );
+                          })}
+
+                          {/* Custom Amount Button */}
                           <button
-                            key={i}
                             type="button"
-                            onClick={() => {
-                              setIsCustomCheckoutAmount(false);
-                              setSelected((m) => ({ ...m, [checkoutSeva.id]: i }));
-                            }}
-                            className={`w-full text-left p-3.5 rounded-xl border flex items-center justify-between transition-all duration-200 cursor-pointer ${isSel
-                              ? "border-primary bg-primary/5 ring-1 ring-primary/20 shadow-sm"
-                              : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
-                              }`}
+                            onClick={() => setIsCustomCheckoutAmount(true)}
+                            className={`p-3.5 rounded-2xl border flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer font-sans ${isCustomCheckoutAmount
+                              ? "border-amber-500 bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md ring-2 ring-amber-300 scale-[1.02]"
+                              : "border-dashed border-amber-300 bg-amber-50/40 hover:bg-amber-100/60 hover:border-amber-500 text-amber-900"
+                              } ${checkoutSeva.prices.length % 2 === 0 ? "col-span-2" : "col-span-1"}`}
                           >
-                            <span className={`text-xs font-bold font-sans ${isSel ? "text-primary" : "text-slate-700"}`}>
-                              {p.label}
+                            <span className={`text-xs font-bold flex items-center gap-1 ${isCustomCheckoutAmount ? "text-white" : "text-amber-800"}`}>
+                              <Sparkles className="h-3.5 w-3.5" />
+                              <span>Custom Amount</span>
                             </span>
-                            <span className={`text-xs font-extrabold font-sans ${isSel ? "text-primary" : "text-slate-900"}`}>
-                              ₹{p.amount.toLocaleString("en-IN")}
+                            <span className={`text-xs font-extrabold mt-1 font-sans ${isCustomCheckoutAmount ? "text-amber-100" : "text-amber-700"}`}>
+                              Enter Your Wish (₹)
                             </span>
                           </button>
-                        );
-                      })}
-
-                      {/* Custom Amount Selection Option */}
-                      <button
-                        type="button"
-                        onClick={() => setIsCustomCheckoutAmount(true)}
-                        className={`w-full text-left p-3.5 rounded-xl border flex items-center justify-between transition-all duration-200 cursor-pointer ${isCustomCheckoutAmount
-                          ? "border-amber-500 bg-amber-50/50 ring-2 ring-amber-500/20 shadow-sm"
-                          : "border-dashed border-amber-300/80 bg-amber-50/20 hover:border-amber-500 hover:bg-amber-50/40"
-                          }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <Sparkles className="h-4 w-4 text-amber-600" />
-                          <span className={`text-xs font-bold font-sans ${isCustomCheckoutAmount ? "text-amber-800" : "text-amber-700"}`}>
-                            Custom Amount (Donate as You Wish)
+                        </div>
+                      </>
+                    ) : (
+                      /* Clean Single Amount Card (NO "Per Day", NO complex options) */
+                      <div className="p-4.5 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-amber-50/40 rounded-2xl border border-amber-200/80 flex items-center justify-between gap-4 font-sans">
+                        <div>
+                          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Fixed Offering Amount</span>
+                          <span className="text-2xl sm:text-3xl font-black text-primary font-display mt-0.5 block">
+                            ₹{basePrice.toLocaleString("en-IN")}
                           </span>
                         </div>
-                        <span className="text-xs font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-md">
-                          Enter Wish
-                        </span>
-                      </button>
-                    </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsCustomCheckoutAmount(!isCustomCheckoutAmount)}
+                          className="px-3.5 py-2 rounded-xl bg-white hover:bg-amber-50 text-amber-900 border border-amber-200 text-xs font-bold shadow-2xs transition cursor-pointer"
+                        >
+                          {isCustomCheckoutAmount ? "Use Fixed Amount" : "Custom Amount"}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Quantity / Count Selector with - and + buttons */}
+                    {!isCustomCheckoutAmount && (
+                      <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between font-sans">
+                        <div>
+                          <span className="text-xs font-bold text-slate-800 block">Quantity / Count</span>
+                          <span className="text-[11px] text-slate-500 font-sans">
+                            {quantity > 1 ? `${quantity} × ₹${basePrice.toLocaleString("en-IN")} = ₹${finalAmount.toLocaleString("en-IN")}` : `₹${basePrice.toLocaleString("en-IN")} per unit`}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl p-1 shadow-xs">
+                          <button
+                            type="button"
+                            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                            disabled={quantity <= 1}
+                            aria-label="Decrease quantity"
+                            className="h-7 w-7 rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-30 flex items-center justify-center font-bold text-slate-700 cursor-pointer transition font-sans"
+                          >
+                            <Minus className="h-3.5 w-3.5" />
+                          </button>
+
+                          <span className="min-w-[24px] text-center font-extrabold text-sm text-slate-900 font-sans">
+                            {quantity}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() => setQuantity((q) => q + 1)}
+                            aria-label="Increase quantity"
+                            className="h-7 w-7 rounded-lg bg-primary hover:bg-[#4a2282] text-white flex items-center justify-center font-bold cursor-pointer transition shadow-2xs font-sans"
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Custom Amount Input Field */}
                     {isCustomCheckoutAmount && (
-                      <div className="p-4 bg-gradient-to-br from-amber-50/90 to-orange-50/60 rounded-2xl border border-amber-200/80 space-y-3">
-                        <label className="block text-xs font-bold text-amber-900 uppercase tracking-wider">
+                      <div className="p-4 bg-gradient-to-br from-amber-50/90 to-orange-50/60 rounded-2xl border border-amber-200/80 space-y-3 font-sans">
+                        <label className="block text-xs font-bold text-amber-900 uppercase tracking-wider font-sans">
                           Enter Offering Amount of Your Wish (₹)
                         </label>
                         <div className="relative">
-                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-base font-extrabold text-amber-700">₹</span>
+                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-base font-extrabold text-amber-700 font-sans">₹</span>
                           <input
                             type="number"
                             min="1"
                             placeholder="e.g. 1008, 2500, 5000..."
                             value={customCheckoutAmount}
                             onChange={(e) => setCustomCheckoutAmount(e.target.value)}
-                            className="w-full pl-8 pr-4 py-2.5 bg-white border border-amber-300 rounded-xl text-base font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-600 shadow-inner"
+                            className="w-full pl-8 pr-4 py-2.5 bg-white border border-amber-300 rounded-xl text-base font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-600 shadow-inner font-sans"
                           />
                         </div>
                         
                         <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                          <span className="text-[11px] font-semibold text-amber-800 mr-1">Add:</span>
+                          <span className="text-[11px] font-semibold text-amber-800 mr-1 font-sans">Add:</span>
                           {[100, 500, 1000, 2500, 5000].map((addVal) => (
                             <button
                               key={addVal}
@@ -499,7 +664,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                                 const current = Number(customCheckoutAmount) || 0;
                                 setCustomCheckoutAmount(String(current + addVal));
                               }}
-                              className="text-[11px] font-bold px-2 py-1 bg-white hover:bg-amber-100/80 text-amber-800 border border-amber-200 rounded-lg shadow-2xs transition-colors flex items-center gap-0.5 cursor-pointer"
+                              className="text-[11px] font-bold px-2 py-1 bg-white hover:bg-amber-100/80 text-amber-800 border border-amber-200 rounded-lg shadow-2xs transition-colors flex items-center gap-0.5 cursor-pointer font-sans"
                             >
                               <Plus className="h-2.5 w-2.5" /> ₹{addVal.toLocaleString("en-IN")}
                             </button>
@@ -509,54 +674,107 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                     )}
                   </div>
 
-                  {/* Summary Box */}
-                  <div className="bg-slate-50 rounded-2xl p-4.5 space-y-2.5 border border-slate-100">
+                  {/* Summary Box in Inter Font */}
+                  <div className="bg-slate-50 rounded-2xl p-4.5 space-y-2.5 border border-slate-100 font-sans">
                     <div className="flex justify-between items-center text-xs text-slate-600 font-sans">
                       <span>Selected Seva:</span>
                       <span className="font-semibold text-slate-800 text-right max-w-[200px] truncate">{checkoutSeva.title}</span>
                     </div>
-                    <div className="flex justify-between items-center text-xs text-slate-600 font-sans">
-                      <span>Option:</span>
-                      <span className="font-semibold text-slate-800 text-right">{finalLabel}</span>
-                    </div>
+                    {checkoutSeva.prices.length > 1 && (
+                      <div className="flex justify-between items-center text-xs text-slate-600 font-sans">
+                        <span>Option:</span>
+                        <span className="font-semibold text-slate-800 text-right">{finalLabel}</span>
+                      </div>
+                    )}
                     <div className="h-px bg-slate-200/60 my-2" />
-                    <div className="flex justify-between items-center text-sm font-bold text-primary font-display">
+                    <div className="flex justify-between items-center text-sm font-bold text-primary font-sans">
                       <span>Base Donation:</span>
-                      <span className="text-base text-accent">₹{finalAmount.toLocaleString("en-IN")}</span>
+                      <span className="text-base text-accent font-extrabold font-sans">₹{finalAmount.toLocaleString("en-IN")}</span>
                     </div>
                   </div>
+
+                  {/* Proceed to Enter Details Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const formEl = document.getElementById("donor-form");
+                      formEl?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      const nameInput = document.getElementById("donor-name-input");
+                      nameInput?.focus();
+                    }}
+                    className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white font-extrabold text-xs sm:text-sm tracking-wide uppercase shadow-md shadow-orange-500/20 hover:shadow-lg transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 font-sans hover:scale-[1.01] active:scale-98"
+                  >
+                    <span>Next: Enter Devotee Details (₹{finalAmount.toLocaleString("en-IN")})</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
 
-              {/* Right Column: Donor Form */}
-              <div className="lg:col-span-7">
+              {/* Right Column: Seva Details & Amount Highlight + Donor Form */}
+              <div className="lg:col-span-7" id="donor-form">
                 <form onSubmit={handleFormSubmit} className="bg-white rounded-3xl p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
-                  <div>
-                    <h4 className="font-display font-extrabold text-xl text-primary">Donor & Receipt Information</h4>
-                    <p className="text-xs text-muted-foreground mt-0.5 font-sans">Please provide your details below to process the offering receipt.</p>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-bold uppercase tracking-wider mb-1 font-sans">
+                        <span>Step 2 of 2</span>
+                      </div>
+                      <h4 className="font-display font-extrabold text-xl text-primary">Devotee &amp; Receipt Details</h4>
+                      <p className="text-xs text-muted-foreground mt-0.5 font-sans">Please provide your details below to process the official offering receipt.</p>
+                    </div>
+
+                    <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full shrink-0 font-sans">
+                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                      <span>80G Tax Exemption</span>
+                    </div>
                   </div>
 
-                  <div className="space-y-4">
+                  {/* Selected Seva Details & Total Amount Highlight */}
+                  <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-amber-50/70 rounded-2xl p-4 border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-sans shadow-2xs">
+                    <div className="flex items-center gap-3">
+                      {checkoutSeva.thumbnail && (
+                        <img
+                          src={checkoutSeva.thumbnail}
+                          alt={checkoutSeva.title}
+                          className="h-12 w-12 rounded-xl object-contain bg-white border border-amber-200/80 p-0.5 shrink-0 shadow-2xs"
+                        />
+                      )}
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">Offering Seva</span>
+                        <h5 className="text-sm font-extrabold text-slate-900 leading-tight line-clamp-1">{checkoutSeva.title}</h5>
+                        <span className="text-xs font-semibold text-primary block">{finalLabel}</span>
+                      </div>
+                    </div>
+
+                    <div className="sm:text-right border-t sm:border-t-0 border-amber-200/60 pt-2 sm:pt-0 shrink-0">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Offering Amount</span>
+                      <span className="text-xl sm:text-2xl font-black text-primary font-sans">
+                        ₹{finalAmount.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 font-sans">
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-sans">Donor Name *</label>
+                      <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 font-sans">Devotee Name *</label>
                       <input
+                        id="donor-name-input"
                         type="text"
                         required
                         placeholder="Enter full name of the devotee"
                         value={donorName}
                         onChange={(e) => setDonorName(e.target.value)}
-                        className="w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary font-sans bg-white"
+                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans bg-white"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-sans">Purpose of Donation / Sankalpa</label>
+                      <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 font-sans">Purpose of Donation / Sankalpa</label>
                       <input
                         type="text"
                         placeholder="e.g. For good health, family welfare, birthdays..."
                         value={purpose}
                         onChange={(e) => setPurpose(e.target.value)}
-                        className="w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary font-sans bg-white"
+                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans bg-white"
                       />
                     </div>
 
@@ -936,91 +1154,81 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       {/* ========================================= */}
       {/* ALL TEMPLE SEVAS & OFFERINGS DIRECTORY */}
       {/* ========================================= */}
-      <section className="py-12 bg-gradient-to-b from-[#fffbf0] via-[#fdf4d4] to-[#ffffff]">
-        <div className="max-w-6xl mx-auto px-5 sm:px-6">
+      <section className="py-14 bg-gradient-to-b from-[#fffbf0] via-[#fdf4d4] to-[#ffffff]">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
 
           {/* Section Header */}
-          <div className="text-center max-w-2xl mx-auto mb-8 space-y-1.5">
+          <div className="text-center max-w-3xl mx-auto mb-8 space-y-1.5">
             <span className="text-xs font-extrabold uppercase tracking-widest text-accent">Temple Sevas</span>
-            <h3 className="font-display font-extrabold text-2xl sm:text-3xl text-primary">
+            <h3 className="font-display font-extrabold text-2xl sm:text-3xl lg:text-4xl text-primary">
               All Divine Seva Offerings
             </h3>
-            <p className="text-xs text-muted-foreground font-sans">
+            <p className="text-xs sm:text-sm text-muted-foreground font-sans">
               Choose from specific dedicated sevas, deity worship, and anna-daan sponsorships below.
             </p>
           </div>
 
+          {/* Category Tabs Filter Bar */}
+          <div className="flex items-center justify-center gap-2 overflow-x-auto pb-2 mb-8 max-w-full scrollbar-none font-sans px-2">
+            {categories.map((cat) => {
+              const isAct = 
+                selectedCategory.toLowerCase() === cat.toLowerCase() || 
+                (selectedCategory === "All" && cat === "All Sevas");
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat === "All Sevas" ? "All" : cat)}
+                  className={`px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-200 cursor-pointer shrink-0 ${isAct
+                    ? "bg-primary text-white shadow-md shadow-primary/25 ring-2 ring-primary/30 scale-[1.02]"
+                    : "bg-white text-slate-700 border border-slate-200 hover:border-amber-300 hover:bg-amber-50/50 shadow-2xs"
+                    }`}
+                >
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
+
           {/* Search */}
-          <div className="max-w-md mx-auto mb-10">
+          <div className="max-w-lg mx-auto mb-10">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search sevas..."
-                className="w-full pl-11 pr-4 py-2.5 rounded-full border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-sm text-sm"
+                placeholder="Search sevas by name or category..."
+                className="w-full pl-11 pr-4 py-2.5 rounded-full border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-sm text-sm font-sans"
               />
             </div>
           </div>
 
-          {/* Cards */}
+          {/* Category-Wise Scrolling Rows */}
           {active.length === 0 ? (
             <FallbackCauses />
-          ) : filtered.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">No sevas match "{query}".</div>
+          ) : categorySections.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground font-sans bg-white/50 rounded-3xl border border-dashed border-amber-200">
+              No sevas found for "{selectedCategory !== "All" ? selectedCategory : query}".
+            </div>
           ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-              {filtered.map((s) => {
-                const selIdx = selected[s.id] ?? 0;
-                const price = s.prices[selIdx] ?? s.prices[0];
-                return (
-                  <div key={s.id} className="group bg-white rounded-2xl border border-border overflow-hidden flex flex-col shadow-sm hover:shadow-elegant transition-all duration-300 hover:-translate-y-1">
-                    <div className="relative aspect-square overflow-hidden flex items-center justify-center p-3 bg-amber-50/20">
-                      {s.thumbnail ? (
-                        <img src={s.thumbnail} alt={s.title} loading="lazy" className="w-full h-full object-contain rounded-2xl group-hover:scale-105 transition-transform duration-500" />
-                      ) : (
-                        <div className="w-full h-full grid place-items-center text-primary/40"><HandHeart className="h-12 w-12" /></div>
-                      )}
-                    </div>
-                    <div className="p-5 flex-1 flex flex-col">
-                      <h3 className="font-display font-bold text-lg text-primary mb-1.5 leading-snug">{s.title}</h3>
-                      {s.description && <p className="text-xs text-muted-foreground leading-relaxed mb-4 line-clamp-3">{s.description}</p>}
-
-                      {/* Price options */}
-                      <div className="flex flex-wrap gap-1.5 mb-4 mt-auto">
-                        {s.prices.map((p, i) => {
-                          const isSel = i === selIdx;
-                          return (
-                            <button
-                              key={i}
-                              type="button"
-                              onClick={() => setSelected((m) => ({ ...m, [s.id]: i }))}
-                              className={`text-xs font-semibold px-2.5 py-1 rounded-full border transition cursor-pointer ${isSel ? "bg-primary text-primary-foreground border-primary shadow-xs" : "bg-surface text-foreground border-border hover:border-primary/50"
-                                }`}
-                            >
-                              {p.label} · ₹{p.amount.toLocaleString("en-IN")}
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      <div className="space-y-2 pt-2 border-t border-slate-100">
-                        <button
-                          type="button"
-                          onClick={() => navigate({ to: "/donate/$slug", params: { slug: s.slug || s.id } })}
-                          className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-hero text-primary-foreground font-bold hover:shadow-gold transition-all cursor-pointer text-sm"
-                        >
-                          <Heart className="h-4 w-4" /> Sponsor Seva ₹{price?.amount?.toLocaleString("en-IN") || ""}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="space-y-12">
+              {categorySections.map((sec) => (
+                <CategorySevaRow
+                  key={sec.category}
+                  category={sec.category}
+                  sevas={sec.sevas}
+                  onSelectAndNavigate={(seva) => {
+                    navigate({ 
+                      to: "/donate/$slug", 
+                      params: { slug: seva.slug || seva.id }
+                    });
+                  }}
+                />
+              ))}
             </div>
           )}
 
-          <p className="mt-12 text-center text-xs text-muted-foreground inline-flex items-center justify-center gap-1.5 w-full">
+          <p className="mt-14 text-center text-xs text-muted-foreground inline-flex items-center justify-center gap-1.5 w-full font-sans">
             <Sparkles className="h-3.5 w-3.5 text-secondary" /> Secure 256-bit encrypted payments powered by Razorpay · Tax Exempted under 80G
           </p>
         </div>
@@ -1037,6 +1245,123 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   );
 }
 
+function CategorySevaRow({
+  category,
+  sevas,
+  onSelectAndNavigate
+}: {
+  category: string;
+  sevas: Seva[];
+  onSelectAndNavigate: (seva: Seva) => void;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const checkScroll = () => {
+    if (!scrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+    setCanScrollLeft(scrollLeft > 10);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+  };
+
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener("resize", checkScroll);
+    return () => window.removeEventListener("resize", checkScroll);
+  }, [sevas]);
+
+  // One-card-after-another auto scroll
+  useEffect(() => {
+    if (sevas.length <= 1 || isHovered) return;
+
+    const timer = setInterval(() => {
+      if (!scrollRef.current) return;
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      const cardStep = 420 + 24; // card width + gap
+
+      // If reached end, smooth scroll back to 0
+      if (scrollLeft + clientWidth >= scrollWidth - 15) {
+        scrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        scrollRef.current.scrollBy({ left: cardStep, behavior: "smooth" });
+      }
+    }, 3800);
+
+    return () => clearInterval(timer);
+  }, [sevas.length, isHovered]);
+
+  const handleScroll = (dir: -1 | 1) => {
+    if (!scrollRef.current) return;
+    const cardStep = 420 + 24;
+    scrollRef.current.scrollBy({ left: dir * cardStep, behavior: "smooth" });
+  };
+
+  return (
+    <div 
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="space-y-4 font-sans bg-white/80 backdrop-blur-xs p-6 sm:p-8 lg:p-9 rounded-3xl border border-amber-200/90 shadow-sm transition-all"
+    >
+      {/* Category Row Header with Title & Scroll Buttons */}
+      <div className="flex items-center justify-between gap-4 border-b border-amber-200/60 pb-4">
+        <div className="flex items-center gap-3.5">
+          <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white shadow-xs shrink-0">
+            <Sparkles className="h-5 w-5" />
+          </div>
+          <div>
+            <h4 className="font-display font-bold text-xl sm:text-2xl lg:text-3xl text-primary flex items-center gap-2.5 flex-wrap">
+              <span>{category}</span>
+              <span className="text-xs font-sans font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200">
+                {sevas.length} {sevas.length === 1 ? "Offering" : "Offerings"}
+              </span>
+            </h4>
+            <p className="text-xs sm:text-sm text-muted-foreground font-sans mt-0.5">
+              Explore and sponsor sacred sevas in this offering category
+            </p>
+          </div>
+        </div>
+
+        {/* Scroll Controls */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => handleScroll(-1)}
+            disabled={!canScrollLeft}
+            className="h-10 w-10 sm:h-11 sm:w-11 rounded-full border border-slate-200 bg-white hover:bg-amber-50 hover:border-amber-300 text-slate-700 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center shadow-xs transition-all cursor-pointer hover:scale-105 active:scale-95"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => handleScroll(1)}
+            disabled={!canScrollRight}
+            className="h-10 w-10 sm:h-11 sm:w-11 rounded-full border border-slate-200 bg-white hover:bg-amber-50 hover:border-amber-300 text-slate-700 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center shadow-xs transition-all cursor-pointer hover:scale-105 active:scale-95"
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Horizontal Scrolling Track */}
+      <div
+        ref={scrollRef}
+        onScroll={checkScroll}
+        className="flex items-stretch gap-6 overflow-x-auto pb-5 pt-1 scroll-smooth snap-x snap-mandatory scrollbar-thin scrollbar-thumb-amber-300/80 scrollbar-track-amber-50/30 -mx-1 px-1"
+      >
+        {sevas.map((s) => (
+          <div key={s.id} className="w-[320px] sm:w-[370px] md:w-[410px] lg:w-[430px] shrink-0 snap-start flex flex-col">
+            <SevaCardItem seva={s} onSelectAndNavigate={onSelectAndNavigate} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function FallbackCauses() {
   const causes = [
     { icon: HandHeart, title: "Deity Seva", desc: "Sponsor daily worship, decoration and offerings to the Lord." },
@@ -1046,7 +1371,7 @@ function FallbackCauses() {
   return (
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {causes.map((c) => (
-        <div key={c.title} className="p-7 rounded-2xl bg-surface border border-border text-center">
+        <div key={c.title} className="p-7 rounded-2xl bg-surface border border-border text-center font-sans">
           <div className="h-14 w-14 rounded-full bg-gradient-hero text-primary-foreground grid place-items-center mx-auto mb-4 shadow-glow">
             <c.icon className="h-6 w-6" />
           </div>
@@ -1054,6 +1379,78 @@ function FallbackCauses() {
           <p className="text-muted-foreground text-sm">{c.desc}</p>
         </div>
       ))}
+    </div>
+  );
+}
+
+function SevaCardItem({ 
+  seva, 
+  onSelectAndNavigate 
+}: { 
+  seva: Seva; 
+  onSelectAndNavigate: (seva: Seva) => void; 
+}) {
+  const firstPrice = seva.prices?.[0]?.amount;
+
+  return (
+    <div className="group relative p-[2px] rounded-3xl bg-gradient-to-br from-amber-400 via-orange-400 to-amber-500 hover:from-amber-300 hover:via-orange-500 hover:to-rose-500 shadow-md hover:shadow-xl hover:shadow-orange-500/20 transition-all duration-500 hover:-translate-y-1 font-sans flex flex-col h-full">
+      <div className="bg-white rounded-[22px] overflow-hidden flex flex-col flex-1 justify-between">
+        
+        {/* Top Image Banner: Full, clear, uncropped image container */}
+        <div className="relative aspect-square w-full overflow-hidden bg-gradient-to-b from-amber-50/60 via-slate-50 to-white p-3 flex items-center justify-center border-b border-amber-100/60">
+          <div className="w-full h-full rounded-2xl overflow-hidden relative flex items-center justify-center bg-white shadow-2xs">
+            {seva.thumbnail ? (
+              <img 
+                src={seva.thumbnail} 
+                alt={seva.title} 
+                loading="lazy" 
+                className="w-full h-full object-contain rounded-2xl transition-transform duration-500 group-hover:scale-105" 
+              />
+            ) : (
+              <div className="w-full h-full grid place-items-center text-primary/30 bg-primary/5 rounded-2xl">
+                <HandHeart className="h-14 w-14" />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Card Content */}
+        <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between space-y-4 font-sans">
+          
+          {/* Category Badges + Title and Short Description */}
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-1.5">
+              {getSevaCategories(seva).map((cat) => (
+                <span key={cat} className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-100/90 text-amber-900 border border-amber-300/80 uppercase tracking-wider font-sans">
+                  {cat}
+                </span>
+              ))}
+            </div>
+
+            <h3 className="font-display font-extrabold text-lg sm:text-xl text-primary line-clamp-1 leading-snug group-hover:text-amber-600 transition-colors">
+              {seva.title}
+            </h3>
+            <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed min-h-[34px] font-sans">
+              {seva.description || "Support ISKCON Kurnool temple activities and daily deity worship with your generous contribution."}
+            </p>
+          </div>
+
+          {/* Sponsor CTA Action */}
+          <div className="pt-2 border-t border-slate-100 font-sans">
+            <button
+              type="button"
+              onClick={() => onSelectAndNavigate(seva)}
+              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white font-extrabold text-xs sm:text-sm tracking-wide uppercase shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/35 transition-all duration-300 hover:scale-[1.01] active:scale-98 cursor-pointer flex items-center justify-center gap-2 group/btn font-sans"
+            >
+              <Heart className="h-4 w-4 fill-white/20 text-white group-hover/btn:scale-125 transition-transform" />
+              <span>
+                Sponsor Seva {firstPrice ? (seva.prices && seva.prices.length > 1 ? `· from ₹${firstPrice.toLocaleString("en-IN")}` : `· ₹${firstPrice.toLocaleString("en-IN")}`) : ""}
+              </span>
+            </button>
+          </div>
+
+        </div>
+      </div>
     </div>
   );
 }

@@ -97,6 +97,7 @@
     overflow-x: hidden;
     width: 100%;
     max-width: 100vw;
+    direction: ltr !important;
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
   }
@@ -112,6 +113,27 @@
     max-width: 100vw;
     min-height: 100vh;
     min-height: 100dvh;
+    direction: ltr !important;
+  }
+
+  /* Custom Modern Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #fdf6ec;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #d4c4e8;
+    border-radius: 9999px;
+    border: 2px solid #fdf6ec;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #b59bd8;
   }
 
   /* Optimize touch target responsiveness on mobile */

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAdmin, uploadToCloudinary, Slide } from "@/context/AdminContext";
 import AdminModal from "./AdminModal";
+import MediaLibraryModal from "./MediaLibraryModal";
 import { Trash2, Eye, EyeOff, ArrowUp, ArrowDown, Upload, Pencil, X, Play, Plus, Sparkles, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 
@@ -312,43 +313,115 @@ export function UploadBox({
   label, 
   url, 
   onPick,
+  onSelectUrl,
   aspect = "aspect-video",
   className = ""
 }: { 
   label: string; 
   url?: string; 
   onPick: (f: File) => void;
+  onSelectUrl?: (url: string) => void;
   aspect?: string;
   className?: string;
 }) {
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+
+  const handleLibrarySelect = async (selectedUrl: string) => {
+    if (onSelectUrl) {
+      onSelectUrl(selectedUrl);
+      return;
+    }
+    // Convert selected image URL to a File for backward compatibility with components using onPick
+    try {
+      const res = await fetch(selectedUrl);
+      const blob = await res.blob();
+      const filename = selectedUrl.split("/").pop() || "media-image.jpg";
+      const file = new File([blob], filename, { type: blob.type || "image/jpeg" });
+      onPick(file);
+    } catch {
+      // Fallback: create placeholder file with URL name if fetch fails
+      const fallbackFile = new File([""], selectedUrl, { type: "image/jpeg" });
+      onPick(fallbackFile);
+    }
+  };
+
   return (
     <div className={`block ${className}`}>
-      <span className="text-sm font-semibold text-foreground/80 mb-1.5 block">{label}</span>
-      <label className="relative block cursor-pointer group">
-        <div className={`relative ${aspect} bg-slate-50/80 rounded-xl border-2 border-dashed border-border/80 overflow-hidden flex flex-col items-center justify-center text-center transition-all duration-300 hover:border-primary hover:bg-primary/[0.01] shadow-sm`}>
+      {/* Label and Pick from Pre-Uploaded Library action */}
+      <div className="flex items-center justify-between gap-2 mb-1.5">
+        <span className="text-xs sm:text-sm font-semibold text-foreground/80 block truncate">{label}</span>
+        <button
+          type="button"
+          onClick={() => setIsLibraryOpen(true)}
+          className="text-[11px] font-bold text-primary hover:text-amber-800 inline-flex items-center gap-1 bg-amber-50/90 hover:bg-amber-100/90 px-2 py-0.5 rounded-lg border border-amber-200/80 transition shadow-2xs cursor-pointer shrink-0"
+          title="Choose from already uploaded temple images"
+        >
+          <ImageIcon className="h-3 w-3 text-amber-600" />
+          <span>Library</span>
+        </button>
+      </div>
+
+      <div className="relative group">
+        <div className={`relative ${aspect} bg-slate-50/80 rounded-2xl border-2 border-dashed border-border/80 overflow-hidden flex flex-col items-center justify-center text-center transition-all duration-300 hover:border-primary hover:bg-primary/[0.01] shadow-xs`}>
           {url ? (
             <>
               <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-              {/* Premium Hover Overlay */}
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-1.5 transition-opacity duration-300 text-white font-bold text-xs">
-                <div className="p-2 rounded-xl bg-white/20 backdrop-blur-sm">
-                  <Pencil className="h-4 w-4" />
-                </div>
-                <span>Change Image</span>
+              {/* Premium Hover Overlay with Upload & Library Actions */}
+              <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 p-2 transition-opacity duration-300 text-white font-bold text-xs backdrop-blur-2xs">
+                <label className="p-2 px-3 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-sm cursor-pointer flex items-center gap-1.5 transition">
+                  <Pencil className="h-3.5 w-3.5" />
+                  <span>Upload</span>
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && onPick(e.target.files[0])} />
+                </label>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsLibraryOpen(true);
+                  }}
+                  className="p-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white cursor-pointer flex items-center gap-1.5 transition shadow-xs"
+                >
+                  <ImageIcon className="h-3.5 w-3.5" />
+                  <span>Library</span>
+                </button>
               </div>
             </>
           ) : (
-            <div className="p-4 text-center text-muted-foreground space-y-1 select-none">
-              <div className="p-3 rounded-full bg-slate-100 group-hover:bg-primary/10 group-hover:text-primary transition duration-300 inline-block">
-                <Upload className="h-5 w-5 mx-auto" />
+            <div className="p-4 text-center text-muted-foreground space-y-2 select-none w-full">
+              <label className="cursor-pointer block space-y-1">
+                <div className="p-2.5 rounded-full bg-slate-100 group-hover:bg-primary/10 group-hover:text-primary transition duration-300 inline-block">
+                  <Upload className="h-4 w-4 mx-auto" />
+                </div>
+                <p className="text-xs font-semibold text-foreground/75">Click to upload</p>
+                <p className="text-[10px] text-muted-foreground">PNG, JPG or WEBP</p>
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && onPick(e.target.files[0])} />
+              </label>
+
+              <div className="pt-1 border-t border-slate-200/50">
+                <button
+                  type="button"
+                  onClick={() => setIsLibraryOpen(true)}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-amber-900 bg-amber-100/70 hover:bg-amber-200/70 border border-amber-300/80 rounded-lg transition cursor-pointer shadow-2xs"
+                >
+                  <ImageIcon className="h-3 w-3" />
+                  <span>Choose Pre-Uploaded</span>
+                </button>
               </div>
-              <p className="text-xs font-semibold text-foreground/75">Click to upload</p>
-              <p className="text-[10px] text-muted-foreground">PNG, JPG or WEBP</p>
             </div>
           )}
-          <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && onPick(e.target.files[0])} />
         </div>
-      </label>
+      </div>
+
+      {/* Media Library Popup Modal */}
+      {isLibraryOpen && (
+        <MediaLibraryModal
+          isOpen={isLibraryOpen}
+          onClose={() => setIsLibraryOpen(false)}
+          onSelectImage={handleLibrarySelect}
+          title={`Select ${label || "Image"}`}
+        />
+      )}
     </div>
   );
 }
