@@ -2104,6 +2104,7 @@ export type DonationEntry = {
   amount: number;
   status: "initiated" | "paid" | "failed";
   paymentRef?: string;
+  screenshotUrl?: string;
   date: string;
 };
 
@@ -2125,6 +2126,72 @@ export const defaultTempleSchedule: TempleScheduleItem[] = [
   { id: "ts5", name: "Rajbhoga Arati", time: "12:00 PM", period: "Afternoon", iconName: "sun", order: 5 },
   { id: "ts6", name: "Gaura Arati", time: "6:30 PM", period: "Evening", iconName: "sunset", order: 6 },
 ];
+
+export type ReceiptSettings = {
+  templeName: string;
+  deityName: string;
+  address: string;
+  phone: string;
+  email: string;
+  taxExemptionText: string;
+  taxRegNumber: string;
+  receiptTitle: string;
+  blessingMessage: string;
+  footerNotes: string;
+  
+  useNavLogo: boolean;
+  customReceiptLogo: string;
+  
+  signatoryName: string;
+  signatoryTitle: string;
+  signatoryOrg: string;
+  signatureImage: string;
+  showSeal: boolean;
+  sealImage: string;
+  
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  backgroundColor: string;
+  headerBgStyle: "solid" | "gradient" | "ornate";
+  fontFamily: "Inter" | "Cinzel" | "Outfit" | "Playfair" | "Geist";
+  borderStyle: "royal_gold" | "classic_double" | "modern_clean" | "temple_arch";
+  watermarkText: string;
+  showWatermark: boolean;
+};
+
+export const defaultReceiptSettings: ReceiptSettings = {
+  templeName: "ISKCON KURNOOL",
+  deityName: "Sri Sri Jagannath Baladev Subhadra Temple",
+  address: "Sri Sri Puri Jagannath Temple, Kurnool, Andhra Pradesh, India",
+  phone: "+91 95053 77520",
+  email: "iskconkurnool@gmail.com",
+  taxExemptionText: "Eligible for 80G Income Tax Exemption · 100% Tax Deductible",
+  taxRegNumber: "AAATI1234F / 80G / 2024-25",
+  receiptTitle: "OFFICIAL DONATION RECEIPT",
+  blessingMessage: "May Lord Sri Jagannath shower eternal blessings upon you and your family.",
+  footerNotes: "All donations to ISKCON Kurnool are eligible for 80G tax exemption. This is a computer-generated official receipt.",
+  
+  useNavLogo: true,
+  customReceiptLogo: "",
+  
+  signatoryName: "Vaishnava Krupa Das",
+  signatoryTitle: "Temple President / Authorised Signatory",
+  signatoryOrg: "ISKCON Kurnool",
+  signatureImage: "",
+  showSeal: true,
+  sealImage: "",
+  
+  primaryColor: "#5b2c9b",
+  secondaryColor: "#d97706",
+  accentColor: "#059669",
+  backgroundColor: "#ffffff",
+  headerBgStyle: "gradient",
+  fontFamily: "Inter",
+  borderStyle: "royal_gold",
+  watermarkText: "ISKCON KURNOOL",
+  showWatermark: true,
+};
 
 export type FeaturePopupData = {
   active: boolean;
@@ -2198,6 +2265,7 @@ export type PaymentRecord = {
   date: string;
   status: "Completed" | "Pending" | "Failed" | "Refunded";
   paymentMethod?: string;
+  screenshotUrl?: string;
   notes?: string;
   address?: string;
   panNumber?: string;
@@ -2253,6 +2321,60 @@ export const defaultPaymentRecords: PaymentRecord[] = [
     notes: "Abhishekam Seva",
   }
 ];
+
+export type UpiPaymentSettings = {
+  enabled: boolean;
+  upiId: string;
+  payeeName: string;
+  merchantCode?: string;
+  customQrImage?: string;
+  useDynamicAmountQr?: boolean;
+  instructions?: string;
+  notes?: string;
+  requireUtrSubmission?: boolean;
+  allowRazorpayGateway?: boolean;
+};
+
+export const defaultUpiPayment: UpiPaymentSettings = {
+  enabled: true,
+  upiId: "iskconkurnool@sbi",
+  payeeName: "ISKCON Kurnool",
+  merchantCode: "",
+  customQrImage: "",
+  useDynamicAmountQr: true,
+  instructions: "Scan using Google Pay, PhonePe, Paytm, BHIM, Cred, or any UPI app. The amount is pre-filled automatically.",
+  notes: "After completing your UPI payment, click 'Payment Completed' (or enter your 12-digit UTR) to instantly download your 80G tax receipt.",
+  requireUtrSubmission: true,
+  allowRazorpayGateway: true,
+};
+
+export function generateUpiUri({
+  upiId,
+  payeeName,
+  amount,
+  transactionNote,
+  currency = "INR",
+}: {
+  upiId: string;
+  payeeName: string;
+  amount: number;
+  transactionNote?: string;
+  currency?: string;
+}): string {
+  const cleanUpi = (upiId || "iskconkurnool@sbi").trim();
+  const cleanName = (payeeName || "ISKCON Kurnool").trim();
+  const amtFormatted = amount > 0 ? amount.toFixed(2) : "";
+  const note = (transactionNote || "Donation to ISKCON Kurnool").slice(0, 50).trim();
+
+  let uri = `upi://pay?pa=${encodeURIComponent(cleanUpi)}&pn=${encodeURIComponent(cleanName)}&cu=${currency}`;
+  if (amtFormatted) {
+    uri += `&am=${amtFormatted}`;
+  }
+  if (note) {
+    uri += `&tn=${encodeURIComponent(note)}`;
+  }
+  return uri;
+}
 
 export type PlatformFeeSettings = {
   enabled: boolean;
@@ -3026,12 +3148,17 @@ type AdminState = {
   addPaymentRecord: (record: Omit<PaymentRecord, "id" | "date"> & { date?: string }) => Promise<void>;
   deletePaymentRecord: (id: string) => Promise<void>;
   markAllPaymentRecordsRead: () => void;
+  upiPayment: UpiPaymentSettings;
+  setUpiPayment: (u: UpiPaymentSettings) => void;
   platformFee: PlatformFeeSettings;
   setPlatformFee: (pf: PlatformFeeSettings) => void;
   previewLeads: PreviewLead[];
   setPreviewLeads: (leads: PreviewLead[]) => void;
   addPreviewLead: (lead: { name: string; phone: string }) => Promise<void>;
   markAllPreviewLeadsRead: () => void;
+
+  receiptSettings: ReceiptSettings;
+  setReceiptSettings: (r: ReceiptSettings) => void;
 
   terms: TermsData;
   setTerms: (t: TermsData) => void;
@@ -3112,10 +3239,12 @@ const KEYS = {
   featurePopup: "featurePopup",
   paymentPages: "paymentPages",
   paymentRecords: "paymentRecords",
+  upiPayment: "upiPayment",
   platformFee: "platformFee",
   previewLeads: "previewLeads",
   terms: "terms",
   privacy: "privacy",
+  receiptSettings: "receiptSettings",
   teamMembers: "team_members",
   superAdminPass: "super_admin_pass",
 } as const;
@@ -3226,10 +3355,12 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [featurePopup, setFeaturePopupState] = useState<FeaturePopupData>(() => getCached(KEYS.featurePopup, defaultFeaturePopup));
   const [paymentPages, setPaymentPagesState] = useState<PaymentPage[]>(() => getCached(KEYS.paymentPages, defaultPaymentPages));
   const [paymentRecords, setPaymentRecordsState] = useState<PaymentRecord[]>(() => getCached(KEYS.paymentRecords, defaultPaymentRecords));
+  const [upiPayment, setUpiPaymentState] = useState<UpiPaymentSettings>(() => getCached(KEYS.upiPayment, defaultUpiPayment));
   const [platformFee, setPlatformFeeState] = useState<PlatformFeeSettings>(() => getCached(KEYS.platformFee, defaultPlatformFee));
   const [previewLeads, setPreviewLeadsState] = useState<PreviewLead[]>(() => getCached(KEYS.previewLeads, []));
   const [terms, setTermsState] = useState<TermsData>(() => getCached(KEYS.terms, defaultTerms));
   const [privacy, setPrivacyState] = useState<PrivacyData>(() => getCached(KEYS.privacy, defaultPrivacy));
+  const [receiptSettings, setReceiptSettingsState] = useState<ReceiptSettings>(() => getCached(KEYS.receiptSettings, defaultReceiptSettings));
 
   const [superAdminPass, setSuperAdminPassState] = useState<string>("iskcon@1982");
   const [currentUser, setCurrentUser] = useState<CurrentAdminUser | null>(null);
@@ -3492,10 +3623,12 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.featurePopup: setFeaturePopupState({ ...defaultFeaturePopup, ...value }); break;
       case KEYS.paymentPages: setPaymentPagesState(Array.isArray(value) ? value : defaultPaymentPages); break;
       case KEYS.paymentRecords: setPaymentRecordsState(Array.isArray(value) ? value : defaultPaymentRecords); break;
+      case KEYS.upiPayment: setUpiPaymentState({ ...defaultUpiPayment, ...value }); break;
       case KEYS.platformFee: setPlatformFeeState({ ...defaultPlatformFee, ...value }); break;
       case KEYS.previewLeads: setPreviewLeadsState(Array.isArray(value) ? value : []); break;
       case KEYS.terms: setTermsState({ ...defaultTerms, ...value, sections: Array.isArray(value?.sections) ? value.sections : defaultTerms.sections }); break;
       case KEYS.privacy: setPrivacyState({ ...defaultPrivacy, ...value, sections: Array.isArray(value?.sections) ? value.sections : defaultPrivacy.sections }); break;
+      case KEYS.receiptSettings: setReceiptSettingsState({ ...defaultReceiptSettings, ...value }); break;
 
       case KEYS.superAdminPass: if (typeof value === "string") setSuperAdminPassState(value); break;
     }
@@ -3897,6 +4030,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setTheme = (v: ThemeSettings) => { setThemeState(v); persist(KEYS.theme, v); };
   const setHeroBanners = (v: HeroBannersData) => { setHeroBannersState(v); persist(KEYS.heroBanners, v); };
   const setGoshala = (v: GoshalaData) => { setGoshalaState(v); persist(KEYS.goshala, v); };
+  const setReceiptSettings = (v: ReceiptSettings) => { setReceiptSettingsState(v); persist(KEYS.receiptSettings, v); };
   // Contact messages live in their own table: anyone can submit, only admins read/update/delete.
   const setContacts = async (v: ContactEntry[]) => {
     const prev = contacts;
@@ -4003,11 +4137,13 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setFeaturePopup = (fp: FeaturePopupData) => { setFeaturePopupState(fp); persist(KEYS.featurePopup, fp); };
   const setPaymentPages = (p: PaymentPage[]) => { setPaymentPagesState(p); persist(KEYS.paymentPages, p); };
   const setPaymentRecords = (v: PaymentRecord[]) => { setPaymentRecordsState(v); persist(KEYS.paymentRecords, v); };
+  const setUpiPayment = (u: UpiPaymentSettings) => { setUpiPaymentState(u); persist(KEYS.upiPayment, u); };
   const setPlatformFee = (pf: PlatformFeeSettings) => { setPlatformFeeState(pf); persist(KEYS.platformFee, pf); };
   
   const addPaymentRecord = async (record: Omit<PaymentRecord, "id" | "date"> & { date?: string }) => {
     const newRecord: PaymentRecord = {
       ...record,
+      status: record.status || "Pending",
       id: "payrec_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
       date: record.date || new Date().toISOString(),
       currency: record.currency || "INR",
@@ -4146,10 +4282,12 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         featurePopup, setFeaturePopup,
         paymentPages, setPaymentPages,
         paymentRecords, setPaymentRecords, addPaymentRecord, deletePaymentRecord, markAllPaymentRecordsRead,
+        upiPayment, setUpiPayment,
         platformFee, setPlatformFee,
         previewLeads, setPreviewLeads, addPreviewLead, markAllPreviewLeadsRead,
         terms, setTerms,
         privacy, setPrivacy,
+        receiptSettings, setReceiptSettings,
         changeSuperAdminPassword, currentUser,
         authed, login, logout, ready,
       }}

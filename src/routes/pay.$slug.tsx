@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAdmin, PaymentPage, calculatePlatformFee } from "@/context/AdminContext";
 import OfficialReceiptModal from "@/components/OfficialReceiptModal";
+import UpiPaymentModal from "@/components/UpiPaymentModal";
 import { 
   Heart, 
   IndianRupee, 
@@ -20,8 +21,13 @@ import {
   Zap,
   Crown,
   Layers,
-  Award
+  Award,
+  QrCode,
+  Smartphone,
+  CreditCard,
+  ArrowRight
 } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/pay/$slug")({
   head: () => ({
@@ -51,7 +57,7 @@ const DEFAULT_BANNER = "https://images.unsplash.com/photo-1544967082-d9d25d867d6
 
 function PaymentPageRoute() {
   const { slug } = Route.useParams();
-  const { paymentPages, settings, addPaymentRecord, platformFee, ready } = useAdmin();
+  const { paymentPages, settings, addPaymentRecord, platformFee, upiPayment, ready } = useAdmin();
   
   const [page, setPage] = useState<PaymentPage | null>(null);
   const [selectedTierId, setSelectedTierId] = useState<string>("");
@@ -59,13 +65,31 @@ function PaymentPageRoute() {
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [coverPlatformFee, setCoverPlatformFee] = useState(true);
+  const [paymentMethodMode, setPaymentMethodMode] = useState<"upi" | "razorpay">("razorpay");
+
+  // Dynamic UPI Payment Modal state
+  const [upiModalData, setUpiModalData] = useState<{
+    isOpen: boolean;
+    amount: number;
+    baseAmount: number;
+    platformFee: number;
+    sevaTitle: string;
+    donorName: string;
+    donorEmail?: string;
+    donorPhone?: string;
+    pan?: string;
+    notes?: string;
+  } | null>(null);
 
   // Success Receipt Modal
   const [paymentSuccess, setPaymentSuccess] = useState<{
     paymentId: string;
     amount: number;
     donorName: string;
+    paymentMethod?: string;
   } | null>(null);
+
+  const [devotionalSuccessData, setDevotionalSuccessData] = useState<{ amount: number; sevaTitle: string; donorName: string } | null>(null);
 
   useEffect(() => {
     if (ready && paymentPages.length > 0) {
@@ -140,7 +164,7 @@ function PaymentPageRoute() {
   const platformChargeAmount = platformFee.enabled && coverPlatformFee ? calculatePlatformFee(activeAmount, platformFee) : 0;
   const totalPayableAmount = activeAmount + platformChargeAmount;
 
-  const handlePayNow = async () => {
+  const handlePayNow = async (methodToUse?: "upi" | "razorpay") => {
     if (activeAmount <= 0) {
       alert("Please enter a valid donation amount.");
       return;
@@ -160,6 +184,33 @@ function PaymentPageRoute() {
       return;
     }
 
+    const donorNameVal = fieldValues["f1"] || fieldValues["name"] || Object.values(fieldValues)[0] || "Devotee";
+    const donorEmailVal = fieldValues["f2"] || fieldValues["email"] || "";
+    const donorPhoneVal = fieldValues["f3"] || fieldValues["phone"] || "";
+    const donorPanVal = fieldValues["f6"] || fieldValues["pan"] || "";
+    const chosenMethod = methodToUse || paymentMethodMode || "upi";
+
+    if (chosenMethod === "upi" || (upiPayment.enabled && !upiPayment.allowRazorpayGateway)) {
+      setUpiModalData({
+        isOpen: true,
+        amount: totalPayableAmount,
+        baseAmount: activeAmount,
+        platformFee: coverPlatformFee ? platformChargeAmount : 0,
+        sevaTitle: page.title,
+        donorName: donorNameVal,
+        donorEmail: donorEmailVal,
+        donorPhone: donorPhoneVal,
+        pan: donorPanVal,
+        notes: Object.entries(fieldValues)
+          .map(([k, v]) => {
+            const fieldDef = page.fields.find((f) => f.id === k);
+            return `${fieldDef ? fieldDef.label : k}: ${v}`;
+          })
+          .join(" | "),
+      });
+      return;
+    }
+
     setBusy(true);
     const ok = await loadRazorpay();
     setBusy(false);
@@ -168,10 +219,6 @@ function PaymentPageRoute() {
       alert("Unable to load Razorpay payment gateway. Please check your internet connection.");
       return;
     }
-
-    const donorNameVal = fieldValues["f1"] || fieldValues["name"] || Object.values(fieldValues)[0] || "Devotee";
-    const donorEmailVal = fieldValues["f2"] || fieldValues["email"] || "";
-    const donorPhoneVal = fieldValues["f3"] || fieldValues["phone"] || "";
 
     const rzp = new (window as any).Razorpay({
       key: RAZORPAY_KEY,
@@ -201,37 +248,63 @@ function PaymentPageRoute() {
           paymentId: pId,
           amount: totalPayableAmount,
           donorName: donorNameVal,
+          paymentMethod: "Razorpay",
         });
 
-        // Store payment record in Admin Panel
-        try {
-          await addPaymentRecord({
-            paymentId: pId,
-            donorName: donorNameVal,
-            donorEmail: donorEmailVal,
-            donorPhone: donorPhoneVal,
-            amount: totalPayableAmount,
-            baseAmount: activeAmount,
-            platformFee: coverPlatformFee ? platformChargeAmount : 0,
-            currency: "INR",
-            category: `Instant Page: ${page.title}`,
-            sevaOrPageTitle: page.title,
-            status: "Completed",
-            paymentMethod: "Razorpay",
-            notes: Object.entries(fieldValues)
-              .map(([k, v]) => {
-                const fieldDef = page.fields.find((f) => f.id === k);
-                return `${fieldDef ? fieldDef.label : k}: ${v}`;
-              })
-              .join(" | "),
-          });
-        } catch (err) {
-          console.error("Failed to store payment record:", err);
-        }
+
       },
     });
 
     rzp.open();
+  };
+
+  const handleUpiSuccess = async ({ 
+    utr, 
+    amount: paidAmt, 
+    paymentMethod,
+    screenshotUrl,
+    notes: userNotes
+  }: { 
+    utr: string; 
+    amount: number; 
+    paymentMethod: string;
+    screenshotUrl?: string;
+    notes?: string;
+  }) => {
+    if (!upiModalData) return;
+
+    const combinedNotes = [upiModalData.notes, userNotes].filter(Boolean).join(" | ");
+
+    try {
+      await addPaymentRecord({
+        paymentId: utr,
+        donorName: upiModalData.donorName || "Devotee",
+        donorEmail: upiModalData.donorEmail,
+        donorPhone: upiModalData.donorPhone,
+        amount: paidAmt,
+        baseAmount: upiModalData.baseAmount || paidAmt,
+        platformFee: upiModalData.platformFee || 0,
+        currency: "INR",
+        category: `Instant Page: ${upiModalData.sevaTitle}`,
+        sevaOrPageTitle: upiModalData.sevaTitle,
+        status: "Pending",
+        paymentMethod: "UPI QR Payment",
+        screenshotUrl: screenshotUrl,
+        panNumber: upiModalData.pan,
+        notes: combinedNotes || undefined,
+        taxReceiptRequested: !!upiModalData.pan,
+      });
+    } catch (err) {
+      console.error("Failed to store UPI payment record:", err);
+    }
+
+    setDevotionalSuccessData({
+      amount: paidAmt,
+      sevaTitle: upiModalData.sevaTitle,
+      donorName: upiModalData.donorName || "Devotee",
+    });
+
+    setUpiModalData(null);
   };
 
   // Goal tracker percent calculation
@@ -677,20 +750,83 @@ function PaymentPageRoute() {
                   </div>
                 )}
 
-                {/* Razorpay Metallic Pay Button */}
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={handlePayNow}
-                  className="w-full py-3.5 sm:py-4 bg-gradient-to-r from-primary via-[#3d1a6a] to-primary hover:from-primary/95 text-white font-bold text-sm sm:text-base rounded-xl sm:rounded-2xl shadow-xl shadow-primary/25 hover:shadow-2xl transition cursor-pointer flex items-center justify-between px-5 sm:px-6 active:scale-[0.99] disabled:opacity-60 group"
-                >
-                  <span className="text-[10px] text-secondary font-mono tracking-widest uppercase flex items-center gap-1">
-                    <Zap className="h-3.5 w-3.5" /> Instant Payment
-                  </span>
-                  <span className="flex items-center gap-1.5 font-sans font-extrabold">
-                    Pay ₹{totalPayableAmount > 0 ? totalPayableAmount.toLocaleString("en-IN") : "0"}.00
-                  </span>
-                </button>
+                {/* Payment Method Selector */}
+                {upiPayment.enabled !== false && (
+                  <div className="space-y-2 pt-2 border-t border-slate-200/40">
+                    <span className={`block text-[11px] font-bold uppercase tracking-wider ${
+                      themeMode === "royal" ? "text-slate-300" : "text-slate-600"
+                    }`}>
+                      Payment Mode
+                    </span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethodMode("razorpay")}
+                        className={`p-2.5 rounded-xl border-2 text-left transition cursor-pointer flex items-center justify-between gap-1.5 ${
+                          paymentMethodMode === "razorpay"
+                            ? "border-primary bg-primary/15 text-primary font-bold"
+                            : "border-slate-300/40 opacity-70 hover:opacity-100"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="h-4 w-4 text-primary" />
+                          <span className="text-xs">Razorpay</span>
+                        </div>
+                        {paymentMethodMode === "razorpay" && <Check className="h-3.5 w-3.5 text-primary" />}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethodMode("upi")}
+                        className={`p-2.5 rounded-xl border-2 text-left transition cursor-pointer flex items-center justify-between gap-1.5 ${
+                          paymentMethodMode === "upi"
+                            ? "border-primary bg-primary/15 text-primary font-bold"
+                            : "border-slate-300/40 opacity-70 hover:opacity-100"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <QrCode className="h-4 w-4 text-slate-600" />
+                          <span className="text-xs">UPI QR (Auto)</span>
+                        </div>
+                        {paymentMethodMode === "upi" && <Check className="h-3.5 w-3.5 text-primary" />}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Primary Action Button */}
+                {upiPayment.enabled !== false && paymentMethodMode === "upi" ? (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => handlePayNow("upi")}
+                    className="w-full py-3.5 sm:py-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-sm sm:text-base rounded-xl sm:rounded-2xl shadow-xl shadow-emerald-600/25 hover:shadow-2xl transition cursor-pointer flex items-center justify-between px-5 sm:px-6 active:scale-[0.99] disabled:opacity-60 group"
+                  >
+                    <span className="text-[10px] text-amber-300 font-mono tracking-widest uppercase flex items-center gap-1">
+                      <QrCode className="h-3.5 w-3.5" /> Amount Auto-Filled
+                    </span>
+                    <span className="flex items-center gap-1.5 font-sans font-extrabold">
+                      Pay ₹{totalPayableAmount > 0 ? totalPayableAmount.toLocaleString("en-IN") : "0"}.00
+                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => handlePayNow("razorpay")}
+                    className="w-full py-3.5 sm:py-4 bg-gradient-to-r from-primary via-[#3d1a6a] to-primary hover:from-primary/95 text-white font-bold text-sm sm:text-base rounded-xl sm:rounded-2xl shadow-xl shadow-primary/25 hover:shadow-2xl transition cursor-pointer flex items-center justify-between px-5 sm:px-6 active:scale-[0.99] disabled:opacity-60 group"
+                  >
+                    <span className="text-[10px] text-secondary font-mono tracking-widest uppercase flex items-center gap-1">
+                      <Zap className="h-3.5 w-3.5" /> Instant Gateway
+                    </span>
+                    <span className="flex items-center gap-1.5 font-sans font-extrabold">
+                      {upiPayment.enabled !== false 
+                        ? `Pay ₹${totalPayableAmount > 0 ? totalPayableAmount.toLocaleString("en-IN") : "0"}.05`
+                        : `Donate ₹${totalPayableAmount > 0 ? totalPayableAmount.toLocaleString("en-IN") : "0"}.00 Now`}
+                    </span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -781,13 +917,38 @@ function PaymentPageRoute() {
           </div>
         </div>
         <button
-          onClick={handlePayNow}
-          className="py-2.5 px-5 bg-secondary text-primary font-bold text-xs rounded-xl shadow-lg active:scale-95 transition flex items-center gap-1"
+          onClick={() => handlePayNow(paymentMethodMode)}
+          className="py-2.5 px-5 bg-secondary text-primary font-bold text-xs rounded-xl shadow-lg active:scale-95 transition flex items-center gap-1.5"
         >
-          <span>Pay Now</span>
-          <Zap className="h-3.5 w-3.5" />
+          {paymentMethodMode === "upi" ? (
+            <>
+              <QrCode className="h-4 w-4 text-primary" />
+              <span>Pay via UPI</span>
+            </>
+          ) : (
+            <>
+              <span>Pay Now</span>
+              <Zap className="h-3.5 w-3.5" />
+            </>
+          )}
         </button>
       </div>
+
+      {/* Dynamic UPI Payment Modal */}
+      {upiModalData && (
+        <UpiPaymentModal
+          isOpen={upiModalData.isOpen}
+          onClose={() => setUpiModalData(null)}
+          amount={upiModalData.amount}
+          sevaTitle={upiModalData.sevaTitle}
+          donorName={upiModalData.donorName}
+          donorEmail={upiModalData.donorEmail}
+          donorPhone={upiModalData.donorPhone}
+          pan={upiModalData.pan}
+          notes={upiModalData.notes}
+          onPaymentSuccess={handleUpiSuccess}
+        />
+      )}
 
       {/* Payment Success Receipt Modal with PNG Download & Signature */}
       {paymentSuccess && (
@@ -799,9 +960,57 @@ function PaymentPageRoute() {
             amount: paymentSuccess.amount,
             sevaTitle: page.title,
             category: "Instant Payment Page",
+            paymentMethod: paymentSuccess.paymentMethod || "Online Payment",
           }}
           onClose={() => setPaymentSuccess(null)}
         />
+      )}
+
+      {/* Devotional Success Confirmation Modal */}
+      {devotionalSuccessData && (
+        <div className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in font-sans">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border text-center space-y-6 relative overflow-hidden text-slate-900">
+            {/* Saffron Gradient Accent Header Bar */}
+            <div className="absolute top-0 left-0 right-0 h-2.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600" />
+            
+            <div className="text-4xl animate-bounce pt-2">🙏</div>
+            
+            <div className="space-y-2">
+              <h3 className="font-display font-black text-2xl text-primary">
+                Hare Krishna!
+              </h3>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                Donation Recorded Successfully
+              </p>
+            </div>
+
+            <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 text-left text-xs space-y-2 text-slate-800 font-sans">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Devotee Name:</span>
+                <span className="font-extrabold text-slate-900">{devotionalSuccessData.donorName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Seva / Purpose:</span>
+                <span className="font-bold text-primary">{devotionalSuccessData.sevaTitle}</span>
+              </div>
+              <div className="flex justify-between border-t border-slate-200/50 pt-2 font-bold">
+                <span className="text-slate-500">Amount Offered:</span>
+                <span className="text-base text-accent font-black font-display">₹{devotionalSuccessData.amount.toLocaleString("en-IN")}.00</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed font-sans">
+              Thank you for your generous offering! Your transaction details have been recorded. Our temple admin team will verify it soon. May Lord Sri Jagannath shower eternal blessings upon you and your family.
+            </p>
+
+            <button
+              onClick={() => setDevotionalSuccessData(null)}
+              className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-2xl font-black text-sm shadow-md transition cursor-pointer active:scale-98"
+            >
+              Done
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

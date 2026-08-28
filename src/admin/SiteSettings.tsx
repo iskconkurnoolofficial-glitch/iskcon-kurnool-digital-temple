@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAdmin, uploadToCloudinary, SiteSettings as Settings } from "@/context/AdminContext";
+import { useAdmin, uploadToCloudinary, SiteSettings as Settings, UpiPaymentSettings, generateUpiUri } from "@/context/AdminContext";
 import { UploadBox } from "./CarouselManager";
 import { 
   Phone, 
@@ -18,26 +18,40 @@ import {
   Calendar, 
   Save, 
   FileText, 
-  ShieldCheck 
+  ShieldCheck,
+  QrCode,
+  Smartphone,
+  IndianRupee,
+  Copy,
+  Sliders,
+  CheckCircle2
 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function SiteSettingsForm() {
-  const { settings, setSettings } = useAdmin();
+  const { settings, setSettings, upiPayment, setUpiPayment } = useAdmin();
   const [s, setS] = useState<Settings>(settings);
+  const [upi, setUpi] = useState<UpiPaymentSettings>(upiPayment);
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [testAmount, setTestAmount] = useState<number>(501);
 
   useEffect(() => {
     setS(settings);
   }, [settings]);
 
+  useEffect(() => {
+    setUpi(upiPayment);
+  }, [upiPayment]);
+
   const update = (k: keyof Settings, v: any) => setS((prev) => ({ ...prev, [k]: v }));
+  const updateUpi = (k: keyof UpiPaymentSettings, v: any) => setUpi((prev) => ({ ...prev, [k]: v }));
 
   const save = () => {
     setSettings(s);
+    setUpiPayment(upi);
     setSaved(true);
-    toast.success("Site Settings saved! All site-wide links, logos, and contacts updated.");
+    toast.success("Site & UPI Payment Settings saved! All changes updated in real time.");
     setTimeout(() => setSaved(false), 2500);
   };
 
@@ -79,6 +93,30 @@ export default function SiteSettingsForm() {
       setBusy(false);
     }
   };
+
+  const onQrCodeUpload = async (f: File) => {
+    setBusy(true);
+    try {
+      const url = await uploadToCloudinary(f);
+      setUpi((p) => ({ ...p, customQrImage: url }));
+      toast.success("Static UPI QR code image uploaded successfully.");
+    } catch {
+      toast.error("QR image upload failed.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const previewUpiUri = generateUpiUri({
+    upiId: upi.upiId || "iskconkurnool@sbi",
+    payeeName: upi.payeeName || "ISKCON Kurnool",
+    amount: testAmount,
+    transactionNote: `Devotional Offering - ISKCON Kurnool`,
+  });
+
+  const previewQrUrl = upi.useDynamicAmountQr !== false || !upi.customQrImage
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(previewUpiUri)}&margin=10`
+    : upi.customQrImage;
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 animate-fade-in font-sans pb-12">
@@ -306,7 +344,9 @@ export default function SiteSettingsForm() {
         </div>
       </div>
 
-      {/* SECTION 5: COMING SOON / LAUNCH MODE */}
+
+
+      {/* SECTION 6: COMING SOON / LAUNCH MODE */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
         <div className="border-b border-slate-100 pb-4 flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">

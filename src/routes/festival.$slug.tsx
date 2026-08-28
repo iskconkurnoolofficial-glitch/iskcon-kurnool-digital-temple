@@ -90,7 +90,7 @@ function Page() {
         )}
 
         <p className="mt-10 text-center text-xs text-muted-foreground inline-flex items-center justify-center gap-1.5 w-full">
-          <Sparkles className="h-3.5 w-3.5 text-secondary" /> Secure payments powered by Razorpay
+          <Sparkles className="h-3.5 w-3.5 text-secondary" /> Secure payments powered by Razorpay & UPI
         </p>
       </section>
     </SiteLayout>
@@ -113,22 +113,71 @@ function FestivalBanner({ f }: { f: Festival }) {
 }
 
 function SevaCard({ seva, festival, settings, theme }: { seva: Seva; festival: Festival; settings: any; theme: any }) {
-  const { addPaymentRecord, platformFee } = useAdmin();
+  const { addPaymentRecord, platformFee, upiPayment } = useAdmin();
   const [sel, setSel] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [receiptSuccess, setReceiptSuccess] = useState<ReceiptData | null>(null);
+  const [devotionalSuccessData, setDevotionalSuccessData] = useState<{ amount: number; sevaTitle: string; donorName: string } | null>(null);
   const [coverPlatformFee, setCoverPlatformFee] = useState(true);
+  const [upiModalOpen, setUpiModalOpen] = useState(false);
   const standardPrice = seva.prices[sel] ?? seva.prices[0];
   const baseAmount = (standardPrice?.amount || 0) * quantity;
 
-  const donate = async () => {
+  const platformCharge = platformFee.enabled && coverPlatformFee ? calculatePlatformFee(baseAmount, platformFee) : 0;
+  const totalPayable = baseAmount + platformCharge;
+  const sevaLabel = quantity > 1 ? `${standardPrice.label} × ${quantity}` : standardPrice.label;
+
+  const donateUpi = () => {
+    if (!standardPrice || baseAmount <= 0) return;
+    setUpiModalOpen(true);
+  };
+
+  const handleUpiSuccess = async ({ 
+    utr, 
+    amount: paidAmt, 
+    screenshotUrl,
+    notes: userNotes 
+  }: { 
+    utr: string; 
+    amount: number; 
+    paymentMethod: string;
+    screenshotUrl?: string;
+    notes?: string;
+  }) => {
+    try {
+      await addPaymentRecord({
+        paymentId: utr,
+        donorName: "Devotee",
+        donorEmail: "",
+        donorPhone: settings.phone || "",
+        amount: paidAmt,
+        baseAmount: baseAmount,
+        platformFee: platformCharge,
+        currency: "INR",
+        category: `Festival Seva: ${festival.title}`,
+        sevaOrPageTitle: `${seva.title} (${sevaLabel})`,
+        status: "Pending",
+        paymentMethod: "UPI QR Payment",
+        screenshotUrl: screenshotUrl,
+        notes: userNotes || undefined,
+      });
+    } catch (err) {
+      console.error("Failed to store festival UPI payment record:", err);
+    }
+
+    setDevotionalSuccessData({
+      amount: paidAmt,
+      sevaTitle: `${seva.title} (${sevaLabel})`,
+      donorName: "Devotee",
+    });
+
+    setUpiModalOpen(false);
+  };
+
+  const donateRazorpay = async () => {
     if (!standardPrice || baseAmount <= 0) return;
     const ok = await loadRazorpay();
     if (!ok) { alert("Unable to load payment gateway. Please try again."); return; }
-
-    const platformCharge = platformFee.enabled && coverPlatformFee ? calculatePlatformFee(baseAmount, platformFee) : 0;
-    const totalPayable = baseAmount + platformCharge;
-    const sevaLabel = quantity > 1 ? `${standardPrice.label} × ${quantity}` : standardPrice.label;
 
     const rzp = new (window as any).Razorpay({
       key: RAZORPAY_KEY,
@@ -142,24 +191,7 @@ function SevaCard({ seva, festival, settings, theme }: { seva: Seva; festival: F
       theme: { color: theme.primary || "#5b2c9b" },
       handler: async (response: any) => {
         const pId = response?.razorpay_payment_id || `pay_${Date.now()}`;
-        try {
-          await addPaymentRecord({
-            paymentId: pId,
-            donorName: "Devotee",
-            donorEmail: "",
-            donorPhone: settings.phone || "",
-            amount: totalPayable,
-            baseAmount: baseAmount,
-            platformFee: platformCharge,
-            currency: "INR",
-            category: `Festival Seva: ${festival.title}`,
-            sevaOrPageTitle: `${seva.title} (${sevaLabel})`,
-            status: "Completed",
-            paymentMethod: "Razorpay",
-          });
-        } catch (err) {
-          console.error("Failed to store festival payment record:", err);
-        }
+
 
         setReceiptSuccess({
           receiptNo: pId,
@@ -168,6 +200,7 @@ function SevaCard({ seva, festival, settings, theme }: { seva: Seva; festival: F
           amount: totalPayable,
           sevaTitle: `${seva.title} (${sevaLabel})`,
           category: `Festival: ${festival.title}`,
+          paymentMethod: "Razorpay",
         });
       },
     });
@@ -304,23 +337,98 @@ function SevaCard({ seva, festival, settings, theme }: { seva: Seva; festival: F
             </div>
           )}
 
-          <div className="pt-2 font-sans">
-            <button
-              onClick={donate}
-              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white font-extrabold text-xs sm:text-sm tracking-wide uppercase shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/35 transition-all duration-300 hover:scale-[1.01] active:scale-98 cursor-pointer flex items-center justify-center gap-2 group/btn font-sans"
-            >
-              <Heart className="h-4 w-4 fill-white/20 text-white group-hover/btn:scale-125 transition-transform" />
-              <span>Donate ₹{(baseAmount + (platformFee.enabled && coverPlatformFee ? calculatePlatformFee(baseAmount, platformFee) : 0)).toLocaleString("en-IN")}</span>
-            </button>
+          <div className="pt-2 space-y-2 font-sans">
+            {upiPayment.allowRazorpayGateway !== false && (
+              <button
+                onClick={donateRazorpay}
+                className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white font-extrabold text-xs sm:text-sm tracking-wide uppercase shadow-md shadow-orange-500/20 hover:shadow-lg transition-all duration-300 hover:scale-[1.01] active:scale-98 cursor-pointer flex items-center justify-center gap-2 group/btn font-sans"
+              >
+                <CreditCard className="h-4 w-4 text-white group-hover/btn:scale-110 transition-transform" />
+                <span>
+                  {upiPayment.enabled !== false 
+                    ? `Pay ₹${totalPayable.toLocaleString("en-IN")} Online`
+                    : `Donate ₹${totalPayable.toLocaleString("en-IN")} Now`}
+                </span>
+              </button>
+            )}
+
+            {upiPayment.enabled !== false && (
+              <button
+                onClick={donateUpi}
+                className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs tracking-wide cursor-pointer flex items-center justify-center gap-1.5 transition"
+              >
+                <QrCode className="h-3.5 w-3.5 text-slate-500" />
+                <span>Pay with UPI QR Code</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      {upiModalOpen && (
+        <UpiPaymentModal
+          isOpen={upiModalOpen}
+          onClose={() => setUpiModalOpen(false)}
+          amount={totalPayable}
+          sevaTitle={`${festival.title} — ${seva.title} (${sevaLabel})`}
+          donorName="Devotee"
+          donorPhone={settings.phone}
+          onPaymentSuccess={handleUpiSuccess}
+        />
+      )}
 
       {receiptSuccess && (
         <OfficialReceiptModal
           data={receiptSuccess}
           onClose={() => setReceiptSuccess(null)}
         />
+      )}
+
+      {/* Devotional Success Confirmation Modal */}
+      {devotionalSuccessData && (
+        <div className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in font-sans">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border text-center space-y-6 relative overflow-hidden text-slate-900">
+            {/* Saffron Gradient Accent Header Bar */}
+            <div className="absolute top-0 left-0 right-0 h-2.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600" />
+            
+            <div className="text-4xl animate-bounce pt-2">🙏</div>
+            
+            <div className="space-y-2">
+              <h3 className="font-display font-black text-2xl text-primary">
+                Hare Krishna!
+              </h3>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                Donation Recorded Successfully
+              </p>
+            </div>
+
+            <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 text-left text-xs space-y-2 text-slate-800 font-sans">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Devotee Name:</span>
+                <span className="font-extrabold text-slate-900">{devotionalSuccessData.donorName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Seva / Purpose:</span>
+                <span className="font-bold text-primary">{devotionalSuccessData.sevaTitle}</span>
+              </div>
+              <div className="flex justify-between border-t border-slate-200/50 pt-2 font-bold">
+                <span className="text-slate-500">Amount Offered:</span>
+                <span className="text-base text-accent font-black font-display">₹{devotionalSuccessData.amount.toLocaleString("en-IN")}.00</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed font-sans">
+              Thank you for your generous offering! Your transaction details have been recorded. Our temple admin team will verify it soon. May Lord Sri Jagannath shower eternal blessings upon you and your family.
+            </p>
+
+            <button
+              onClick={() => setDevotionalSuccessData(null)}
+              className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-2xl font-black text-sm shadow-md transition cursor-pointer active:scale-98"
+            >
+              Done
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

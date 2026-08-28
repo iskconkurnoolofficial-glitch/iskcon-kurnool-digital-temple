@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate, Outlet } from "@tanstack/react-rout
 import SiteLayout, { PageHero } from "@/components/SiteLayout";
 import { useAdmin, Seva, calculatePlatformFee, getSevaCategories } from "@/context/AdminContext";
 import OfficialReceiptModal, { ReceiptData } from "@/components/OfficialReceiptModal";
+import UpiPaymentModal from "@/components/UpiPaymentModal";
 import { 
   Heart, 
   Search, 
@@ -23,8 +24,12 @@ import {
   FileText,
   ChevronDown,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  QrCode,
+  Smartphone,
+  CreditCard
 } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/donate")({
   head: () => ({
@@ -54,12 +59,31 @@ function loadRazorpay(): Promise<boolean> {
 const QUICK_SUGGESTIONS = [108, 251, 501, 1008, 2500, 5001, 11000];
 
 export default function Page({ initialSlug }: { initialSlug?: string }) {
-  const { sevas, settings, theme, ready, addDonation, updateDonationStatus, platformFee, addPaymentRecord, sunday } = useAdmin();
+  const { sevas, settings, theme, ready, addDonation, updateDonationStatus, platformFee, addPaymentRecord, sunday, upiPayment } = useAdmin();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selected, setSelected] = useState<Record<string, number>>({});
   const [checkoutSeva, setCheckoutSeva] = useState<Seva | null>(null);
+
+  // Payment method selection: "upi" or "razorpay"
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"upi" | "razorpay">("razorpay");
+
+  // Dynamic UPI Payment Modal state
+  const [upiModalData, setUpiModalData] = useState<{
+    isOpen: boolean;
+    amount: number;
+    baseAmount: number;
+    platformFee: number;
+    sevaTitle: string;
+    donorName: string;
+    donorEmail?: string;
+    donorPhone?: string;
+    pan?: string;
+    notes?: string;
+    enquiryId?: string | null;
+    optionLabel?: string;
+  } | null>(null);
 
   // Custom Amount state inside Checkout
   const [isCustomCheckoutAmount, setIsCustomCheckoutAmount] = useState(false);
@@ -75,10 +99,12 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   const [quickPurpose, setQuickPurpose] = useState("");
   const [quickPan, setQuickPan] = useState("");
   const [quickCoverFee, setQuickCoverFee] = useState(true);
+  const [quickPaymentMethod, setQuickPaymentMethod] = useState<"upi" | "razorpay">("razorpay");
   const [quickIsSubmitting, setQuickIsSubmitting] = useState(false);
 
   // Success Receipt Modal State
   const [receiptSuccess, setReceiptSuccess] = useState<ReceiptData | null>(null);
+  const [devotionalSuccessData, setDevotionalSuccessData] = useState<{ amount: number; sevaTitle: string; donorName: string } | null>(null);
   const [coverPlatformFee, setCoverPlatformFee] = useState(true);
 
   // Form inputs for standard seva checkout
@@ -303,8 +329,9 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     const curPan = (customDetails?.pan ?? pan).trim();
     const curPurpose = (customDetails?.purpose ?? purpose).trim();
     const curCoverFee = customDetails ? (customDetails.coverFee ?? true) : coverPlatformFee;
+    const curMethod = customDetails?.paymentMethod || selectedPaymentMethod || "upi";
 
-    // Store every submission in the admin panel before opening the gateway
+    // Store every submission in the admin panel before opening the gateway or QR modal
     const enquiryId = await addDonation({
       donorName: curDonorName,
       email: curEmail,
@@ -316,14 +343,34 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       amount,
     });
 
+    const platformCharge = platformFee.enabled && curCoverFee ? calculatePlatformFee(amount, platformFee) : 0;
+    const totalPayable = amount + platformCharge;
+
+    // Handle UPI QR Payment method
+    if (curMethod === "upi" || upiPayment.enabled && !upiPayment.allowRazorpayGateway) {
+      setUpiModalData({
+        isOpen: true,
+        amount: totalPayable,
+        baseAmount: amount,
+        platformFee: platformCharge,
+        sevaTitle: `${seva.title} (${label})`,
+        donorName: curDonorName,
+        donorEmail: curEmail,
+        donorPhone: curPhone,
+        pan: curPan,
+        notes: curPurpose,
+        enquiryId,
+        optionLabel: label
+      });
+      return;
+    }
+
+    // Handle Razorpay Online gateway method
     const ok = await loadRazorpay();
     if (!ok) { 
       alert("Unable to load payment gateway. Please check your internet connection and try again."); 
       return; 
     }
-
-    const platformCharge = platformFee.enabled && curCoverFee ? calculatePlatformFee(amount, platformFee) : 0;
-    const totalPayable = amount + platformCharge;
 
     const rzp = new (window as any).Razorpay({
       key: RAZORPAY_KEY,
@@ -361,27 +408,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
           }
         }
 
-        try {
-          await addPaymentRecord({
-            paymentId: pId,
-            donorName: finalDonorName,
-            donorEmail: curEmail,
-            donorPhone: curPhone,
-            amount: totalPayable,
-            baseAmount: amount,
-            platformFee: platformCharge,
-            currency: "INR",
-            category: `General Seva: ${seva.title}`,
-            sevaOrPageTitle: `${seva.title} (${label})`,
-            status: "Completed",
-            paymentMethod: "Razorpay",
-            panNumber: curPan || undefined,
-            notes: curPurpose || undefined,
-            taxReceiptRequested: !!curPan,
-          });
-        } catch (err) {
-          console.error("Failed to store payment record:", err);
-        }
+
 
         // Show Official Downloadable Receipt Modal
         setReceiptSuccess({
@@ -395,6 +422,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
           category: "General Seva",
           notes: curPurpose,
           panNumber: curPan,
+          paymentMethod: "Razorpay",
         });
 
         setCheckoutSeva(null);
@@ -413,8 +441,77 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     rzp.open();
   };
 
+  // Handle successful UPI payment completion from UpiPaymentModal
+  const handleUpiSuccess = async ({ 
+    utr, 
+    amount: paidAmt, 
+    paymentMethod,
+    screenshotUrl,
+    notes: userNotes
+  }: { 
+    utr: string; 
+    amount: number; 
+    paymentMethod: string;
+    screenshotUrl?: string;
+    notes?: string;
+  }) => {
+    if (!upiModalData) return;
+    const enquiryId = upiModalData.enquiryId;
+    if (enquiryId) {
+      try {
+        await updateDonationStatus(enquiryId, "initiated", utr);
+      } catch (e) {
+        console.error("Failed to update donation status:", e);
+      }
+    }
+
+    const finalNotes = userNotes || upiModalData.notes;
+
+    try {
+      await addPaymentRecord({
+        paymentId: utr,
+        donorName: upiModalData.donorName || "Devotee",
+        donorEmail: upiModalData.donorEmail,
+        donorPhone: upiModalData.donorPhone,
+        amount: paidAmt,
+        baseAmount: upiModalData.baseAmount || paidAmt,
+        platformFee: upiModalData.platformFee || 0,
+        currency: "INR",
+        category: `General Seva: ${upiModalData.sevaTitle}`,
+        sevaOrPageTitle: upiModalData.sevaTitle,
+        status: "Pending",
+        paymentMethod: "UPI QR Payment",
+        screenshotUrl: screenshotUrl,
+        panNumber: upiModalData.pan,
+        notes: finalNotes,
+        taxReceiptRequested: !!upiModalData.pan,
+      });
+    } catch (err) {
+      console.error("Failed to store UPI payment record:", err);
+    }
+
+    setDevotionalSuccessData({
+      amount: paidAmt,
+      sevaTitle: upiModalData.sevaTitle,
+      donorName: upiModalData.donorName || "Devotee",
+    });
+
+    setUpiModalData(null);
+    setCheckoutSeva(null);
+    setDonorName("");
+    setPurpose("");
+    setEmail("");
+    setPhone("");
+    setPan("");
+    setQuickDonorName("");
+    setQuickPhone("");
+    setQuickEmail("");
+    setQuickPurpose("");
+    setQuickPan("");
+  };
+
   // Handle Quick Donate Form Submit with all details
-  const handleQuickPayNow = async (e: React.FormEvent) => {
+  const handleQuickPayNow = async (e: React.FormEvent, methodToUse?: "upi" | "razorpay") => {
     e.preventDefault();
     const finalAmount = Number(quickAmount);
     if (!finalAmount || finalAmount <= 0 || isNaN(finalAmount)) {
@@ -429,11 +526,8 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       alert("Please enter WhatsApp Phone Number.");
       return;
     }
-    if (!quickEmail.trim()) {
-      alert("Please enter Email Address.");
-      return;
-    }
 
+    const chosenMethod = methodToUse || quickPaymentMethod || "razorpay";
     setQuickIsSubmitting(true);
     try {
       await donate(
@@ -446,7 +540,8 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
           email: quickEmail,
           pan: quickPan,
           purpose: quickPurpose || "Quick Devotional Offering",
-          coverFee: quickCoverFee
+          coverFee: quickCoverFee,
+          paymentMethod: chosenMethod,
         }
       );
     } finally {
@@ -471,7 +566,6 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     const handleFormSubmit = (e: React.FormEvent) => {
       e.preventDefault();
       if (!donorName.trim()) { alert("Please enter Donor Name."); return; }
-      if (!email.trim()) { alert("Please enter Email Address."); return; }
       if (!phone.trim()) { alert("Please enter WhatsApp Phone Number."); return; }
 
       if (isCustomCheckoutAmount && (!finalAmount || finalAmount <= 0)) {
@@ -768,7 +862,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 font-sans">Purpose of Donation / Sankalpa</label>
+                      <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 font-sans">Purpose of Donation / Sankalpa (Optional)</label>
                       <input
                         type="text"
                         placeholder="e.g. For good health, family welfare, birthdays..."
@@ -776,14 +870,25 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                         onChange={(e) => setPurpose(e.target.value)}
                         className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans bg-white"
                       />
+                      <div className="flex flex-wrap gap-1.5 mt-1.5">
+                        {["Birthday", "Wedding Anniversary", "Family Welfare", "Good Health", "In Memory of"].map((sug) => (
+                          <button
+                            key={sug}
+                            type="button"
+                            onClick={() => setPurpose(sug)}
+                            className="px-2.5 py-1 bg-slate-100 hover:bg-amber-100/70 border border-slate-200 hover:border-amber-300 text-slate-700 hover:text-slate-900 rounded-lg text-[10px] font-bold transition cursor-pointer"
+                          >
+                            + {sug}
+                          </button>
+                        ))}
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-sans">Email Address *</label>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-sans">Email Address (Optional)</label>
                         <input
                           type="email"
-                          required
                           placeholder="donor@example.com"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
@@ -856,23 +961,104 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                     </div>
                   )}
 
-                  <div className="pt-4 border-t border-slate-100 space-y-4">
-                    <button
-                      type="submit"
-                      disabled={finalAmount <= 0}
-                      className="relative group overflow-hidden w-full py-4 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 disabled:opacity-50 disabled:pointer-events-none text-white font-extrabold rounded-2xl transition-all duration-300 cursor-pointer flex items-center justify-center gap-2.5 text-base tracking-wide uppercase shadow-[0_6px_22px_rgba(249,115,22,0.4)] hover:shadow-[0_8px_30px_rgba(249,115,22,0.6)] hover:scale-[1.01] active:scale-98 ring-2 ring-amber-300/30"
-                    >
-                      <Lock className="h-4.5 w-4.5 transition-transform group-hover:scale-110" />
-                      <span className="relative z-10">
-                        DONATE ₹{totalPayable.toLocaleString("en-IN")}
-                      </span>
-                      <Heart className="h-4.5 w-4.5 fill-white/20 stroke-[2.5] text-white transition-transform duration-300 group-hover:scale-125 group-hover:fill-white" />
-                      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/35 to-transparent" />
-                    </button>
+                  {/* Payment Method Selector */}
+                  {upiPayment.enabled !== false && (
+                    <div className="space-y-2.5 pt-2 border-t border-slate-100 font-sans">
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        Select Payment Mode
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPaymentMethod("razorpay")}
+                          className={`p-3 rounded-2xl border-2 text-left transition-all cursor-pointer flex items-center justify-between gap-2 ${
+                            selectedPaymentMethod === "razorpay"
+                              ? "border-primary bg-primary/5 shadow-xs ring-2 ring-primary/20"
+                              : "border-slate-200 bg-white hover:bg-slate-50"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div className="p-2 rounded-xl bg-primary text-white shadow-xs">
+                              <CreditCard className="h-4 w-4" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-black text-slate-900 leading-tight">Online Gateway</p>
+                              <p className="text-[10px] font-semibold text-slate-500">Cards / NetBanking / Razorpay</p>
+                            </div>
+                          </div>
+                          {selectedPaymentMethod === "razorpay" && (
+                            <div className="h-5 w-5 rounded-full bg-primary text-white flex items-center justify-center shrink-0">
+                              <Check className="h-3 w-3 stroke-[3]" />
+                            </div>
+                          )}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPaymentMethod("upi")}
+                          className={`p-3 rounded-2xl border-2 text-left transition-all cursor-pointer flex items-center justify-between gap-2 ${
+                            selectedPaymentMethod === "upi"
+                              ? "border-primary bg-primary/5 shadow-xs ring-2 ring-primary/20"
+                              : "border-slate-200 bg-white hover:bg-slate-50"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div className="p-2 rounded-xl bg-slate-600 text-white shadow-xs">
+                              <QrCode className="h-4 w-4" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-black text-slate-900 leading-tight">Pay with UPI QR</p>
+                              <p className="text-[10px] font-semibold text-slate-500 font-sans">Amount pre-filled in UPI apps</p>
+                            </div>
+                          </div>
+                          {selectedPaymentMethod === "upi" && (
+                            <div className="h-5 w-5 rounded-full bg-primary text-white flex items-center justify-center shrink-0">
+                              <Check className="h-3 w-3 stroke-[3]" />
+                            </div>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="pt-3 border-t border-slate-100 space-y-3 font-sans">
+                    {upiPayment.enabled !== false && selectedPaymentMethod === "upi" ? (
+                      <button
+                        type="submit"
+                        disabled={finalAmount <= 0}
+                        className="relative group overflow-hidden w-full py-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:opacity-50 disabled:pointer-events-none text-white font-extrabold rounded-2xl transition-all duration-300 cursor-pointer flex items-center justify-center gap-2.5 text-base tracking-wide uppercase shadow-lg shadow-emerald-700/25 hover:shadow-xl hover:scale-[1.01] active:scale-98"
+                      >
+                        <QrCode className="h-5 w-5 transition-transform group-hover:scale-110" />
+                        <span className="relative z-10">
+                          PAY ₹{totalPayable.toLocaleString("en-IN")} VIA UPI QR
+                        </span>
+                        <ArrowRight className="h-4.5 w-4.5 transition-transform duration-300 group-hover:translate-x-1" />
+                        <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+                      </button>
+                    ) : (
+                      <button
+                        type="submit"
+                        disabled={finalAmount <= 0}
+                        className="relative group overflow-hidden w-full py-4 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 disabled:opacity-50 disabled:pointer-events-none text-white font-extrabold rounded-2xl transition-all duration-300 cursor-pointer flex items-center justify-center gap-2.5 text-base tracking-wide uppercase shadow-lg shadow-orange-500/30 hover:shadow-xl hover:scale-[1.01] active:scale-98"
+                      >
+                        <Lock className="h-4.5 w-4.5 transition-transform group-hover:scale-110" />
+                        <span className="relative z-10">
+                          {upiPayment.enabled !== false 
+                            ? `DONATE ₹${totalPayable.toLocaleString("en-IN")} ONLINE`
+                            : `DONATE ₹${totalPayable.toLocaleString("en-IN")} NOW`}
+                        </span>
+                        <Heart className="h-4.5 w-4.5 fill-white/20 stroke-[2.5] text-white transition-transform duration-300 group-hover:scale-125 group-hover:fill-white" />
+                        <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/35 to-transparent" />
+                      </button>
+                    )}
 
                     <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                       <ShieldCheck className="h-4.5 w-4.5 text-emerald-500" />
-                      <span>100% Secure Payments by Razorpay</span>
+                      <span>
+                        {upiPayment.enabled !== false && selectedPaymentMethod === "upi"
+                          ? "Direct Bank Transfer via Official Temple UPI · 80G Tax Exempted"
+                          : "100% Secure Payments powered by Razorpay"}
+                      </span>
                     </div>
                   </div>
                 </form>
@@ -881,6 +1067,30 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
             </div>
           </div>
         </section>
+
+        {/* Dynamic UPI Payment Modal for Single Seva */}
+        {upiModalData && (
+          <UpiPaymentModal
+            isOpen={upiModalData.isOpen}
+            onClose={() => setUpiModalData(null)}
+            amount={upiModalData.amount}
+            sevaTitle={upiModalData.sevaTitle}
+            donorName={upiModalData.donorName}
+            donorEmail={upiModalData.donorEmail}
+            donorPhone={upiModalData.donorPhone}
+            pan={upiModalData.pan}
+            notes={upiModalData.notes}
+            onPaymentSuccess={handleUpiSuccess}
+          />
+        )}
+
+        {/* Official Downloadable Receipt Modal */}
+        {receiptSuccess && (
+          <OfficialReceiptModal
+            data={receiptSuccess}
+            onClose={() => setReceiptSuccess(null)}
+          />
+        )}
       </SiteLayout>
     );
   }
@@ -1027,13 +1237,12 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[11px] font-bold text-slate-600 mb-1 font-sans">
-                        Email Address *
+                        Email Address (Optional)
                       </label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                         <input
                           type="email"
-                          required
                           placeholder="donor@example.com"
                           value={quickEmail}
                           onChange={(e) => setQuickEmail(e.target.value)}
@@ -1056,6 +1265,18 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                           className="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans"
                         />
                       </div>
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {["Birthday", "Wedding Anniversary", "Family Welfare", "Good Health", "In Memory of"].map((sug) => (
+                          <button
+                            key={sug}
+                            type="button"
+                            onClick={() => setQuickPurpose(sug)}
+                            className="px-2 py-0.5 bg-slate-100 hover:bg-amber-100/70 border border-slate-200 hover:border-amber-300 text-slate-600 hover:text-slate-800 rounded text-[9px] font-bold transition cursor-pointer"
+                          >
+                            + {sug}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
@@ -1073,47 +1294,64 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                     />
                   </div>
 
-                  {/* Row 4: Platform Fee Checkbox & Total & Pay Button */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2">
-                    <div>
-                      {platformFee.enabled && currentQuickAmountNum > 0 && (
-                        <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700">
-                          <input
-                            type="checkbox"
-                            checked={quickCoverFee}
-                            onChange={(e) => setQuickCoverFee(e.target.checked)}
-                            className="h-4 w-4 rounded text-primary focus:ring-primary accent-primary cursor-pointer"
-                          />
-                          <span>
-                            Cover payment gateway charges (+₹{quickPlatformCharge})
-                          </span>
-                        </label>
-                      )}
-                    </div>
+                  {/* Row 4: Platform Fee Checkbox & Total & Dual Pay Actions */}
+                  <div className="space-y-3 pt-2">
+                    {platformFee.enabled && currentQuickAmountNum > 0 && (
+                      <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700">
+                        <input
+                          type="checkbox"
+                          checked={quickCoverFee}
+                          onChange={(e) => setQuickCoverFee(e.target.checked)}
+                          className="h-4 w-4 rounded text-primary focus:ring-primary accent-primary cursor-pointer"
+                        />
+                        <span>
+                          Cover payment gateway charges (+₹{quickPlatformCharge})
+                        </span>
+                      </label>
+                    )}
 
-                    <div className="flex items-center gap-3 w-full sm:w-auto">
-                      <div className="text-right shrink-0">
-                        <span className="text-[11px] text-slate-500 font-sans block leading-none">Total:</span>
-                        <span className="text-lg font-black text-primary font-display">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
+                      <div className="shrink-0">
+                        <span className="text-[11px] text-slate-500 font-sans block leading-none">Total Offering:</span>
+                        <span className="text-xl sm:text-2xl font-black text-slate-900 font-display">
                           ₹{quickTotalPayable.toLocaleString("en-IN")}
                         </span>
                       </div>
 
-                      <button
-                        type="submit"
-                        disabled={quickIsSubmitting || currentQuickAmountNum <= 0}
-                        className="flex-1 sm:flex-none px-6 py-2.5 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 disabled:opacity-50 disabled:pointer-events-none text-white font-black rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 text-sm uppercase tracking-wide shadow-md shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-[1.02] active:scale-98"
-                      >
-                        <Lock className="h-4 w-4" />
-                        <span>DONATE ₹{quickTotalPayable.toLocaleString("en-IN")} NOW</span>
-                        <Heart className="h-4 w-4 fill-white/20 text-white" />
-                      </button>
-                    </div>
-                  </div>
+                      <div className="flex flex-wrap items-center gap-2.5 flex-1 sm:justify-end">
+                        {/* Primary Button: Cards / NetBanking / Razorpay */}
+                        {upiPayment.allowRazorpayGateway !== false && (
+                          <button
+                            type="button"
+                            onClick={(e) => handleQuickPayNow(e, "razorpay")}
+                            disabled={quickIsSubmitting || currentQuickAmountNum <= 0}
+                            className={`flex-1 ${upiPayment.enabled !== false ? "sm:flex-initial" : ""} px-5 py-3.5 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 disabled:opacity-50 text-white font-extrabold rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wide shadow-md shadow-orange-500/20 hover:shadow-lg hover:scale-[1.02] active:scale-98`}
+                          >
+                            <CreditCard className="h-4 w-4" />
+                            <span>{upiPayment.enabled !== false ? "Cards / NetBanking" : "Donate Now"}</span>
+                            <Sparkles className="h-3.5 w-3.5 fill-white/20 text-white" />
+                          </button>
+                        )}
 
-                  <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider pt-1">
-                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                    <span>100% Secure via Razorpay · Instant Official Downloadable 80G Receipt</span>
+                        {/* Secondary Button: UPI QR (Amount Auto-Filled) */}
+                        {upiPayment.enabled !== false && (
+                          <button
+                            type="button"
+                            onClick={(e) => handleQuickPayNow(e, "upi")}
+                            disabled={quickIsSubmitting || currentQuickAmountNum <= 0}
+                            className="flex-1 sm:flex-initial px-4 py-3 bg-slate-100 hover:bg-slate-200 border border-slate-200 disabled:opacity-50 text-slate-700 font-bold rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 text-xs tracking-wide"
+                          >
+                            <QrCode className="h-4 w-4 text-slate-500" />
+                            <span>Pay with UPI QR</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider pt-1 border-t border-slate-100">
+                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+                      <span>Direct Temple UPI · 100% Tax Exempted under 80G · Downloadable Official Receipt</span>
+                    </div>
                   </div>
                 </form>
               </div>
@@ -1234,12 +1472,75 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
         </div>
       </section>
 
+      {/* Dynamic UPI Payment Modal */}
+      {upiModalData && (
+        <UpiPaymentModal
+          isOpen={upiModalData.isOpen}
+          onClose={() => setUpiModalData(null)}
+          amount={upiModalData.amount}
+          sevaTitle={upiModalData.sevaTitle}
+          donorName={upiModalData.donorName}
+          donorEmail={upiModalData.donorEmail}
+          donorPhone={upiModalData.donorPhone}
+          pan={upiModalData.pan}
+          notes={upiModalData.notes}
+          onPaymentSuccess={handleUpiSuccess}
+        />
+      )}
+
       {/* Official Downloadable Receipt Modal */}
       {receiptSuccess && (
         <OfficialReceiptModal
           data={receiptSuccess}
           onClose={() => setReceiptSuccess(null)}
         />
+      )}
+
+      {/* Devotional Success Confirmation Modal */}
+      {devotionalSuccessData && (
+        <div className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in font-sans">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border text-center space-y-6 relative overflow-hidden">
+            {/* Saffron Gradient Accent Header Bar */}
+            <div className="absolute top-0 left-0 right-0 h-2.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600" />
+            
+            <div className="text-4xl animate-bounce pt-2">🙏</div>
+            
+            <div className="space-y-2">
+              <h3 className="font-display font-black text-2xl text-primary">
+                Hare Krishna!
+              </h3>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                Donation Recorded Successfully
+              </p>
+            </div>
+
+            <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 text-left text-xs space-y-2 text-slate-800 font-sans">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Devotee Name:</span>
+                <span className="font-extrabold text-slate-900">{devotionalSuccessData.donorName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Seva / Purpose:</span>
+                <span className="font-bold text-primary">{devotionalSuccessData.sevaTitle}</span>
+              </div>
+              <div className="flex justify-between border-t border-slate-200/50 pt-2 font-bold">
+                <span className="text-slate-500">Amount Offered:</span>
+                <span className="text-base text-accent font-black font-display">₹{devotionalSuccessData.amount.toLocaleString("en-IN")}.00</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed font-sans">
+              Thank you for your generous offering! Your transaction details have been recorded. Our temple admin team will verify it soon. May Lord Sri Jagannath shower eternal blessings upon you and your family.
+            </p>
+
+            <button
+              onClick={() => setDevotionalSuccessData(null)}
+              className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-2xl font-black text-sm shadow-md transition cursor-pointer active:scale-98"
+            >
+              Done
+            </button>
+          </div>
+        </div>
       )}
     </SiteLayout>
   );

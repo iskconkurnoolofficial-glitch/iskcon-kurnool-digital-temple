@@ -28,14 +28,16 @@ import LiveProgrammeManager from "@/admin/LiveProgrammeManager";
 import BhaktiStepsManager from "@/admin/BhaktiStepsManager";
 import TermsManager from "@/admin/TermsManager";
 import PrivacyManager from "@/admin/PrivacyManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard, Video, Bell, ShieldCheck, Compass, Sun, Tv, Award, FileText, Lock } from "lucide-react";
+import ReceiptSettingsManager from "@/admin/ReceiptSettingsManager";
+import UpiSettingsManager from "@/admin/UpiSettingsManager";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard, Video, Bell, ShieldCheck, Compass, Sun, Tv, Award, FileText, Lock, FileCheck, QrCode } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
 
-type Tab = "welcome" | "dailyDarshan" | "liveProgrammes" | "carousel" | "festivals" | "sevas" | "bhaktiSteps" | "youth" | "youthYatra" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "terms" | "privacy" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "featurePopup" | "paymentPages";
+type Tab = "welcome" | "dailyDarshan" | "liveProgrammes" | "carousel" | "festivals" | "sevas" | "bhaktiSteps" | "youth" | "youthYatra" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "upiSettings" | "receiptSettings" | "terms" | "privacy" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "featurePopup" | "paymentPages";
 
 function AdminPage() {
   const { authed, login, logout, settings, contacts, setContacts, paymentRecords, houseProgrammes, markAllHouseProgrammeRequestsRead, markAllPaymentRecordsRead, youthYatra, markAllYatraRegistrationsRead, bhaktiSteps, markAllBhaktiStepsRegistrationsRead, currentUser } = useAdmin();
@@ -218,6 +220,8 @@ function AdminPage() {
       items: [
         { id: "contacts", label: "Contact Messages", icon: Mail },
         { id: "settings", label: "Site Settings", icon: Settings },
+        { id: "upiSettings", label: "UPI QR & Bank Settings", icon: QrCode },
+        { id: "receiptSettings", label: "Receipt & 80G Design", icon: FileCheck },
         { id: "terms", label: "Terms & Conditions", icon: FileText },
         { id: "privacy", label: "Privacy Policy", icon: ShieldCheck },
       ]
@@ -657,6 +661,8 @@ function AdminPage() {
             {tab === "gallery" && <GalleryManager />}
             {tab === "heroBanners" && <HeroBannersManager />}
             {tab === "settings" && <SiteSettingsForm />}
+            {tab === "upiSettings" && <UpiSettingsManager />}
+            {tab === "receiptSettings" && <ReceiptSettingsManager />}
             {tab === "terms" && <TermsManager />}
             {tab === "privacy" && <PrivacyManager />}
             {tab === "templeSchedule" && <TempleScheduleManager />}
