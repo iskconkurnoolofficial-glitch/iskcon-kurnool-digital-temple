@@ -5,6 +5,7 @@ import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { useAdmin } from "@/context/AdminContext";
 import LanguageToggle from "@/components/LanguageToggle";
+import ContentSizeAdjuster from "@/components/ContentSizeAdjuster";
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
   return (
@@ -19,6 +20,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       <Footer />
       <FloatingWhatsApp />
       <LanguageToggle layout="vertical-sticky" />
+      <ContentSizeAdjuster layout="vertical-sticky" />
       <MobileBottomNav />
     </div>
   );
@@ -31,6 +33,7 @@ export function PageHero({
   image,
   pageKey,
   hideBottomRightGradient,
+  logo,
   children
 }: {
   eyebrow?: string;
@@ -39,6 +42,7 @@ export function PageHero({
   image?: string;
   pageKey?: string;
   hideBottomRightGradient?: boolean;
+  logo?: string;
   children?: ReactNode
 }) {
   const { heroBanners } = useAdmin();
@@ -61,6 +65,15 @@ export function PageHero({
 
             {/* Left Column: Text Content */}
             <div className="lg:col-span-6 text-center lg:text-left space-y-4">
+              {logo && (
+                <div className="mb-3 flex justify-center lg:justify-start">
+                  <img
+                    src={logo}
+                    alt="Emblem"
+                    className="w-24 h-24 sm:w-32 sm:h-32 object-contain rounded-full"
+                  />
+                </div>
+              )}
               {eyebrow && (
                 <span className="text-secondary font-semibold uppercase text-xs tracking-[0.3em] block mb-1">
                   {eyebrow}
@@ -118,6 +131,15 @@ export function PageHero({
     <section className={`relative ${hideBottomRightGradient ? "bg-gradient-hero-no-accent" : "bg-gradient-hero"} text-primary-foreground py-12 md:py-16 overflow-hidden`}>
       <div className="absolute inset-0 bg-gradient-soft opacity-40 animate-fade-in" />
       <div className="relative max-w-5xl mx-auto px-6 text-center animate-fade-up">
+        {logo && (
+          <div className="mb-4 flex justify-center">
+            <img
+              src={logo}
+              alt="Emblem"
+              className="w-24 h-24 sm:w-32 sm:h-32 object-contain rounded-full mx-auto"
+            />
+          </div>
+        )}
         {eyebrow && <span className="text-secondary font-medium uppercase text-xs tracking-[0.3em]">{eyebrow}</span>}
         <h1 className="font-display font-bold text-4xl md:text-6xl mt-4">{title}</h1>
         {subtitle && <p className="mt-4 text-lg md:text-xl opacity-90 max-w-3xl mx-auto">{subtitle}</p>}

@@ -8,6 +8,7 @@ import {
   Instagram, 
   Youtube, 
   Facebook, 
+  Twitter,
   MapPin, 
   Navigation, 
   Globe, 
@@ -201,7 +202,7 @@ export default function SiteSettingsForm() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <InputField
             icon={Instagram}
             label="Instagram Profile URL"
@@ -224,6 +225,14 @@ export default function SiteSettingsForm() {
             placeholder="https://facebook.com/iskconkurnool"
             value={s.facebook || ""}
             onChange={(v) => update("facebook", v)}
+          />
+
+          <InputField
+            icon={Twitter}
+            label="Twitter / X Profile URL"
+            placeholder="https://twitter.com/iskconkurnool"
+            value={s.twitter || ""}
+            onChange={(v) => update("twitter", v)}
           />
         </div>
       </div>

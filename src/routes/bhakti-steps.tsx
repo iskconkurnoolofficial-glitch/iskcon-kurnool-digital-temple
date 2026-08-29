@@ -14,6 +14,7 @@ import {
   Mail,
   ArrowRight,
   ExternalLink,
+  XCircle,
   ChevronDown,
   ChevronRight,
   Layers,
@@ -104,6 +105,7 @@ export default function BhaktiStepsPage() {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedRegId, setSubmittedRegId] = useState<string | null>(null);
+  const [showLocalForm, setShowLocalForm] = useState(false);
 
   const registerSectionRef = useRef<HTMLDivElement>(null);
 
@@ -207,9 +209,15 @@ export default function BhaktiStepsPage() {
           <div className="pt-4 flex flex-wrap items-center justify-center gap-4">
             <button
               onClick={() => scrollToRegistration()}
-              className="px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-extrabold text-sm sm:text-base shadow-[0_10px_30px_rgba(245,197,24,0.35)] transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-2"
+              className="px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-300 hover:to-orange-400 text-white font-extrabold text-sm sm:text-base shadow-[0_10px_30px_rgba(245,197,24,0.35)] transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-2"
             >
-              <span>Register for Bhakti Steps</span>
+              <span>
+                {bhaktiSteps.registrationStatus === "Closed"
+                  ? "Registrations Closed"
+                  : bhaktiSteps.registrationStatus === "Coming Soon"
+                  ? "Registrations Coming Soon"
+                  : "Register Now"}
+              </span>
               <ArrowRight className="h-4 w-4" />
             </button>
 
@@ -417,9 +425,15 @@ The goal is not simply to complete levels, but to recognize one's spiritual prog
 
                 <button
                   onClick={() => scrollToRegistration(selectedLevel.name)}
-                  className="px-6 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs sm:text-sm shadow-md transition hover:scale-105 active:scale-95 cursor-pointer shrink-0 flex items-center justify-center gap-2"
+                  className="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs sm:text-sm transition hover:scale-105 active:scale-95 cursor-pointer shrink-0 flex items-center justify-center gap-2"
                 >
-                  <span>Register for {selectedLevel.name}</span>
+                  <span>
+                    {bhaktiSteps.registrationStatus === "Closed"
+                      ? "Registrations Closed"
+                      : bhaktiSteps.registrationStatus === "Coming Soon"
+                      ? "Registrations Coming Soon"
+                      : "Register Now"}
+                  </span>
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
@@ -628,9 +642,15 @@ The goal is not simply to complete levels, but to recognize one's spiritual prog
 
                         <button
                           onClick={() => scrollToRegistration(lvl.name)}
-                          className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-extrabold text-xs shadow-md transition active:scale-98 flex items-center justify-center gap-1.5 cursor-pointer"
+                          className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-extrabold text-xs transition active:scale-98 flex items-center justify-center gap-1.5 cursor-pointer"
                         >
-                          <span>Register for {lvl.name}</span>
+                          <span>
+                            {bhaktiSteps.registrationStatus === "Closed"
+                              ? "Registrations Closed"
+                              : bhaktiSteps.registrationStatus === "Coming Soon"
+                              ? "Registrations Coming Soon"
+                              : "Register Now"}
+                          </span>
                           <ArrowRight className="h-3.5 w-3.5" />
                         </button>
                       </motion.div>
@@ -647,301 +667,352 @@ The goal is not simply to complete levels, but to recognize one's spiritual prog
       {/* 4. REGISTRATION SECTION */}
       {/* ========================================================================= */}
       <section id="register-section" className="py-16 sm:py-24 bg-[#fdf6ec] border-b border-amber-200 relative">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <div className="bg-white rounded-3xl border-2 border-amber-300 shadow-2xl p-6 sm:p-10 space-y-8">
-            {/* Form Header */}
-            <div className="text-center max-w-2xl mx-auto space-y-2 border-b border-amber-100 pb-6">
-              <span className="inline-flex items-center gap-1.5 text-accent font-bold uppercase text-xs tracking-widest">
-                <Sparkles className="h-4 w-4" />
-                Enrollment &amp; Guidance
-              </span>
-              <h2 className="font-display font-black text-3xl sm:text-4xl text-primary tracking-tight">
-                Begin Your Bhakti Steps Journey
-              </h2>
-              <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
-                Take the next step in your spiritual journey. Register to learn more about the Bhakti Steps program and begin your progress in Krishna Consciousness.
-              </p>
-            </div>
-
-            {submittedRegId ? (
-              <div className="p-8 rounded-3xl bg-gradient-to-br from-emerald-50 via-white to-amber-50 border-2 border-emerald-400 text-center space-y-6 animate-scale-in">
-                <div className="h-20 w-20 rounded-full bg-emerald-100 text-emerald-600 mx-auto grid place-items-center shadow-md">
-                  <CheckCircle2 className="h-10 w-10" />
-                </div>
-
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="bg-white rounded-3xl border-2 border-amber-300 p-6 sm:p-10 space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+              {/* Left Column: Content */}
+              <div className="space-y-6">
                 <div className="space-y-2">
-                  <h3 className="font-display font-black text-2xl sm:text-3xl text-emerald-900">
-                    Hare Krishna! Registration Received
-                  </h3>
-                  <p className="text-slate-700 text-sm max-w-md mx-auto">
-                    Your Bhakti Steps application has been recorded. Our temple devotee coordinator will reach out to you with study materials and guidance.
+                  <span className="inline-flex items-center gap-1.5 text-accent font-bold uppercase text-xs tracking-widest">
+                    <Sparkles className="h-4 w-4" />
+                    Enrollment &amp; Guidance
+                  </span>
+                  <h2 className="font-display font-black text-3xl sm:text-4xl text-primary tracking-tight">
+                    Begin Your Bhakti Steps Journey
+                  </h2>
+                  <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
+                    Take the next step in your spiritual journey. Register to learn more about the Bhakti Steps program and begin your progress in Krishna Consciousness.
                   </p>
                 </div>
 
-                <div className="p-4 bg-white rounded-2xl border border-emerald-200 max-w-xs mx-auto space-y-1">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-                    Your Registration ID
-                  </span>
-                  <span className="font-mono font-black text-2xl text-emerald-700">{submittedRegId}</span>
-                </div>
+                {/* Bottom Registration Status */}
+                <div className="pt-6 border-t border-amber-100 space-y-4">
+                  {bhaktiSteps.registrationStatus === "Closed" ? (
+                    <div className="space-y-2">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 border border-red-200 text-red-700 text-xs font-bold uppercase">
+                        <XCircle className="h-3.5 w-3.5" />
+                        Registrations Closed
+                      </span>
+                      <p className="text-xs text-slate-500">
+                        Registrations for Bhakti Steps are currently closed. Please contact our devotee helpline or check back later for the next batch.
+                      </p>
+                    </div>
+                  ) : bhaktiSteps.registrationStatus === "Coming Soon" ? (
+                    <div className="space-y-2">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold uppercase">
+                        <Clock className="h-3.5 w-3.5 animate-pulse" />
+                        Registrations Coming Soon
+                      </span>
+                      <p className="text-xs text-slate-600">
+                        The next batch of Bhakti Steps will open for registrations soon! Stay tuned and keep checking this page.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4 animate-fade-up">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold uppercase">
+                          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+                          Registrations Open
+                        </span>
+                      </div>
 
-                <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-                  <a
-                    href={`https://wa.me/91${contactPhones[0]}?text=${encodeURIComponent(`Hare Krishna! I registered for Bhakti Steps (ID: ${submittedRegId}, Level: ${selectedLevelName}).`)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-md transition flex items-center gap-2"
-                  >
-                    <MessageCircle className="h-4 w-4" /> Message on WhatsApp
-                  </a>
-
-                  <button
-                    onClick={resetForm}
-                    className="px-5 py-3 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs sm:text-sm transition cursor-pointer"
-                  >
-                    Register Another Devotee
-                  </button>
+                      {bhaktiSteps.googleFormUrl ? (
+                        <a
+                          href={bhaktiSteps.googleFormUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-300 hover:to-orange-400 text-white font-black text-sm transition hover:scale-105 active:scale-95 cursor-pointer"
+                        >
+                          <span>Register Now</span>
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setShowLocalForm(!showLocalForm)}
+                          className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-300 hover:to-orange-400 text-white font-black text-sm transition hover:scale-105 active:scale-95 cursor-pointer"
+                        >
+                          <span>{showLocalForm ? "Hide Form" : "Register Now"}</span>
+                          <ArrowRight className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
-            ) : (
-              <form onSubmit={handleRegisterSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  {/* Full Name */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                      <User className="h-3.5 w-3.5 text-accent" /> Full Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Radhakanta Dasa / Srinivas"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-amber-400/20 focus:border-amber-500 outline-none text-sm bg-surface/30"
-                    />
-                  </div>
 
-                  {/* WhatsApp Number */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                      <Phone className="h-3.5 w-3.5 text-emerald-600" /> WhatsApp Number <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="e.g. 9989147723"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-amber-400/20 focus:border-amber-500 outline-none text-sm bg-surface/30 font-mono"
-                    />
-                  </div>
+              {/* Right Column: Image */}
+              <div className="relative rounded-3xl overflow-hidden aspect-video lg:aspect-[4/3]">
+                <img
+                  src={bhaktiSteps.aboutImage || "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=1000&q=80"}
+                  alt="Bhakti Steps Journey"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
 
-                  {/* Email */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                      <Mail className="h-3.5 w-3.5 text-indigo-600" /> Email Address
-                    </label>
-                    <input
-                      type="email"
-                      placeholder="e.g. devotee@gmail.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-amber-400/20 focus:border-amber-500 outline-none text-sm bg-surface/30"
-                    />
-                  </div>
-
-                  {/* Age & City */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-800">Age</label>
-                      <input
-                        type="number"
-                        placeholder="e.g. 24"
-                        value={age}
-                        onChange={(e) => setAge(e.target.value)}
-                        className="w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-amber-400/20 focus:border-amber-500 outline-none text-sm bg-surface/30"
-                      />
+            {/* Local Registration Form (Hidden by default, shown only when no Google Form link and showLocalForm is true) */}
+            {bhaktiSteps.registrationStatus === "Opened" && !bhaktiSteps.googleFormUrl && showLocalForm && (
+              <div className="border-t border-amber-100 pt-8 mt-6 animate-fade-up">
+                {submittedRegId ? (
+                  <div className="p-8 rounded-3xl bg-gradient-to-br from-emerald-50 via-white to-amber-50 border-2 border-emerald-400 text-center space-y-6 animate-scale-in">
+                    <div className="h-20 w-20 rounded-full bg-emerald-100 text-emerald-600 mx-auto grid place-items-center">
+                      <CheckCircle2 className="h-10 w-10" />
                     </div>
+
+                    <div className="space-y-2">
+                      <h3 className="font-display font-black text-2xl sm:text-3xl text-emerald-900">
+                        Hare Krishna! Registration Received
+                      </h3>
+                      <p className="text-slate-700 text-sm max-w-md mx-auto">
+                        Your Bhakti Steps application has been recorded. Our devotee helpline coordinator will contact you with materials and guidance.
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-white rounded-2xl border border-emerald-200 max-w-xs mx-auto space-y-1">
+                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+                        Your Registration ID
+                      </span>
+                      <span className="font-mono font-black text-2xl text-emerald-700">{submittedRegId}</span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                      <a
+                        href={`https://wa.me/91${contactPhones[0]}?text=${encodeURIComponent(`Hare Krishna! I registered for Bhakti Steps (ID: ${submittedRegId}, Level: ${selectedLevelName}).`)}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm transition flex items-center gap-2"
+                      >
+                        <MessageCircle className="h-4 w-4" /> Message on WhatsApp
+                      </a>
+
+                      <button
+                        onClick={resetForm}
+                        className="px-5 py-3 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs sm:text-sm transition cursor-pointer"
+                      >
+                        Register Another Devotee
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <form onSubmit={handleRegisterSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      {/* Full Name */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                          <User className="h-3.5 w-3.5 text-accent" /> Full Name <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Radhakanta Dasa / Srinivas"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-amber-400/20 focus:border-amber-500 outline-none text-sm bg-surface/30"
+                        />
+                      </div>
+
+                      {/* WhatsApp Number */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                          <Phone className="h-3.5 w-3.5 text-emerald-600" /> WhatsApp Number <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="tel"
+                          required
+                          placeholder="e.g. 9989147723"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-amber-400/20 focus:border-amber-500 outline-none text-sm bg-surface/30 font-mono"
+                        />
+                      </div>
+
+                      {/* Email */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                          <Mail className="h-3.5 w-3.5 text-indigo-600" /> Email Address
+                        </label>
+                        <input
+                          type="email"
+                          placeholder="e.g. devotee@gmail.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-amber-400/20 focus:border-amber-500 outline-none text-sm bg-surface/30"
+                        />
+                      </div>
+
+                      {/* Age & City */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-slate-800">Age</label>
+                          <input
+                            type="number"
+                            placeholder="e.g. 24"
+                            value={age}
+                            onChange={(e) => setAge(e.target.value)}
+                            className="w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-amber-400/20 focus:border-amber-500 outline-none text-sm bg-surface/30"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-slate-800 flex items-center gap-1">
+                            <MapPin className="h-3.5 w-3.5 text-rose-500" /> City <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Kurnool"
+                            value={city}
+                            onChange={(e) => setCity(e.target.value)}
+                            className="w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-amber-400/20 focus:border-amber-500 outline-none text-sm bg-surface/30"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Level Select */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                          <Layers className="h-3.5 w-3.5 text-accent" /> Select Level to Register <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          value={selectedLevelName}
+                          onChange={(e) => setSelectedLevelName(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-amber-400/20 focus:border-amber-500 outline-none text-sm bg-white font-semibold cursor-pointer"
+                        >
+                          {levels.map((lvl) => (
+                            <option key={lvl.id} value={lvl.name}>
+                              Level {lvl.levelNumber}: {lvl.name} ({lvl.subtitle})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Preferred Contact Method */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-800">Preferred Contact Method</label>
+                        <select
+                          value={contactMethod}
+                          onChange={(e) => setContactMethod(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-amber-400/20 focus:border-amber-500 outline-none text-sm bg-white font-semibold cursor-pointer"
+                        >
+                          <option value="WhatsApp">WhatsApp Message</option>
+                          <option value="Phone Call">Direct Phone Call</option>
+                          <option value="Email">Email Communication</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Message / Questions */}
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-800 flex items-center gap-1">
-                        <MapPin className="h-3.5 w-3.5 text-rose-500" /> City <span className="text-red-500">*</span>
+                      <label className="text-xs font-bold text-slate-800">
+                        Your Spiritual Background / Questions (Optional)
                       </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. Kurnool"
-                        value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                        className="w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-amber-400/20 focus:border-amber-500 outline-none text-sm bg-surface/30"
+                      <textarea
+                        rows={3}
+                        placeholder="Tell us about how many rounds you chant daily, which books you have read, or any questions for our mentors..."
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-amber-400/20 focus:border-amber-500 outline-none text-sm bg-surface/30"
                       />
                     </div>
-                  </div>
 
-                  {/* Level Select */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                      <Layers className="h-3.5 w-3.5 text-accent" /> Select Level to Register <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={selectedLevelName}
-                      onChange={(e) => setSelectedLevelName(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-amber-400/20 focus:border-amber-500 outline-none text-sm bg-white font-semibold cursor-pointer"
+                    {/* Submit CTA */}
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black text-base transition-all hover:scale-[1.01] active:scale-98 cursor-pointer flex items-center justify-center gap-2"
                     >
-                      {levels.map((lvl) => (
-                        <option key={lvl.id} value={lvl.name}>
-                          Level {lvl.levelNumber}: {lvl.name} ({lvl.subtitle})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Preferred Contact Method */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-800">Preferred Contact Method</label>
-                    <select
-                      value={contactMethod}
-                      onChange={(e) => setContactMethod(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-amber-400/20 focus:border-amber-500 outline-none text-sm bg-white font-semibold cursor-pointer"
-                    >
-                      <option value="WhatsApp">WhatsApp Message</option>
-                      <option value="Phone Call">Direct Phone Call</option>
-                      <option value="Email">Email Communication</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Message / Questions */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-800">
-                    Your Spiritual Background / Questions (Optional)
-                  </label>
-                  <textarea
-                    rows={3}
-                    placeholder="Tell us about how many rounds you chant daily, which books you have read, or any questions for our mentors..."
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-4 focus:ring-amber-400/20 focus:border-amber-500 outline-none text-sm bg-surface/30"
-                  />
-                </div>
-
-                {/* Submit CTA */}
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black text-base shadow-lg transition-all hover:scale-[1.01] active:scale-98 cursor-pointer flex items-center justify-center gap-2"
-                >
-                  {isSubmitting ? (
-                    <span>Submitting Registration...</span>
-                  ) : (
-                    <>
-                      <Send className="h-5 w-5" />
-                      <span>Submit Registration for Bhakti Steps</span>
-                    </>
-                  )}
-                </button>
-              </form>
+                      {isSubmitting ? (
+                        <span>Submitting Registration...</span>
+                      ) : (
+                        <>
+                          <Send className="h-5 w-5" />
+                          <span>Submit Registration for Bhakti Steps</span>
+                        </>
+                      )}
+                    </button>
+                  </form>
+                )}
+              </div>
             )}
           </div>
         </div>
       </section>
-
-      {/* ========================================================================= */}
+                {/* ========================================================================= */}
       {/* 5. CONTACT FOR REGISTRATION CARD */}
       {/* ========================================================================= */}
-      <section className="py-12 sm:py-16 bg-gradient-to-b from-[#250a3d] to-[#170428] text-white border-b border-amber-400/20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <div className="bg-white/10 backdrop-blur-md rounded-3xl border border-amber-300/30 p-6 sm:p-8 text-center space-y-6 shadow-2xl">
-            <span className="inline-flex items-center gap-2 text-amber-300 font-extrabold text-xs uppercase tracking-widest">
-              <Phone className="h-4 w-4" /> Direct Devotee Assistance
-            </span>
-
-            <h3 className="font-display font-extrabold text-2xl sm:text-3xl text-white">
-              For Registrations Please Contact
-            </h3>
+      <section className="py-16 sm:py-24 bg-[#faf1dc] border-b border-amber-200">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="bg-white rounded-3xl border border-amber-200 p-8 sm:p-12 text-center space-y-8">
+            <div className="max-w-2xl mx-auto space-y-2">
+              <span className="inline-flex items-center gap-2 text-accent font-bold text-xs uppercase tracking-widest">
+                <Phone className="h-4 w-4" /> Direct Devotee Assistance
+              </span>
+              <h3 className="font-display font-black text-2xl sm:text-3xl text-primary">
+                For Registrations Please Contact
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-500">
+                Our temple mentors are readily available to guide you at every milestone of your devotional journey.
+              </p>
+            </div>
 
             {/* Phone Numbers Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto pt-4">
               {contactPhones.map((ph, idx) => (
                 <div
                   key={idx}
-                  className="p-4 rounded-2xl bg-black/30 border border-white/15 space-y-3 flex flex-col justify-between"
+                  className="p-6 rounded-2xl bg-white border border-amber-200/80 space-y-4 flex flex-col justify-between"
                 >
-                  <span className="font-mono font-black text-lg sm:text-xl text-amber-300 block">{ph}</span>
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Devotee Coordinator</span>
+                    <span className="font-display font-extrabold text-2xl text-slate-900 block tracking-tight">{ph}</span>
+                  </div>
                   <div className="flex gap-2">
                     <a
                       href={`tel:+91${ph}`}
-                      className="flex-1 py-2 px-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition active:scale-95"
+                      className="flex-1 py-2.5 px-3 rounded-xl bg-slate-900 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95"
                     >
-                      <Phone className="h-3.5 w-3.5" /> Call Now
+                      <Phone className="h-3.5 w-3.5 text-amber-400" />
+                      <span>Call Now</span>
                     </a>
                     <a
                       href={`https://wa.me/91${ph}?text=${encodeURIComponent("Hare Krishna! I would like to know more about the Bhakti Steps program at ISKCON Kurnool.")}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex-1 py-2 px-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition active:scale-95"
+                      className="flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95"
                     >
-                      <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
+                      <MessageCircle className="h-3.5 w-3.5" />
+                      <span>WhatsApp</span>
                     </a>
                   </div>
                 </div>
               ))}
             </div>
-
-            <p className="text-xs text-white/70">
-              Temple mentors are available to guide you at every level of your devotional journey.
-            </p>
           </div>
         </div>
       </section>
 
       {/* ========================================================================= */}
-      {/* 6. FOUNDER-ACHARYA SECTION */}
+      {/* 6. SOURCES & LEARN MORE */}
       {/* ========================================================================= */}
-      <section className="py-16 bg-[#fffaf0] border-b border-amber-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row items-center gap-8 bg-white p-6 sm:p-8 rounded-3xl border border-amber-200 shadow-sm">
-            <div className="h-32 w-32 sm:h-40 sm:w-40 rounded-2xl overflow-hidden border-4 border-amber-400 shrink-0 shadow-md">
-              <img
-                src={bhaktiSteps.founderImage || "https://upload.wikimedia.org/wikipedia/commons/4/4b/A.C._Bhaktivedanta_Swami_Prabhupada.jpg"}
-                alt="Srila Prabhupada"
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
-            </div>
-
-            <div className="space-y-2 text-center sm:text-left">
-              <span className="text-accent font-bold text-xs uppercase tracking-widest block">Founder-Acharya</span>
-              <h3 className="font-display font-bold text-2xl text-primary">
-                His Divine Grace A.C. Bhaktivedanta Swami Prabhupada
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-700 italic leading-relaxed">
-                "{bhaktiSteps.founderQuote ||
-                  "Krishna consciousness is not a manufactured thing. It is already there in the heart of everyone. Simply by chanting the Hare Krishna mantra and practicing devotional principles step by step, one revives their eternal loving relationship with the Supreme Lord."}"
-              </p>
-            </div>
+      <section className="py-16 bg-[#fffaf0] text-center border-b border-amber-200">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-6">
+          <div className="space-y-1">
+            <span className="text-accent font-extrabold text-xs uppercase tracking-widest">Resources</span>
+            <h4 className="font-display font-black text-2xl text-primary">
+              Authorized Sources &amp; Further Learning
+            </h4>
           </div>
-        </div>
-      </section>
 
-      {/* ========================================================================= */}
-      {/* 7. SOURCES & LEARN MORE */}
-      {/* ========================================================================= */}
-      <section className="py-12 bg-white text-center border-b border-amber-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-4">
-          <h4 className="font-display font-bold text-lg text-primary">
-            Authorized Sources &amp; Further Learning
-          </h4>
-
-          <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold pt-2">
             {bhaktiSteps.officialUrl && (
               <a
                 href={bhaktiSteps.officialUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 transition"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border-2 border-slate-200 transition-all active:scale-95"
               >
                 <span>Bhakti Steps Official Resource</span>
-                <ExternalLink className="h-3.5 w-3.5" />
+                <ExternalLink className="h-4 w-4 text-slate-500" />
               </a>
             )}
 
@@ -950,10 +1021,10 @@ The goal is not simply to complete levels, but to recognize one's spiritual prog
                 href={bhaktiSteps.booksUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-300 transition"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border-2 border-slate-200 transition-all active:scale-95"
               >
                 <span>Authentic Devotional Books &amp; Study Materials</span>
-                <ExternalLink className="h-3.5 w-3.5" />
+                <ExternalLink className="h-4 w-4 text-slate-500" />
               </a>
             )}
           </div>

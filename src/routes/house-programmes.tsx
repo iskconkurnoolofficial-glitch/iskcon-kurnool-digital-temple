@@ -367,6 +367,181 @@ function HouseProgrammesPage() {
       </section>
 
       {/* ========================================================================= */}
+      {/* 2B. KARTIKA DAMODARA SPECIAL HOUSE PROGRAMME SECTION */}
+      {/* ========================================================================= */}
+      <section className="py-16 md:py-24 bg-gradient-to-b from-[#2e1505] to-[#120601] border-b border-amber-950/80 relative overflow-hidden text-white">
+        <style>{`
+          @keyframes flameFlicker {
+            0%, 100% {
+              transform: scale(1) rotate(-1.5deg);
+              opacity: 0.9;
+              filter: drop-shadow(0 2px 4px rgba(251, 146, 60, 0.7)) drop-shadow(0 4px 10px rgba(245, 158, 11, 0.5));
+            }
+            20% {
+              transform: scale(1.1, 0.95) rotate(1deg);
+              opacity: 1;
+              filter: drop-shadow(0 3px 6px rgba(251, 146, 60, 0.9)) drop-shadow(0 5px 12px rgba(245, 158, 11, 0.7));
+            }
+            40% {
+              transform: scale(0.92, 1.08) rotate(-2.5deg);
+              opacity: 0.85;
+              filter: drop-shadow(0 2px 4px rgba(251, 146, 60, 0.6)) drop-shadow(0 3px 8px rgba(245, 158, 11, 0.45));
+            }
+            60% {
+              transform: scale(1.08, 0.98) rotate(2deg);
+              opacity: 0.95;
+              filter: drop-shadow(0 4px 8px rgba(251, 146, 60, 0.95)) drop-shadow(0 6px 14px rgba(245, 158, 11, 0.75));
+            }
+            80% {
+              transform: scale(0.96, 1.04) rotate(-0.5deg);
+              opacity: 0.9;
+              filter: drop-shadow(0 3px 6px rgba(251, 146, 60, 0.8)) drop-shadow(0 4px 10px rgba(245, 158, 11, 0.55));
+            }
+          }
+          .diya-flame {
+            animation: flameFlicker 1.8s ease-in-out infinite;
+            transform-origin: bottom center;
+          }
+          @keyframes diyaFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+          }
+          .diya-float {
+            animation: diyaFloat 4s ease-in-out infinite;
+          }
+        `}</style>
+        
+        {/* Glow wash ambient background */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(251,146,60,0.08)_0%,transparent_60%)] pointer-events-none" />
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Background Sparkles */}
+        <div className="absolute top-12 left-10 text-amber-500/15 text-3xl select-none pointer-events-none">🪔</div>
+        <div className="absolute bottom-12 right-10 text-amber-500/15 text-3xl select-none pointer-events-none">🪔</div>
+
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            {/* Left Image Column */}
+            <div className="lg:col-span-5 flex justify-center w-full">
+              <div className="relative w-full rounded-[2rem] overflow-hidden border-4 border-amber-400/80 bg-[#3a1a05] p-3 shadow-md">
+                <div className="rounded-2xl overflow-hidden aspect-[3/4] relative">
+                  <img
+                    src={houseProgrammes.kartikaImage || "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=800&q=80"}
+                    alt="Damodara Month Offerings"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                </div>
+              </div>
+            </div>
+
+            {/* Right Content Column */}
+            <div className="lg:col-span-7 space-y-6">
+              <div className="space-y-3">
+                <span className="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-amber-400 font-bold">
+                  <Flame className="h-4 w-4 text-amber-400 animate-pulse" /> Sacred Kartika Month Offerings
+                </span>
+                <h2 className="font-display text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-400 bg-clip-text text-transparent tracking-tight">
+                  Damodara Mass Special
+                </h2>
+                
+                {/* Line of Diya Lamps Animation */}
+                <div className="flex items-center gap-3 py-2">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="diya-float" style={{ animationDelay: `${i * 0.4}s` }}>
+                      <svg viewBox="0 0 100 60" className="w-12 h-9">
+                        <path d="M 15 30 Q 50 60 85 30 Q 85 28 80 28 C 70 32 30 32 20 28 Q 15 28 15 30 Z" fill="#b45309" />
+                        <ellipse cx="50" cy="30" rx="30" ry="3.5" fill="#78350f" opacity="0.8" />
+                        <path d="M 49 30 L 48 22 Q 50 20 52 22 L 51 30 Z" fill="#374151" />
+                        
+                        {/* Outer Flame (Orange) */}
+                        <path
+                          d="M 50 22 C 43 14 43 4 50 0 C 57 4 57 14 50 22 Z"
+                          fill="#f97316"
+                          className="diya-flame"
+                          style={{ animationDelay: `${i * 0.2}s`, transformOrigin: "50% 22px" }}
+                        />
+                        {/* Inner Flame (Yellow-Gold) */}
+                        <path
+                          d="M 50 20 C 45 13 45 6 50 3 C 55 6 55 13 50 20 Z"
+                          fill="#fbbf24"
+                          className="diya-flame"
+                          style={{ animationDelay: `${i * 0.2 + 0.15}s`, transformOrigin: "50% 20px" }}
+                        />
+                        {/* Core Flame (White-Hot) */}
+                        <path
+                          d="M 50 18 C 47 12 47 8 50 6 C 53 8 53 12 50 18 Z"
+                          fill="#fffbeb"
+                          className="diya-flame"
+                          style={{ animationDelay: `${i * 0.2 + 0.3}s`, transformOrigin: "50% 18px" }}
+                        />
+                      </svg>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-amber-100/90 text-sm sm:text-base leading-relaxed font-sans font-normal">
+                During the sacred month of Kartika, devotees are invited to participate in Damodara Arati and other devotional activities from the comfort of their homes. Families can gather together to offer a lamp to Lord Damodara, sing the Damodarastakam, chant Hare Krishna and create a joyful devotional atmosphere at home.
+              </p>
+
+              {/* Programme Activities */}
+              <div className="space-y-3 pt-2">
+                <h4 className="font-display font-bold text-sm text-amber-300/90 uppercase tracking-wider">
+                  Programme Activities
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm font-semibold text-white">
+                  <div className="flex items-center gap-2.5 bg-white/5 border border-white/10 px-4 py-2.5 rounded-xl backdrop-blur-md">
+                    <span className="text-lg">🪔</span>
+                    <span>Damodara Arati</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 bg-white/5 border border-white/10 px-4 py-2.5 rounded-xl backdrop-blur-md">
+                    <span className="text-lg">🎶</span>
+                    <span>Hare Krishna Kirtan &amp; Chanting</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 bg-white/5 border border-white/10 px-4 py-2.5 rounded-xl backdrop-blur-md">
+                    <span className="text-lg">📖</span>
+                    <span>Damodarastakam Recitation</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 bg-white/5 border border-white/10 px-4 py-2.5 rounded-xl backdrop-blur-md">
+                    <span className="text-lg">🕉️</span>
+                    <span>Spiritual Talks &amp; Discussions</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 bg-white/5 border border-white/10 px-4 py-2.5 rounded-xl backdrop-blur-md">
+                    <span className="text-lg">🍚</span>
+                    <span>Prasadam Distribution</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 bg-white/5 border border-white/10 px-4 py-2.5 rounded-xl backdrop-blur-md">
+                    <span className="text-lg">👨‍👩‍👧‍👦</span>
+                    <span>Family Devotional Activities</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 bg-white/5 border border-white/10 px-4 py-2.5 rounded-xl backdrop-blur-md col-span-1 sm:col-span-2">
+                    <span className="text-lg">🏠</span>
+                    <span>Home Visits / House Programmes</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <div className="pt-2">
+                <button
+                  onClick={scrollToForm}
+                  className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-extrabold text-sm transition hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
+                >
+                  <Home className="h-4 w-4" />
+                  <span>Request House Programme</span>
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
       {/* 3. ACTIVITIES CAN INCLUDE (WARM GOLD GRADIENT BACKGROUND & CLEAN GRID) */}
       {/* ========================================================================= */}
       <section className="py-16 md:py-24 bg-gradient-to-br from-[#fff8e8] via-[#fef1cb] to-[#fff4d6] relative overflow-hidden border-y border-amber-200/60">

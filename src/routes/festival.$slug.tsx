@@ -3,7 +3,7 @@ import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import SiteLayout from "@/components/SiteLayout";
 import { useAdmin, normalizeFestival, isFestivalLive, calculatePlatformFee, Festival, Seva } from "@/context/AdminContext";
 import OfficialReceiptModal, { ReceiptData } from "@/components/OfficialReceiptModal";
-import { Calendar, Heart, HandHeart, ArrowLeft, Sparkles, ChevronDown, Check, Plus, Minus } from "lucide-react";
+import { Calendar, Heart, HandHeart, ArrowLeft, Sparkles, ChevronDown, Check, Plus, Minus, CreditCard, QrCode, MapPin, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/festival/$slug")({
   head: () => ({ meta: [
@@ -62,34 +62,132 @@ function Page() {
     <SiteLayout>
       <FestivalBanner f={festival} />
 
-      <section className="max-w-4xl mx-auto px-5 sm:px-6 pt-8 pb-4">
-        <div className="inline-flex items-center gap-1.5 text-sm text-accent font-semibold mb-2">
-          <Calendar className="h-4 w-4" /> {fmt(festival.date)}
+      <section className="max-w-6xl mx-auto px-5 sm:px-6 py-10 space-y-12">
+        
+        {/* Navigation & Header */}
+        <div className="space-y-4">
+          <Link
+            to="/festivals"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-primary transition-colors group cursor-pointer"
+          >
+            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
+            <span>Back to All Festivals</span>
+          </Link>
+
+          <div className="flex flex-wrap items-center gap-3 text-xs font-bold uppercase tracking-wider text-accent">
+            <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-800 px-3 py-1 rounded-full border border-amber-200">
+              <Calendar className="h-3.5 w-3.5" />
+              {fmt(festival.date)}
+            </span>
+            {festival.location && (
+              <span className="inline-flex items-center gap-1 bg-purple-500/10 text-primary px-3 py-1 rounded-full border border-purple-200">
+                <MapPin className="h-3.5 w-3.5" />
+                {festival.location}
+              </span>
+            )}
+          </div>
+
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-primary tracking-tight leading-tight pt-1">
+            {festival.title}
+          </h1>
         </div>
-        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-primary mb-5">{festival.title}</h1>
-        {festival.description && (
-          <div className="prose-festival text-foreground/90 max-w-none" dangerouslySetInnerHTML={{ __html: festival.description }} />
-        )}
+
+        {/* Main Grid: Details (Left) & Sevas (Right or full-width) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* Left Column: About & Schedule */}
+          <div className="lg:col-span-8 space-y-10">
+            
+            {/* About Festival */}
+            {festival.description && (
+              <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-2xs space-y-4">
+                <h2 className="font-display text-2xl font-bold text-primary border-b pb-3 flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-amber-500" />
+                  About the Festival
+                </h2>
+                <div className="prose-festival text-slate-700 max-w-none" dangerouslySetInnerHTML={{ __html: festival.description }} />
+              </div>
+            )}
+
+            {/* Festival Schedule */}
+            {festival.schedule && (
+              <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-2xs space-y-4">
+                <h2 className="font-display text-2xl font-bold text-primary border-b pb-3 flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-accent" />
+                  Festival Schedule
+                </h2>
+                <div className="prose-festival text-slate-700 max-w-none" dangerouslySetInnerHTML={{ __html: festival.schedule }} />
+              </div>
+            )}
+
+            {/* Location (Explicit Display) */}
+            {festival.location && (
+              <div className="bg-amber-50/50 border border-amber-200/80 rounded-3xl p-6 flex items-start gap-4 shadow-3xs">
+                <div className="p-3 bg-amber-500/20 text-amber-800 rounded-2xl shrink-0">
+                  <MapPin className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="font-display font-bold text-lg text-primary">Festival Venue / Location</h3>
+                  <p className="text-sm text-slate-700 mt-1 font-medium leading-relaxed">
+                    {festival.location}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    Join us in person to seek Their Lordships' blessings.
+                  </p>
+                </div>
+              </div>
+            )}
+
+          </div>
+
+          {/* Right Column: Donation / Seva Callout or Quick Sponsor Sevas */}
+          <div className="lg:col-span-4 bg-gradient-to-tr from-purple-950 via-primary to-purple-900 rounded-3xl p-6 text-white shadow-lg space-y-4 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none" />
+            <h3 className="font-display text-xl font-bold tracking-wide">Festival Sponsorship</h3>
+            <p className="text-xs text-white/80 leading-relaxed font-sans">
+              Support the festival preparations, deity decorations, flower alankaras, and free prasadam distribution for thousands of visitors.
+            </p>
+            <button
+              onClick={() => {
+                const el = document.getElementById("sevas-section");
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className="w-full py-3 bg-secondary text-primary font-bold text-xs rounded-xl shadow-md hover:scale-102 transition-transform cursor-pointer block text-center"
+            >
+              View Seva Tiers & Donate
+            </button>
+          </div>
+
+        </div>
+
       </section>
 
-      <section className="max-w-6xl mx-auto px-5 sm:px-6 py-10">
+      {/* Sevas Section */}
+      <section id="sevas-section" className="max-w-6xl mx-auto px-5 sm:px-6 py-12 border-t border-slate-200 scroll-mt-24">
         {sevas.length > 0 && (
-          <div className="text-center mb-8">
-            <h2 className="font-display text-2xl sm:text-3xl font-bold text-primary">Offer a Seva</h2>
-            <p className="text-muted-foreground mt-1 text-sm">Select an amount and make your contribution.</p>
+          <div className="text-center mb-10 space-y-1">
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-extrabold text-primary">
+              Offer a Festival Seva
+            </h2>
+            <p className="text-muted-foreground mt-1 text-xs sm:text-sm max-w-md mx-auto leading-relaxed">
+              Select an auspicious seva offering below and obtain Their Lordships' divine blessings.
+            </p>
           </div>
         )}
         {sevas.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">No sevas available for this festival yet.</div>
+          <div className="text-center py-16 text-muted-foreground bg-slate-50 border rounded-3xl max-w-md mx-auto">
+            <HandHeart className="h-10 w-10 mx-auto opacity-40 mb-2" />
+            <p className="text-sm font-semibold">No sevas available for this festival yet.</p>
+          </div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {sevas.map((s) => (
               <SevaCard key={s.id} seva={s} festival={festival} settings={settings} theme={theme} />
             ))}
           </div>
         )}
 
-        <p className="mt-10 text-center text-xs text-muted-foreground inline-flex items-center justify-center gap-1.5 w-full">
+        <p className="mt-12 text-center text-xs text-muted-foreground inline-flex items-center justify-center gap-1.5 w-full">
           <Sparkles className="h-3.5 w-3.5 text-secondary" /> Secure payments powered by Razorpay & UPI
         </p>
       </section>

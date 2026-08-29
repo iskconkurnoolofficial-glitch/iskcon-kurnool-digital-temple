@@ -21,6 +21,15 @@ export type GalleryPhoto = {
   category: string;
 };
 
+export type DriveAlbum = {
+  id: string;
+  title: string;
+  year: string;
+  driveUrl: string;
+  coverUrl?: string;
+  active: boolean;
+};
+
 export type SevaPrice = {
   label: string;
   amount: number;
@@ -94,6 +103,8 @@ export type Festival = {
   // legacy
   donateUrl?: string;
   active?: boolean;
+  schedule?: string;
+  location?: string;
 };
 
 /** Generate a URL-safe slug from a title */
@@ -127,6 +138,8 @@ export function normalizeFestival(f: any): Festival {
     order: typeof f.order === "number" ? f.order : 0,
     donateUrl: f.donateUrl,
     active: f.active,
+    schedule: f.schedule ?? "",
+    location: f.location ?? "",
   };
 }
 
@@ -309,6 +322,7 @@ export type DailyDarshanData = {
   badgeText: string;
   noticeBanner?: string;
   entries: DailyDarshanItem[];
+  liveYoutubeUrl?: string;
 };
 
 export type LivePlatform = "YouTube" | "Facebook" | "Instagram" | "Other";
@@ -356,6 +370,7 @@ export const defaultDailyDarshan: DailyDarshanData = {
   headerSubtitle: "Behold the transcendental beauty and divine blessings of Their Lordships at ISKCON Kurnool.",
   badgeText: "Nitya Darshan • Daily Deity Darshan",
   noticeBanner: "Darshan photos are refreshed every morning after Sringara Harati.",
+  liveYoutubeUrl: "",
   entries: [
     {
       id: "dd_today",
@@ -475,6 +490,7 @@ export type HouseProgrammeData = {
   quoteImage?: string;
   contactPhone: string;
   whatsappNumber: string;
+  kartikaImage?: string;
 };
 
 export const defaultHouseProgramme: HouseProgrammeData = {
@@ -516,6 +532,7 @@ export const defaultHouseProgramme: HouseProgrammeData = {
   quoteImage: "https://images.unsplash.com/photo-1609137144813-7d7211bf7fc4?auto=format&fit=crop&w=800&q=80",
   contactPhone: "+91 95053 77520",
   whatsappNumber: "+91 95053 77520",
+  kartikaImage: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=800&q=80",
 };
 
 // ============================================================================
@@ -1363,6 +1380,7 @@ export type HeroBannersData = {
   shop: string;
   temple: string;
   socialMedia: string;
+  darshan: string;
 };
 
 export const defaultHeroBanners: HeroBannersData = {
@@ -1384,6 +1402,7 @@ export const defaultHeroBanners: HeroBannersData = {
   shop: "",
   temple: "",
   socialMedia: "",
+  darshan: "",
 };
 
 export type EkadashiCalendarItem = {
@@ -2064,6 +2083,7 @@ export type SiteSettings = {
   footer: string;
   logo: string;
   facebook?: string;
+  twitter?: string;
   welcomeImage?: string;
   quickDonateImage?: string;
   launchPageActive?: boolean;
@@ -2501,6 +2521,8 @@ export type BhaktiStepsData = {
   founderImage: string;
   levels: BhaktiStepsLevel[];
   registrations: BhaktiStepsRegistration[];
+  registrationStatus?: "Opened" | "Closed" | "Coming Soon";
+  googleFormUrl?: string;
 };
 
 export const defaultBhaktiSteps: BhaktiStepsData = {
@@ -2508,6 +2530,8 @@ export const defaultBhaktiSteps: BhaktiStepsData = {
   heroTitle: "Bhakti Steps",
   heroSubtitle: "Recognize • Revitalize • Progress",
   heroDescription: "Bhakti Steps is a structured spiritual journey designed to help devotees gradually deepen their spiritual practices, scriptural understanding, devotional discipline, and loving connection with Krishna Consciousness.",
+  registrationStatus: "Opened",
+  googleFormUrl: "",
   heroImage: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=1350&q=80",
   aboutTitle: "About Bhakti Steps",
   aboutDescription: "Bhakti Steps provides a systematic, step-by-step path for devotees to grow in Krishna Consciousness. Each level introduces progressive spiritual practices, devotional songs, regulative principles, courses, and sacred books.\n\nThe goal is not simply to complete levels, but to recognize one's spiritual progress, revitalize devotional practices, and progress steadily in devotional service back home, back to Godhead.",
@@ -3064,6 +3088,8 @@ type AdminState = {
   setSlides: (s: Slide[]) => void;
   photos: GalleryPhoto[];
   setPhotos: (p: GalleryPhoto[]) => void;
+  driveAlbums: DriveAlbum[];
+  setDriveAlbums: (da: DriveAlbum[]) => void;
   categories: string[];
   setCategories: (c: string[]) => void;
   classes: DailyClass[];
@@ -3188,6 +3214,7 @@ const defaultSettings: SiteSettings = {
   footer: "© 2025 ISKCON Kurnool. All Rights Reserved.",
   logo: "",
   facebook: "https://facebook.com/iskconkurnool",
+  twitter: "",
   welcomeImage: "",
   quickDonateImage: "",
   launchPageActive: false,
@@ -3208,6 +3235,8 @@ const defaultTheme: ThemeSettings = {
 
 const defaultCategories = ["Temple", "Festival", "Programs", "Deity"];
 
+export const defaultDriveAlbums: DriveAlbum[] = [];
+
 const defaultSlides: Slide[] = [];
 
 // Keys used in the site_data table
@@ -3215,6 +3244,7 @@ const KEYS = {
   slides: "slides",
   photos: "photos",
   categories: "categories",
+  driveAlbums: "driveAlbums",
   classes: "classes",
   festivals: "festivals",
   sevas: "sevas",
@@ -3322,6 +3352,7 @@ function setCache(key: string, value: any) {
 export function AdminProvider({ children }: { children: ReactNode }) {
   const [slides, setSlidesState] = useState<Slide[]>(() => getCached(KEYS.slides, defaultSlides));
   const [photos, setPhotosState] = useState<GalleryPhoto[]>(() => getCached(KEYS.photos, []));
+  const [driveAlbums, setDriveAlbumsState] = useState<DriveAlbum[]>(() => getCached(KEYS.driveAlbums, defaultDriveAlbums));
   const [categories, setCategoriesState] = useState<string[]>(() => getCached(KEYS.categories, defaultCategories));
   const [classes, setClassesState] = useState<DailyClass[]>(() => getCached(KEYS.classes, []));
   const [festivals, setFestivalsState] = useState<Festival[]>(() => getCached(KEYS.festivals, []));
@@ -3567,6 +3598,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     switch (key) {
       case KEYS.slides: setSlidesState(value); break;
       case KEYS.photos: setPhotosState(value); break;
+      case KEYS.driveAlbums: setDriveAlbumsState(value || []); break;
       case KEYS.categories: setCategoriesState(value); break;
       case KEYS.classes: setClassesState(value); break;
       case KEYS.festivals: setFestivalsState(value); break;
@@ -3652,6 +3684,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   const setSlides = (v: Slide[]) => { setSlidesState(v); persist(KEYS.slides, v); };
   const setPhotos = (v: GalleryPhoto[]) => { setPhotosState(v); persist(KEYS.photos, v); };
+  const setDriveAlbums = (v: DriveAlbum[]) => { setDriveAlbumsState(v); persist(KEYS.driveAlbums, v); };
   const setCategories = (v: string[]) => { setCategoriesState(v); persist(KEYS.categories, v); };
   const setClasses = (v: DailyClass[]) => { setClassesState(v); persist(KEYS.classes, v); };
   const setFestivals = (v: Festival[]) => { setFestivalsState(v); persist(KEYS.festivals, v); };
@@ -4255,6 +4288,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       value={{
         slides, setSlides,
         photos, setPhotos,
+        driveAlbums, setDriveAlbums,
         categories, setCategories,
         classes, setClasses,
         festivals, setFestivals,

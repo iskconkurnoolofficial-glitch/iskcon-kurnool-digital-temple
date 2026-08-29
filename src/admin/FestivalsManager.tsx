@@ -29,6 +29,7 @@ function blankFestival(): Festival {
     title: "", slug: "", date: "", thumbnail: "", desktopBanner: "", mobileBanner: "",
     description: "", shortDescription: "", sevas: [], status: "published", hidden: false,
     publishAt: undefined, unpublishAt: undefined, order: 0,
+    schedule: "", location: "",
   };
 }
 
@@ -444,6 +445,9 @@ function FestivalEditor({ draft, setDraft, slugEdited, setSlugEdited, onSave, on
           <Field label="Festival Date">
             <input type="date" className="inp" value={draft.date} onChange={(e) => upd({ date: e.target.value })} />
           </Field>
+          <Field label="Location">
+            <input className="inp" value={draft.location ?? ""} onChange={(e) => upd({ location: e.target.value })} placeholder="e.g. Main Temple Hall, ISKCON Kurnool" />
+          </Field>
           <Field label="Short Description (card)">
             <input className="inp" value={draft.shortDescription} onChange={(e) => upd({ shortDescription: e.target.value })} placeholder="Celebrate the divine appearance of Lord Krishna" />
           </Field>
@@ -460,8 +464,13 @@ function FestivalEditor({ draft, setDraft, slugEdited, setSlugEdited, onSave, on
       </Section>
 
       {/* Description */}
-      <Section title="Festival Description">
+      <Section title="Festival Description (About)">
         <RichTextEditor value={draft.description} onChange={(html) => upd({ description: html })} />
+      </Section>
+
+      {/* Schedule */}
+      <Section title="Festival Schedule">
+        <RichTextEditor value={draft.schedule ?? ""} onChange={(html) => upd({ schedule: html })} />
       </Section>
 
       {/* Status & schedule */}

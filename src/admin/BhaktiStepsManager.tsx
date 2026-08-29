@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   useAdmin,
   uploadToCloudinary,
@@ -36,7 +36,7 @@ import {
 import { toast } from "sonner";
 import AdminModal from "@/admin/AdminModal";
 
-type SubTab = "overview" | "levels" | "registrations" | "contacts";
+type SubTab = "overview" | "levels" | "contacts";
 
 export default function BhaktiStepsManager() {
   const {
@@ -52,6 +52,13 @@ export default function BhaktiStepsManager() {
 
   // Config Form State
   const [configState, setConfigState] = useState<BhaktiStepsData>(bhaktiSteps || defaultBhaktiSteps);
+
+  useEffect(() => {
+    if (bhaktiSteps) {
+      setConfigState(bhaktiSteps);
+    }
+  }, [bhaktiSteps]);
+
   const [isSavingConfig, setIsSavingConfig] = useState(false);
 
   // Level Editor Modal State
@@ -65,14 +72,7 @@ export default function BhaktiStepsManager() {
   const [learningText, setLearningText] = useState("");
   const [requirementsText, setRequirementsText] = useState("");
 
-  // Registrations Filter & Search
-  const [regSearch, setRegSearch] = useState("");
-  const [levelFilter, setLevelFilter] = useState("all");
-
   const levels = bhaktiSteps.levels || [];
-  const registrations = bhaktiSteps.registrations || [];
-
-  const unreadRegistrationsCount = registrations.filter((r) => !r.read).length;
 
   const handleOpenLevelEditor = (level: BhaktiStepsLevel) => {
     setEditingLevel(level);
@@ -109,7 +109,7 @@ export default function BhaktiStepsManager() {
       .map((r) => r.trim())
       .filter(Boolean);
 
-    const updated: BhaktiStepsLevel = {
+      const updated: BhaktiStepsLevel = {
       ...editingLevel,
       songs,
       practices,
@@ -147,50 +147,6 @@ export default function BhaktiStepsManager() {
     } finally {
       setIsSavingConfig(false);
     }
-  };
-
-  const filteredRegistrations = registrations.filter((r) => {
-    const q = regSearch.toLowerCase().trim();
-    const matchesQ =
-      !q ||
-      r.fullName.toLowerCase().includes(q) ||
-      r.phone.includes(q) ||
-      r.city.toLowerCase().includes(q) ||
-      r.id.toLowerCase().includes(q);
-
-    const matchesLevel = levelFilter === "all" || r.level === levelFilter;
-    return matchesQ && matchesLevel;
-  });
-
-  const handleExportCSV = () => {
-    if (registrations.length === 0) {
-      toast.error("No registrations available to export.");
-      return;
-    }
-
-    const headers = ["Registration ID", "Full Name", "Phone", "Email", "Age", "City", "Level", "Contact Method", "Message", "Submission Date"];
-    const rows = registrations.map((r) => [
-      r.id,
-      r.fullName,
-      r.phone,
-      r.email || "",
-      r.age || "",
-      r.city,
-      r.level,
-      r.contactMethod,
-      `"${(r.message || "").replace(/"/g, '""')}"`,
-      new Date(r.submittedAt).toLocaleString(),
-    ]);
-
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `bhakti_steps_registrations_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success("Exported registrations to CSV!");
   };
 
   return (
@@ -240,23 +196,6 @@ export default function BhaktiStepsManager() {
         </button>
 
         <button
-          onClick={() => setActiveTab("registrations")}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
-            activeTab === "registrations"
-              ? "bg-primary text-white shadow-sm"
-              : "bg-white border text-slate-700 hover:bg-slate-50"
-          }`}
-        >
-          <Users className="h-4 w-4" />
-          <span>Registrations ({registrations.length})</span>
-          {unreadRegistrationsCount > 0 && (
-            <span className="h-4 min-w-[16px] px-1 rounded-full bg-red-600 text-white text-[9px] font-black grid place-items-center">
-              {unreadRegistrationsCount}
-            </span>
-          )}
-        </button>
-
-        <button
           onClick={() => setActiveTab("overview")}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
             activeTab === "overview"
@@ -277,7 +216,7 @@ export default function BhaktiStepsManager() {
           }`}
         >
           <Phone className="h-4 w-4" />
-          <span>Helpline Phones &amp; Links</span>
+          <span>Registration &amp; Helplines</span>
         </button>
       </div>
 
@@ -336,150 +275,6 @@ export default function BhaktiStepsManager() {
               </div>
             ))}
           </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* TAB 2: REGISTRATIONS ROSTER */}
-      {/* ========================================================================= */}
-      {activeTab === "registrations" && (
-        <div className="bg-white rounded-3xl border shadow-xs p-6 space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-4">
-            <div>
-              <h3 className="font-display font-bold text-xl text-primary flex items-center gap-2">
-                <Users className="h-5 w-5 text-accent" />
-                Devotee Registrations ({filteredRegistrations.length})
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                View submitted registrations, filter by level, and export data for devotee mentors.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={markAllBhaktiStepsRegistrationsRead}
-                className="px-3 py-1.5 rounded-xl border hover:bg-slate-50 text-slate-700 text-xs font-semibold cursor-pointer"
-              >
-                Mark All Read
-              </button>
-
-              <button
-                type="button"
-                onClick={handleExportCSV}
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm cursor-pointer"
-              >
-                <FileSpreadsheet className="h-4 w-4" />
-                <span>Export CSV</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Search & Filter Bar */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="h-4 w-4 absolute left-3.5 top-3 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search by name, phone, city, or ID..."
-                value={regSearch}
-                onChange={(e) => setRegSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-xl text-xs bg-surface/30 focus:ring-2 focus:ring-primary/20 outline-none"
-              />
-            </div>
-
-            <select
-              value={levelFilter}
-              onChange={(e) => setLevelFilter(e.target.value)}
-              className="px-3 py-2 border rounded-xl text-xs bg-white font-semibold outline-none cursor-pointer"
-            >
-              <option value="all">All Levels</option>
-              {levels.map((l) => (
-                <option key={l.id} value={l.name}>
-                  {l.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Registrations Table */}
-          {filteredRegistrations.length === 0 ? (
-            <div className="p-12 text-center text-slate-400 space-y-2">
-              <Users className="h-10 w-10 mx-auto opacity-40" />
-              <p className="text-sm font-semibold">No devotee registrations match your search.</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-slate-100/70 border-b text-slate-700 font-bold">
-                    <th className="p-3">Devotee</th>
-                    <th className="p-3">Target Level</th>
-                    <th className="p-3">Contact</th>
-                    <th className="p-3">City / Age</th>
-                    <th className="p-3">Message / Details</th>
-                    <th className="p-3">Submitted</th>
-                    <th className="p-3 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {filteredRegistrations.map((r) => (
-                    <tr key={r.id} className={`hover:bg-slate-50/80 transition ${!r.read ? "bg-amber-50/40" : ""}`}>
-                      <td className="p-3">
-                        <div className="font-bold text-primary">{r.fullName}</div>
-                        <span className="font-mono text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded">
-                          {r.id}
-                        </span>
-                      </td>
-
-                      <td className="p-3">
-                        <span className="font-bold text-accent bg-amber-100/70 px-2 py-0.5 rounded-md border border-amber-200">
-                          {r.level}
-                        </span>
-                      </td>
-
-                      <td className="p-3 space-y-0.5">
-                        <div className="font-mono font-bold text-slate-800 flex items-center gap-1">
-                          <Phone className="h-3 w-3 text-emerald-600" />
-                          <a href={`tel:+91${r.phone}`} className="hover:underline">{r.phone}</a>
-                        </div>
-                        {r.email && <div className="text-[10px] text-slate-500">{r.email}</div>}
-                      </td>
-
-                      <td className="p-3">
-                        <div className="font-semibold text-slate-700">{r.city}</div>
-                        {r.age && <div className="text-[10px] text-slate-500">{r.age} yrs</div>}
-                      </td>
-
-                      <td className="p-3 max-w-xs">
-                        <p className="text-slate-600 line-clamp-2 text-[11px]">{r.message || "—"}</p>
-                      </td>
-
-                      <td className="p-3 text-[10px] text-slate-500">
-                        {new Date(r.submittedAt).toLocaleDateString()}
-                      </td>
-
-                      <td className="p-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (confirm(`Delete registration for ${r.fullName}?`)) {
-                              deleteBhaktiStepsRegistration(r.id);
-                              toast.info("Registration removed.");
-                            }
-                          }}
-                          className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition cursor-pointer"
-                          title="Delete Registration"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
         </div>
       )}
 
@@ -581,8 +376,8 @@ export default function BhaktiStepsManager() {
         <div className="bg-white rounded-3xl border shadow-xs p-6 space-y-6">
           <div className="flex items-center justify-between border-b pb-4">
             <div>
-              <h3 className="font-display font-bold text-xl text-primary">Helplines &amp; External Links</h3>
-              <p className="text-xs text-muted-foreground">Configure devotee assistance phone numbers and official source URLs.</p>
+              <h3 className="font-display font-bold text-xl text-primary">Registration &amp; Helplines</h3>
+              <p className="text-xs text-muted-foreground">Configure registration status, Google Form link, devotee assistance phone numbers, and official source URLs.</p>
             </div>
 
             <button
@@ -597,6 +392,45 @@ export default function BhaktiStepsManager() {
           </div>
 
           <div className="space-y-4">
+            {/* Registration Status & Google Form URL */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-amber-50/50 border border-amber-200 rounded-2xl">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  Registration Status
+                </label>
+                <select
+                  value={configState.registrationStatus || "Opened"}
+                  onChange={(e) =>
+                    setConfigState({
+                      ...configState,
+                      registrationStatus: e.target.value as "Opened" | "Closed" | "Coming Soon",
+                    })
+                  }
+                  className="w-full px-3 py-2 border rounded-xl text-xs bg-white font-semibold outline-none cursor-pointer"
+                >
+                  <option value="Opened">Opened</option>
+                  <option value="Closed">Closed</option>
+                  <option value="Coming Soon">Coming Soon</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  Google Form Link (Optional)
+                </label>
+                <input
+                  type="url"
+                  value={configState.googleFormUrl || ""}
+                  onChange={(e) => setConfigState({ ...configState, googleFormUrl: e.target.value })}
+                  placeholder="e.g. https://forms.gle/..."
+                  className="w-full px-3 py-2 border rounded-xl text-xs bg-white font-mono outline-none"
+                />
+                <p className="text-[10px] text-muted-foreground mt-0.5">
+                  If inserted, the public registration button will link to this form instead of the local form.
+                </p>
+              </div>
+            </div>
+
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700">Registration Contact Phone Numbers (Comma-separated)</label>
               <input

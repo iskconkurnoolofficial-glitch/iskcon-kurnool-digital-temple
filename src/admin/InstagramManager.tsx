@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAdmin, InstagramData, uploadToCloudinary } from "@/context/AdminContext";
-import { Instagram, Youtube, Facebook, MessageCircle, Save, FileText, Globe, Hash, Upload, Trash2, Check, Link2 } from "lucide-react";
+import { Instagram, Youtube, Facebook, MessageCircle, Save, FileText, Globe, Hash, Upload, Trash2, Check, Link2, Twitter } from "lucide-react";
 import { toast } from "sonner";
 
 export default function InstagramManager() {
@@ -16,6 +16,7 @@ export default function InstagramManager() {
   const [ytLink, setYtLink] = useState(settings?.youtube || "");
   const [fbLink, setFbLink] = useState(settings?.facebook || "");
   const [waLink, setWaLink] = useState(settings?.whatsapp || "");
+  const [twitterLink, setTwitterLink] = useState(settings?.twitter || "");
   
   // Clone reels list (exactly 8 slots)
   const [reels, setReels] = useState<string[]>(() => {
@@ -55,6 +56,7 @@ export default function InstagramManager() {
         youtube: ytLink.trim(),
         facebook: fbLink.trim(),
         whatsapp: waLink.trim(),
+        twitter: twitterLink.trim(),
       };
       await setSettings(updatedSettings);
 
@@ -227,6 +229,22 @@ export default function InstagramManager() {
                 value={waLink}
                 onChange={(e) => setWaLink(e.target.value)}
                 placeholder="e.g. https://chat.whatsapp.com/... or phone number"
+                className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary font-sans"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-5">
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-sans">Twitter / X Profile Link</label>
+            <div className="relative">
+              <Twitter className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <input
+                type="text"
+                value={twitterLink}
+                onChange={(e) => setTwitterLink(e.target.value)}
+                placeholder="e.g. https://twitter.com/username"
                 className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary font-sans"
               />
             </div>

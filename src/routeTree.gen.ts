@@ -14,7 +14,6 @@ import { Route as YouthRouteImport } from './routes/youth'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TempleRouteImport } from './routes/temple'
 import { Route as SocialMediaRouteImport } from './routes/social-media'
-import { Route as ShopRouteImport } from './routes/shop'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PrahladaBadiRouteImport } from './routes/prahlada-badi'
 import { Route as HouseProgrammesRouteImport } from './routes/house-programmes'
@@ -65,11 +64,6 @@ const TempleRoute = TempleRouteImport.update({
 const SocialMediaRoute = SocialMediaRouteImport.update({
   id: '/social-media',
   path: '/social-media',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ShopRoute = ShopRouteImport.update({
-  id: '/shop',
-  path: '/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -220,7 +214,6 @@ export interface FileRoutesByFullPath {
   '/house-programmes': typeof HouseProgrammesRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/privacy': typeof PrivacyRoute
-  '/shop': typeof ShopRoute
   '/social-media': typeof SocialMediaRoute
   '/temple': typeof TempleRouteWithChildren
   '/terms': typeof TermsRoute
@@ -253,7 +246,6 @@ export interface FileRoutesByTo {
   '/house-programmes': typeof HouseProgrammesRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/privacy': typeof PrivacyRoute
-  '/shop': typeof ShopRoute
   '/social-media': typeof SocialMediaRoute
   '/terms': typeof TermsRoute
   '/youth': typeof YouthRoute
@@ -287,7 +279,6 @@ export interface FileRoutesById {
   '/house-programmes': typeof HouseProgrammesRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/privacy': typeof PrivacyRoute
-  '/shop': typeof ShopRoute
   '/social-media': typeof SocialMediaRoute
   '/temple': typeof TempleRouteWithChildren
   '/terms': typeof TermsRoute
@@ -323,7 +314,6 @@ export interface FileRouteTypes {
     | '/house-programmes'
     | '/prahlada-badi'
     | '/privacy'
-    | '/shop'
     | '/social-media'
     | '/temple'
     | '/terms'
@@ -356,7 +346,6 @@ export interface FileRouteTypes {
     | '/house-programmes'
     | '/prahlada-badi'
     | '/privacy'
-    | '/shop'
     | '/social-media'
     | '/terms'
     | '/youth'
@@ -389,7 +378,6 @@ export interface FileRouteTypes {
     | '/house-programmes'
     | '/prahlada-badi'
     | '/privacy'
-    | '/shop'
     | '/social-media'
     | '/temple'
     | '/terms'
@@ -424,7 +412,6 @@ export interface RootRouteChildren {
   HouseProgrammesRoute: typeof HouseProgrammesRoute
   PrahladaBadiRoute: typeof PrahladaBadiRoute
   PrivacyRoute: typeof PrivacyRoute
-  ShopRoute: typeof ShopRoute
   SocialMediaRoute: typeof SocialMediaRoute
   TempleRoute: typeof TempleRouteWithChildren
   TermsRoute: typeof TermsRoute
@@ -473,13 +460,6 @@ declare module '@tanstack/react-router' {
       path: '/social-media'
       fullPath: '/social-media'
       preLoaderRoute: typeof SocialMediaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/shop': {
-      id: '/shop'
-      path: '/shop'
-      fullPath: '/shop'
-      preLoaderRoute: typeof ShopRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -710,7 +690,6 @@ const rootRouteChildren: RootRouteChildren = {
   HouseProgrammesRoute: HouseProgrammesRoute,
   PrahladaBadiRoute: PrahladaBadiRoute,
   PrivacyRoute: PrivacyRoute,
-  ShopRoute: ShopRoute,
   SocialMediaRoute: SocialMediaRoute,
   TempleRoute: TempleRouteWithChildren,
   TermsRoute: TermsRoute,

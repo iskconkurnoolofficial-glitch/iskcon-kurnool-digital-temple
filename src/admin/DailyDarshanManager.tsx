@@ -72,6 +72,7 @@ export default function DailyDarshanManager() {
   const [headerSubtitle, setHeaderSubtitle] = useState(dailyDarshan.headerSubtitle || "Behold the transcendental beauty and divine blessings of Their Lordships at ISKCON Kurnool.");
   const [badgeText, setBadgeText] = useState(dailyDarshan.badgeText || "Nitya Darshan • Daily Deity Darshan");
   const [noticeBanner, setNoticeBanner] = useState(dailyDarshan.noticeBanner || "Darshan photos are refreshed every morning after Sringara Harati.");
+  const [liveYoutubeUrl, setLiveYoutubeUrl] = useState(dailyDarshan.liveYoutubeUrl || "");
 
   const entries = dailyDarshan.entries || [];
 
@@ -248,6 +249,7 @@ export default function DailyDarshanManager() {
       headerSubtitle,
       badgeText,
       noticeBanner,
+      liveYoutubeUrl: liveYoutubeUrl.trim(),
     };
     setDailyDarshan(updated);
     toast.success("Page header & notice settings saved!");
@@ -690,6 +692,22 @@ export default function DailyDarshanManager() {
                   onChange={(e) => setNoticeBanner(e.target.value)}
                   className="w-full px-4 py-2 border rounded-xl text-xs bg-white"
                 />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold font-sans uppercase tracking-wider text-foreground mb-1">
+                  YouTube Live Darshan Video / Stream URL (Optional)
+                </label>
+                <input
+                  type="url"
+                  placeholder="e.g. https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                  value={liveYoutubeUrl}
+                  onChange={(e) => setLiveYoutubeUrl(e.target.value)}
+                  className="w-full px-4 py-2.5 border rounded-xl text-xs bg-white focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                />
+                <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">
+                  Enter a YouTube live link (or video ID). When set, a prominent YouTube player will telecast the Live Darshan on the top of the Daily Darshan screen. Leave empty to hide the Live telecast player.
+                </p>
               </div>
             </div>
 

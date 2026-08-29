@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Link } from "@tanstack/react-router";
-import { Play, Instagram, Youtube, Facebook, MessageCircle } from "lucide-react";
+import { Play, Instagram, Youtube, Facebook, MessageCircle, Twitter } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 
 // Official Custom Brand Logo Components
@@ -33,6 +33,12 @@ const FacebookLogo = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const TwitterLogo = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
+
 const WhatsappLogo = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
     <path d="M12.004 2C6.48 2 2 6.48 2 12.004c0 1.764.462 3.42 1.272 4.884l-.864 3.156 3.228-.846c1.41.774 3.018 1.206 4.71 1.206 5.52 0 10.002-4.476 10.002-10.002C20.35 6.48 15.864 2 12.004 2zm5.346 12.3c-.228.648-1.32 1.206-1.806 1.254-.486.048-1.092.072-2.922-.678-2.34-.96-3.84-3.342-3.954-3.504-.12-.156-.96-1.278-.96-2.442 0-1.164.606-1.734.822-1.974.216-.24.474-.294.63-.294.156 0 .312.006.45.012.144.006.336-.054.528.402.198.474.678 1.656.738 1.776.06.12.096.258.018.414-.078.156-.174.258-.294.396-.12.138-.258.312-.366.42-.12.12-.246.252-.108.492.138.24.612 1.008 1.314 1.632.906.804 1.668 1.05 1.908 1.17.24.12.378.102.516-.054.138-.156.594-.69.756-.924.162-.234.324-.198.546-.114.222.084 1.41.666 1.65.786.24.12.396.18.456.282.06.102.06.582-.168 1.23z" />
@@ -60,28 +66,34 @@ export default function SocialMediaSection({ variant = "home" }: { variant?: "ho
   };
 
   // Format WhatsApp Link
-  const waPhone = settings.whatsapp || "+91 9505377520";
+  const waPhone = settings.whatsapp || "";
   const rawDigits = waPhone.replace(/\D/g, "");
-  const waUrl = waPhone.startsWith("http") ? waPhone : `https://wa.me/${rawDigits}`;
+  const waUrl = waPhone ? (waPhone.startsWith("http") ? waPhone : `https://wa.me/${rawDigits}`) : "";
 
   const socials = [
     {
       name: "Instagram",
-      href: settings.instagram || "https://instagram.com/iskcon_kurnool",
+      href: settings.instagram,
       icon: Instagram,
       glow: "hover:bg-gradient-to-tr hover:from-[#feda75] hover:via-[#fa7e1e] hover:to-[#d62976] hover:border-transparent hover:shadow-[0_8px_20px_rgba(214,41,118,0.25)]",
     },
     {
       name: "YouTube",
-      href: settings.youtube || "https://youtube.com/@iskconkurnool",
+      href: settings.youtube,
       icon: Youtube,
       glow: "hover:bg-red-600 hover:border-transparent hover:shadow-[0_8px_20px_rgba(255,0,0,0.25)]",
     },
     {
       name: "Facebook",
-      href: settings.facebook || "https://facebook.com/iskconkurnool",
+      href: settings.facebook,
       icon: Facebook,
       glow: "hover:bg-[#1877f2] hover:border-transparent hover:shadow-[0_8px_20px_rgba(24,119,242,0.25)]",
+    },
+    {
+      name: "Twitter",
+      href: settings.twitter,
+      icon: Twitter,
+      glow: "hover:bg-sky-500 hover:border-transparent hover:shadow-[0_8px_20px_rgba(56,189,248,0.25)]",
     },
     {
       name: "WhatsApp",
@@ -89,7 +101,7 @@ export default function SocialMediaSection({ variant = "home" }: { variant?: "ho
       icon: MessageCircle,
       glow: "hover:bg-[#25d366] hover:border-transparent hover:shadow-[0_8px_20px_rgba(37,211,102,0.25)]",
     },
-  ];
+  ].filter((s) => !!s.href);
 
   const platformCards = [
     {
@@ -97,7 +109,7 @@ export default function SocialMediaSection({ variant = "home" }: { variant?: "ho
       handle: instagram?.username ? `@${instagram.username}` : "@iskcon_kurnool",
       desc: "Watch daily darshans, reels, and festival celebrations.",
       btnText: "Follow Us",
-      href: settings.instagram || "https://instagram.com/iskcon_kurnool",
+      href: settings.instagram,
       icon: InstagramLogo,
       color: "text-[#d62976] bg-amber-500/5 border-amber-500/10",
       btnClass: "bg-gradient-to-r from-accent to-secondary hover:shadow-[0_4px_15px_rgba(232,103,12,0.3)] text-white",
@@ -107,7 +119,7 @@ export default function SocialMediaSection({ variant = "home" }: { variant?: "ho
       handle: "ISKCON Kurnool",
       desc: "Watch full lectures, kirtans, and temple festival videos.",
       btnText: "Subscribe",
-      href: settings.youtube || "https://youtube.com/@iskconkurnool",
+      href: settings.youtube,
       icon: YoutubeLogo,
       color: "text-red-600 bg-red-50 border-red-100",
       btnClass: "bg-red-600 hover:bg-red-700 hover:shadow-[0_4px_15px_rgba(255,0,0,0.25)] text-white",
@@ -116,23 +128,33 @@ export default function SocialMediaSection({ variant = "home" }: { variant?: "ho
       name: "Facebook",
       handle: "ISKCON Kurnool Temple",
       desc: "Stay updated with event postings and community photos.",
-      btnText: "Follow Us", // Swapped to Follow Us
-      href: settings.facebook || "https://facebook.com/iskconkurnool",
+      btnText: "Follow Us",
+      href: settings.facebook,
       icon: FacebookLogo,
       color: "text-[#1877f2] bg-[#1877f2]/5 border-[#1877f2]/10",
       btnClass: "bg-[#1877f2] hover:bg-[#166fe5] hover:shadow-[0_4px_15px_rgba(24,119,242,0.3)] text-white",
     },
     {
+      name: "Twitter",
+      handle: "@iskconkurnool",
+      desc: "Follow our official updates and announcements on Twitter/X.",
+      btnText: "Follow Us",
+      href: settings.twitter,
+      icon: TwitterLogo,
+      color: "text-slate-900 bg-slate-50 border-slate-100",
+      btnClass: "bg-slate-900 hover:bg-slate-800 hover:shadow-[0_4px_15px_rgba(0,0,0,0.25)] text-white",
+    },
+    {
       name: "WhatsApp",
       handle: "Temple Announcements",
       desc: "Get instant daily darshan and ekadashi announcements.",
-      btnText: "Join Channel", // Swapped to Join Channel
+      btnText: "Join Channel",
       href: waUrl,
       icon: WhatsappLogo,
       color: "text-[#25d366] bg-[#25d366]/5 border-[#25d366]/10",
       btnClass: "bg-[#25d366] hover:bg-[#20ba5a] hover:shadow-[0_4px_15px_rgba(37,211,102,0.3)] text-white",
     },
-  ];
+  ].filter((c) => !!c.href);
 
   if (variant === "dedicated") {
     return (
@@ -148,7 +170,13 @@ export default function SocialMediaSection({ variant = "home" }: { variant?: "ho
               <p className="text-slate-650 text-xs md:text-sm mt-2">Subscribe and follow us for daily transcendental messages, photos, and live updates.</p>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className={`grid gap-6 justify-center ${
+              platformCards.length === 1 ? "grid-cols-1 max-w-sm mx-auto" :
+              platformCards.length === 2 ? "grid-cols-1 sm:grid-cols-2 max-w-xl mx-auto" :
+              platformCards.length === 3 ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-3xl mx-auto" :
+              platformCards.length === 4 ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 max-w-5xl mx-auto" :
+              "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+            }`}>
               {platformCards.map((c) => {
                 const Icon = c.icon;
                 return (

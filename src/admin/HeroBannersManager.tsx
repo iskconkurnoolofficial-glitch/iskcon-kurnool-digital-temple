@@ -33,6 +33,7 @@ export default function HeroBannersManager() {
     { key: "courses", label: "Courses Page" },
     { key: "festivals", label: "Festivals Page" },
     { key: "gallery", label: "Gallery Page" },
+    { key: "darshan", label: "Daily Darshan Page" },
     { key: "goshala", label: "Goshala Page" },
     { key: "prahladaBadi", label: "Prahlada Badi" },
     { key: "sunday", label: "Sunday Program Page" },

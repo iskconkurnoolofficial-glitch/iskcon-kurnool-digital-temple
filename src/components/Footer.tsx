@@ -8,7 +8,8 @@ import {
   MapPin, 
   Phone, 
   Mail, 
-  ArrowUp 
+  ArrowUp,
+  Twitter 
 } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import { safeUrl } from "@/lib/utils";
@@ -35,7 +36,6 @@ export default function Footer() {
     { label: "Sunday Program", href: "/temple/sunday" },
     { label: "Upcoming Festivals", href: "/festivals" },
     { label: "Goshala", href: "/goshala" },
-    { label: "Shop", href: "/shop" },
   ];
 
   return (
@@ -123,6 +123,11 @@ export default function Footer() {
                 <a href={safeUrl(settings.instagram, "https://instagram.com/iskconkurnool")} target="_blank" rel="noreferrer" aria-label="Instagram" className="h-9 w-9 rounded-xl bg-white/5 border border-white/10 hover:border-secondary hover:bg-secondary hover:text-primary flex items-center justify-center transition-all duration-300 hover:scale-105">
                   <Instagram className="h-4 w-4" />
                 </a>
+                {settings.twitter && (
+                  <a href={settings.twitter} target="_blank" rel="noreferrer" aria-label="Twitter" className="h-9 w-9 rounded-xl bg-white/5 border border-white/10 hover:border-secondary hover:bg-secondary hover:text-primary flex items-center justify-center transition-all duration-300 hover:scale-105">
+                    <Twitter className="h-4 w-4" />
+                  </a>
+                )}
                 <a href={`https://wa.me/${(settings.whatsapp || "+919505377520").replace(/\D/g, "")}`} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="h-9 w-9 rounded-xl bg-white/5 border border-white/10 hover:border-secondary hover:bg-secondary hover:text-primary flex items-center justify-center transition-all duration-300 hover:scale-105">
                   <MessageCircle className="h-4 w-4" />
                 </a>

@@ -1,4 +1,4 @@
-import { Phone, Mail, MapPin, Instagram, Youtube, Facebook, MessageCircle, Heart, ArrowUpRight, Navigation, MessageSquare } from "lucide-react";
+import { Phone, Mail, MapPin, Instagram, Youtube, Facebook, MessageCircle, Heart, ArrowUpRight, Navigation, MessageSquare, Twitter } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import { safeUrl, safeMapEmbed } from "@/lib/utils";
 
@@ -85,7 +85,9 @@ export default function ConnectSection() {
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-2">
                   Follow Sacred Updates
                 </span>
-                <div className="grid grid-cols-3 gap-2">
+                <div className={`grid gap-2 ${
+                  settings.twitter ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-1 sm:grid-cols-3"
+                }`}>
                   <a
                     href={safeUrl(settings.instagram, "https://instagram.com/iskconkurnool")}
                     target="_blank"
@@ -118,6 +120,19 @@ export default function ConnectSection() {
                     <Facebook className="h-4 w-4" />
                     <span>Facebook</span>
                   </a>
+
+                  {settings.twitter && (
+                    <a
+                      href={settings.twitter}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label="Twitter"
+                      className="py-2.5 px-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition"
+                    >
+                      <Twitter className="h-4 w-4" />
+                      <span>Twitter / X</span>
+                    </a>
+                  )}
                 </div>
               </div>
             </div>

@@ -296,17 +296,17 @@ function DarshanImageCarousel({
   );
 }
 
+function getYouTubeVideoId(url: string) {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : url;
+}
+
 function DailyDarshanPage() {
   const { dailyDarshan } = useAdmin();
   const [fullscreenIndex, setFullscreenIndex] = useState<number | null>(null);
-  const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedMonth, setSelectedMonth] = useState<string>("all");
-  const [viewMode, setViewMode] = useState<"carousel" | "grid">("carousel");
-  const [isArchiveAutoScroll, setIsArchiveAutoScroll] = useState(true);
-  const [isArchiveHovered, setIsArchiveHovered] = useState(false);
   const [copied, setCopied] = useState(false);
-  const archiveTrackRef = useRef<HTMLDivElement>(null);
 
   // Published entries sorted chronologically (newest first)
   const publishedEntries = useMemo(() => {
@@ -316,12 +316,8 @@ function DailyDarshanPage() {
 
   // Determine current active showcase entry (defaults to newest entry)
   const activeDarshan: DailyDarshanItem | undefined = useMemo(() => {
-    if (selectedEntryId) {
-      const found = publishedEntries.find((e) => e.id === selectedEntryId);
-      if (found) return found;
-    }
     return publishedEntries[0];
-  }, [publishedEntries, selectedEntryId]);
+  }, [publishedEntries]);
 
   // All images for active darshan (main + additional)
   const activeImages: string[] = useMemo(() => {
@@ -335,59 +331,6 @@ function DailyDarshanPage() {
     }
     return Array.from(set);
   }, [activeDarshan]);
-
-  // Extract unique months for archive filtering
-  const availableMonths = useMemo(() => {
-    const monthsSet = new Set<string>();
-    publishedEntries.forEach((e) => {
-      if (e.date) {
-        const [y, m] = e.date.split("-");
-        if (y && m) monthsSet.add(`${y}-${m}`);
-      }
-    });
-    return Array.from(monthsSet);
-  }, [publishedEntries]);
-
-  // Previous darshan archive entries
-  const archiveEntries = useMemo(() => {
-    return publishedEntries.filter((item) => {
-      // Month filter
-      if (selectedMonth !== "all") {
-        if (!item.date.startsWith(selectedMonth)) return false;
-      }
-      // Search query filter
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const dateMatch = item.date.toLowerCase().includes(q);
-        const titleMatch = item.title.toLowerCase().includes(q);
-        const descMatch = item.description?.toLowerCase().includes(q);
-        return dateMatch || titleMatch || descMatch;
-      }
-      return true;
-    });
-  }, [publishedEntries, selectedMonth, searchQuery]);
-
-  // Previous Darshans Auto-Scroll Timer Engine
-  useEffect(() => {
-    if (!isArchiveAutoScroll || isArchiveHovered || viewMode !== "carousel" || archiveEntries.length <= 1) {
-      return;
-    }
-
-    const interval = setInterval(() => {
-      const track = archiveTrackRef.current;
-      if (!track) return;
-
-      const maxScrollLeft = track.scrollWidth - track.clientWidth;
-      // When nearing the end of the carousel, seamlessly loop back to start
-      if (track.scrollLeft >= maxScrollLeft - 20) {
-        track.scrollTo({ left: 0, behavior: "smooth" });
-      } else {
-        track.scrollBy({ left: 340, behavior: "smooth" });
-      }
-    }, 3800);
-
-    return () => clearInterval(interval);
-  }, [isArchiveAutoScroll, isArchiveHovered, viewMode, archiveEntries.length]);
 
   // Fullscreen Keyboard Navigation
   useEffect(() => {
@@ -444,13 +387,6 @@ function DailyDarshanPage() {
     toast.success("Opening high-resolution Darshan image");
   };
 
-  const scrollToActiveShowcase = () => {
-    const el = document.getElementById("today-darshan-showcase");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
-
   return (
     <SiteLayout>
       {/* Page Hero Header */}
@@ -495,9 +431,37 @@ function DailyDarshanPage() {
             </div>
           )}
 
-          {/* ========================================================================= */}
-          {/* SECTION 1: PROMINENT FEATURED / TODAY'S DARSHAN SHOWCASE (CAROUSEL)       */}
-          {/* ========================================================================= */}
+          {/* YouTube Live Darshan Broadcast (Conditional) */}
+          {dailyDarshan.liveYoutubeUrl && (
+            <div className="bg-white rounded-3xl border-4 border-white ring-1 ring-red-500/20 shadow-elegant overflow-hidden transition-all duration-300">
+              <div className="bg-gradient-to-r from-red-600 via-red-500 to-orange-500 px-6 py-4 text-white flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2.5">
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+                  </span>
+                  <h3 className="font-display font-extrabold text-sm sm:text-base tracking-widest uppercase">
+                    LIVE Darshan Telecast
+                  </h3>
+                </div>
+                <span className="bg-white/20 text-white text-[10px] font-extrabold tracking-wider uppercase px-2.5 py-1 rounded-full border border-white/20">
+                  YouTube Broadcast
+                </span>
+              </div>
+              <div className="aspect-video w-full">
+                <iframe
+                  className="w-full h-full"
+                  src={`https://www.youtube.com/embed/${getYouTubeVideoId(dailyDarshan.liveYoutubeUrl)}?autoplay=1&mute=0`}
+                  title="LIVE Daily Darshan YouTube Broadcast"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 1: PROMINENT FEATURED / TODAY'S DARSHAN SHOWCASE (CAROUSEL) */}
           {activeDarshan ? (
             <section id="today-darshan-showcase" className="scroll-mt-24 space-y-6">
               {(() => {
@@ -510,17 +474,10 @@ function DailyDarshanPage() {
                     <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/5 px-6 py-5 border-b border-amber-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="space-y-1">
                         <div className="flex flex-wrap items-center gap-2.5">
-                          {relativeLabel ? (
-                            <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-extrabold text-xs uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
-                              <Sparkles className="h-3.5 w-3.5 animate-pulse" />
-                              {relativeLabel}
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary font-bold text-xs uppercase tracking-wider px-3 py-1 rounded-full border border-primary/20">
-                              <Calendar className="h-3.5 w-3.5" />
-                              Darshan Archive
-                            </span>
-                          )}
+                          <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-extrabold text-xs uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
+                            <Sparkles className="h-3.5 w-3.5" />
+                            Today's Deity Darshan
+                          </span>
 
                           {dayOfWeek && (
                             <span className="text-xs font-semibold text-muted-foreground font-sans">
@@ -646,221 +603,6 @@ function DailyDarshanPage() {
               </p>
             </div>
           )}
-
-          {/* ========================================================================= */}
-          {/* SECTION 2: PREVIOUS DARSHANS ARCHIVE (AUTO-SCROLLING CAROUSEL SLIDER)     */}
-          {/* ========================================================================= */}
-          <section className="space-y-8 pt-6 border-t border-amber-200/60">
-            
-            {/* Archive Section Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-              <div className="space-y-2">
-                <div className="inline-flex items-center gap-2 text-secondary font-bold uppercase text-xs tracking-wider">
-                  <Calendar className="h-3.5 w-3.5" />
-                  Chronological Archive
-                </div>
-                <h2 className="font-display font-extrabold text-3xl sm:text-4xl text-primary tracking-tight">
-                  Previous Daily Darshans
-                </h2>
-                <p className="text-muted-foreground text-sm max-w-lg">
-                  Browse previous divine sringara darshans from earlier days, festivals, and sacred celebrations.
-                </p>
-              </div>
-
-              {/* Search & Month Filter Controls */}
-              <div className="flex flex-wrap items-center gap-3">
-                {/* Month Dropdown */}
-                {availableMonths.length > 1 && (
-                  <select
-                    value={selectedMonth}
-                    onChange={(e) => setSelectedMonth(e.target.value)}
-                    className="px-3.5 py-2 rounded-xl border border-border bg-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-2xs"
-                  >
-                    <option value="all">All Months</option>
-                    {availableMonths.map((m) => {
-                      const [yr, mo] = m.split("-");
-                      const dateObj = new Date(parseInt(yr), parseInt(mo) - 1, 1);
-                      const label = dateObj.toLocaleDateString("en-US", { month: "long", year: "numeric" });
-                      return <option key={m} value={m}>{label}</option>;
-                    })}
-                  </select>
-                )}
-
-                {/* Search Input */}
-                <div className="relative w-full sm:w-56">
-                  <Search className="h-3.5 w-3.5 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    placeholder="Search past darshans..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-border bg-white text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-2xs"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery("")}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-
-                {/* Navigation Arrows */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      const container = archiveTrackRef.current;
-                      if (container) container.scrollBy({ left: -340, behavior: "smooth" });
-                    }}
-                    className="p-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-foreground transition-all shadow-2xs cursor-pointer"
-                    title="Scroll Left"
-                    aria-label="Previous Darshans"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      const container = archiveTrackRef.current;
-                      if (container) container.scrollBy({ left: 340, behavior: "smooth" });
-                    }}
-                    className="p-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-foreground transition-all shadow-2xs cursor-pointer"
-                    title="Scroll Right"
-                    aria-label="Next Darshans"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Archive Content */}
-            {archiveEntries.length === 0 ? (
-              <div className="bg-white rounded-3xl p-12 text-center border border-border space-y-3">
-                <Search className="h-10 w-10 text-muted-foreground/50 mx-auto" />
-                <h4 className="font-display font-bold text-lg text-foreground">No matching Darshans found</h4>
-                <p className="text-xs text-muted-foreground">Try clearing your search query or selecting "All Months".</p>
-                <button
-                  onClick={() => { setSearchQuery(""); setSelectedMonth("all"); }}
-                  className="mt-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-xs cursor-pointer"
-                >
-                  Clear Filters
-                </button>
-              </div>
-            ) : (
-              /* Archive Carousel / Horizontal Slider View with Smooth Auto-Scroll */
-              <div 
-                className="relative space-y-4"
-                onMouseEnter={() => setIsArchiveHovered(true)}
-                onMouseLeave={() => setIsArchiveHovered(false)}
-              >
-                {/* Auto-scrolling Track */}
-                <div 
-                  ref={archiveTrackRef}
-                  id="archive-carousel-track"
-                  onTouchStart={() => setIsArchiveHovered(true)}
-                  onTouchEnd={() => setTimeout(() => setIsArchiveHovered(false), 2000)}
-                  className="flex gap-6 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-amber-200 scroll-smooth"
-                >
-                  {archiveEntries.map((item) => {
-                    const { fullDate, dayOfWeek, relativeLabel } = formatDarshanDate(item.date);
-                    const isSelected = activeDarshan?.id === item.id;
-                    const hasMultiPhotos = (item.additionalImages?.length || 0) > 0;
-
-                    return (
-                      <div
-                        key={item.id}
-                        className={`min-w-[280px] sm:min-w-[320px] max-w-[340px] snap-start rounded-3xl border transition-all duration-300 overflow-hidden flex flex-col justify-between bg-white shrink-0 ${
-                          isSelected
-                            ? "ring-2 ring-amber-500 border-amber-500 shadow-elegant"
-                            : "border-border/80 hover:border-amber-400 hover:shadow-elegant"
-                        }`}
-                      >
-                        <div>
-                          {/* Image Frame */}
-                          <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-900">
-                            <img
-                              src={item.imageUrl}
-                              alt={item.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                              loading="lazy"
-                            />
-
-                            {/* Top Badges */}
-                            <div className="absolute top-3 left-3 flex flex-col gap-1 items-start">
-                              {relativeLabel ? (
-                                <span className="bg-amber-600/90 backdrop-blur-md text-white font-extrabold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm">
-                                  {relativeLabel}
-                                </span>
-                              ) : null}
-                              {hasMultiPhotos && (
-                                <span className="bg-black/65 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                                  <Layers className="h-2.5 w-2.5 text-amber-400" /> +{item.additionalImages?.length} Photos
-                                </span>
-                              )}
-                            </div>
-
-                            <span className="absolute top-3 right-3 bg-black/70 backdrop-blur-md text-white font-sans text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-                              {fullDate}
-                            </span>
-                          </div>
-
-                          {/* Content */}
-                          <div className="p-5 space-y-2">
-                            <div className="text-[11px] font-bold text-accent uppercase tracking-wider flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              <span>{dayOfWeek || fullDate}</span>
-                            </div>
-
-                            <h3 className="font-display font-bold text-base text-foreground line-clamp-2">
-                              {item.title}
-                            </h3>
-
-                            {item.description && (
-                              <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                                {item.description}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Footer CTA */}
-                        <div className="p-5 pt-0 border-t border-slate-100 mt-2 flex items-center justify-between gap-3">
-                          <button
-                            onClick={() => {
-                              setSelectedEntryId(item.id);
-                              scrollToActiveShowcase();
-                            }}
-                            className={`flex-1 text-center py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                              isSelected
-                                ? "bg-amber-500/15 text-amber-800 border border-amber-400"
-                                : "bg-primary text-primary-foreground hover:bg-primary/95 shadow-sm"
-                            }`}
-                          >
-                            <Eye className="h-3.5 w-3.5" />
-                            <span>{isSelected ? "Currently Viewing" : "View Darshan"}</span>
-                          </button>
-
-                          {item.officialSourceUrl && (
-                            <a
-                              href={item.officialSourceUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-foreground transition-colors shrink-0"
-                              title="View Official Source"
-                            >
-                              <ExternalLink className="h-4 w-4 text-accent" />
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-          </section>
 
           {/* Devotional Quote Footer Box */}
           <section className="rounded-3xl bg-gradient-to-r from-purple-900 via-primary to-purple-950 text-white p-8 md:p-12 shadow-2xl relative overflow-hidden text-center space-y-4">

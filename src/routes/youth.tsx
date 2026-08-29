@@ -60,6 +60,7 @@ function YouthPage() {
         title="Youth Program"
         subtitle="Empowering Youth. Inspiring Purpose. Transforming Lives."
         pageKey="youth"
+        logo={youth.logo}
       >
         <div className="space-y-4 w-full flex flex-col items-center lg:items-start mt-2">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-secondary text-sm font-semibold tracking-wide shadow-sm">

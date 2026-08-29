@@ -29,11 +29,13 @@ import {
   Home,
   Compass,
   Sun,
-  Award
+  Award,
+  Twitter
 } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import LiveClassBanner from "@/components/LiveClassBanner";
 import LanguageToggle from "@/components/LanguageToggle";
+import ContentSizeAdjuster from "@/components/ContentSizeAdjuster";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLiveClass } from "@/hooks/useLiveClass";
 import { isTimeStrLive } from "@/lib/scheduleUtils";
@@ -66,7 +68,6 @@ const NAV: NavItem[] = [
     { label: "Sunday Program", href: "/temple/sunday", subtitle: "Weekly feast, kirtan & lecture", icon: Calendar },
     { label: "Upcoming Festivals", href: "/festivals", subtitle: "Celebrate sacred days with us", icon: Sparkles },
     { label: "Goshala", href: "/goshala", subtitle: "Cow protection & service", icon: Leaf },
-    { label: "Shop", href: "/shop", subtitle: "Devotional books & puja items", icon: ShoppingBag },
   ]},
   { label: "Media", children: [
     { label: "Daily Darshan", href: "/daily-darshan", subtitle: "Daily high-res deity photos", icon: Sun },
@@ -664,6 +665,7 @@ export default function Navbar() {
                 {/* Drawer Footer Section */}
                 <div className="border-t border-slate-200 bg-slate-50 p-4 space-y-3 shrink-0">
                   <LanguageToggle className="w-full justify-center" />
+                  <ContentSizeAdjuster layout="horizontal" className="shadow-none bg-white border-slate-200/80" />
                   
                   {/* Social Quick Links */}
                   <div className="flex justify-center gap-3 py-1 border-b border-slate-200/80 pb-3">
@@ -676,6 +678,11 @@ export default function Navbar() {
                     <a href={safeUrl(settings.instagram, "https://instagram.com/iskconkurnool")} target="_blank" rel="noreferrer" aria-label="Instagram" className="h-8.5 w-8.5 rounded-full bg-white border border-slate-200 text-primary hover:bg-secondary hover:text-primary grid place-items-center transition duration-200 shadow-2xs">
                       <Instagram className="h-4 w-4" />
                     </a>
+                    {settings.twitter && (
+                      <a href={settings.twitter} target="_blank" rel="noreferrer" aria-label="Twitter" className="h-8.5 w-8.5 rounded-full bg-white border border-slate-200 text-primary hover:bg-secondary hover:text-primary grid place-items-center transition duration-200 shadow-2xs">
+                        <Twitter className="h-4 w-4" />
+                      </a>
+                    )}
                     <a href={`https://wa.me/${(settings.whatsapp || "+919505377520").replace(/\D/g, "")}`} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="h-8.5 w-8.5 rounded-full bg-white border border-slate-200 text-primary hover:bg-secondary hover:text-primary grid place-items-center transition duration-200 shadow-2xs">
                       <MessageCircle className="h-4 w-4" />
                     </a>

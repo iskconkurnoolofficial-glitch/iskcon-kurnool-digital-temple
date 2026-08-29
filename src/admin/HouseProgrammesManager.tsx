@@ -637,6 +637,7 @@ function SettingsTab({
   const [uploadingAbout, setUploadingAbout] = useState(false);
   const [uploadingAboutRight, setUploadingAboutRight] = useState(false);
   const [uploadingQuote, setUploadingQuote] = useState(false);
+  const [uploadingKartika, setUploadingKartika] = useState(false);
 
   const handleHeroUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -695,6 +696,21 @@ function SettingsTab({
       toast.error("Upload failed");
     } finally {
       setUploadingQuote(false);
+    }
+  };
+
+  const handleKartikaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingKartika(true);
+    try {
+      const url = await uploadToCloudinary(file);
+      setDraft((d) => ({ ...d, kartikaImage: url }));
+      toast.success("Kartika Special image uploaded!");
+    } catch {
+      toast.error("Upload failed");
+    } finally {
+      setUploadingKartika(false);
     }
   };
 
@@ -849,6 +865,40 @@ function SettingsTab({
                 <Upload className="h-3.5 w-3.5" />
                 {uploadingAboutRight ? "Uploading..." : "Upload Right Image"}
                 <input type="file" accept="image/*" onChange={handleAboutRightUpload} className="hidden" />
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Kartika Damodara Month Settings Card */}
+      <div className="bg-white rounded-2xl border p-6 shadow-sm space-y-4">
+        <h3 className="font-display text-lg font-bold text-primary flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-secondary animate-pulse" /> Kartika Month Special Settings
+        </h3>
+
+        <div>
+          <label className="block text-xs font-semibold text-foreground mb-1.5">Kartika Special House Programme Image (Left Side)</label>
+          <div className="flex flex-col sm:flex-row gap-4 items-start">
+            <div className="h-28 w-full sm:w-48 rounded-xl border bg-muted overflow-hidden relative group">
+              {draft.kartikaImage ? (
+                <img src={draft.kartikaImage} alt="Kartika Special" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full grid place-items-center text-muted-foreground text-xs">No Image</div>
+              )}
+            </div>
+            <div className="space-y-2 flex-1 w-full">
+              <input
+                type="text"
+                value={draft.kartikaImage || ""}
+                onChange={(e) => setDraft({ ...draft, kartikaImage: e.target.value })}
+                className="w-full px-3 py-2 border rounded-lg text-xs font-mono"
+                placeholder="https://..."
+              />
+              <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-surface border hover:bg-muted text-xs font-semibold cursor-pointer transition">
+                <Upload className="h-3.5 w-3.5" />
+                {uploadingKartika ? "Uploading..." : "Upload Kartika Image"}
+                <input type="file" accept="image/*" onChange={handleKartikaUpload} className="hidden" />
               </label>
             </div>
           </div>
