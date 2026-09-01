@@ -11,6 +11,7 @@ import {
   Flame, PartyPopper, ChevronRight
 } from "lucide-react";
 import { UploadBox } from "./CarouselManager";
+import { toast } from "sonner";
 
 function fmtDate(d: string) {
   if (!d) return "—";
@@ -29,7 +30,7 @@ function blankFestival(): Festival {
     title: "", slug: "", date: "", thumbnail: "", desktopBanner: "", mobileBanner: "",
     description: "", shortDescription: "", sevas: [], status: "published", hidden: false,
     publishAt: undefined, unpublishAt: undefined, order: 0,
-    schedule: "", location: "",
+    schedule: "", location: "", locationAddress: "", locationLink: "", program: [],
   };
 }
 
@@ -411,15 +412,96 @@ function FestivalEditor({ draft, setDraft, slugEdited, setSlugEdited, onSave, on
 
   // ----- seva ops -----
   const setSevas = (sevas: Seva[]) => upd({ sevas });
-  const addSeva = () => setSevas([...draft.sevas, newSeva(draft.sevas.length)]);
-  const updSeva = (id: string, p: Partial<Seva>) => setSevas(draft.sevas.map((s) => (s.id === id ? { ...s, ...p } : s)));
-  const delSeva = (id: string) => setSevas(draft.sevas.filter((s) => s.id !== id));
+  const addSeva = () => setSevas([...(draft.sevas || []), newSeva((draft.sevas || []).length)]);
+  const updSeva = (id: string, p: Partial<Seva>) => setSevas((draft.sevas || []).map((s) => (s.id === id ? { ...s, ...p } : s)));
+  const delSeva = (id: string) => setSevas((draft.sevas || []).filter((s) => s.id !== id));
   const moveSeva = (idx: number, dir: -1 | 1) => {
-    const arr = [...draft.sevas];
+    const arr = [...(draft.sevas || [])];
     const j = idx + dir;
     if (j < 0 || j >= arr.length) return;
     [arr[idx], arr[j]] = [arr[j], arr[idx]];
     setSevas(arr.map((s, i) => ({ ...s, order: i })));
+  };
+
+  const { sevas: globalSevas } = useAdmin();
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [selectedGlobalSevaIds, setSelectedGlobalSevaIds] = useState<string[]>([]);
+  const [sevaSearchQuery, setSevaSearchQuery] = useState("");
+
+  // Find global sevas linked to this festival via festivalId or matching category/title
+  const linkedGlobalSevas = useMemo(() => {
+    if (!globalSevas) return [];
+    return globalSevas.filter((gs) => {
+      if (gs.festivalId && gs.festivalId === draft.id) return true;
+      if (Array.isArray(gs.festivalIds) && gs.festivalIds.includes(draft.id)) return true;
+      if (draft.title && (gs.category?.toLowerCase().includes(draft.title.toLowerCase()) || gs.categories?.some(c => c.toLowerCase().includes(draft.title.toLowerCase())))) return true;
+      return false;
+    });
+  }, [globalSevas, draft.id, draft.title]);
+
+  // Unmerged linked sevas (linked global sevas not yet present in draft.sevas)
+  const unmergedLinkedSevas = useMemo(() => {
+    const currentSevas = draft.sevas || [];
+    return linkedGlobalSevas.filter(
+      (gs) => !currentSevas.some((s) => s.id === gs.id || s.title.toLowerCase().trim() === gs.title.toLowerCase().trim())
+    );
+  }, [linkedGlobalSevas, draft.sevas]);
+
+  // Merge linked global sevas in 1-click
+  const mergeLinkedSevas = () => {
+    if (unmergedLinkedSevas.length === 0) return;
+    const currentSevas = draft.sevas || [];
+    const newItems: Seva[] = unmergedLinkedSevas.map((gs, idx) => ({
+      id: gs.id || `merged_${Date.now()}_${idx}`,
+      thumbnail: gs.thumbnail || "",
+      title: gs.title,
+      description: gs.description || "",
+      prices: gs.prices && gs.prices.length > 0 ? gs.prices : [{ label: "Per Day", amount: 501 }],
+      order: currentSevas.length + idx,
+      active: gs.active ?? true,
+      category: gs.category,
+      categories: gs.categories,
+      festivalId: draft.id
+    }));
+    setSevas([...currentSevas, ...newItems]);
+    toast.success(`Merged ${newItems.length} added sevas into festival!`);
+  };
+
+  // Merge selected global sevas from modal
+  const mergeSelectedSevas = () => {
+    if (selectedGlobalSevaIds.length === 0) {
+      toast.error("Please select at least one seva to merge.");
+      return;
+    }
+    const currentSevas = draft.sevas || [];
+    const toMerge = (globalSevas || []).filter((gs) => selectedGlobalSevaIds.includes(gs.id));
+    const newItems: Seva[] = [];
+    toMerge.forEach((gs, idx) => {
+      const alreadyExists = currentSevas.some((s) => s.id === gs.id || s.title.toLowerCase().trim() === gs.title.toLowerCase().trim());
+      if (!alreadyExists) {
+        newItems.push({
+          id: gs.id || `imported_${Date.now()}_${idx}`,
+          thumbnail: gs.thumbnail || "",
+          title: gs.title,
+          description: gs.description || "",
+          prices: gs.prices && gs.prices.length > 0 ? gs.prices : [{ label: "Per Day", amount: 501 }],
+          order: currentSevas.length + newItems.length,
+          active: gs.active ?? true,
+          category: gs.category,
+          categories: gs.categories,
+          festivalId: draft.id
+        });
+      }
+    });
+
+    if (newItems.length === 0) {
+      toast.info("Selected sevas are already merged in this festival.");
+    } else {
+      setSevas([...currentSevas, ...newItems]);
+      toast.success(`Successfully merged ${newItems.length} sevas!`);
+    }
+    setIsImportModalOpen(false);
+    setSelectedGlobalSevaIds([]);
   };
 
   return (
@@ -445,8 +527,14 @@ function FestivalEditor({ draft, setDraft, slugEdited, setSlugEdited, onSave, on
           <Field label="Festival Date">
             <input type="date" className="inp" value={draft.date} onChange={(e) => upd({ date: e.target.value })} />
           </Field>
-          <Field label="Location">
+          <Field label="Location Name (short)">
             <input className="inp" value={draft.location ?? ""} onChange={(e) => upd({ location: e.target.value })} placeholder="e.g. Main Temple Hall, ISKCON Kurnool" />
+          </Field>
+          <Field label="Location Address (full)">
+            <textarea className="inp min-h-[60px]" value={draft.locationAddress ?? ""} onChange={(e) => upd({ locationAddress: e.target.value })} placeholder="e.g. Somashila Road, Kurnool, Andhra Pradesh 518002" />
+          </Field>
+          <Field label="Google Maps Location Link">
+            <input className="inp" value={draft.locationLink ?? ""} onChange={(e) => upd({ locationLink: e.target.value })} placeholder="e.g. https://maps.app.goo.gl/..." />
           </Field>
           <Field label="Short Description (card)">
             <input className="inp" value={draft.shortDescription} onChange={(e) => upd({ shortDescription: e.target.value })} placeholder="Celebrate the divine appearance of Lord Krishna" />
@@ -455,11 +543,60 @@ function FestivalEditor({ draft, setDraft, slugEdited, setSlugEdited, onSave, on
       </Section>
 
       {/* Images */}
-      <Section title="Images">
+      <Section title="Festival Image">
         <div className="flex flex-wrap gap-6">
-          <UploadBox label="Card Thumbnail (1280 × 720)" url={draft.thumbnail} onPick={(f) => uploadField(f, "thumbnail")} aspect="aspect-video" className="w-full max-w-[180px]" />
-          <UploadBox label="Desktop Banner (4917 × 1750)" url={draft.desktopBanner} onPick={(f) => uploadField(f, "desktopBanner")} aspect="aspect-video" className="w-full max-w-[180px]" />
-          <UploadBox label="Mobile Banner (1080 × 1080)" url={draft.mobileBanner} onPick={(f) => uploadField(f, "mobileBanner")} aspect="aspect-square" className="w-full max-w-[110px]" />
+          <UploadBox label="Festival Banner Image (1280 × 720)" url={draft.thumbnail} onPick={(f) => uploadField(f, "thumbnail")} aspect="aspect-video" className="w-full max-w-[240px]" />
+        </div>
+      </Section>
+
+      {/* Sidebar Gallery Carousel (up to 6 images) */}
+      <Section title="Sidebar Gallery Carousel (Up to 6 images)">
+        <div className="grid grid-cols-2 sm:grid-cols-6 gap-4">
+          {Array.from({ length: 6 }).map((_, idx) => {
+            const currentImages = draft.carouselImages || [];
+            const url = currentImages[idx] || "";
+            return (
+              <div key={idx} className="relative group">
+                <UploadBox
+                  label={`Image ${idx + 1}`}
+                  url={url}
+                  aspect="aspect-square"
+                  className="w-full"
+                  onPick={async (file) => {
+                    setBusy(`carousel-${idx}`);
+                    try {
+                      const uploadedUrl = await uploadToCloudinary(file);
+                      const updatedCarousel = [...currentImages];
+                      updatedCarousel[idx] = uploadedUrl;
+                      upd({ carouselImages: updatedCarousel.filter(Boolean) });
+                    } catch {
+                      alert("Upload failed");
+                    }
+                    setBusy(null);
+                  }}
+                />
+                {url && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updatedCarousel = [...currentImages];
+                      updatedCarousel.splice(idx, 1);
+                      upd({ carouselImages: updatedCarousel.filter(Boolean) });
+                    }}
+                    className="absolute -top-1.5 -right-1.5 p-1 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-md transition-colors cursor-pointer z-10"
+                    title="Remove image"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                {busy === `carousel-${idx}` && (
+                  <div className="absolute inset-0 bg-white/70 flex items-center justify-center text-xs font-semibold text-primary">
+                    Uploading...
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </Section>
 
@@ -471,6 +608,114 @@ function FestivalEditor({ draft, setDraft, slugEdited, setSlugEdited, onSave, on
       {/* Schedule */}
       <Section title="Festival Schedule">
         <RichTextEditor value={draft.schedule ?? ""} onChange={(html) => upd({ schedule: html })} />
+      </Section>
+
+      {/* Program Timings & Timeline */}
+      <Section 
+        title={`Program Timings & Timeline (${(draft.program ?? []).length})`} 
+        action={
+          <button 
+            type="button"
+            onClick={() => upd({ program: [...(draft.program ?? []), { time: "", title: "", description: "" }] })} 
+            className="text-xs px-3 py-1.5 rounded-lg bg-accent text-white inline-flex items-center gap-1 cursor-pointer font-bold"
+          >
+            <Plus className="h-4 w-4" /> Add Event
+          </button>
+        }
+      >
+        {(draft.program ?? []).length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground text-sm border-2 border-dashed rounded-lg">
+            No program events added yet. Add events to show a beautiful timeline on the festival page.
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {(draft.program ?? []).map((item, idx) => (
+              <div key={idx} className="border rounded-xl p-4 bg-surface/40 flex flex-col gap-3 relative">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-muted-foreground">Event #{idx + 1}</span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      disabled={idx === 0}
+                      onClick={() => {
+                        const nextProg = [...(draft.program ?? [])];
+                        [nextProg[idx], nextProg[idx - 1]] = [nextProg[idx - 1], nextProg[idx]];
+                        upd({ program: nextProg });
+                      }}
+                      className="p-1 rounded hover:bg-muted disabled:opacity-30 cursor-pointer"
+                    >
+                      <ArrowUp className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={idx === (draft.program ?? []).length - 1}
+                      onClick={() => {
+                        const nextProg = [...(draft.program ?? [])];
+                        [nextProg[idx], nextProg[idx + 1]] = [nextProg[idx + 1], nextProg[idx]];
+                        upd({ program: nextProg });
+                      }}
+                      className="p-1 rounded hover:bg-muted disabled:opacity-30 cursor-pointer"
+                    >
+                      <ArrowDown className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const nextProg = (draft.program ?? []).filter((_, i) => i !== idx);
+                        upd({ program: nextProg });
+                      }}
+                      className="p-1 rounded hover:bg-destructive/10 text-destructive cursor-pointer"
+                      title="Delete Event"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-[150px,1fr] gap-4">
+                  <Field label="Time">
+                    <input
+                      className="inp"
+                      placeholder="e.g. 04:30 AM"
+                      value={item.time}
+                      onChange={(e) => {
+                        const nextProg = [...(draft.program ?? [])];
+                        nextProg[idx] = { ...nextProg[idx], time: e.target.value };
+                        upd({ program: nextProg });
+                      }}
+                    />
+                  </Field>
+                  <div className="space-y-3">
+                    <Field label="Event Title">
+                      <input
+                        className="inp"
+                        placeholder="e.g. Mangala Arati & Japa Meditation"
+                        value={item.title}
+                        onChange={(e) => {
+                          const nextProg = [...(draft.program ?? [])];
+                          nextProg[idx] = { ...nextProg[idx], title: e.target.value };
+                          upd({ program: nextProg });
+                        }}
+                      />
+                    </Field>
+                    <Field label="Description (Optional)">
+                      <textarea
+                        className="inp min-h-[60px]"
+                        placeholder="e.g. The first arati of the morning followed by congregational chanting."
+                        value={item.description ?? ""}
+                        onChange={(e) => {
+                          const nextProg = [...(draft.program ?? [])];
+                          nextProg[idx] = { ...nextProg[idx], description: e.target.value };
+                          upd({ program: nextProg });
+                        }}
+                      />
+                    </Field>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </Section>
 
       {/* Status & schedule */}
@@ -498,9 +743,66 @@ function FestivalEditor({ draft, setDraft, slugEdited, setSlugEdited, onSave, on
       </Section>
 
       {/* Sevas */}
-      <Section title={`Sevas (${draft.sevas.length})`} action={<button onClick={addSeva} className="text-sm px-3 py-1.5 rounded-lg bg-accent text-white inline-flex items-center gap-1"><Plus className="h-4 w-4" /> Add Seva</button>}>
-        {draft.sevas.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground text-sm border-2 border-dashed rounded-lg">No sevas yet. Add one to let devotees donate.</div>
+      <Section 
+        title={`Sevas (${(draft.sevas || []).length})`} 
+        action={
+          <div className="flex flex-wrap items-center gap-2">
+            {unmergedLinkedSevas.length > 0 && (
+              <button
+                type="button"
+                onClick={mergeLinkedSevas}
+                className="text-xs px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition"
+              >
+                <Sparkles className="h-3.5 w-3.5" /> Quick Merge ({unmergedLinkedSevas.length})
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedGlobalSevaIds([]);
+                setSevaSearchQuery("");
+                setIsImportModalOpen(true);
+              }}
+              className="text-xs px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold inline-flex items-center gap-1.5 cursor-pointer transition"
+            >
+              <Sparkles className="h-3.5 w-3.5" /> Merge / Import Sevas
+            </button>
+            <button 
+              type="button"
+              onClick={addSeva} 
+              className="text-xs px-3 py-1.5 rounded-lg bg-accent hover:bg-accent/90 text-white font-bold inline-flex items-center gap-1 cursor-pointer transition"
+            >
+              <Plus className="h-4 w-4" /> Add Seva
+            </button>
+          </div>
+        }
+      >
+        {/* Unmerged Linked Sevas Alert Banner */}
+        {unmergedLinkedSevas.length > 0 && (
+          <div className="mb-4 bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-xs">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2 text-amber-900 font-bold text-xs sm:text-sm">
+                <Sparkles className="h-4 w-4 text-amber-600 animate-pulse" />
+                <span>Found {unmergedLinkedSevas.length} added global sevas for this festival!</span>
+              </div>
+              <p className="text-xs text-amber-800/90 font-sans">
+                {unmergedLinkedSevas.map(s => s.title).join(", ")}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={mergeLinkedSevas}
+              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs rounded-xl shadow-xs transition cursor-pointer shrink-0 uppercase tracking-wider"
+            >
+              Merge All ({unmergedLinkedSevas.length})
+            </button>
+          </div>
+        )}
+
+        {!(draft.sevas && draft.sevas.length > 0) ? (
+          <div className="text-center py-8 text-muted-foreground text-sm border-2 border-dashed rounded-lg">
+            No sevas yet. Add one or click "Merge / Import Sevas" to merge existing sevas.
+          </div>
         ) : (
           <div className="space-y-4">
             {draft.sevas.map((s, i) => (
@@ -510,6 +812,121 @@ function FestivalEditor({ draft, setDraft, slugEdited, setSlugEdited, onSave, on
           </div>
         )}
       </Section>
+
+      {/* Import / Merge Sevas Modal */}
+      <AdminModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        title="Merge & Import Existing Sevas"
+        subtitle={`Select global sevas from your library to merge into ${draft.title || "this festival"}`}
+        icon={Sparkles}
+        maxWidth="2xl"
+      >
+        <div className="space-y-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search available sevas..."
+              value={sevaSearchQuery}
+              onChange={(e) => setSevaSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-3 py-2.5 border rounded-xl bg-white text-xs sm:text-sm font-sans focus:ring-2 focus:ring-primary/20 focus:outline-none"
+            />
+          </div>
+
+          <div className="max-h-[350px] overflow-y-auto space-y-2 pr-1 scrollbar-thin">
+            {(globalSevas || [])
+              .filter((gs) => {
+                const q = sevaSearchQuery.toLowerCase().trim();
+                if (!q) return true;
+                return (
+                  gs.title.toLowerCase().includes(q) ||
+                  gs.description?.toLowerCase().includes(q) ||
+                  gs.category?.toLowerCase().includes(q)
+                );
+              })
+              .map((gs) => {
+                const isSelected = selectedGlobalSevaIds.includes(gs.id);
+                const isAlreadyMerged = draft.sevas.some(
+                  (s) => s.id === gs.id || s.title.toLowerCase().trim() === gs.title.toLowerCase().trim()
+                );
+
+                return (
+                  <div
+                    key={gs.id}
+                    onClick={() => {
+                      if (isAlreadyMerged) return;
+                      setSelectedGlobalSevaIds((prev) =>
+                        prev.includes(gs.id) ? prev.filter((id) => id !== gs.id) : [...prev, gs.id]
+                      );
+                    }}
+                    className={`p-3 rounded-2xl border transition flex items-center justify-between gap-3 ${
+                      isAlreadyMerged
+                        ? "bg-slate-100/70 border-slate-200 opacity-60 cursor-not-allowed"
+                        : isSelected
+                        ? "bg-purple-50 border-purple-400 shadow-2xs cursor-pointer"
+                        : "bg-white border-slate-200 hover:border-purple-300 cursor-pointer"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={isSelected || isAlreadyMerged}
+                        disabled={isAlreadyMerged}
+                        onChange={() => {}}
+                        className="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+                      />
+                      <div className="h-10 w-10 rounded-xl bg-slate-100 overflow-hidden shrink-0">
+                        {gs.thumbnail ? (
+                          <img src={gs.thumbnail} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <Sparkles className="h-5 w-5 text-slate-400 m-auto mt-2.5" />
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-xs sm:text-sm text-slate-900">{gs.title}</h4>
+                        <p className="text-[11px] text-slate-500 line-clamp-1">
+                          {gs.prices && gs.prices.length > 0
+                            ? `₹${gs.prices[0].amount} (${gs.prices[0].label})`
+                            : "No price set"}
+                          {gs.category ? ` • ${gs.category}` : ""}
+                        </p>
+                      </div>
+                    </div>
+
+                    {isAlreadyMerged ? (
+                      <span className="text-[10px] uppercase font-bold text-slate-500 px-2.5 py-1 rounded-full bg-slate-200">
+                        Already Merged
+                      </span>
+                    ) : (
+                      <span className={`text-xs font-bold px-3 py-1 rounded-full border ${isSelected ? "bg-purple-600 text-white border-purple-600" : "bg-slate-100 text-slate-700 border-slate-200"}`}>
+                        {isSelected ? "Selected" : "Select"}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+          </div>
+
+          <div className="pt-4 border-t flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={mergeSelectedSevas}
+              disabled={selectedGlobalSevaIds.length === 0}
+              className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs sm:text-sm shadow-md transition cursor-pointer disabled:opacity-50"
+            >
+              Merge Selected Sevas ({selectedGlobalSevaIds.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsImportModalOpen(false)}
+              className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </AdminModal>
     </div>
   );
 }

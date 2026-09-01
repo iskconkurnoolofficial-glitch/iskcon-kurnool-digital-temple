@@ -53,7 +53,6 @@ function FestivalsPage() {
         eyebrow="Sacred Celebrations" 
         title="Upcoming Festivals" 
         subtitle="Join us in celebrating the divine pastimes of the Lord and seek spiritual blessings through seva offerings." 
-        pageKey="festivals"
       />
 
       <section className="py-16 md:py-24 bg-gradient-to-b from-surface to-background relative overflow-hidden">
@@ -154,7 +153,7 @@ function FestivalsPage() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="mt-auto pt-2 flex flex-wrap gap-3">
+                    <div className="mt-auto pt-2 flex flex-wrap items-center gap-3">
                       <Link
                         to="/festival/$slug"
                         params={{ slug: f.slug }}

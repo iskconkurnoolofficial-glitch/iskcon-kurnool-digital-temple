@@ -263,55 +263,70 @@ function HarinamaPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Weekly Day */}
-            <div className="bg-white border border-slate-100/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.01)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden flex items-center">
-              <div className="absolute top-0 left-0 bottom-0 w-1 bg-orange-500 transition-all duration-300 group-hover:w-1.5" />
-              <div className="flex items-center gap-4 pl-2">
-                <div className="p-3.5 rounded-xl bg-orange-50 text-orange-600 border border-orange-100 shrink-0 transition-transform duration-300 group-hover:scale-105">
-                  <Calendar className="h-5.5 w-5.5" />
-                </div>
-                <div>
-                  <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Weekly Day</h4>
-                  <p className="font-display font-extrabold text-slate-800 text-lg mt-0.5 leading-tight">
-                    {harinama.scheduleDay || "Every Saturday"}
-                  </p>
+          {/* Details Card Grid or Details Coming Soon Banner */}
+          {!(harinama.scheduleDay?.trim() || harinama.scheduleTime?.trim() || harinama.meetingPoint?.trim()) ? (
+            <div className="bg-gradient-to-br from-amber-500/10 via-amber-400/5 to-transparent border-2 border-amber-300/60 rounded-3xl p-8 sm:p-12 text-center space-y-4 max-w-2xl mx-auto shadow-sm">
+              <div className="h-16 w-16 rounded-2xl bg-amber-500/20 text-amber-800 mx-auto grid place-items-center border border-amber-300/40">
+                <Clock className="h-8 w-8 animate-pulse text-amber-700" />
+              </div>
+              <h3 className="font-display font-black text-2xl sm:text-3xl text-primary">
+                Details Coming Soon!
+              </h3>
+              <p className="text-slate-600 text-xs sm:text-sm max-w-md mx-auto leading-relaxed font-sans">
+                The upcoming street chanting schedule, timing, and meeting point details will be posted shortly by our temple administration.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Weekly Day */}
+              <div className="bg-white border border-slate-100/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.01)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden flex items-center">
+                <div className="absolute top-0 left-0 bottom-0 w-1 bg-orange-500 transition-all duration-300 group-hover:w-1.5" />
+                <div className="flex items-center gap-4 pl-2">
+                  <div className="p-3.5 rounded-xl bg-orange-50 text-orange-600 border border-orange-100 shrink-0 transition-transform duration-300 group-hover:scale-105">
+                    <Calendar className="h-5.5 w-5.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Weekly Day</h4>
+                    <p className={`font-display font-extrabold text-slate-800 text-lg mt-0.5 leading-tight ${!harinama.scheduleDay?.trim() ? "text-amber-800 text-sm italic" : ""}`}>
+                      {harinama.scheduleDay?.trim() || "Details Coming Soon!"}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Starting Time */}
-            <div className="bg-white border border-slate-100/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.01)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden flex items-center">
-              <div className="absolute top-0 left-0 bottom-0 w-1 bg-amber-500 transition-all duration-300 group-hover:w-1.5" />
-              <div className="flex items-center gap-4 pl-2">
-                <div className="p-3.5 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 shrink-0 transition-transform duration-300 group-hover:scale-105">
-                  <Clock className="h-5.5 w-5.5" />
-                </div>
-                <div>
-                  <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Starting Time</h4>
-                  <p className="font-display font-extrabold text-slate-800 text-lg mt-0.5 leading-tight">
-                    {harinama.scheduleTime || "5:00 PM onwards"}
-                  </p>
+              {/* Starting Time */}
+              <div className="bg-white border border-slate-100/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.01)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden flex items-center">
+                <div className="absolute top-0 left-0 bottom-0 w-1 bg-amber-500 transition-all duration-300 group-hover:w-1.5" />
+                <div className="flex items-center gap-4 pl-2">
+                  <div className="p-3.5 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 shrink-0 transition-transform duration-300 group-hover:scale-105">
+                    <Clock className="h-5.5 w-5.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Starting Time</h4>
+                    <p className={`font-display font-extrabold text-slate-800 text-lg mt-0.5 leading-tight ${!harinama.scheduleTime?.trim() ? "text-amber-800 text-sm italic" : ""}`}>
+                      {harinama.scheduleTime?.trim() || "Details Coming Soon!"}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Starting Point */}
-            <div className="bg-white border border-slate-100/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.01)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden flex items-center">
-              <div className="absolute top-0 left-0 bottom-0 w-1 bg-indigo-500 transition-all duration-300 group-hover:w-1.5" />
-              <div className="flex items-center gap-4 pl-2">
-                <div className="p-3.5 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 shrink-0 transition-transform duration-300 group-hover:scale-105">
-                  <MapPin className="h-5.5 w-5.5" />
-                </div>
-                <div>
-                  <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Starting Point</h4>
-                  <p className="font-sans font-semibold text-slate-700 text-sm mt-0.5 leading-snug">
-                    {harinama.meetingPoint || "ISKCON Kurnool Temple, Sri Sri Puri Jagannath Temple"}
-                  </p>
+              {/* Starting Point */}
+              <div className="bg-white border border-slate-100/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.01)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden flex items-center">
+                <div className="absolute top-0 left-0 bottom-0 w-1 bg-indigo-500 transition-all duration-300 group-hover:w-1.5" />
+                <div className="flex items-center gap-4 pl-2">
+                  <div className="p-3.5 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 shrink-0 transition-transform duration-300 group-hover:scale-105">
+                    <MapPin className="h-5.5 w-5.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Starting Point</h4>
+                    <p className={`font-sans font-semibold text-slate-700 text-sm mt-0.5 leading-snug ${!harinama.meetingPoint?.trim() ? "text-amber-800 text-sm italic" : ""}`}>
+                      {harinama.meetingPoint?.trim() || "Details Coming Soon!"}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 

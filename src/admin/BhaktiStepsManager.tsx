@@ -431,23 +431,123 @@ export default function BhaktiStepsManager() {
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700">Registration Contact Phone Numbers (Comma-separated)</label>
-              <input
-                type="text"
-                value={(configState.contactPhones || []).join(", ")}
-                onChange={(e) =>
-                  setConfigState({
-                    ...configState,
-                    contactPhones: e.target.value
-                      .split(",")
-                      .map((p) => p.trim())
-                      .filter(Boolean),
-                  })
-                }
-                placeholder="9989147723, 9000002745, 9505377520"
-                className="w-full px-3 py-2 border rounded-xl text-xs bg-surface/30 font-mono outline-none"
-              />
+            {/* Registration Contacts & Helplines (Separate Name & Phone Fields + Add Button) */}
+            <div className="space-y-3 p-4 bg-amber-50/40 border border-amber-200/80 rounded-2xl">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <h4 className="text-xs font-black text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
+                    <Phone className="h-3.5 w-3.5 text-amber-800" />
+                    Registration Contacts &amp; Helplines
+                  </h4>
+                  <p className="text-[11px] text-slate-600 mt-0.5">
+                    Add devotee coordinator names and phone numbers. If only 1 contact is added, it will automatically center on the public page!
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = configState.contactPhones || [];
+                    setConfigState({
+                      ...configState,
+                      contactPhones: [...current, ": "],
+                    });
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-sm transition cursor-pointer shrink-0"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Add Contact</span>
+                </button>
+              </div>
+
+              {/* List of Contact Rows */}
+              <div className="space-y-2 pt-1">
+                {((configState.contactPhones && configState.contactPhones.length > 0)
+                  ? configState.contactPhones
+                  : ["9989147723"]
+                ).map((cStr, idx) => {
+                  const itemStr = (cStr || "").trim();
+                  let cName = "";
+                  let cPhone = itemStr;
+                  if (itemStr.includes(":")) {
+                    const parts = itemStr.split(":");
+                    cName = parts[0].trim();
+                    cPhone = parts.slice(1).join(":").trim();
+                  }
+
+                  return (
+                    <div
+                      key={idx}
+                      className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-3 bg-white border border-amber-200 rounded-xl shadow-xs"
+                    >
+                      {/* Coordinator Name */}
+                      <div className="flex-1 space-y-1">
+                        <label className="text-[10px] font-extrabold uppercase text-amber-900 block">
+                          Devotee Name
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Radhakanta Dasa"
+                          value={cName}
+                          onChange={(e) => {
+                            const newName = e.target.value;
+                            const updatedStr = newName.trim()
+                              ? `${newName.trim()}: ${cPhone.trim()}`
+                              : cPhone.trim();
+                            const newList = [
+                              ...(configState.contactPhones || ["9989147723"]),
+                            ];
+                            newList[idx] = updatedStr;
+                            setConfigState({ ...configState, contactPhones: newList });
+                          }}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white font-semibold outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-500"
+                        />
+                      </div>
+
+                      {/* Phone Number */}
+                      <div className="flex-1 space-y-1">
+                        <label className="text-[10px] font-extrabold uppercase text-amber-900 block">
+                          Phone Number
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. 9989147723"
+                          value={cPhone}
+                          onChange={(e) => {
+                            const newPhone = e.target.value;
+                            const updatedStr = cName.trim()
+                              ? `${cName.trim()}: ${newPhone.trim()}`
+                              : newPhone.trim();
+                            const newList = [
+                              ...(configState.contactPhones || ["9989147723"]),
+                            ];
+                            newList[idx] = updatedStr;
+                            setConfigState({ ...configState, contactPhones: newList });
+                          }}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white font-mono outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-500"
+                        />
+                      </div>
+
+                      {/* Remove Button */}
+                      <div className="sm:self-end pt-1 sm:pt-0">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newList = (
+                              configState.contactPhones || ["9989147723"]
+                            ).filter((_, i) => i !== idx);
+                            setConfigState({ ...configState, contactPhones: newList });
+                          }}
+                          className="p-2 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 border border-transparent hover:border-red-200 transition cursor-pointer"
+                          title="Remove Contact"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

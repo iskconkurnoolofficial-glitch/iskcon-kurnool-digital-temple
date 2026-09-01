@@ -180,7 +180,7 @@ export default function HeroCarousel() {
                   loading={idx === 0 ? "eager" : "lazy"}
                   decoding="async"
                   // @ts-ignore
-                  fetchpriority={idx === 0 ? "high" : "low"}
+                  fetchPriority={idx === 0 ? "high" : "low"}
                 />
               </picture>
             )}

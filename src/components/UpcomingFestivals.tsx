@@ -136,7 +136,7 @@ function FestivalCard({ f }: { f: Festival }) {
       <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
         <div className="space-y-2.5">
           {/* Formatted Date Bar */}
-          <div className="flex items-center justify-between text-xs font-semibold text-amber-800 dark:text-amber-400">
+          <div className="flex items-center justify-between text-xs font-semibold text-amber-800 dark:text-amber-400 gap-2 flex-wrap">
             <span className="inline-flex items-center gap-1.5">
               <Calendar className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
               {formatted || "Festival Date TBA"}

@@ -144,7 +144,7 @@ function SettingsTab({ harinama, update }: { harinama: HarinamaData; update: (p:
                   className={inputClass} 
                   value={harinama.scheduleDay || ""} 
                   onChange={(e) => update({ scheduleDay: e.target.value })} 
-                  placeholder="Every Saturday" 
+                  placeholder="e.g. Every Saturday" 
                 />
               </div>
               <div>
@@ -153,7 +153,7 @@ function SettingsTab({ harinama, update }: { harinama: HarinamaData; update: (p:
                   className={inputClass} 
                   value={harinama.scheduleTime || ""} 
                   onChange={(e) => update({ scheduleTime: e.target.value })} 
-                  placeholder="5:00 PM onwards" 
+                  placeholder="e.g. 5:00 PM onwards" 
                 />
               </div>
             </div>
@@ -164,8 +164,11 @@ function SettingsTab({ harinama, update }: { harinama: HarinamaData; update: (p:
                 rows={3}
                 value={harinama.meetingPoint || ""} 
                 onChange={(e) => update({ meetingPoint: e.target.value })} 
-                placeholder="ISKCON Kurnool Temple, Sri Sri Puri Jagannath Temple"
+                placeholder="e.g. ISKCON Kurnool Temple, Sri Sri Puri Jagannath Temple"
               />
+              <p className="text-[11px] text-amber-800 font-semibold mt-1">
+                💡 Leave any field empty to display <strong>“Details Coming Soon!”</strong> on the public website.
+              </p>
             </div>
           </div>
         </div>

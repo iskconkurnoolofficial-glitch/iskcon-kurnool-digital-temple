@@ -9,11 +9,15 @@ export default function LiveClassBanner() {
   const liveClass = useLiveClass();
   const { settings, sunday, gitaCourse, liveProgrammes } = useAdmin();
   const [tick, setTick] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const timer = setInterval(() => setTick((t) => t + 1), 10000);
     return () => clearInterval(timer);
   }, []);
+
+  if (!mounted) return null;
 
   // 1. Check if Live Programme is active from Live Programmes system
   const activeLiveProgramme = (() => {

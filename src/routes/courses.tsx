@@ -259,7 +259,13 @@ function ClassCard({ c, isLive = false, isPast = false }: { c: DailyClass; isLiv
                   <span className="text-[10px] uppercase font-bold text-accent tracking-wider mb-1 flex items-center gap-1.5">
                     <Clock className="h-3.5 w-3.5 text-accent shrink-0" /> Time (IST)
                   </span>
-                  <span className="font-bold text-foreground leading-tight text-[13px]">{fmtTime(c.startAt)}</span>
+                  <span className="font-bold text-foreground leading-tight text-[13px]">
+                    {c.startTimeStr && c.endTimeStr 
+                      ? `${c.startTimeStr} – ${c.endTimeStr}` 
+                      : c.startTimeStr 
+                        ? c.startTimeStr 
+                        : fmtTime(c.startAt)}
+                  </span>
                 </div>
               </div>
 

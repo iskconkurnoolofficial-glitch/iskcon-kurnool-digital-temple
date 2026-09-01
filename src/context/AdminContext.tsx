@@ -46,7 +46,20 @@ export type Seva = {
   order: number;
   active: boolean;
   slug?: string;
+  festivalId?: string;
+  festivalIds?: string[];
 };
+
+export function getSevaFestivalIds(s?: Partial<Seva> | null): string[] {
+  if (!s) return [];
+  if (Array.isArray(s.festivalIds) && s.festivalIds.length > 0) {
+    return s.festivalIds.filter(Boolean);
+  }
+  if (s.festivalId && s.festivalId.trim()) {
+    return [s.festivalId.trim()];
+  }
+  return [];
+}
 
 export function getSevaCategories(s?: Partial<Seva> | null): string[] {
   if (!s) return ["Regular Sevas"];
@@ -105,6 +118,10 @@ export type Festival = {
   active?: boolean;
   schedule?: string;
   location?: string;
+  locationAddress?: string;
+  locationLink?: string;
+  program?: { time: string; title: string; description?: string }[];
+  carouselImages?: string[];
 };
 
 /** Generate a URL-safe slug from a title */
@@ -140,6 +157,10 @@ export function normalizeFestival(f: any): Festival {
     active: f.active,
     schedule: f.schedule ?? "",
     location: f.location ?? "",
+    locationAddress: f.locationAddress ?? "",
+    locationLink: f.locationLink ?? "",
+    program: Array.isArray(f.program) ? f.program : [],
+    carouselImages: Array.isArray(f.carouselImages) ? f.carouselImages : [],
   };
 }
 

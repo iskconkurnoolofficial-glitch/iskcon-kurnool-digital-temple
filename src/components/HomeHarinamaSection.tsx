@@ -187,7 +187,9 @@ export default function HomeHarinamaSection() {
                     Weekly Procession
                   </span>
                   <h3 className="font-display font-extrabold text-lg sm:text-xl text-slate-900">
-                    {h?.scheduleDay || "Every Saturday"} • {h?.scheduleTime || "5:00 PM onwards"}
+                    {h?.scheduleDay?.trim() || h?.scheduleTime?.trim()
+                      ? `${h.scheduleDay?.trim() || ""}${h?.scheduleDay?.trim() && h?.scheduleTime?.trim() ? " • " : ""}${h.scheduleTime?.trim() || ""}`
+                      : "Details Coming Soon!"}
                   </h3>
                 </div>
               </div>
@@ -197,7 +199,7 @@ export default function HomeHarinamaSection() {
                   <MapPin className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
                   <span>
                     <strong className="text-slate-900 block font-bold text-xs">Assembly Point:</strong>
-                    {h?.meetingPoint || "Sri Sri Puri Jagannath Temple, ISKCON Kurnool"}
+                    {h?.meetingPoint?.trim() || "Details Coming Soon!"}
                   </span>
                 </div>
 

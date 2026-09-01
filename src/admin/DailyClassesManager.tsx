@@ -11,7 +11,18 @@ import { toast } from "sonner";
 const LANGUAGES = ["Telugu", "English", "Hindi", "Sanskrit", "Tamil", "Kannada"];
 
 function emptyDraft(): Partial<DailyClass> {
-  return { title: "", description: "", durationMin: 60, language: "Telugu", joinUrl: "", active: true, everyday: false };
+  return { 
+    title: "", 
+    description: "", 
+    durationMin: 60, 
+    language: "Telugu", 
+    joinUrl: "", 
+    active: true, 
+    everyday: true,
+    startTimeStr: "07:30 AM",
+    endTimeStr: "08:30 AM",
+    startAt: new Date().toISOString()
+  };
 }
 
 function fmt(dt: string) {
@@ -56,25 +67,43 @@ export default function DailyClassesManager() {
   };
 
   const save = () => {
-    if (!draft.title?.trim() || !draft.startAt) { 
-      toast.error("Title and Start time are required"); 
+    if (!draft.title?.trim()) { 
+      toast.error("Class title is required"); 
       return; 
     }
+    
+    let startAtISO = draft.startAt;
+    if (!startAtISO) {
+      startAtISO = new Date().toISOString();
+    }
+
+    const payload = {
+      ...draft,
+      title: draft.title.trim(),
+      startAt: startAtISO,
+      startTimeStr: draft.startTimeStr?.trim() || "07:30 AM",
+      endTimeStr: draft.endTimeStr?.trim() || "08:30 AM",
+      durationMin: Number(draft.durationMin) || 60,
+      everyday: draft.everyday ?? true,
+    };
+
     if (editingId) {
-      setClasses(classes.map((c) => c.id === editingId ? { ...c, ...draft, durationMin: Number(draft.durationMin) || 60, everyday: !!draft.everyday } as DailyClass : c));
+      setClasses(classes.map((c) => c.id === editingId ? { ...c, ...payload } as DailyClass : c));
       toast.success("Daily class updated successfully!");
     } else {
       const item: DailyClass = {
         id: Date.now().toString(),
         thumbnail: draft.thumbnail || "",
-        title: draft.title!,
+        title: payload.title,
         description: draft.description || "",
-        startAt: draft.startAt!,
-        durationMin: Number(draft.durationMin) || 60,
+        startAt: payload.startAt,
+        startTimeStr: payload.startTimeStr,
+        endTimeStr: payload.endTimeStr,
+        durationMin: payload.durationMin,
         language: draft.language || "Telugu",
         joinUrl: draft.joinUrl || "",
         active: draft.active ?? true,
-        everyday: !!draft.everyday,
+        everyday: payload.everyday,
       };
       setClasses([item, ...classes]);
       toast.success("✨ New daily class scheduled successfully!");
@@ -220,8 +249,17 @@ export default function DailyClassesManager() {
                 </div>
 
                 <div className="p-5 space-y-2">
-                  <div className="text-[11px] font-bold text-accent uppercase tracking-wider flex items-center gap-1">
-                    <Calendar className="h-3 w-3" /> {fmt(c.startAt)} · {c.durationMin}m
+                  <div className="text-[11px] font-bold text-amber-800 uppercase tracking-wider flex items-center gap-1 flex-wrap">
+                    <Clock className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                    <span>{c.everyday ? "Daily (Everyday)" : "Single Event"}</span>
+                    <span>·</span>
+                    <span className="text-slate-900 font-extrabold">
+                      {c.startTimeStr && c.endTimeStr 
+                        ? `${c.startTimeStr} – ${c.endTimeStr}` 
+                        : c.startTimeStr 
+                          ? c.startTimeStr 
+                          : fmt(c.startAt)}
+                    </span>
                   </div>
                   <h4 className="font-display font-bold text-base text-foreground line-clamp-1">
                     {c.title}
@@ -329,31 +367,101 @@ export default function DailyClassesManager() {
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold font-sans uppercase tracking-wider text-foreground mb-1">
-                Start Time (IST) <span className="text-destructive">*</span>
-              </label>
-              <input
-                type="datetime-local"
-                className="w-full px-3.5 py-2.5 border rounded-xl bg-white text-xs font-sans focus:ring-2 focus:ring-primary/20 focus:outline-none"
-                value={draft.startAt ? draft.startAt.slice(0, 16) : ""}
-                onChange={(e) => setDraft({ ...draft, startAt: e.target.value ? new Date(e.target.value).toISOString() : "" })}
-                required
-              />
+          {/* Schedule Frequency / Type Selector */}
+          <div>
+            <label className="block text-xs font-bold font-sans uppercase tracking-wider text-foreground mb-2">
+              Class Frequency / Schedule Type
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setDraft({ ...draft, everyday: true })}
+                className={`p-3 rounded-2xl border text-xs font-bold font-sans flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  draft.everyday ?? true
+                    ? "bg-amber-500 text-white border-amber-600 shadow-sm"
+                    : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+                }`}
+              >
+                <Radio className="h-4 w-4" />
+                <span>Daily Class (Everyday)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDraft({ ...draft, everyday: false })}
+                className={`p-3 rounded-2xl border text-xs font-bold font-sans flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  !(draft.everyday ?? true)
+                    ? "bg-primary text-white border-primary shadow-sm"
+                    : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+                }`}
+              >
+                <Calendar className="h-4 w-4" />
+                <span>Single Event Date</span>
+              </button>
             </div>
-            <div>
-              <label className="block text-xs font-bold font-sans uppercase tracking-wider text-foreground mb-1">
-                Duration (Minutes)
-              </label>
-              <input
-                type="number"
-                min={15}
-                max={240}
-                className="w-full px-3.5 py-2.5 border rounded-xl bg-white text-xs font-sans focus:ring-2 focus:ring-primary/20 focus:outline-none"
-                value={draft.durationMin || 60}
-                onChange={(e) => setDraft({ ...draft, durationMin: Number(e.target.value) })}
-              />
+          </div>
+
+          {/* Timings Block */}
+          <div className="bg-amber-500/10 p-4 rounded-2xl border border-amber-300/60 space-y-3 font-sans">
+            <div className="text-xs font-extrabold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+              <Clock className="h-4 w-4 text-amber-600" />
+              <span>Class Timings (IST)</span>
+            </div>
+
+            {!(draft.everyday ?? true) && (
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  Specific Event Date &amp; Time <span className="text-destructive">*</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  className="w-full px-3.5 py-2.5 border rounded-xl bg-white text-xs font-sans focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                  value={draft.startAt ? draft.startAt.slice(0, 16) : ""}
+                  onChange={(e) => setDraft({ ...draft, startAt: e.target.value ? new Date(e.target.value).toISOString() : "" })}
+                />
+              </div>
+            )}
+
+            <div className="grid sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  Start Time (IST) <span className="text-destructive">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-3.5 py-2.5 border rounded-xl bg-white text-xs font-sans focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                  value={draft.startTimeStr || ""}
+                  onChange={(e) => setDraft({ ...draft, startTimeStr: e.target.value })}
+                  placeholder="e.g. 07:30 AM"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  End Time (IST)
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-3.5 py-2.5 border rounded-xl bg-white text-xs font-sans focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                  value={draft.endTimeStr || ""}
+                  onChange={(e) => setDraft({ ...draft, endTimeStr: e.target.value })}
+                  placeholder="e.g. 08:30 AM"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  Duration (Minutes)
+                </label>
+                <input
+                  type="number"
+                  min={15}
+                  max={240}
+                  className="w-full px-3.5 py-2.5 border rounded-xl bg-white text-xs font-sans focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                  value={draft.durationMin || 60}
+                  onChange={(e) => setDraft({ ...draft, durationMin: Number(e.target.value) })}
+                />
+              </div>
             </div>
           </div>
 
@@ -383,17 +491,7 @@ export default function DailyClassesManager() {
             />
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
-            <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-foreground">
-              <input
-                type="checkbox"
-                checked={draft.everyday ?? false}
-                onChange={(e) => setDraft({ ...draft, everyday: e.target.checked })}
-                className="rounded border-slate-300 text-primary focus:ring-primary h-4 w-4"
-              />
-              <span>Repeats Everyday</span>
-            </label>
-
+          <div className="flex items-center justify-between gap-4 pt-2">
             <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-foreground">
               <input
                 type="checkbox"
@@ -401,7 +499,7 @@ export default function DailyClassesManager() {
                 onChange={(e) => setDraft({ ...draft, active: e.target.checked })}
                 className="rounded border-slate-300 text-primary focus:ring-primary h-4 w-4"
               />
-              <span>Active on Website</span>
+              <span>Active &amp; Visible on Website</span>
             </label>
           </div>
 

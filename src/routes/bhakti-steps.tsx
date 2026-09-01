@@ -170,7 +170,21 @@ export default function BhaktiStepsPage() {
     setSubmittedRegId(null);
   };
 
-  const contactPhones = bhaktiSteps.contactPhones?.length > 0 ? bhaktiSteps.contactPhones : ["9989147723", "9000002745", "9505377520"];
+  const rawContacts = (bhaktiSteps && Array.isArray(bhaktiSteps.contactPhones) && bhaktiSteps.contactPhones.length > 0) 
+    ? bhaktiSteps.contactPhones 
+    : ["9989147723", "9000002745", "9505377520"];
+
+  const parseContactItem = (item: string) => {
+    const str = (item || "").trim();
+    if (str.includes(":")) {
+      const parts = str.split(":");
+      return { name: parts[0].trim(), phone: parts.slice(1).join(":").trim() };
+    }
+    return { name: "Devotee Coordinator", phone: str };
+  };
+
+  const parsedContacts = rawContacts.map(parseContactItem);
+  const contactPhones = parsedContacts.map((c) => c.phone);
 
   return (
     <SiteLayout>
@@ -253,21 +267,30 @@ export default function BhaktiStepsPage() {
       {/* ========================================================================= */}
       {/* 2. ABOUT BHAKTI STEPS */}
       {/* ========================================================================= */}
-      <section className="py-16 sm:py-20 bg-[#fdf6ec] border-b border-amber-200/60 relative">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+      <section className="py-16 sm:py-20 bg-gradient-to-br from-[#fffbeb] via-[#fef08a] to-[#fde047]/40 border-b border-amber-300 relative overflow-hidden">
+        {/* Luminous Honey Mesh - Multi-point Ambient Glows */}
+        <div className="absolute -top-32 -left-32 w-[32rem] h-[32rem] bg-amber-300/50 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[36rem] h-[36rem] bg-yellow-200/60 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -right-32 w-[32rem] h-[32rem] bg-orange-300/40 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-10 right-1/4 w-80 h-80 bg-amber-400/25 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Subtle dot pattern accent */}
+        <div className="absolute inset-0 bg-[radial-gradient(#b45309_1px,transparent_1px)] [background-size:28px_28px] opacity-10 pointer-events-none" />
+
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             {/* Left Content */}
             <div className="lg:col-span-7 space-y-6 text-left">
-              <span className="inline-flex items-center gap-2 text-accent font-bold uppercase text-xs tracking-widest">
-                <Compass className="h-4 w-4" />
+              <span className="inline-flex items-center gap-2 text-amber-950 font-extrabold uppercase text-xs tracking-widest bg-amber-300/50 px-3 py-1.5 rounded-full border border-amber-400/60 shadow-xs">
+                <Compass className="h-4 w-4 text-amber-800" />
                 Systematic Spiritual Progression
               </span>
 
-              <h2 className="font-display font-extrabold text-3xl sm:text-4xl md:text-5xl text-primary tracking-tight leading-tight">
+              <h2 className="font-display font-black text-3xl sm:text-4xl md:text-5xl text-amber-950 tracking-tight leading-tight drop-shadow-xs">
                 {bhaktiSteps.aboutTitle || "About Bhakti Steps"}
               </h2>
 
-              <div className="space-y-4 text-slate-700 text-sm sm:text-base leading-relaxed whitespace-pre-line font-sans">
+              <div className="space-y-4 text-amber-950/90 text-sm sm:text-base leading-relaxed whitespace-pre-line font-sans font-medium">
                 {bhaktiSteps.aboutDescription ||
                   `Bhakti Steps provides a systematic path for devotees to grow step-by-step in Krishna Consciousness. Each level introduces progressive spiritual practices, devotional songs, regulative principles, courses, and sacred books.
 
@@ -276,25 +299,25 @@ The goal is not simply to complete levels, but to recognize one's spiritual prog
 
               {/* Key 3 Pillars */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                <div className="p-4 rounded-2xl bg-white border border-amber-200 shadow-sm space-y-1">
-                  <div className="text-accent font-extrabold text-xs uppercase tracking-wider flex items-center gap-1.5">
+                <div className="p-4 rounded-2xl bg-white/85 backdrop-blur-md border border-amber-300/80 shadow-md shadow-amber-900/5 space-y-1 hover:bg-white hover:border-amber-400 transition-all">
+                  <div className="text-amber-900 font-extrabold text-xs uppercase tracking-wider flex items-center gap-1.5">
                     <span>✨</span> Recognize
                   </div>
-                  <p className="text-xs text-slate-600">Acknowledge your sincere spiritual efforts and milestones.</p>
+                  <p className="text-xs text-amber-950/80 font-medium">Acknowledge your sincere spiritual efforts and milestones.</p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-white border border-amber-200 shadow-sm space-y-1">
-                  <div className="text-amber-600 font-extrabold text-xs uppercase tracking-wider flex items-center gap-1.5">
+                <div className="p-4 rounded-2xl bg-white/85 backdrop-blur-md border border-amber-300/80 shadow-md shadow-amber-900/5 space-y-1 hover:bg-white hover:border-amber-400 transition-all">
+                  <div className="text-amber-900 font-extrabold text-xs uppercase tracking-wider flex items-center gap-1.5">
                     <span>🔥</span> Revitalize
                   </div>
-                  <p className="text-xs text-slate-600">Re-energize your daily Japa meditation and deity altar worship.</p>
+                  <p className="text-xs text-amber-950/80 font-medium">Re-energize your daily Japa meditation and deity altar worship.</p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-white border border-amber-200 shadow-sm space-y-1">
-                  <div className="text-emerald-700 font-extrabold text-xs uppercase tracking-wider flex items-center gap-1.5">
+                <div className="p-4 rounded-2xl bg-white/85 backdrop-blur-md border border-amber-300/80 shadow-md shadow-amber-900/5 space-y-1 hover:bg-white hover:border-amber-400 transition-all">
+                  <div className="text-emerald-800 font-extrabold text-xs uppercase tracking-wider flex items-center gap-1.5">
                     <span>🌱</span> Progress
                   </div>
-                  <p className="text-xs text-slate-600">Advance toward authorized Harinama Diksha initiation.</p>
+                  <p className="text-xs text-amber-950/80 font-medium">Advance toward authorized Harinama Diksha initiation.</p>
                 </div>
               </div>
             </div>
@@ -664,6 +687,164 @@ The goal is not simply to complete levels, but to recognize one's spiritual prog
       </section>
 
       {/* ========================================================================= */}
+      {/* AUTHORIZED SOURCES & FURTHER LEARNING */}
+      {/* ========================================================================= */}
+      <section className="py-16 sm:py-24 bg-gradient-to-br from-[#2a0b4e] via-[#3b1266] to-[#1a0533] text-white border-y border-amber-400/30 relative overflow-hidden">
+        {/* Soft glowing ambient light orbs */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(#f5c518_1px,transparent_1px)] [background-size:32px_32px] opacity-10 pointer-events-none" />
+
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 space-y-12">
+          {/* Header */}
+          <div className="text-center max-w-3xl mx-auto space-y-4">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-400/15 border border-amber-300/30 text-amber-300 font-extrabold text-xs tracking-widest uppercase shadow-sm">
+              <BookOpen className="h-3.5 w-3.5" />
+              Authentic Vaisnava Curriculum
+            </span>
+
+            <h2 className="font-display font-black text-3xl sm:text-4xl md:text-5xl text-white tracking-tight leading-tight">
+              Authorized Sources &amp; Further Learning
+            </h2>
+
+            <p className="text-white/80 text-sm sm:text-base leading-relaxed font-sans">
+              All Bhakti Steps materials, recommended reading, and study courses are grounded in the authentic teachings of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada and standardized ISKCON Ministry of Education guidelines.
+            </p>
+          </div>
+
+          {/* 4 Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Card 1: Srila Prabhupada's Books */}
+            <div className="p-6 rounded-3xl bg-white/10 backdrop-blur-md border border-white/15 hover:border-amber-400/60 transition-all hover:-translate-y-1 group space-y-4">
+              <div className="h-12 w-12 rounded-2xl bg-amber-400/20 border border-amber-300/30 text-amber-300 grid place-items-center group-hover:scale-110 transition-transform">
+                <BookOpen className="h-6 w-6" />
+              </div>
+              <h3 className="font-display font-extrabold text-xl text-white">
+                Sacred Literature
+              </h3>
+              <p className="text-xs text-white/75 leading-relaxed">
+                Systematic study of Bhagavad-gita As It Is, Srimad-Bhagavatam, Sri Ishopanishad, and Nectar of Instruction.
+              </p>
+              <a
+                href={bhaktiSteps.booksUrl || "https://vedabase.io"}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-extrabold text-amber-300 hover:text-amber-200 pt-2"
+              >
+                <span>Explore Vedabase Online</span>
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            </div>
+
+            {/* Card 2: Systematic ISKCON Courses */}
+            <div className="p-6 rounded-3xl bg-white/10 backdrop-blur-md border border-white/15 hover:border-amber-400/60 transition-all hover:-translate-y-1 group space-y-4">
+              <div className="h-12 w-12 rounded-2xl bg-amber-400/20 border border-amber-300/30 text-amber-300 grid place-items-center group-hover:scale-110 transition-transform">
+                <GraduationCap className="h-6 w-6" />
+              </div>
+              <h3 className="font-display font-extrabold text-xl text-white">
+                Structured Courses
+              </h3>
+              <p className="text-xs text-white/75 leading-relaxed">
+                Seamless path toward Bhakti Shastri, ISKCON Disciple Course (IDC), and foundational Vaisnava diplomas.
+              </p>
+              <div className="text-xs font-extrabold text-amber-300 pt-2">
+                Certified Curriculum
+              </div>
+            </div>
+
+            {/* Card 3: Songs & Chanting Discipline */}
+            <div className="p-6 rounded-3xl bg-white/10 backdrop-blur-md border border-white/15 hover:border-amber-400/60 transition-all hover:-translate-y-1 group space-y-4">
+              <div className="h-12 w-12 rounded-2xl bg-amber-400/20 border border-amber-300/30 text-amber-300 grid place-items-center group-hover:scale-110 transition-transform">
+                <Music className="h-6 w-6" />
+              </div>
+              <h3 className="font-display font-extrabold text-xl text-white">
+                Devotional Songbooks
+              </h3>
+              <p className="text-xs text-white/75 leading-relaxed">
+                Learn authentic Vaisnava bhajans, Pranam mantras, and Japa meditation discipline step-by-step.
+              </p>
+              <div className="text-xs font-extrabold text-amber-300 pt-2">
+                Vaishnava Song Guides
+              </div>
+            </div>
+
+            {/* Card 4: Devotee Mentorship */}
+            <div className="p-6 rounded-3xl bg-white/10 backdrop-blur-md border border-white/15 hover:border-amber-400/60 transition-all hover:-translate-y-1 group space-y-4">
+              <div className="h-12 w-12 rounded-2xl bg-amber-400/20 border border-amber-300/30 text-amber-300 grid place-items-center group-hover:scale-110 transition-transform">
+                <ShieldCheck className="h-6 w-6" />
+              </div>
+              <h3 className="font-display font-extrabold text-xl text-white">
+                Personal Mentorship
+              </h3>
+              <p className="text-xs text-white/75 leading-relaxed">
+                Receive personal guidance from experienced Kurnool temple mentors to nurture your daily sadhana practice.
+              </p>
+              <div className="text-xs font-extrabold text-amber-300 pt-2">
+                1-on-1 Guidance
+              </div>
+            </div>
+          </div>
+
+          {/* Official Resource Links if present */}
+          {(bhaktiSteps.officialUrl || bhaktiSteps.booksUrl) && (
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-bold pt-2">
+              {bhaktiSteps.officialUrl && (
+                <a
+                  href={bhaktiSteps.officialUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all"
+                >
+                  <span>Bhakti Steps Official Resource</span>
+                  <ExternalLink className="h-4 w-4 text-amber-300" />
+                </a>
+              )}
+              {bhaktiSteps.booksUrl && (
+                <a
+                  href={bhaktiSteps.booksUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all"
+                >
+                  <span>Authentic Devotional Books</span>
+                  <ExternalLink className="h-4 w-4 text-amber-300" />
+                </a>
+              )}
+            </div>
+          )}
+
+          {/* Prominent CTA Box with REGISTER NOW BUTTON */}
+          <div className="p-8 sm:p-10 rounded-3xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 border-2 border-amber-400/40 backdrop-blur-md flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+            <div className="space-y-2 max-w-2xl">
+              <span className="text-amber-300 font-extrabold text-xs uppercase tracking-widest flex items-center justify-center md:justify-start gap-1.5">
+                <Sparkles className="h-4 w-4 animate-pulse" /> Start Your Spiritual Journey Today
+              </span>
+              <h3 className="font-display font-black text-2xl sm:text-3xl text-white">
+                Ready to Take Your Next Step in Bhakti?
+              </h3>
+              <p className="text-white/80 text-xs sm:text-sm">
+                Enroll now in Bhakti Steps to get connected with authorized learning materials, study groups, and temple mentors.
+              </p>
+            </div>
+
+            <button
+              onClick={() => scrollToRegistration()}
+              className="px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-300 hover:to-orange-400 text-white font-black text-sm sm:text-base shadow-[0_10px_30px_rgba(245,197,24,0.4)] transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0 flex items-center justify-center gap-2"
+            >
+              <span>
+                {bhaktiSteps.registrationStatus === "Closed"
+                  ? "Registrations Closed"
+                  : bhaktiSteps.registrationStatus === "Coming Soon"
+                  ? "Registrations Coming Soon"
+                  : "REGISTER NOW"}
+              </span>
+              <ArrowRight className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
       {/* 4. REGISTRATION SECTION */}
       {/* ========================================================================= */}
       <section id="register-section" className="py-16 sm:py-24 bg-[#fdf6ec] border-b border-amber-200 relative">
@@ -937,7 +1118,8 @@ The goal is not simply to complete levels, but to recognize one's spiritual prog
           </div>
         </div>
       </section>
-                {/* ========================================================================= */}
+
+      {/* ========================================================================= */}
       {/* 5. CONTACT FOR REGISTRATION CARD */}
       {/* ========================================================================= */}
       <section className="py-16 sm:py-24 bg-[#faf1dc] border-b border-amber-200">
@@ -955,78 +1137,51 @@ The goal is not simply to complete levels, but to recognize one's spiritual prog
               </p>
             </div>
 
-            {/* Phone Numbers Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto pt-4">
-              {contactPhones.map((ph, idx) => (
-                <div
-                  key={idx}
-                  className="p-6 rounded-2xl bg-white border border-amber-200/80 space-y-4 flex flex-col justify-between"
-                >
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Devotee Coordinator</span>
-                    <span className="font-display font-extrabold text-2xl text-slate-900 block tracking-tight">{ph}</span>
+            {/* Phone Numbers Auto-Layout (Centers if 1 number, auto grid if multiple) */}
+            <div
+              className={`flex flex-wrap justify-center items-stretch gap-6 max-w-5xl mx-auto pt-4 ${
+                parsedContacts.length === 1 ? "max-w-md" : ""
+              }`}
+            >
+              {parsedContacts.map((contact, idx) => {
+                const cleanPhone = contact.phone.replace(/[^0-9]/g, "");
+                return (
+                  <div
+                    key={idx}
+                    className="w-full sm:w-[300px] p-6 rounded-2xl bg-white border border-amber-200/80 shadow-sm hover:border-amber-400/60 transition-all space-y-4 flex flex-col justify-between"
+                  >
+                    <div className="space-y-1">
+                      <span className="text-[11px] font-extrabold uppercase text-amber-800 tracking-wider block">
+                        {contact.name || "Devotee Coordinator"}
+                      </span>
+                      <span className="font-display font-extrabold text-2xl text-slate-900 block tracking-tight">
+                        {contact.phone}
+                      </span>
+                    </div>
+                    <div className="flex gap-2 pt-1">
+                      <a
+                        href={`tel:+91${cleanPhone}`}
+                        className="flex-1 py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95"
+                      >
+                        <Phone className="h-3.5 w-3.5 text-amber-400" />
+                        <span>Call Now</span>
+                      </a>
+                      <a
+                        href={`https://wa.me/91${cleanPhone}?text=${encodeURIComponent(
+                          `Hare Krishna ${contact.name !== "Devotee Coordinator" ? contact.name : ""}! I would like to know more about the Bhakti Steps program at ISKCON Kurnool.`
+                        )}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95"
+                      >
+                        <MessageCircle className="h-3.5 w-3.5" />
+                        <span>WhatsApp</span>
+                      </a>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <a
-                      href={`tel:+91${ph}`}
-                      className="flex-1 py-2.5 px-3 rounded-xl bg-slate-900 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95"
-                    >
-                      <Phone className="h-3.5 w-3.5 text-amber-400" />
-                      <span>Call Now</span>
-                    </a>
-                    <a
-                      href={`https://wa.me/91${ph}?text=${encodeURIComponent("Hare Krishna! I would like to know more about the Bhakti Steps program at ISKCON Kurnool.")}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95"
-                    >
-                      <MessageCircle className="h-3.5 w-3.5" />
-                      <span>WhatsApp</span>
-                    </a>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 6. SOURCES & LEARN MORE */}
-      {/* ========================================================================= */}
-      <section className="py-16 bg-[#fffaf0] text-center border-b border-amber-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-6">
-          <div className="space-y-1">
-            <span className="text-accent font-extrabold text-xs uppercase tracking-widest">Resources</span>
-            <h4 className="font-display font-black text-2xl text-primary">
-              Authorized Sources &amp; Further Learning
-            </h4>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold pt-2">
-            {bhaktiSteps.officialUrl && (
-              <a
-                href={bhaktiSteps.officialUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border-2 border-slate-200 transition-all active:scale-95"
-              >
-                <span>Bhakti Steps Official Resource</span>
-                <ExternalLink className="h-4 w-4 text-slate-500" />
-              </a>
-            )}
-
-            {bhaktiSteps.booksUrl && (
-              <a
-                href={bhaktiSteps.booksUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border-2 border-slate-200 transition-all active:scale-95"
-              >
-                <span>Authentic Devotional Books &amp; Study Materials</span>
-                <ExternalLink className="h-4 w-4 text-slate-500" />
-              </a>
-            )}
           </div>
         </div>
       </section>

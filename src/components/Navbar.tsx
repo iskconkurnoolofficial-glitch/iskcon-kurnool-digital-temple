@@ -100,9 +100,11 @@ export default function Navbar() {
   const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [tick, setTick] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
   // Active live broadcast detection
   const activeLiveProgramme = (() => {
+    if (!mounted) return null;
     if (!liveProgrammes || !liveProgrammes.enabled) return null;
     const nowMs = Date.now();
     const list = (liveProgrammes.programmes || []).filter((p) => p.published !== false);
@@ -131,8 +133,6 @@ export default function Navbar() {
   const unreadDonationsCount = (paymentRecords || []).filter((p) => !p.read).length;
   const totalUnreadNotifications = unreadMessagesCount + unreadDonationsCount;
 
-  const [mounted, setMounted] = useState(false);
-
   useEffect(() => {
     setMounted(true);
     const timer = setInterval(() => setTick((t) => t + 1), 10000);
@@ -140,6 +140,7 @@ export default function Navbar() {
   }, []);
 
   const isLinkLive = (href: string): boolean => {
+    if (!mounted) return false;
     if (href === "/courses") {
       return !!liveClass;
     }

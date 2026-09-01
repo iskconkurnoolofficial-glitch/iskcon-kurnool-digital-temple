@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useAdmin, uploadToCloudinary, Seva, SevaPrice, getSevaCategories } from "@/context/AdminContext";
+import { useAdmin, uploadToCloudinary, Seva, SevaPrice, getSevaCategories, getSevaFestivalIds } from "@/context/AdminContext";
 import AdminModal from "./AdminModal";
 import { 
   Trash2, Eye, EyeOff, Upload, HandHeart, Pencil, X, Plus, 
@@ -30,12 +30,14 @@ function emptyDraft(): Partial<Seva> {
     prices: [{ label: "", amount: 516 }], 
     active: true,
     thumbnail: "",
-    slug: ""
+    slug: "",
+    festivalId: undefined,
+    festivalIds: []
   };
 }
 
 export default function SevasManager() {
-  const { sevas, setSevas } = useAdmin();
+  const { sevas, setSevas, festivals } = useAdmin();
   const [draft, setDraft] = useState<Partial<Seva>>(emptyDraft());
   const [pricingMode, setPricingMode] = useState<"single" | "multiple">("single");
   const [singleAmount, setSingleAmount] = useState<number>(516);
@@ -223,6 +225,22 @@ export default function SevasManager() {
     setDraft({ ...draft, prices: updated.length > 0 ? updated : [{ label: "", amount: 516 }] });
   };
 
+  const toggleFestivalLink = (fId: string) => {
+    const current = getSevaFestivalIds(draft);
+    const exists = current.includes(fId);
+    let next: string[];
+    if (exists) {
+      next = current.filter((id) => id !== fId);
+    } else {
+      next = [...current, fId];
+    }
+    setDraft({
+      ...draft,
+      festivalIds: next,
+      festivalId: next.length > 0 ? next[0] : undefined
+    });
+  };
+
   const save = () => {
     if (!draft.title?.trim()) { 
       toast.error("Please enter a Seva Title"); 
@@ -249,6 +267,9 @@ export default function SevasManager() {
     const finalCategories = selectedCats.length > 0 ? selectedCats : ["Regular Sevas"];
     const finalCategory = finalCategories.join(", ");
 
+    // Multi-select festival IDs
+    const festIds = getSevaFestivalIds(draft);
+
     // Ensure all selected categories exist in customCategories
     let updatedMaster = [...customCategories];
     let masterChanged = false;
@@ -273,7 +294,9 @@ export default function SevasManager() {
         category: finalCategory, 
         categories: finalCategories,
         slug: generatedSlug, 
-        prices: cleanPrices 
+        prices: cleanPrices,
+        festivalId: festIds.length > 0 ? festIds[0] : undefined,
+        festivalIds: festIds
       } as Seva : s));
       toast.success("✨ Seva updated successfully!");
     } else {
@@ -289,6 +312,8 @@ export default function SevasManager() {
         order: maxOrder + 1,
         active: draft.active !== false,
         slug: generatedSlug,
+        festivalId: festIds.length > 0 ? festIds[0] : undefined,
+        festivalIds: festIds
       };
       setSevas([...sevas, item]);
       toast.success("✨ New seva added successfully!");
@@ -300,6 +325,7 @@ export default function SevasManager() {
   const startEdit = (s: Seva) => {
     setEditingId(s.id);
     const cats = getSevaCategories(s);
+    const festIds = getSevaFestivalIds(s);
     const isSingle = !s.prices || s.prices.length <= 1;
     setPricingMode(isSingle ? "single" : "multiple");
     setSingleAmount(s.prices?.[0]?.amount || 516);
@@ -307,7 +333,9 @@ export default function SevasManager() {
       ...s, 
       category: s.category || cats.join(", "), 
       categories: cats, 
-      prices: (s.prices && s.prices.length > 0) ? s.prices.map((p) => ({ ...p })) : [{ label: "", amount: 516 }]
+      prices: (s.prices && s.prices.length > 0) ? s.prices.map((p) => ({ ...p })) : [{ label: "", amount: 516 }],
+      festivalId: s.festivalId || (festIds.length > 0 ? festIds[0] : undefined),
+      festivalIds: festIds
     });
     setIsModalOpen(true);
   };
@@ -473,6 +501,11 @@ export default function SevasManager() {
                         {cat}
                       </span>
                     ))}
+                    {s.festivalId && (
+                      <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-purple-100 text-primary border border-purple-300/80 uppercase tracking-wider">
+                        Linked: {(festivals || []).find((f) => f.id === s.festivalId)?.title || "Festival"}
+                      </span>
+                    )}
                   </div>
 
                   <h4 className="font-display font-bold text-base text-foreground line-clamp-1">
@@ -593,6 +626,84 @@ export default function SevasManager() {
                   onChange={(e) => setDraft({ ...draft, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })}
                   placeholder="e.g. rajbhoga-seva"
                 />
+              </div>
+
+              {/* Multi-Select Link to Festivals */}
+              <div className="bg-purple-50/70 p-3.5 rounded-2xl border border-purple-200/80 space-y-2.5 font-sans">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-xs font-bold font-sans uppercase tracking-wider text-foreground">
+                      Link to Festivals (Multi-Select)
+                    </label>
+                    <span className="text-[11px] text-muted-foreground">
+                      Select festivals where this seva will appear
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-purple-700 text-white shrink-0">
+                    {getSevaFestivalIds(draft).length} Linked
+                  </span>
+                </div>
+
+                {/* Selected Festivals Chips */}
+                {getSevaFestivalIds(draft).length > 0 ? (
+                  <div className="flex flex-wrap items-center gap-1.5 bg-white p-2 rounded-xl border border-purple-200 min-h-[38px]">
+                    {getSevaFestivalIds(draft).map((fId) => {
+                      const fest = (festivals || []).find((f) => f.id === fId);
+                      return (
+                        <span
+                          key={fId}
+                          className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-purple-700 text-white shadow-2xs"
+                        >
+                          <span>{fest ? fest.title : fId}</span>
+                          <button
+                            type="button"
+                            onClick={() => toggleFestivalLink(fId)}
+                            className="hover:bg-white/20 rounded p-0.5 transition cursor-pointer"
+                            title="Remove festival link"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-[11px] italic text-slate-500 bg-white p-2 rounded-xl border border-slate-200">
+                    No festivals linked — General / Nitya Seva.
+                  </div>
+                )}
+
+                {/* Clickable Multi-Select Festival Options */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    Click to Select / Deselect Festivals:
+                  </label>
+                  <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1.5 bg-white rounded-xl border border-slate-200">
+                    {(festivals || []).map((f) => {
+                      const isLinked = getSevaFestivalIds(draft).includes(f.id);
+                      return (
+                        <button
+                          key={f.id}
+                          type="button"
+                          onClick={() => toggleFestivalLink(f.id)}
+                          className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
+                            isLinked
+                              ? "bg-purple-700 text-white border-purple-700 shadow-xs"
+                              : "bg-slate-50 hover:bg-purple-50 text-slate-700 border-slate-200"
+                          }`}
+                        >
+                          {isLinked && <Check className="h-3.5 w-3.5 shrink-0" />}
+                          <span>{f.title}</span>
+                          {f.date && (
+                            <span className="opacity-75 text-[10px]">
+                              ({new Date(f.date + "T00:00:00").toLocaleDateString("en-IN", { day: "2-digit", month: "short" })})
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

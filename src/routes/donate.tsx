@@ -59,7 +59,7 @@ function loadRazorpay(): Promise<boolean> {
 const QUICK_SUGGESTIONS = [108, 251, 501, 1008, 2500, 5001, 11000];
 
 export default function Page({ initialSlug }: { initialSlug?: string }) {
-  const { sevas, settings, theme, ready, addDonation, updateDonationStatus, platformFee, addPaymentRecord, sunday, upiPayment } = useAdmin();
+  const { sevas, festivals, settings, theme, ready, addDonation, updateDonationStatus, platformFee, addPaymentRecord, sunday, upiPayment } = useAdmin();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
@@ -119,6 +119,17 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     if (initialSlug) {
       let found = sevas.find(s => s.slug === initialSlug || s.id === initialSlug);
       
+      // Fallback: look in festival inline sevas
+      if (!found && festivals) {
+        for (const f of festivals) {
+          const matched = (f.sevas || []).find(s => s.slug === initialSlug || s.id === initialSlug);
+          if (matched) {
+            found = matched;
+            break;
+          }
+        }
+      }
+      
       // Fallback for Sunday Feast Seva
       if (!found && (initialSlug === "sunday-feast-seva" || initialSlug === "sunday-feast")) {
         const rawAmount = sunday.donationCardAmount ? parseInt(sunday.donationCardAmount.replace(/\D/g, ""), 10) : 5001;
@@ -162,7 +173,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     } else {
       setCheckoutSeva(null);
     }
-  }, [initialSlug, sevas, sunday]);
+  }, [initialSlug, sevas, festivals, sunday]);
 
   const active = useMemo(() => {
     let list = [...sevas].filter((s) => s.active);

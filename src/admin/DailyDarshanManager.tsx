@@ -249,7 +249,6 @@ export default function DailyDarshanManager() {
       headerSubtitle,
       badgeText,
       noticeBanner,
-      liveYoutubeUrl: liveYoutubeUrl.trim(),
     };
     setDailyDarshan(updated);
     toast.success("Page header & notice settings saved!");
@@ -287,13 +286,15 @@ export default function DailyDarshanManager() {
               <span className="text-xs text-muted-foreground block font-medium">Live Published</span>
               <strong className="font-display text-lg text-green-600">{activeEntries}</strong>
             </div>
-            <button
-              type="button"
-              onClick={openNew}
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs sm:text-sm shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer"
-            >
-              <Plus className="h-4 w-4" /> Add New Darshan
-            </button>
+            {totalEntries < 1 && (
+              <button
+                type="button"
+                onClick={openNew}
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs sm:text-sm shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              >
+                <Plus className="h-4 w-4" /> Add New Darshan
+              </button>
+            )}
             <a
               href="/daily-darshan"
               target="_blank"
@@ -305,6 +306,99 @@ export default function DailyDarshanManager() {
           </div>
         </div>
       </div>
+
+      {/* YouTube Live Stream Dedicated Management Card */}
+      <div className="bg-white rounded-3xl shadow-elegant border border-red-200/60 p-6 sm:p-8 space-y-4 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-2 h-full bg-red-500" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
+          <div className="flex items-center gap-2.5">
+            <span className="relative flex h-3.5 w-3.5">
+              {liveYoutubeUrl ? (
+                <>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-600"></span>
+                </>
+              ) : (
+                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-slate-300"></span>
+              )}
+            </span>
+            <div>
+              <h3 className="font-display font-bold text-base text-primary flex items-center gap-2">
+                YouTube Live Darshan Telecast
+                {liveYoutubeUrl && (
+                  <span className="bg-red-100 text-red-700 text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full border border-red-300 animate-pulse">
+                    Live
+                  </span>
+                )}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Broadcast live temple services or Darshan streams on the main page
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold font-sans uppercase tracking-wider text-foreground">
+              YouTube Live Stream URL
+            </label>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="url"
+                placeholder="e.g. https://www.youtube.com/watch?v=... or Video ID"
+                value={liveYoutubeUrl}
+                onChange={(e) => setLiveYoutubeUrl(e.target.value)}
+                className="flex-1 px-4 py-2.5 border rounded-xl text-xs bg-white focus:ring-2 focus:ring-primary/20 focus:outline-none"
+              />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const updated = { ...dailyDarshan, liveYoutubeUrl: liveYoutubeUrl.trim() };
+                    setDailyDarshan(updated);
+                    toast.success("Live stream URL updated successfully!");
+                  }}
+                  className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-sm transition-all cursor-pointer shrink-0"
+                >
+                  Save Live URL
+                </button>
+                {liveYoutubeUrl && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setLiveYoutubeUrl("");
+                      const updated = { ...dailyDarshan, liveYoutubeUrl: "" };
+                      setDailyDarshan(updated);
+                      toast.info("Live stream disabled/removed");
+                    }}
+                    className="px-4 py-2.5 rounded-xl border border-red-200 hover:bg-red-50 text-red-600 font-bold text-xs transition-all cursor-pointer shrink-0"
+                  >
+                    Clear / Disable
+                  </button>
+                )}
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground leading-relaxed">
+              When configured, a live broadcast player is featured at the top of the public Daily Darshan page. Keep it empty to hide the live stream player.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* One Card Enforce Notice Banner */}
+      {totalEntries >= 1 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-3xl p-5 flex items-start gap-4 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-2 h-full bg-amber-500" />
+          <Info className="h-6 w-6 text-amber-700 shrink-0 mt-0.5" />
+          <div>
+            <h4 className="font-display font-bold text-sm text-amber-900">Daily Darshan is limited to 1 active card</h4>
+            <p className="text-xs sm:text-sm text-amber-800/90 mt-1 leading-relaxed">
+              To update today's deity photos or description, please click <strong>Edit</strong> on the card below. You can also delete the card to publish a fresh one.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Modal Edit / Add Dialog */}
       <AdminModal
@@ -694,21 +788,7 @@ export default function DailyDarshanManager() {
                 />
               </div>
 
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold font-sans uppercase tracking-wider text-foreground mb-1">
-                  YouTube Live Darshan Video / Stream URL (Optional)
-                </label>
-                <input
-                  type="url"
-                  placeholder="e.g. https://www.youtube.com/watch?v=... or https://youtu.be/..."
-                  value={liveYoutubeUrl}
-                  onChange={(e) => setLiveYoutubeUrl(e.target.value)}
-                  className="w-full px-4 py-2.5 border rounded-xl text-xs bg-white focus:ring-2 focus:ring-primary/20 focus:outline-none"
-                />
-                <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">
-                  Enter a YouTube live link (or video ID). When set, a prominent YouTube player will telecast the Live Darshan on the top of the Daily Darshan screen. Leave empty to hide the Live telecast player.
-                </p>
-              </div>
+
             </div>
 
             <div className="pt-2">
