@@ -28,7 +28,7 @@ export default function InstallAppModal({
   deviceInfo = { isMobile: false, isIOS: false, isAndroid: false, isChrome: false, isSafari: false },
 }: InstallAppModalProps) {
   const { settings } = useAdmin();
-  if (!isOpen) return null;
+  if (!isOpen || isInstalled) return null;
 
   const { isMobile, isIOS, isAndroid } = deviceInfo;
   const appLogo = settings.logo ? getOptimizedCloudinaryUrl(settings.logo, "thumbnail") : "/jagannatha.png";

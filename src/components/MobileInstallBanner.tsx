@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { usePwaInstall } from "@/hooks/usePwaInstall";
 import InstallAppModal from "./InstallAppModal";
-import { Smartphone, Download, X, Sparkles } from "lucide-react";
+import { Download, X, Sparkles } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import { getOptimizedCloudinaryUrl } from "@/utils/cloudinary";
 
@@ -13,6 +13,12 @@ export const MobileInstallBanner: React.FC = () => {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    // Check if app is installed permanently
+    if (localStorage.getItem("iskcon_app_installed") === "true") {
+      setDismissed(true);
+      return;
+    }
 
     // Check if dismissed previously within 7 days
     const dismissedTime = localStorage.getItem("iskcon_mobile_banner_dismissed");
@@ -36,7 +42,12 @@ export const MobileInstallBanner: React.FC = () => {
     } catch {}
   };
 
-  if (isInstalled || dismissed) {
+  // If installed, never render any banner or popup again!
+  if (isInstalled) {
+    return null;
+  }
+
+  if (dismissed) {
     return (
       <InstallAppModal
         isOpen={isModalOpen}
@@ -60,7 +71,7 @@ export const MobileInstallBanner: React.FC = () => {
           <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/15 rounded-full blur-xl pointer-events-none" />
 
           {/* App Logo & Details */}
-          <div className="flex items-center gap-3 min-w-0" onClick={promptInstall}>
+          <div className="flex items-center gap-3 min-w-0 cursor-pointer" onClick={promptInstall}>
             <img
               src={appLogo}
               alt="ISKCON Kurnool"
@@ -75,7 +86,7 @@ export const MobileInstallBanner: React.FC = () => {
                 Install ISKCON Kurnool
               </h4>
               <p className="text-[10px] text-purple-200/80 truncate">
-                Fast, 1-tap Home Screen access
+                Fast 1-click Home Screen access
               </p>
             </div>
           </div>

@@ -25,7 +25,12 @@ export function usePwaInstall() {
     }
     return null;
   });
-  const [isInstalled, setIsInstalled] = useState(false);
+
+  const [isInstalled, setIsInstalled] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("iskcon_app_installed") === "true";
+  });
+
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [deviceInfo, setDeviceInfo] = useState({
@@ -62,8 +67,15 @@ export function usePwaInstall() {
       const isStandalone =
         window.matchMedia("(display-mode: standalone)").matches ||
         (window.navigator as any).standalone === true ||
-        document.referrer.includes("android-app://");
-      setIsInstalled(isStandalone);
+        document.referrer.includes("android-app://") ||
+        localStorage.getItem("iskcon_app_installed") === "true";
+
+      if (isStandalone) {
+        setIsInstalled(true);
+        try {
+          localStorage.setItem("iskcon_app_installed", "true");
+        } catch {}
+      }
     };
 
     checkStandalone();
@@ -77,6 +89,9 @@ export function usePwaInstall() {
 
     const handleAppInstalled = () => {
       setIsInstalled(true);
+      try {
+        localStorage.setItem("iskcon_app_installed", "true");
+      } catch {}
       (window as any).__pwaDeferredPrompt = null;
       setDeferredPrompt(null);
       setIsModalOpen(false);
@@ -107,38 +122,47 @@ export function usePwaInstall() {
   }, []);
 
   const openModal = useCallback(() => {
+    if (isInstalled || (typeof window !== "undefined" && localStorage.getItem("iskcon_app_installed") === "true")) {
+      return;
+    }
     setIsModalOpen(true);
-  }, []);
+  }, [isInstalled]);
 
   const closeModal = useCallback(() => {
     setIsModalOpen(false);
   }, []);
 
   const promptInstall = useCallback(async () => {
+    if (isInstalled || (typeof window !== "undefined" && localStorage.getItem("iskcon_app_installed") === "true")) {
+      toast.success("ISKCON Kurnool app is already installed on your device!");
+      return;
+    }
+
     const promptEvent = deferredPrompt || (typeof window !== "undefined" ? (window as any).__pwaDeferredPrompt : null);
 
     if (promptEvent) {
       try {
+        // Direct 1-click install prompt — no intermediate dialog!
         await promptEvent.prompt();
         const choice = await promptEvent.userChoice;
         if (choice.outcome === "accepted") {
           setIsInstalled(true);
+          try {
+            localStorage.setItem("iskcon_app_installed", "true");
+          } catch {}
           setDeferredPrompt(null);
           (window as any).__pwaDeferredPrompt = null;
           setIsModalOpen(false);
+          toast.success("ISKCON Kurnool App installed!");
         } else {
           toast.info("Installation cancelled.");
         }
       } catch (err) {
-        console.error("Error launching install prompt:", err);
+        console.error("Error launching native install prompt:", err);
         openModal();
       }
     } else {
-      if (isInstalled) {
-        toast.success("ISKCON Kurnool app is already installed on your device!");
-      } else {
-        openModal();
-      }
+      openModal();
     }
   }, [deferredPrompt, isInstalled, openModal]);
 
