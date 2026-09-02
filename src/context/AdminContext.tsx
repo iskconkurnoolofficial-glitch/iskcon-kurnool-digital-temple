@@ -3501,31 +3501,40 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
       (data ?? []).forEach((r) => {
         let parsedHp: any = null;
-        if (r.message && r.message.startsWith("{") && r.message.includes("isHouseProgramme")) {
-          try {
-            parsedHp = JSON.parse(r.message);
-          } catch {
-            // ignore parse error
+        if (r.message) {
+          if (typeof r.message === "object") {
+            parsedHp = r.message;
+          } else if (typeof r.message === "string") {
+            try {
+              parsedHp = JSON.parse(r.message);
+            } catch {
+              // not json
+            }
           }
         }
 
-        if (parsedHp && parsedHp.isHouseProgramme) {
+        const isHp =
+          (parsedHp && typeof parsedHp === "object" && (parsedHp.isHouseProgramme || parsedHp.locationArea || parsedHp.preferredDate)) ||
+          r.email === "houseprogramme@iskconkurnool.org" ||
+          (typeof r.message === "string" && r.message.toLowerCase().includes("house programme"));
+
+        if (isHp) {
           hpRequests.push({
             id: r.id,
-            name: r.name,
-            phone: r.phone,
-            locationArea: parsedHp.locationArea || "",
-            preferredDate: parsedHp.preferredDate || "",
-            preferredTime: parsedHp.preferredTime || "",
-            participantsCount: parsedHp.participantsCount || "",
-            fullAddress: parsedHp.fullAddress || "",
-            googleMapsUrl: parsedHp.googleMapsUrl,
-            latitude: parsedHp.latitude,
-            longitude: parsedHp.longitude,
-            message: parsedHp.message,
-            status: parsedHp.status || "pending",
-            createdAt: r.created_at,
-            read: r.read,
+            name: r.name || "Devotee",
+            phone: r.phone || "",
+            locationArea: (parsedHp && parsedHp.locationArea) || "Kurnool",
+            preferredDate: (parsedHp && parsedHp.preferredDate) || (r.created_at ? new Date(r.created_at).toISOString().split("T")[0] : ""),
+            preferredTime: (parsedHp && parsedHp.preferredTime) || "Flexible",
+            participantsCount: (parsedHp && parsedHp.participantsCount) || "10 – 25 Devotees",
+            fullAddress: (parsedHp && parsedHp.fullAddress) || r.message || "Kurnool",
+            googleMapsUrl: parsedHp && parsedHp.googleMapsUrl ? parsedHp.googleMapsUrl : undefined,
+            latitude: parsedHp && typeof parsedHp.latitude === "number" ? parsedHp.latitude : undefined,
+            longitude: parsedHp && typeof parsedHp.longitude === "number" ? parsedHp.longitude : undefined,
+            message: (parsedHp && parsedHp.message) || (typeof parsedHp !== "object" ? r.message : undefined),
+            status: (parsedHp && parsedHp.status) || "pending",
+            createdAt: r.created_at || new Date().toISOString(),
+            read: r.read ?? false,
           });
         } else {
           normalContacts.push({
@@ -3719,7 +3728,15 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.sunday: setSundayState({ ...defaultSunday, ...value }); break;
       case KEYS.prahladaBadi: setPrahladaBadiState({ ...defaultPrahladaBadi, ...value }); break;
       case KEYS.houseProgrammes: {
-        const incoming = { ...defaultHouseProgramme, ...(value || {}) };
+        let valObj = value;
+        if (typeof value === "string") {
+          try {
+            valObj = JSON.parse(value);
+          } catch {
+            valObj = {};
+          }
+        }
+        const incoming = { ...defaultHouseProgramme, ...(valObj || {}) };
         setHouseProgrammesState((prev) => {
           const map = new Map<string, HouseProgrammeRequest>();
           (incoming.requests || []).forEach((r: HouseProgrammeRequest) => {
