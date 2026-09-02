@@ -1,6 +1,8 @@
 import React from "react";
 import { X, Download, Smartphone, CheckCircle, Sparkles, ArrowRight, ShieldCheck, Zap, Share, PlusSquare, MoreVertical, Compass } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAdmin } from "@/context/AdminContext";
+import { getOptimizedCloudinaryUrl } from "@/utils/cloudinary";
 
 interface InstallAppModalProps {
   isOpen: boolean;
@@ -25,9 +27,11 @@ export default function InstallAppModal({
   isInstalled,
   deviceInfo = { isMobile: false, isIOS: false, isAndroid: false, isChrome: false, isSafari: false },
 }: InstallAppModalProps) {
+  const { settings } = useAdmin();
   if (!isOpen) return null;
 
   const { isMobile, isIOS, isAndroid } = deviceInfo;
+  const appLogo = settings.logo ? getOptimizedCloudinaryUrl(settings.logo, "thumbnail") : "/jagannatha.png";
 
   return (
     <AnimatePresence>
@@ -56,7 +60,7 @@ export default function InstallAppModal({
           <div className="flex items-center gap-4 mb-6">
             <div className="relative shrink-0">
               <img
-                src="/jagannatha.png"
+                src={appLogo}
                 alt="ISKCON Kurnool"
                 className="w-16 h-16 rounded-2xl object-cover ring-2 ring-amber-400/60 shadow-gold"
               />

@@ -2,10 +2,14 @@ import React, { useState, useEffect } from "react";
 import { usePwaInstall } from "@/hooks/usePwaInstall";
 import InstallAppModal from "./InstallAppModal";
 import { Smartphone, Download, X, Sparkles } from "lucide-react";
+import { useAdmin } from "@/context/AdminContext";
+import { getOptimizedCloudinaryUrl } from "@/utils/cloudinary";
 
 export const MobileInstallBanner: React.FC = () => {
+  const { settings } = useAdmin();
   const { isInstalled, hasNativePrompt, promptInstall, isModalOpen, closeModal, deviceInfo } = usePwaInstall();
   const [dismissed, setDismissed] = useState(true);
+  const appLogo = settings.logo ? getOptimizedCloudinaryUrl(settings.logo, "thumbnail") : "/jagannatha.png";
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -58,7 +62,7 @@ export const MobileInstallBanner: React.FC = () => {
           {/* App Logo & Details */}
           <div className="flex items-center gap-3 min-w-0" onClick={promptInstall}>
             <img
-              src="/jagannatha.png"
+              src={appLogo}
               alt="ISKCON Kurnool"
               className="w-10 h-10 rounded-xl object-cover ring-2 ring-amber-400/60 shadow-md shrink-0"
             />
