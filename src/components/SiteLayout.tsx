@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import MobileInstallBanner from "@/components/MobileInstallBanner";
 import { useAdmin } from "@/context/AdminContext";
 import LanguageToggle from "@/components/LanguageToggle";
 
@@ -20,6 +21,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       <FloatingWhatsApp />
       <LanguageToggle layout="vertical-sticky" />
       <MobileBottomNav />
+      <MobileInstallBanner />
     </div>
   );
 }

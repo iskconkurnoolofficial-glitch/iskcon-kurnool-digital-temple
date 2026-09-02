@@ -86,6 +86,7 @@ export default function PaymentPagesManager() {
         donorPhone: "",
         donorEmail: "",
         sevaOrPageTitle: "General Offering",
+        category: "General Offering",
         amount: 1008,
         panNumber: "",
         notes: "",

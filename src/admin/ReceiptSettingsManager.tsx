@@ -923,7 +923,7 @@ export default function ReceiptSettingsManager() {
                     src={resolvedLogo}
                     alt="Logo"
                     className="h-12 w-12 sm:h-14 sm:w-14 rounded-full object-cover shadow-md ring-2"
-                    style={{ ringColor: form.secondaryColor }}
+                    style={{ borderColor: form.secondaryColor }}
                   />
                 ) : (
                   <div 

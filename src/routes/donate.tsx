@@ -327,6 +327,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       pan?: string;
       purpose?: string;
       coverFee?: boolean;
+      paymentMethod?: string;
     }
   ) => {
     if (amount <= 0 || isNaN(amount)) {

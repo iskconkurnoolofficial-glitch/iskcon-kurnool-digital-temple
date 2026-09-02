@@ -1,6 +1,7 @@
 import { useMemo, useRef, useEffect, useState, useCallback } from "react";
 import { Link } from "@tanstack/react-router";
 import { useAdmin, normalizeFestival, isFestivalLive, Festival } from "@/context/AdminContext";
+import { getOptimizedCloudinaryUrl } from "@/utils/cloudinary";
 import {
   Calendar,
   Sparkles,
@@ -88,7 +89,7 @@ function FestivalCard({ f }: { f: Festival }) {
       <div className="relative w-full aspect-[16/10] overflow-hidden bg-slate-950">
         {f.thumbnail ? (
           <img
-            src={f.thumbnail}
+            src={getOptimizedCloudinaryUrl(f.thumbnail, "card")}
             alt={f.title}
             loading="lazy"
             decoding="async"

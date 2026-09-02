@@ -575,7 +575,7 @@ export default function OfficialReceiptModal({
                 src={resolvedLogo}
                 alt="ISKCON Logo"
                 className="h-14 w-14 rounded-full mx-auto mb-2.5 object-cover shadow-md ring-2"
-                style={{ ringColor: cfg.secondaryColor }}
+                style={{ borderColor: cfg.secondaryColor }}
               />
             ) : (
               <div

@@ -191,27 +191,76 @@ export function extractCloudinaryPublicId(url: string): string | undefined {
 }
 
 /**
- * Generates an optimized Cloudinary image URL with specified transformations.
- * - 'gallery': w_600,q_auto,f_auto
- * - 'lightbox': w_1200,q_auto,f_auto
- * - 'thumbnail': w_300,q_auto,f_auto
+ * Generates an optimized image URL for maximum loading speed and minimum payload.
+ * Supports Cloudinary, Unsplash, and YouTube thumbnails.
+ * - 'thumbnail': w_300 / w=300, q_auto/q=75, f_auto/auto=format
+ * - 'gallery' / 'card': w_600 / w=600, q_auto/q=80, f_auto/auto=format
+ * - 'banner' / 'hero': w_1200 / w=1200, q_auto/q=80, f_auto/auto=format
+ * - 'lightbox' / 'full': w_1600 / w=1600, q_auto/q=85, f_auto/auto=format
  */
 export function getOptimizedCloudinaryUrl(
   url: string,
-  target: "gallery" | "lightbox" | "thumbnail" | string
+  target: "gallery" | "lightbox" | "thumbnail" | "card" | "banner" | "hero" | "full" | string
 ): string {
   if (!url || typeof url !== "string") return "";
 
-  // Return original URL as-is if it's not hosted on Cloudinary
+  // 1. Unsplash Optimization
+  if (url.includes("images.unsplash.com")) {
+    try {
+      const u = new URL(url);
+      let targetWidth = 600;
+      let targetQuality = 80;
+
+      if (target === "thumbnail") {
+        targetWidth = 300;
+        targetQuality = 75;
+      } else if (target === "card" || target === "gallery") {
+        targetWidth = 600;
+        targetQuality = 80;
+      } else if (target === "banner" || target === "hero") {
+        targetWidth = 1200;
+        targetQuality = 80;
+      } else if (target === "lightbox" || target === "full") {
+        targetWidth = 1600;
+        targetQuality = 85;
+      } else if (typeof target === "number" || (!isNaN(Number(target)) && Number(target) > 0)) {
+        targetWidth = Number(target);
+      }
+
+      u.searchParams.set("auto", "format");
+      u.searchParams.set("fit", "crop");
+      u.searchParams.set("w", String(targetWidth));
+      u.searchParams.set("q", String(targetQuality));
+      return u.toString();
+    } catch {
+      return url;
+    }
+  }
+
+  // 2. YouTube Thumbnail Optimization
+  if (url.includes("img.youtube.com") || url.includes("i.ytimg.com")) {
+    if (target === "thumbnail") {
+      return url.replace(/\/maxresdefault\.jpg|\/sddefault\.jpg|\/hqdefault\.jpg/, "/mqdefault.jpg");
+    }
+    if (target === "card" || target === "gallery") {
+      return url.replace(/\/maxresdefault\.jpg|\/sddefault\.jpg/, "/hqdefault.jpg");
+    }
+  }
+
+  // 3. Cloudinary Optimization
   if (!url.includes("cloudinary.com")) {
     return url;
   }
 
   let transformStr = "w_600,q_auto,f_auto";
-  if (target === "lightbox") {
-    transformStr = "w_1200,q_auto,f_auto";
-  } else if (target === "thumbnail") {
+  if (target === "thumbnail") {
     transformStr = "w_300,q_auto,f_auto";
+  } else if (target === "lightbox" || target === "full") {
+    transformStr = "w_1600,q_auto,f_auto";
+  } else if (target === "banner" || target === "hero") {
+    transformStr = "w_1200,q_auto,f_auto";
+  } else if (target === "gallery" || target === "card") {
+    transformStr = "w_600,q_auto,f_auto";
   } else if (typeof target === "string" && target !== "gallery") {
     transformStr = target;
   }
@@ -238,6 +287,9 @@ export function getOptimizedCloudinaryUrl(
 
   return url;
 }
+
+export const getOptimizedImageUrl = getOptimizedCloudinaryUrl;
+
 
 /**
  * Validate selected image file format (PNG, JPG, WEBP) and size limits.

@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import { useAdmin } from "@/context/AdminContext";
 import { isTimeStrLive } from "@/lib/scheduleUtils";
+import { getOptimizedCloudinaryUrl } from "@/utils/cloudinary";
 import {
   Users,
   Sparkles,
@@ -217,10 +218,11 @@ export default function HomeYouthSection() {
                   className="shrink-0 w-[260px] sm:w-[320px] md:w-[360px] relative rounded-3xl overflow-hidden shadow-xl border border-white/15 aspect-[16/10] group/card"
                 >
                   <img
-                    src={photo.url}
+                    src={getOptimizedCloudinaryUrl(photo.url, "card")}
                     alt={photo.label || "Hare Krishna"}
                     className="w-full h-full object-cover object-center group-hover/card:scale-108 transition-transform duration-700 pointer-events-none"
                     loading="lazy"
+                    decoding="async"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
                   {photo.label && (

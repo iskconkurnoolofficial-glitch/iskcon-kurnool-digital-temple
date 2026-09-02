@@ -2087,6 +2087,8 @@ export type DailyClass = {
   joinUrl: string;
   active: boolean;
   everyday?: boolean;
+  startTimeStr?: string;
+  endTimeStr?: string;
 };
 
 export type PreviewLead = {
@@ -2522,10 +2524,18 @@ export type BhaktiStepsRegistration = {
   fullName: string;
   phone: string;
   email: string;
-  age: number | string;
-  city: string;
-  level: string;
-  contactMethod: string;
+  age?: number | string;
+  city?: string;
+  level?: string;
+  contactMethod?: string;
+  currentLevelId?: string;
+  targetLevelId?: string;
+  roundsChantedDaily?: number;
+  fourRegulativePrinciples?: boolean;
+  cityArea?: string;
+  preferredLanguage?: string;
+  mentorPreference?: string;
+  notes?: string;
   message?: string;
   submittedAt: string;
   read: boolean;

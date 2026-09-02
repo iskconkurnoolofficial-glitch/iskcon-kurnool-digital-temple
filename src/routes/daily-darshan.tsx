@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import SiteLayout, { PageHero } from "@/components/SiteLayout";
 import { useAdmin, DailyDarshanItem } from "@/context/AdminContext";
+import { getOptimizedCloudinaryUrl } from "@/utils/cloudinary";
 import { 
   Sun, 
   Sparkles, 
@@ -282,7 +283,13 @@ function DarshanImageCarousel({
                       : "opacity-70 hover:opacity-100 hover:ring-2 hover:ring-amber-300 border border-slate-200"
                   }`}
                 >
-                  <img src={imgUrl} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                  <img
+                    src={getOptimizedCloudinaryUrl(imgUrl, "thumbnail")}
+                    alt={`Thumbnail ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                  />
                   <span className="absolute bottom-1 right-1 bg-black/70 text-white font-sans text-[10px] font-bold px-1.5 py-0.5 rounded">
                     {idx + 1}
                   </span>
@@ -729,7 +736,13 @@ function DailyDarshanPage() {
                         : "opacity-50 hover:opacity-100"
                     }`}
                   >
-                    <img src={img} alt={`Thumb ${idx + 1}`} className="w-full h-full object-cover" />
+                    <img
+                      src={getOptimizedCloudinaryUrl(img, "thumbnail")}
+                      alt={`Thumb ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                    />
                   </button>
                 ))}
               </div>

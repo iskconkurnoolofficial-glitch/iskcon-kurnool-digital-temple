@@ -146,7 +146,7 @@ export default function GalleryManager() {
         width = uploadRes.width;
         height = uploadRes.height;
         format = uploadRes.format;
-        createdAt = uploadRes.created_at;
+        createdAt = uploadRes.created_at || new Date().toISOString();
       }
 
       const nextPhoto: GalleryPhoto = {

@@ -507,7 +507,7 @@ function PaymentPageRoute() {
             <button
               type="button"
               disabled={busy}
-              onClick={handlePayNow}
+              onClick={() => handlePayNow()}
               className="w-full py-4 bg-gradient-to-r from-primary via-[#3d1a6a] to-primary hover:from-primary/95 text-white font-bold text-base rounded-2xl shadow-xl shadow-primary/25 hover:shadow-2xl transition cursor-pointer flex items-center justify-between px-6 active:scale-[0.99] disabled:opacity-60"
             >
               <span className="text-[10px] text-secondary font-mono tracking-widest uppercase flex items-center gap-1">
@@ -922,7 +922,7 @@ function PaymentPageRoute() {
           </div>
         </div>
         <button
-          onClick={() => handlePayNow(paymentMethodMode)}
+          onClick={() => handlePayNow(paymentMethodMode || undefined)}
           className="py-2.5 px-5 bg-secondary text-primary font-bold text-xs rounded-xl shadow-lg active:scale-95 transition flex items-center gap-1.5"
         >
           {paymentMethodMode === "upi" ? (

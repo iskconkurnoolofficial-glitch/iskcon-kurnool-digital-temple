@@ -1,28 +1,81 @@
-import { Monitor } from "lucide-react";
+import React from "react";
+import { Smartphone, Monitor, Download, CheckCircle } from "lucide-react";
 import { usePwaInstall } from "@/hooks/usePwaInstall";
+import InstallAppModal from "./InstallAppModal";
 
 interface InstallAppButtonProps {
-  variant?: "footer" | "banner";
+  variant?: "footer" | "drawer" | "banner";
   className?: string;
 }
 
 export default function InstallAppButton({ variant = "footer", className = "" }: InstallAppButtonProps) {
-  const { isInstalled, promptInstall } = usePwaInstall();
+  const { isInstalled, hasNativePrompt, promptInstall, isModalOpen, closeModal, deviceInfo } = usePwaInstall();
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     promptInstall();
   };
 
+  const IconComponent = deviceInfo.isMobile ? Smartphone : Monitor;
+
+  if (variant === "drawer") {
+    return (
+      <>
+        <button
+          onClick={handleClick}
+          type="button"
+          className={`w-full p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/15 border border-amber-500/30 hover:border-amber-400 text-slate-900 transition-all flex items-center justify-between group cursor-pointer ${className}`}
+        >
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center shadow-sm shrink-0 group-hover:scale-105 transition-transform">
+              {isInstalled ? <CheckCircle className="h-5 w-5" /> : <Smartphone className="h-5 w-5" />}
+            </div>
+            <div className="text-left">
+              <span className="font-bold text-xs block text-slate-900 leading-tight">
+                {isInstalled ? "App Installed" : "Install Mobile App"}
+              </span>
+              <span className="text-[10px] text-slate-500 block">
+                {isInstalled ? "Launch from Home Screen" : "1-Tap Home Screen shortcut"}
+              </span>
+            </div>
+          </div>
+          <span className="text-[11px] font-extrabold text-amber-700 bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-300">
+            {isInstalled ? "Installed" : "Install"}
+          </span>
+        </button>
+
+        <InstallAppModal
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          onInstall={promptInstall}
+          hasNativePrompt={hasNativePrompt}
+          isInstalled={isInstalled}
+          deviceInfo={deviceInfo}
+        />
+      </>
+    );
+  }
+
   return (
-    <button
-      onClick={handleClick}
-      type="button"
-      title="Directly install ISKCON Kurnool on your desktop via Chrome"
-      className={`group flex items-center gap-2 text-footer-foreground/80 hover:text-secondary transition-all duration-300 text-sm text-left cursor-pointer ${className}`}
-    >
-      <Monitor className="h-3.5 w-3.5 text-secondary shrink-0 group-hover:scale-110 transition-transform" />
-      <span>{isInstalled ? "Launch / Installed App" : "Install Desktop App (Chrome)"}</span>
-    </button>
+    <>
+      <button
+        onClick={handleClick}
+        type="button"
+        title="Install ISKCON Kurnool application on your device"
+        className={`group flex items-center gap-2 text-footer-foreground/80 hover:text-secondary transition-all duration-300 text-sm text-left cursor-pointer ${className}`}
+      >
+        <IconComponent className="h-3.5 w-3.5 text-secondary shrink-0 group-hover:scale-110 transition-transform" />
+        <span>{isInstalled ? "App Installed" : deviceInfo.isMobile ? "Install Mobile App" : "Install App"}</span>
+      </button>
+
+      <InstallAppModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onInstall={promptInstall}
+        hasNativePrompt={hasNativePrompt}
+        isInstalled={isInstalled}
+        deviceInfo={deviceInfo}
+      />
+    </>
   );
 }

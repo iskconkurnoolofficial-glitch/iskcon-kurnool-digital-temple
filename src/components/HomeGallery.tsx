@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useAdmin } from "@/context/AdminContext";
+import { getOptimizedCloudinaryUrl } from "@/utils/cloudinary";
 import { ChevronRight, ImageIcon } from "lucide-react";
 import { useRef } from "react";
 
@@ -86,9 +87,10 @@ export default function HomeGallery() {
                       className="relative min-w-[220px] sm:min-w-[280px] md:min-w-[320px] lg:min-w-[360px] flex-shrink-0 overflow-hidden rounded-2xl border border-white/10 shadow-[0_18px_60px_-30px_rgba(0,0,0,0.8)] transition-all duration-500 hover:border-secondary/40 hover:shadow-[0_20px_50px_rgba(232,103,12,0.15)] group/card"
                     >
                       <img
-                        src={photo.url}
-                        alt={photo.title}
+                        src={getOptimizedCloudinaryUrl(photo.url, "card")}
+                        alt={photo.title || "Sacred Darshan"}
                         loading="lazy"
+                        decoding="async"
                         className="h-[240px] w-full object-cover transition-transform duration-700 ease-out group-hover/card:scale-105 sm:h-[300px] md:h-[340px] lg:h-[360px]"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent opacity-0 group-hover/card:opacity-100 transition-all duration-500 flex items-end p-5">

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import { safeUrl } from "@/lib/utils";
+import { getOptimizedCloudinaryUrl } from "@/utils/cloudinary";
 import InstallAppButton from "@/components/InstallAppButton";
 
 export default function Footer() {
@@ -95,7 +96,13 @@ export default function Footer() {
           <div className="lg:col-span-4 space-y-6">
             <div className="flex items-center gap-3.5">
               {settings.logo ? (
-                <img src={settings.logo} alt="ISKCON Kurnool" className="h-14 w-14 rounded-2xl ring-2 ring-amber-400/60 object-cover shadow-lg" />
+                <img
+                  src={getOptimizedCloudinaryUrl(settings.logo, "thumbnail")}
+                  alt="ISKCON Kurnool"
+                  className="h-14 w-14 rounded-2xl ring-2 ring-amber-400/60 object-cover shadow-lg"
+                  loading="lazy"
+                  decoding="async"
+                />
               ) : (
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-amber-600 grid place-items-center font-display font-black text-slate-950 shadow-lg text-lg">
                   IK
