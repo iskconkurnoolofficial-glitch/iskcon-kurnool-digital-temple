@@ -644,7 +644,7 @@ function SettingsTab({
     if (!file) return;
     setUploadingHero(true);
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadToCloudinary(file, "ISKCON-KURNOOL/HouseProgrammes");
       setDraft((d) => ({ ...d, heroImage: url }));
       toast.success("Hero image uploaded!");
     } catch {
@@ -659,7 +659,7 @@ function SettingsTab({
     if (!file) return;
     setUploadingAbout(true);
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadToCloudinary(file, "ISKCON-KURNOOL/HouseProgrammes");
       setDraft((d) => ({ ...d, aboutImage: url }));
       toast.success("Left About image uploaded!");
     } catch {
@@ -674,7 +674,7 @@ function SettingsTab({
     if (!file) return;
     setUploadingAboutRight(true);
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadToCloudinary(file, "ISKCON-KURNOOL/HouseProgrammes");
       setDraft((d) => ({ ...d, aboutImageRight: url }));
       toast.success("Right About image uploaded!");
     } catch {
@@ -689,7 +689,7 @@ function SettingsTab({
     if (!file) return;
     setUploadingQuote(true);
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadToCloudinary(file, "ISKCON-KURNOOL/HouseProgrammes");
       setDraft((d) => ({ ...d, quoteImage: url }));
       toast.success("Quote card image uploaded!");
     } catch {
@@ -704,7 +704,7 @@ function SettingsTab({
     if (!file) return;
     setUploadingKartika(true);
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadToCloudinary(file, "ISKCON-KURNOOL/HouseProgrammes");
       setDraft((d) => ({ ...d, kartikaImage: url }));
       toast.success("Kartika Special image uploaded!");
     } catch {
@@ -1051,7 +1051,7 @@ function ActivitiesTab({
     if (!file || !editingActivity) return;
     setUploading(true);
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadToCloudinary(file, "ISKCON-KURNOOL/HouseProgrammes");
       setEditingActivity({ ...editingActivity, image: url });
       toast.success("Image uploaded!");
     } catch {
@@ -1250,7 +1250,7 @@ function GalleryTab({
     if (!file) return;
     setUploading(true);
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadToCloudinary(file, "ISKCON-KURNOOL/HouseProgrammes");
       setNewUrl(url);
       toast.success("Photo uploaded!");
     } catch {

@@ -97,7 +97,7 @@ export default function LiveProgrammeManager() {
   const onPickThumbnail = async (f: File) => {
     setBusy(true);
     try {
-      const url = await uploadToCloudinary(f);
+      const url = await uploadToCloudinary(f, "ISKCON-KURNOOL/LiveProgrammes");
       setThumbnailUrl(url);
       toast.success("Broadcast thumbnail uploaded!");
     } catch {

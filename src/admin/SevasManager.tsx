@@ -194,7 +194,7 @@ export default function SevasManager() {
   const upload = async (file: File) => {
     setBusy(true);
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadToCloudinary(file, "ISKCON-KURNOOL/Sevas");
       setDraft((d) => ({ ...d, thumbnail: url }));
       toast.success("Thumbnail uploaded!");
     } catch { 

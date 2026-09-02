@@ -95,7 +95,7 @@ function SettingsTab({ harinama, update }: { harinama: HarinamaData; update: (p:
   const pickImage = async (f: File) => {
     setBusy(true);
     try {
-      const url = await uploadToCloudinary(f);
+      const url = await uploadToCloudinary(f, "ISKCON-KURNOOL/Harinama");
       update({ aboutImage: url });
       toast.success("Cover image uploaded!");
     } catch {
@@ -198,7 +198,7 @@ function GalleryTab({ harinama, update }: { harinama: HarinamaData; update: (p: 
   const onPick = async (f: File) => {
     setBusy(true);
     try { 
-      const u = await uploadToCloudinary(f);
+      const u = await uploadToCloudinary(f, "ISKCON-KURNOOL/Harinama");
       setUrl(u); 
       toast.success("Photo uploaded!");
     } catch { 

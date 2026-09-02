@@ -65,7 +65,7 @@ function PaymentPageRoute() {
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [coverPlatformFee, setCoverPlatformFee] = useState(true);
-  const [paymentMethodMode, setPaymentMethodMode] = useState<"upi" | "razorpay">("razorpay");
+  const [paymentMethodMode, setPaymentMethodMode] = useState<"upi" | "razorpay" | "">("");
 
   // Dynamic UPI Payment Modal state
   const [upiModalData, setUpiModalData] = useState<{
@@ -188,7 +188,12 @@ function PaymentPageRoute() {
     const donorEmailVal = fieldValues["f2"] || fieldValues["email"] || "";
     const donorPhoneVal = fieldValues["f3"] || fieldValues["phone"] || "";
     const donorPanVal = fieldValues["f6"] || fieldValues["pan"] || "";
-    const chosenMethod = methodToUse || paymentMethodMode || "upi";
+    const chosenMethod = methodToUse || paymentMethodMode;
+
+    if (!chosenMethod) {
+      alert("Please select a Payment Mode (Online Gateway or Pay with UPI QR) before proceeding.");
+      return;
+    }
 
     if (chosenMethod === "upi" || (upiPayment.enabled && !upiPayment.allowRazorpayGateway)) {
       setUpiModalData({

@@ -37,7 +37,7 @@ export default function UpiSettingsManager() {
   const onQrCodeUpload = async (f: File) => {
     setBusy(true);
     try {
-      const url = await uploadToCloudinary(f);
+      const url = await uploadToCloudinary(f, "ISKCON-KURNOOL/Upi");
       updateUpi("customQrImage", url);
       toast.success("Static UPI QR code image uploaded successfully.");
     } catch {

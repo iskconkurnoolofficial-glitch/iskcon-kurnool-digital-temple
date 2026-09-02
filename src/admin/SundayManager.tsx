@@ -105,7 +105,7 @@ function SettingsTab({ sunday, update }: { sunday: SundayData; update: (p: Parti
   const pickImage = async (f: File) => {
     setBusy(true);
     try {
-      const url = await uploadToCloudinary(f);
+      const url = await uploadToCloudinary(f, "ISKCON-KURNOOL/SundayFeast");
       update({ logo: url });
       toast.success("Logo uploaded!");
     } catch {
@@ -117,7 +117,7 @@ function SettingsTab({ sunday, update }: { sunday: SundayData; update: (p: Parti
   const pickTimingsImage = async (f: File) => {
     setBusy(true);
     try {
-      const url = await uploadToCloudinary(f);
+      const url = await uploadToCloudinary(f, "ISKCON-KURNOOL/SundayFeast");
       update({ timingsImage: url });
       toast.success("Timings section image uploaded!");
     } catch {
@@ -426,7 +426,7 @@ function ActivitiesTab({ sunday, update }: { sunday: SundayData; update: (p: Par
   const onPickImage = async (f: File) => {
     setBusy(true);
     try {
-      const url = await uploadToCloudinary(f);
+      const url = await uploadToCloudinary(f, "ISKCON-KURNOOL/SundayFeast");
       setImageUrl(url);
       toast.success("Activity image uploaded!");
     } catch {
@@ -634,7 +634,7 @@ function SponsorsTab({
   const handleUploadImage = async (slotIndex: number, file: File) => {
     setUploadingSlot(slotIndex);
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadToCloudinary(file, "ISKCON-KURNOOL/SundayFeast");
       const currentImages = [...(draft.images || [])];
       while (currentImages.length <= slotIndex) {
         currentImages.push("");
@@ -987,7 +987,7 @@ function GalleryTab({ sunday, update }: { sunday: SundayData; update: (p: Partia
   const onPick = async (f: File) => {
     setBusy(true);
     try { 
-      const u = await uploadToCloudinary(f);
+      const u = await uploadToCloudinary(f, "ISKCON-KURNOOL/SundayFeast");
       setUrl(u); 
       toast.success("Photo uploaded!");
     } catch { 

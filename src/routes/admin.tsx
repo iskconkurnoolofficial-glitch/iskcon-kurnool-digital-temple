@@ -30,7 +30,7 @@ import TermsManager from "@/admin/TermsManager";
 import PrivacyManager from "@/admin/PrivacyManager";
 import ReceiptSettingsManager from "@/admin/ReceiptSettingsManager";
 import UpiSettingsManager from "@/admin/UpiSettingsManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard, Video, Bell, ShieldCheck, Compass, Sun, Tv, Award, FileText, Lock, FileCheck, QrCode } from "lucide-react";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard, Video, Bell, ShieldCheck, Compass, Sun, Tv, Award, FileText, Lock, FileCheck, QrCode, Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
@@ -43,6 +43,7 @@ function AdminPage() {
   const { authed, login, logout, settings, contacts, setContacts, paymentRecords, houseProgrammes, markAllHouseProgrammeRequestsRead, markAllPaymentRecordsRead, youthYatra, markAllYatraRegistrationsRead, bhaktiSteps, markAllBhaktiStepsRegistrationsRead, currentUser } = useAdmin();
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState<Tab>("welcome");
@@ -122,17 +123,41 @@ function AdminPage() {
 
   if (!authed) {
     return (
-      <div className="min-h-screen bg-gradient-soft grid place-items-center px-4">
-        <div className="bg-white rounded-2xl shadow-elegant p-8 w-full max-w-md border">
-          <div className="text-center mb-6">
-            {settings.logo ? (
-              <img src={settings.logo} alt="ISKCON Kurnool" className="h-20 w-20 rounded-full object-cover mx-auto mb-3 ring-2 ring-secondary/60 shadow-glow" />
-            ) : (
-              <div className="h-20 w-20 rounded-full bg-gradient-hero grid place-items-center text-primary-foreground font-display font-bold text-2xl mx-auto mb-3 shadow-glow">IK</div>
-            )}
-            <h1 className="font-display text-2xl font-bold text-primary">Admin Login</h1>
-            <p className="text-sm text-muted-foreground">ISKCON Kurnool</p>
+      <div className="min-h-screen relative overflow-hidden bg-gradient-to-b from-[#2d1254] via-[#1a0836] to-[#0d031c] grid place-items-center px-4 py-12 font-sans">
+        {/* Soft glowing ambient background light orbs */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-amber-500/15 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(#f5c518_1px,transparent_1px)] [background-size:28px_28px] opacity-[0.05] pointer-events-none" />
+
+        <div className="relative w-full max-w-md bg-white/95 backdrop-blur-2xl rounded-3xl border border-white/30 p-8 sm:p-10 shadow-[0_20px_60px_rgba(0,0,0,0.4)] space-y-6 animate-fade-in">
+          {/* Header & Logo */}
+          <div className="text-center space-y-3">
+            <div className="relative inline-block group">
+              <div className="absolute inset-0 bg-amber-400/30 rounded-full blur-xl group-hover:bg-amber-400/50 transition-all duration-300" />
+              {settings.logo ? (
+                <img
+                  src={settings.logo}
+                  alt="ISKCON Kurnool Logo"
+                  className="relative h-20 w-20 rounded-full object-cover mx-auto ring-4 ring-amber-400/80 shadow-xl"
+                />
+              ) : (
+                <div className="relative h-20 w-20 rounded-full bg-gradient-to-tr from-amber-400 via-orange-500 to-amber-600 grid place-items-center text-slate-950 font-display font-black text-2xl mx-auto shadow-xl ring-4 ring-amber-400/80">
+                  IK
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-slate-900 tracking-tight">
+                Admin Portal
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium">
+                Sri Sri Puri Jagannath Temple, ISKCON Kurnool
+              </p>
+            </div>
           </div>
+
+          {/* Login Form */}
           <form
             onSubmit={async (e) => {
               e.preventDefault();
@@ -146,28 +171,87 @@ function AdminPage() {
                 setErr(res.error || "Invalid credentials");
               }
             }}
+            className="space-y-4"
           >
-            <input
-              type="text"
-              autoFocus
-              placeholder="Email / Username (e.g. superadmin@iskconkurnool.in)"
-              value={email}
-              onChange={(e) => { setEmail(e.target.value); setErr(""); }}
-              className="w-full px-4 py-3 border rounded-lg mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={pw}
-              onChange={(e) => { setPw(e.target.value); setErr(""); }}
-              className="w-full px-4 py-3 border rounded-lg mb-3"
-            />
-            {err && <p className="text-destructive text-sm mb-3">{err}</p>}
-            <button disabled={busy} className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-medium disabled:opacity-60">
-              {busy ? "Signing in…" : "Sign In"}
+            {/* Email Field */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                Email / Username <span className="text-destructive">*</span>
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                <input
+                  type="text"
+                  autoFocus
+                  required
+                  placeholder="superadmin@iskconkurnool.in"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); setErr(""); }}
+                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200/90 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 focus:outline-none transition-all shadow-2xs"
+                />
+              </div>
+            </div>
+
+            {/* Password Field with Eye Toggle */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                Password <span className="text-destructive">*</span>
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  placeholder="Enter admin password"
+                  value={pw}
+                  onChange={(e) => { setPw(e.target.value); setErr(""); }}
+                  className="w-full pl-10 pr-11 py-3 bg-slate-50 border border-slate-200/90 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 focus:outline-none transition-all shadow-2xs"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition p-1 cursor-pointer rounded-lg hover:bg-slate-100"
+                  title={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-amber-600" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {err && (
+              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-bold flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 shrink-0 text-red-600" />
+                <span>{err}</span>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={busy}
+              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black text-xs sm:text-sm tracking-wide uppercase shadow-lg shadow-amber-500/25 hover:scale-[1.02] active:scale-98 transition-all cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              <ShieldCheck className="h-4 w-4 text-slate-950" />
+              <span>{busy ? "Authenticating..." : "Sign In to Dashboard"}</span>
             </button>
           </form>
-          <Link to="/" className="block text-center mt-4 text-sm text-muted-foreground hover:text-primary">← Back to site</Link>
+
+          {/* Footer Helper Links */}
+          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1.5 font-bold text-slate-600 hover:text-amber-600 transition"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>Back to Public Site</span>
+            </Link>
+            <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+              Protected Portal
+            </span>
+          </div>
         </div>
       </div>
     );

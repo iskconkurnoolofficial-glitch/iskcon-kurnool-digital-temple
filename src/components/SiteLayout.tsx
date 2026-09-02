@@ -5,7 +5,6 @@ import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { useAdmin } from "@/context/AdminContext";
 import LanguageToggle from "@/components/LanguageToggle";
-import ContentSizeAdjuster from "@/components/ContentSizeAdjuster";
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
   return (
@@ -20,7 +19,6 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       <Footer />
       <FloatingWhatsApp />
       <LanguageToggle layout="vertical-sticky" />
-      <ContentSizeAdjuster layout="vertical-sticky" />
       <MobileBottomNav />
     </div>
   );

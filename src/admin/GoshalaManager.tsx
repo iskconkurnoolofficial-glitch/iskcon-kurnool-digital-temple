@@ -95,7 +95,7 @@ function SettingsTab({ goshala, update }: { goshala: GoshalaData; update: (p: Pa
   const pickImage = async (f: File) => {
     setBusy(true);
     try {
-      const url = await uploadToCloudinary(f);
+      const url = await uploadToCloudinary(f, "ISKCON-KURNOOL/Goshala");
       update({ aboutImage: url });
       toast.success("Goshala cover image uploaded!");
     } catch {
@@ -216,7 +216,7 @@ function GalleryTab({ goshala, update }: { goshala: GoshalaData; update: (p: Par
   const onPick = async (f: File) => {
     setBusy(true);
     try { 
-      const u = await uploadToCloudinary(f);
+      const u = await uploadToCloudinary(f, "ISKCON-KURNOOL/Goshala");
       setUrl(u); 
       toast.success("Photo uploaded!");
     } catch { 

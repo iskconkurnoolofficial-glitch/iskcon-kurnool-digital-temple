@@ -109,7 +109,7 @@ export default function ReceiptSettingsManager() {
   const handleUploadLogo = async (file: File) => {
     setUploadingLogo(true);
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadToCloudinary(file, "ISKCON-KURNOOL/Receipts");
       update("customReceiptLogo", url);
       update("useNavLogo", false);
       toast.success("Receipt logo uploaded successfully.");
@@ -123,7 +123,7 @@ export default function ReceiptSettingsManager() {
   const handleUploadSignature = async (file: File) => {
     setUploadingSig(true);
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadToCloudinary(file, "ISKCON-KURNOOL/Receipts");
       update("signatureImage", url);
       toast.success("Authorized signature uploaded successfully.");
     } catch {
@@ -136,7 +136,7 @@ export default function ReceiptSettingsManager() {
   const handleUploadSeal = async (file: File) => {
     setUploadingSeal(true);
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadToCloudinary(file, "ISKCON-KURNOOL/Receipts");
       update("sealImage", url);
       toast.success("Temple seal / stamp uploaded.");
     } catch {

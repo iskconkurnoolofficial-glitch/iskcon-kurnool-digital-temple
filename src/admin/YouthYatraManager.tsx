@@ -405,7 +405,7 @@ export default function YouthYatraManager() {
   const handleImageUpload = async (file: File, callback: (url: string) => void) => {
     try {
       toast.loading("Uploading image to Cloudinary...");
-      const url = await uploadToCloudinary(file);
+      const url = await uploadToCloudinary(file, "ISKCON-KURNOOL/YouthYatra");
       callback(url);
       toast.dismiss();
       toast.success("Image uploaded successfully!");

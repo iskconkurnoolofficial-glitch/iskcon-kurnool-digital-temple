@@ -14,7 +14,7 @@ export default function HeroBannersManager() {
   const pickImage = async (key: keyof HeroBannersData, file: File) => {
     setBusy(key);
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadToCloudinary(file, "ISKCON-KURNOOL/HeroBanners");
       update(key, url);
     } catch {
       alert("Upload failed");

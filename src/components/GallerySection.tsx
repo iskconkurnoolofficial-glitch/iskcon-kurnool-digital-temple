@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { X, ChevronLeft, ChevronRight, Download, FolderOpen, Image as ImageIcon } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
+import { getOptimizedCloudinaryUrl } from "@/utils/cloudinary";
 
 const downloadAsPng = async (url: string, filename: string) => {
   try {
@@ -153,7 +154,7 @@ export default function GallerySection() {
                       onClick={() => setLightbox(idx)}
                       className="w-full block cursor-zoom-in overflow-hidden relative"
                     >
-                      <img src={p.url} alt={p.title} loading="lazy" className="w-full h-auto group-hover:scale-105 transition-transform duration-500 rounded-3xl" />
+                      <img src={getOptimizedCloudinaryUrl(p.url, "gallery")} alt={p.title} loading="lazy" className="w-full h-auto group-hover:scale-105 transition-transform duration-500 rounded-3xl" />
                     </button>
 
                     {/* Hover Overlay */}
@@ -253,7 +254,7 @@ export default function GallerySection() {
           <button onClick={() => setLightbox((i) => (i! - 1 + filteredPhotos.length) % filteredPhotos.length)} className="absolute left-4 text-white p-3 cursor-pointer" aria-label="Previous"><ChevronLeft className="h-8 w-8" /></button>
           <button onClick={() => setLightbox((i) => (i! + 1) % filteredPhotos.length)} className="absolute right-4 text-white p-3 cursor-pointer" aria-label="Next"><ChevronRight className="h-8 w-8" /></button>
           <figure className="max-w-6xl max-h-[85vh] flex flex-col items-center gap-4">
-            <img src={filteredPhotos[lightbox].url} alt={filteredPhotos[lightbox].title} className="max-h-[75vh] w-auto rounded-lg shadow-2xl border border-white/10" />
+            <img src={getOptimizedCloudinaryUrl(filteredPhotos[lightbox].url, "lightbox")} alt={filteredPhotos[lightbox].title} className="max-h-[75vh] w-auto rounded-lg shadow-2xl border border-white/10" />
             <figcaption className="text-white/90 text-sm flex items-center gap-3 bg-white/10 backdrop-blur-md py-1.5 px-4 rounded-full border border-white/15">
               <span>{filteredPhotos[lightbox].title}</span>
               <button

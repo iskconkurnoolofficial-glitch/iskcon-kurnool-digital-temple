@@ -15,7 +15,7 @@ export default function CarouselManager() {
   const upload = async (file: File, key: "desktop" | "mobile" | "video") => {
     setBusy(true);
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadToCloudinary(file, "ISKCON-KURNOOL/Carousel");
       setDraft((d) => ({ ...d, [key]: url }));
       toast.success(`${key.toUpperCase()} media uploaded!`);
     } catch (e) { 

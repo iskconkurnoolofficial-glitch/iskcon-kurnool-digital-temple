@@ -138,7 +138,7 @@ export default function UpiPaymentModal({
 
     setIsUploadingImage(true);
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadToCloudinary(file, "ISKCON-KURNOOL/PaymentScreenshots");
       setScreenshotUrl(url);
       toast.success("Payment screenshot uploaded successfully!");
     } catch (err) {

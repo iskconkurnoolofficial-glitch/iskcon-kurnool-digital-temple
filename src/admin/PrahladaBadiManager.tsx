@@ -102,7 +102,7 @@ function SettingsTab({ data, update }: { data: PrahladaBadiData; update: (p: Par
   const pickHeroImage = async (f: File) => {
     setBusy(true);
     try {
-      const url = await uploadToCloudinary(f);
+      const url = await uploadToCloudinary(f, "ISKCON-KURNOOL/PrahladaBadi");
       update({ heroImage: url });
       toast.success("Hero banner uploaded!");
     } catch {
@@ -476,7 +476,7 @@ function GalleryTab({ data, update }: { data: PrahladaBadiData; update: (p: Part
   const onPick = async (f: File) => {
     setBusy(true);
     try {
-      setUrl(await uploadToCloudinary(f));
+      setUrl(await uploadToCloudinary(f, "ISKCON-KURNOOL/PrahladaBadi"));
       toast.success("Photo uploaded!");
     } catch {
       toast.error("Image upload failed");

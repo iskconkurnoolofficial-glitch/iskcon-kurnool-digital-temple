@@ -59,7 +59,7 @@ export default function SiteSettingsForm() {
   const onLogo = async (f: File) => {
     setBusy(true);
     try {
-      const url = await uploadToCloudinary(f);
+      const url = await uploadToCloudinary(f, "ISKCON-KURNOOL/Settings");
       setS((p) => ({ ...p, logo: url }));
       toast.success("Logo uploaded successfully.");
     } catch {
@@ -72,7 +72,7 @@ export default function SiteSettingsForm() {
   const onWelcomeImage = async (f: File) => {
     setBusy(true);
     try {
-      const url = await uploadToCloudinary(f);
+      const url = await uploadToCloudinary(f, "ISKCON-KURNOOL/Settings");
       setS((p) => ({ ...p, welcomeImage: url }));
       toast.success("Welcome section image uploaded.");
     } catch {
@@ -85,7 +85,7 @@ export default function SiteSettingsForm() {
   const onQuickDonateImage = async (f: File) => {
     setBusy(true);
     try {
-      const url = await uploadToCloudinary(f);
+      const url = await uploadToCloudinary(f, "ISKCON-KURNOOL/Settings");
       setS((p) => ({ ...p, quickDonateImage: url }));
       toast.success("Quick donate image uploaded.");
     } catch {
@@ -98,7 +98,7 @@ export default function SiteSettingsForm() {
   const onQrCodeUpload = async (f: File) => {
     setBusy(true);
     try {
-      const url = await uploadToCloudinary(f);
+      const url = await uploadToCloudinary(f, "ISKCON-KURNOOL/Upi");
       setUpi((p) => ({ ...p, customQrImage: url }));
       toast.success("Static UPI QR code image uploaded successfully.");
     } catch {

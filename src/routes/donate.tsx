@@ -66,8 +66,8 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   const [selected, setSelected] = useState<Record<string, number>>({});
   const [checkoutSeva, setCheckoutSeva] = useState<Seva | null>(null);
 
-  // Payment method selection: "upi" or "razorpay"
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"upi" | "razorpay">("razorpay");
+  // Payment method selection: "upi" | "razorpay" | "" (unselected by default)
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"upi" | "razorpay" | "">("");
 
   // Dynamic UPI Payment Modal state
   const [upiModalData, setUpiModalData] = useState<{
@@ -99,7 +99,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   const [quickPurpose, setQuickPurpose] = useState("");
   const [quickPan, setQuickPan] = useState("");
   const [quickCoverFee, setQuickCoverFee] = useState(true);
-  const [quickPaymentMethod, setQuickPaymentMethod] = useState<"upi" | "razorpay">("razorpay");
+  const [quickPaymentMethod, setQuickPaymentMethod] = useState<"upi" | "razorpay" | "">("");
   const [quickIsSubmitting, setQuickIsSubmitting] = useState(false);
 
   // Success Receipt Modal State
@@ -340,7 +340,12 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     const curPan = (customDetails?.pan ?? pan).trim();
     const curPurpose = (customDetails?.purpose ?? purpose).trim();
     const curCoverFee = customDetails ? (customDetails.coverFee ?? true) : coverPlatformFee;
-    const curMethod = customDetails?.paymentMethod || selectedPaymentMethod || "upi";
+    const curMethod = customDetails?.paymentMethod || selectedPaymentMethod;
+
+    if (!curMethod) {
+      alert("Please select a Payment Mode (Online Gateway or Pay with UPI QR) before proceeding.");
+      return;
+    }
 
     // Store every submission in the admin panel before opening the gateway or QR modal
     const enquiryId = await addDonation({
@@ -538,7 +543,11 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       return;
     }
 
-    const chosenMethod = methodToUse || quickPaymentMethod || "razorpay";
+    const chosenMethod = methodToUse || quickPaymentMethod;
+    if (!chosenMethod) {
+      alert("Please select a Payment Mode (Online Gateway or Pay with UPI QR) before proceeding.");
+      return;
+    }
     setQuickIsSubmitting(true);
     try {
       await donate(
@@ -797,21 +806,6 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                       <span className="text-base text-accent font-extrabold font-sans">₹{finalAmount.toLocaleString("en-IN")}</span>
                     </div>
                   </div>
-
-                  {/* Proceed to Enter Details Button */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const formEl = document.getElementById("donor-form");
-                      formEl?.scrollIntoView({ behavior: "smooth", block: "start" });
-                      const nameInput = document.getElementById("donor-name-input");
-                      nameInput?.focus();
-                    }}
-                    className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white font-extrabold text-xs sm:text-sm tracking-wide uppercase shadow-md shadow-orange-500/20 hover:shadow-lg transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 font-sans hover:scale-[1.01] active:scale-98"
-                  >
-                    <span>Next: Enter Devotee Details (₹{finalAmount.toLocaleString("en-IN")})</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
                 </div>
               </div>
 

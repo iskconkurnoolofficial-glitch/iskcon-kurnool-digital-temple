@@ -19,6 +19,11 @@ export type GalleryPhoto = {
   url: string;
   title: string;
   category: string;
+  public_id?: string;
+  width?: number;
+  height?: number;
+  format?: string;
+  created_at?: string;
 };
 
 export type DriveAlbum = {
@@ -3833,7 +3838,17 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       requests: [newEntry, ...(houseProgrammes.requests || [])],
     };
     setHouseProgrammesState(updated);
-    await persist(KEYS.houseProgrammes, updated);
+
+    try {
+      const { submitHouseProgrammeRequestServer } = await import("@/lib/house-programme.functions");
+      const res = await submitHouseProgrammeRequestServer({ data: req });
+      if (!res?.ok) {
+        await persist(KEYS.houseProgrammes, updated);
+      }
+    } catch (e) {
+      console.error("Server submission fallback for House Programme:", e);
+      await persist(KEYS.houseProgrammes, updated);
+    }
   };
 
   const updateHouseProgrammeRequestStatus = async (id: string, status: HouseProgrammeRequest["status"]) => {
@@ -3887,6 +3902,17 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       registrations: [newEntry, ...(youthYatra.registrations || [])],
     };
     setYouthYatraState(updated);
+
+    try {
+      const { submitYatraRegistrationServer } = await import("@/lib/youth-yatra.functions");
+      const res = await submitYatraRegistrationServer({ data: reg });
+      if (res?.ok && res.regId) {
+        return res.regId;
+      }
+    } catch (e) {
+      console.error("Server submission fallback for Youth Yatra:", e);
+    }
+
     await persist(KEYS.youthYatra, updated);
     return regId;
   };
@@ -4043,6 +4069,17 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       registrations: [newEntry, ...(bhaktiSteps.registrations || [])],
     };
     setBhaktiStepsState(updated);
+
+    try {
+      const { submitBhaktiStepsRegistrationServer } = await import("@/lib/bhakti-steps.functions");
+      const res = await submitBhaktiStepsRegistrationServer({ data: reg });
+      if (res?.ok && res.regId) {
+        return res.regId;
+      }
+    } catch (e) {
+      console.error("Server submission fallback for Bhakti Steps:", e);
+    }
+
     await persist(KEYS.bhaktiSteps, updated);
     return regId;
   };
@@ -4358,29 +4395,5 @@ export function useAdmin() {
   return c;
 }
 
-// Cloudinary upload helper
-export async function uploadToCloudinary(file: File): Promise<string> {
-  const cloud = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "drsshk5xy";
-  const preset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "ISKCON_KURNOOL_CLOUDINARY";
-  const fd = new FormData();
-  fd.append("file", file);
-  fd.append("upload_preset", preset);
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloud}/auto/upload`, {
-    method: "POST",
-    body: fd,
-  });
-  if (!res.ok) throw new Error("Cloudinary upload failed");
-  const data = await res.json();
-  const secureUrl = data.secure_url as string;
-  if (secureUrl) {
-    try {
-      const raw = localStorage.getItem("iskcon_uploaded_images_history");
-      const list: string[] = raw ? JSON.parse(raw) : [];
-      if (!list.includes(secureUrl)) {
-        list.unshift(secureUrl);
-        localStorage.setItem("iskcon_uploaded_images_history", JSON.stringify(list.slice(0, 300)));
-      }
-    } catch {}
-  }
-  return secureUrl;
-}
+// Cloudinary upload helpers re-exported from @/utils/cloudinary
+export { uploadToCloudinary, uploadToCloudinaryDetailed } from "@/utils/cloudinary";

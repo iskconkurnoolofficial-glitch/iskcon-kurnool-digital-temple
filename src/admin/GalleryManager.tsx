@@ -1,12 +1,19 @@
 import { useState } from "react";
-import { useAdmin, uploadToCloudinary, DriveAlbum } from "@/context/AdminContext";
+import { useAdmin, uploadToCloudinary, DriveAlbum, GalleryPhoto } from "@/context/AdminContext";
 import AdminModal from "./AdminModal";
+import MediaLibraryModal from "./MediaLibraryModal";
 import { 
   Trash2, Plus, X, Pencil, Check, Image as ImageIcon, 
   Sparkles, Eye, Tag, Search, FolderOpen, ExternalLink, Globe, EyeOff, Folder
 } from "lucide-react";
 import { UploadBox } from "./CarouselManager";
 import { toast } from "sonner";
+import { 
+  getGalleryCloudinaryFolder, 
+  uploadToCloudinaryDetailed, 
+  extractCloudinaryPublicId, 
+  validateImageFile 
+} from "@/utils/cloudinary";
 
 export function extractGoogleDriveFolderId(url: string): string | null {
   if (!url) return null;
@@ -33,10 +40,15 @@ export default function GalleryManager() {
   // State for Photo Stream Form
   const [busy, setBusy] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const [cat, setCat] = useState(categories[0] || "Temple");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [publicId, setPublicId] = useState<string | undefined>(undefined);
+  const [photoMetaData, setPhotoMetaData] = useState<{ width?: number; height?: number; format?: string; created_at?: string }>({});
+
   const [newCat, setNewCat] = useState("");
   const [selectedCatFilter, setSelectedCatFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -52,16 +64,25 @@ export default function GalleryManager() {
   const [albumBusy, setAlbumBusy] = useState(false);
 
   // Photo Stream Handlers
-  const onPick = async (f: File) => {
-    setBusy(true);
-    try { 
-      const uploadedUrl = await uploadToCloudinary(f);
-      setUrl(uploadedUrl); 
-      toast.success("Photo uploaded!");
-    } catch { 
-      toast.error("Upload failed"); 
+  const onPick = (f: File) => {
+    const val = validateImageFile(f);
+    if (!val.valid) {
+      toast.error(val.error || "Invalid file format or size");
+      return;
     }
-    setBusy(false);
+    setSelectedFile(f);
+    setUrl(URL.createObjectURL(f));
+    setPublicId(undefined);
+    toast.info("Image selected. Click 'Add Photo' to upload to Cloudinary.");
+  };
+
+  const onSelectPreUploaded = (selectedUrl: string) => {
+    setSelectedFile(null);
+    setUrl(selectedUrl);
+    const extracted = extractCloudinaryPublicId(selectedUrl);
+    setPublicId(extracted);
+    setIsLibraryOpen(false);
+    toast.success("Pre-uploaded image selected!");
   };
 
   const resetForm = () => {
@@ -69,6 +90,9 @@ export default function GalleryManager() {
     setUrl("");
     setTitle("");
     setCat(categories[0] || "Temple");
+    setSelectedFile(null);
+    setPublicId(undefined);
+    setPhotoMetaData({});
   };
 
   const openNew = () => {
@@ -76,17 +100,27 @@ export default function GalleryManager() {
     setIsModalOpen(true);
   };
 
-  const startEdit = (p: { id: string; url: string; title: string; category: string }) => {
+  const startEdit = (p: GalleryPhoto) => {
     setEditingId(p.id);
     setUrl(p.url);
     setTitle(p.title);
     setCat(p.category || categories[0] || "Temple");
+    setPublicId(p.public_id || extractCloudinaryPublicId(p.url));
+    setPhotoMetaData({
+      width: p.width,
+      height: p.height,
+      format: p.format,
+      created_at: p.created_at,
+    });
+    setSelectedFile(null);
     setIsModalOpen(true);
   };
 
-  const save = () => {
-    if (!url.trim()) {
-      toast.error("Please upload or enter an image URL");
+  const save = async () => {
+    if (busy) return;
+
+    if (!url.trim() && !selectedFile) {
+      toast.error("Please upload or select a gallery photo");
       return;
     }
     if (!title.trim()) {
@@ -94,15 +128,55 @@ export default function GalleryManager() {
       return;
     }
 
-    if (editingId) {
-      setPhotos(photos.map((p) => (p.id === editingId ? { ...p, url, title, category: cat } : p)));
-      toast.success("Photo updated successfully!");
-    } else {
-      setPhotos([...photos, { id: Date.now().toString(), url, title, category: cat }]);
-      toast.success("✨ New photo added to gallery!");
+    setBusy(true);
+    try {
+      let finalUrl = url;
+      let finalPublicId = publicId || extractCloudinaryPublicId(url);
+      let width = photoMetaData.width;
+      let height = photoMetaData.height;
+      let format = photoMetaData.format;
+      let createdAt = photoMetaData.created_at || new Date().toISOString();
+
+      // Upload local file directly to category Cloudinary folder
+      if (selectedFile) {
+        const targetFolder = getGalleryCloudinaryFolder(cat);
+        const uploadRes = await uploadToCloudinaryDetailed(selectedFile, targetFolder);
+        finalUrl = uploadRes.secure_url;
+        finalPublicId = uploadRes.public_id;
+        width = uploadRes.width;
+        height = uploadRes.height;
+        format = uploadRes.format;
+        createdAt = uploadRes.created_at;
+      }
+
+      const nextPhoto: GalleryPhoto = {
+        id: editingId || Date.now().toString(),
+        url: finalUrl,
+        title: title.trim(),
+        category: cat,
+        public_id: finalPublicId,
+        width,
+        height,
+        format,
+        created_at: createdAt,
+      };
+
+      if (editingId) {
+        setPhotos(photos.map((p) => (p.id === editingId ? nextPhoto : p)));
+        toast.success("Photo updated successfully!");
+      } else {
+        setPhotos([nextPhoto, ...photos]);
+        toast.success("Photo Added Successfully");
+      }
+
+      setIsModalOpen(false);
+      resetForm();
+    } catch (err: any) {
+      console.error("Gallery upload error:", err);
+      toast.error(err?.message || "Cloudinary upload failed");
+    } finally {
+      setBusy(false);
     }
-    setIsModalOpen(false);
-    resetForm();
   };
 
   const removePhoto = (id: string, photoTitle: string) => {
@@ -525,14 +599,23 @@ export default function GalleryManager() {
         maxWidth="xl"
       >
         <div className="space-y-5">
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center gap-2">
             <UploadBox
               label="Gallery Photo"
               url={url}
               onPick={onPick}
+              onSelectUrl={onSelectPreUploaded}
               aspect="aspect-square"
               className="w-full max-w-[200px]"
             />
+            <button
+              type="button"
+              onClick={() => setIsLibraryOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition cursor-pointer"
+            >
+              <ImageIcon className="h-3.5 w-3.5 text-amber-600" />
+              <span>Choose Pre-Uploaded</span>
+            </button>
           </div>
 
           <div className="space-y-4">
@@ -572,7 +655,7 @@ export default function GalleryManager() {
               disabled={busy}
               className="px-8 py-3 rounded-2xl bg-gradient-to-r from-primary via-purple-700 to-indigo-700 text-white font-bold text-xs sm:text-sm shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
             >
-              {busy ? "Saving..." : (editingId ? "Save Changes" : "Add Photo")}
+              {busy ? "Uploading..." : (editingId ? "Save Changes" : "Add Photo")}
             </button>
             <button
               type="button"
@@ -587,6 +670,16 @@ export default function GalleryManager() {
           </div>
         </div>
       </AdminModal>
+
+      {/* MEDIA LIBRARY MODAL FOR CHOOSE PRE-UPLOADED */}
+      {isLibraryOpen && (
+        <MediaLibraryModal
+          isOpen={isLibraryOpen}
+          onClose={() => setIsLibraryOpen(false)}
+          onSelectImage={onSelectPreUploaded}
+          title="Choose Pre-Uploaded Image"
+        />
+      )}
 
       {/* POPUP MODAL FOR ADD / EDIT GOOGLE DRIVE ALBUM */}
       <AdminModal

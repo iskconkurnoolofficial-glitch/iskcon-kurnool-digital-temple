@@ -35,7 +35,6 @@ import {
 import { useAdmin } from "@/context/AdminContext";
 import LiveClassBanner from "@/components/LiveClassBanner";
 import LanguageToggle from "@/components/LanguageToggle";
-import ContentSizeAdjuster from "@/components/ContentSizeAdjuster";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLiveClass } from "@/hooks/useLiveClass";
 import { isTimeStrLive } from "@/lib/scheduleUtils";
@@ -666,7 +665,6 @@ export default function Navbar() {
                 {/* Drawer Footer Section */}
                 <div className="border-t border-slate-200 bg-slate-50 p-4 space-y-3 shrink-0">
                   <LanguageToggle className="w-full justify-center" />
-                  <ContentSizeAdjuster layout="horizontal" className="shadow-none bg-white border-slate-200/80" />
                   
                   {/* Social Quick Links */}
                   <div className="flex justify-center gap-3 py-1 border-b border-slate-200/80 pb-3">

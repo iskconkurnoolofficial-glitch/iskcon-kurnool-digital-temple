@@ -105,7 +105,7 @@ function SettingsTab({ youth, update }: { youth: YouthData; update: (p: Partial<
   const pickLogo = async (f: File) => {
     setBusy(true);
     try { 
-      const url = await uploadToCloudinary(f);
+      const url = await uploadToCloudinary(f, "ISKCON-KURNOOL/Youth");
       update({ logo: url }); 
       toast.success("Logo uploaded!");
     } catch { 
@@ -117,7 +117,7 @@ function SettingsTab({ youth, update }: { youth: YouthData; update: (p: Partial<
   const pickModalImage = async (f: File) => {
     setBusy(true);
     try {
-      const url = await uploadToCloudinary(f);
+      const url = await uploadToCloudinary(f, "ISKCON-KURNOOL/Youth");
       setCardImage(url);
       toast.success("Activity card image uploaded!");
     } catch { 
@@ -324,7 +324,7 @@ function GalleryTab({ youth, update }: { youth: YouthData; update: (p: Partial<Y
   const onPick = async (f: File) => {
     setBusy(true);
     try { 
-      const u = await uploadToCloudinary(f);
+      const u = await uploadToCloudinary(f, "ISKCON-KURNOOL/Youth");
       setUrl(u); 
       toast.success("Photo uploaded!");
     } catch { 

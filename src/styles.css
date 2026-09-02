@@ -581,4 +581,25 @@ body {
   border-radius: calc(1.5rem - 3px);
   width: 100%;
   height: 100%;
+}
+
+/* ========================================================================= */
+/* Shimmer Text Animation for Developer Credit                               */
+/* ========================================================================= */
+@keyframes textShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-text-shimmer {
+  background: linear-gradient(90deg, #f5c518 0%, #ffffff 30%, #f97316 60%, #f5c518 100%);
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: textShimmer 3s linear infinite;
 }

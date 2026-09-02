@@ -318,7 +318,7 @@ function ReelSlot({
   const handlePick = async (file: File) => {
     setLoading(true);
     try {
-      const secureUrl = await uploadToCloudinary(file);
+      const secureUrl = await uploadToCloudinary(file, "ISKCON-KURNOOL/Instagram");
       onChange(secureUrl);
       toast.success(`Video ${index + 1} uploaded successfully!`);
     } catch (err) {

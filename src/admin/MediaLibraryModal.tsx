@@ -190,7 +190,7 @@ export default function MediaLibraryModal({
     if (!file) return;
     setIsUploading(true);
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadToCloudinary(file, "ISKCON-KURNOOL/MediaLibrary");
       recordUploadedMedia(url, file.name);
       handleSelect(url);
     } catch {
