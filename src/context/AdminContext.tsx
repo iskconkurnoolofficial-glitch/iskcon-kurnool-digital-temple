@@ -3495,12 +3495,69 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         .order("created_at", { ascending: false });
       if (!mounted) return;
       if (error) { console.error("[contact_messages] load failed", error); return; }
-      setContactsState(
-        (data ?? []).map((r) => ({
-          id: r.id, name: r.name, email: r.email, phone: r.phone,
-          message: r.message, read: r.read, date: r.created_at,
-        })),
-      );
+
+      const normalContacts: ContactEntry[] = [];
+      const hpRequests: HouseProgrammeRequest[] = [];
+
+      (data ?? []).forEach((r) => {
+        let parsedHp: any = null;
+        if (r.message && r.message.startsWith("{") && r.message.includes("isHouseProgramme")) {
+          try {
+            parsedHp = JSON.parse(r.message);
+          } catch {
+            // ignore parse error
+          }
+        }
+
+        if (parsedHp && parsedHp.isHouseProgramme) {
+          hpRequests.push({
+            id: r.id,
+            name: r.name,
+            phone: r.phone,
+            locationArea: parsedHp.locationArea || "",
+            preferredDate: parsedHp.preferredDate || "",
+            preferredTime: parsedHp.preferredTime || "",
+            participantsCount: parsedHp.participantsCount || "",
+            fullAddress: parsedHp.fullAddress || "",
+            googleMapsUrl: parsedHp.googleMapsUrl,
+            latitude: parsedHp.latitude,
+            longitude: parsedHp.longitude,
+            message: parsedHp.message,
+            status: parsedHp.status || "pending",
+            createdAt: r.created_at,
+            read: r.read,
+          });
+        } else {
+          normalContacts.push({
+            id: r.id, name: r.name, email: r.email, phone: r.phone,
+            message: r.message, read: r.read, date: r.created_at,
+          });
+        }
+      });
+
+      setContactsState(normalContacts);
+
+      if (hpRequests.length > 0) {
+        setHouseProgrammesState((prev) => {
+          const hpMap = new Map<string, HouseProgrammeRequest>();
+          (prev.requests || []).forEach((req) => { if (req && req.id) hpMap.set(req.id, req); });
+          let hasNew = false;
+          hpRequests.forEach((req) => {
+            if (req && req.id && !hpMap.has(req.id)) {
+              hasNew = true;
+            }
+            if (req && req.id) hpMap.set(req.id, req);
+          });
+          const merged = Array.from(hpMap.values()).sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+          const updated = { ...prev, requests: merged };
+          if (hasNew) {
+            persist(KEYS.houseProgrammes, updated);
+          }
+          return updated;
+        });
+      }
     };
 
     const loadDonations = async () => {
@@ -3661,7 +3718,25 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.gitaCourse: setGitaCourseState({ ...defaultGitaCourse, ...value }); break;
       case KEYS.sunday: setSundayState({ ...defaultSunday, ...value }); break;
       case KEYS.prahladaBadi: setPrahladaBadiState({ ...defaultPrahladaBadi, ...value }); break;
-      case KEYS.houseProgrammes: setHouseProgrammesState({ ...defaultHouseProgramme, ...value }); break;
+      case KEYS.houseProgrammes: {
+        const incoming = { ...defaultHouseProgramme, ...(value || {}) };
+        setHouseProgrammesState((prev) => {
+          const map = new Map<string, HouseProgrammeRequest>();
+          (incoming.requests || []).forEach((r: HouseProgrammeRequest) => {
+            if (r && r.id) map.set(r.id, r);
+          });
+          (prev.requests || []).forEach((r: HouseProgrammeRequest) => {
+            if (r && r.id && !map.has(r.id)) map.set(r.id, r);
+          });
+          return {
+            ...incoming,
+            requests: Array.from(map.values()).sort(
+              (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            ),
+          };
+        });
+        break;
+      }
       case KEYS.dailyDarshan: setDailyDarshanState({ ...defaultDailyDarshan, ...value, entries: Array.isArray(value?.entries) ? value.entries : defaultDailyDarshan.entries }); break;
       case KEYS.liveProgrammes: {
         const rawProgs = Array.isArray(value?.programmes) ? value.programmes : [];
@@ -3826,28 +3901,61 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   };
 
   const addHouseProgrammeRequest = async (req: Omit<HouseProgrammeRequest, "id" | "createdAt" | "read" | "status">) => {
+    const id = "hp_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+    const createdAt = new Date().toISOString();
     const newEntry: HouseProgrammeRequest = {
       ...req,
-      id: "hp_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+      id,
       status: "pending",
-      createdAt: new Date().toISOString(),
+      createdAt,
       read: false,
     };
+
     const updated: HouseProgrammeData = {
       ...houseProgrammes,
       requests: [newEntry, ...(houseProgrammes.requests || [])],
     };
+
     setHouseProgrammesState(updated);
 
+    // Call server function to persist securely via admin client (bypasses RLS)
     try {
       const { submitHouseProgrammeRequestServer } = await import("@/lib/house-programme.functions");
       const res = await submitHouseProgrammeRequestServer({ data: req });
-      if (!res?.ok) {
-        await persist(KEYS.houseProgrammes, updated);
+      if (res?.ok) {
+        return;
       }
     } catch (e) {
       console.error("Server submission fallback for House Programme:", e);
-      await persist(KEYS.houseProgrammes, updated);
+    }
+
+    // Direct fallback persist to site_data
+    await persist(KEYS.houseProgrammes, updated);
+
+    // Redundant client-side contact_messages backup
+    try {
+      await supabase.from("contact_messages").insert({
+        id,
+        name: req.name,
+        email: "houseprogramme@iskconkurnool.org",
+        phone: req.phone,
+        message: JSON.stringify({
+          isHouseProgramme: true,
+          locationArea: req.locationArea,
+          preferredDate: req.preferredDate,
+          preferredTime: req.preferredTime,
+          participantsCount: req.participantsCount,
+          fullAddress: req.fullAddress,
+          googleMapsUrl: req.googleMapsUrl,
+          latitude: req.latitude,
+          longitude: req.longitude,
+          message: req.message,
+          status: "pending",
+        }),
+        read: false,
+      });
+    } catch {
+      // non-critical
     }
   };
 
@@ -3855,24 +3963,63 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     const updatedRequests = (houseProgrammes.requests || []).map((r) =>
       r.id === id ? { ...r, status, read: true } : r
     );
-    const updated: HouseProgrammeData = { ...houseProgrammes, requests: updatedRequests };
+    const updated: HouseProgrammeData = {
+      ...houseProgrammes,
+      requests: updatedRequests,
+    };
     setHouseProgrammesState(updated);
     await persist(KEYS.houseProgrammes, updated);
+
+    try {
+      const { data: row } = await supabase.from("contact_messages").select("message").eq("id", id).maybeSingle();
+      if (row && row.message) {
+        try {
+          const parsed = JSON.parse(row.message);
+          parsed.status = status;
+          await supabase.from("contact_messages").update({ message: JSON.stringify(parsed), read: true }).eq("id", id);
+        } catch {
+          await supabase.from("contact_messages").update({ read: true }).eq("id", id);
+        }
+      }
+    } catch {
+      // non-critical
+    }
   };
 
   const deleteHouseProgrammeRequest = async (id: string) => {
     const updatedRequests = (houseProgrammes.requests || []).filter((r) => r.id !== id);
-    const updated: HouseProgrammeData = { ...houseProgrammes, requests: updatedRequests };
+    const updated: HouseProgrammeData = {
+      ...houseProgrammes,
+      requests: updatedRequests,
+    };
     setHouseProgrammesState(updated);
     await persist(KEYS.houseProgrammes, updated);
+
+    try {
+      await supabase.from("contact_messages").delete().eq("id", id);
+    } catch {
+      // non-critical
+    }
   };
 
-  const markAllHouseProgrammeRequestsRead = () => {
+  const markAllHouseProgrammeRequestsRead = async () => {
     if (!houseProgrammes.requests || houseProgrammes.requests.length === 0) return;
     const updatedRequests = houseProgrammes.requests.map((r) => ({ ...r, read: true }));
-    const updated: HouseProgrammeData = { ...houseProgrammes, requests: updatedRequests };
+    const updated: HouseProgrammeData = {
+      ...houseProgrammes,
+      requests: updatedRequests,
+    };
     setHouseProgrammesState(updated);
-    persist(KEYS.houseProgrammes, updated);
+    await persist(KEYS.houseProgrammes, updated);
+
+    try {
+      const unreadIds = houseProgrammes.requests.filter((r) => !r.read).map((r) => r.id);
+      if (unreadIds.length > 0) {
+        await supabase.from("contact_messages").update({ read: true }).in("id", unreadIds);
+      }
+    } catch {
+      // non-critical
+    }
   };
 
   const setYouthYatra = (v: YouthYatraState) => { setYouthYatraState(v); persist(KEYS.youthYatra, v); };

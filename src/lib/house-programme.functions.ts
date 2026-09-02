@@ -68,6 +68,32 @@ export const submitHouseProgrammeRequestServer = createServerFn({ method: "POST"
         return { ok: false as const, message: updateError.message };
       }
 
+      // Also redundancy save into contact_messages table via supabaseAdmin
+      try {
+        await supabaseAdmin.from("contact_messages").insert({
+          id: newEntry.id,
+          name: newEntry.name,
+          email: "houseprogramme@iskconkurnool.org",
+          phone: newEntry.phone,
+          message: JSON.stringify({
+            isHouseProgramme: true,
+            locationArea: newEntry.locationArea,
+            preferredDate: newEntry.preferredDate,
+            preferredTime: newEntry.preferredTime,
+            participantsCount: newEntry.participantsCount,
+            fullAddress: newEntry.fullAddress,
+            googleMapsUrl: newEntry.googleMapsUrl,
+            latitude: newEntry.latitude,
+            longitude: newEntry.longitude,
+            message: newEntry.message,
+            status: "pending",
+          }),
+          read: false,
+        });
+      } catch (cErr) {
+        console.warn("[HouseProgramme] Non-critical contact_messages insert failed:", cErr);
+      }
+
       return { ok: true as const, request: newEntry };
     } catch (e: any) {
       console.error("[HouseProgramme] Exception in server submit:", e);
