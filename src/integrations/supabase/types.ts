@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      bhakti_steps_registrations: {
+        Row: {
+          created_at: string
+          id: string
+          payload: Json
+          read: boolean
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          payload: Json
+          read?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          read?: boolean
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           created_at: string
@@ -89,6 +110,54 @@ export type Database = {
         }
         Relationships: []
       }
+      house_programme_requests: {
+        Row: {
+          created_at: string
+          id: string
+          payload: Json
+          read: boolean
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          payload: Json
+          read?: boolean
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          read?: boolean
+          status?: string
+        }
+        Relationships: []
+      }
+      payment_records: {
+        Row: {
+          created_at: string
+          id: string
+          payload: Json
+          read: boolean
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          payload: Json
+          read?: boolean
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          read?: boolean
+          status?: string
+        }
+        Relationships: []
+      }
       preview_leads: {
         Row: {
           created_at: string
@@ -146,6 +215,30 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      youth_yatra_registrations: {
+        Row: {
+          created_at: string
+          id: string
+          payload: Json
+          read: boolean
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          payload: Json
+          read?: boolean
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          read?: boolean
+          status?: string
         }
         Relationships: []
       }
