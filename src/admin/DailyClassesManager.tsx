@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { UploadBox } from "./CarouselManager";
 import { toast } from "sonner";
+import { isDailyClassLive, parseTimeStrToMinutes, getCurrentTimeIST } from "@/lib/scheduleUtils";
 
 const LANGUAGES = ["Telugu", "English", "Hindi", "Sanskrit", "Tamil", "Kannada"];
 
@@ -198,18 +199,12 @@ export default function DailyClassesManager() {
       {/* Classes Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filtered.map((c) => {
-          let start = new Date(c.startAt).getTime();
-          if (c.everyday) {
-            const dt = new Date(c.startAt);
-            const startToday = new Date();
-            startToday.setHours(dt.getHours(), dt.getMinutes(), 0, 0);
-            start = startToday.getTime();
-          }
-          const end = start + (c.durationMin || 60) * 60_000;
-          const nowMs = Date.now();
-          const isLive = c.active && nowMs >= start && nowMs <= end;
-          const isUpcoming = c.active && nowMs < start;
-          const isCompleted = c.active && nowMs > end;
+          const isLive = isDailyClassLive(c);
+          const startMin = parseTimeStrToMinutes(c.startTimeStr || "");
+          const nowIst = getCurrentTimeIST();
+          const currentMin = nowIst.getHours() * 60 + nowIst.getMinutes();
+          const isUpcoming = c.active && !isLive && startMin !== null && currentMin < startMin;
+          const isCompleted = c.active && !isLive && !isUpcoming;
 
           return (
             <div

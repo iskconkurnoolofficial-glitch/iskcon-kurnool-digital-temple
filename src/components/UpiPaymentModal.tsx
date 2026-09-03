@@ -73,7 +73,8 @@ export default function UpiPaymentModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const upiId = upiPayment.upiId || "iskconkurnool@sbi";
+  const upiId = (upiPayment.upiId || "").trim();
+  const hasUpiId = Boolean(upiId);
   const payeeName = upiPayment.payeeName || "ISKCON Kurnool";
   const customQr = upiPayment.customQrImage;
 
@@ -91,7 +92,10 @@ export default function UpiPaymentModal({
     upiUri
   )}&margin=12`;
 
-  const activeQrSrc = viewMode === "custom" && customQr ? customQr : dynamicQrCodeUrl;
+  // Display Dynamic QR if upiId is entered, otherwise Static QR only
+  const activeQrSrc = hasUpiId
+    ? (viewMode === "custom" && customQr ? customQr : dynamicQrCodeUrl)
+    : (customQr || "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=600&q=80");
 
   useEffect(() => {
     if (isOpen) {
@@ -101,13 +105,14 @@ export default function UpiPaymentModal({
       setIsSubmitting(false);
       setIsUploadingImage(false);
       setDonorNotes(initialNotes || "");
-      setViewMode(upiPayment.useDynamicAmountQr !== false ? "dynamic" : "custom");
+      setViewMode(hasUpiId && upiPayment.useDynamicAmountQr !== false ? "dynamic" : "custom");
     }
-  }, [isOpen, upiPayment.useDynamicAmountQr, initialNotes]);
+  }, [isOpen, hasUpiId, upiPayment.useDynamicAmountQr, initialNotes]);
 
   if (!isOpen) return null;
 
   const handleCopyUpi = () => {
+    if (!upiId) return;
     navigator.clipboard.writeText(upiId);
     setCopiedUpi(true);
     toast.success("UPI ID copied to clipboard!");
@@ -255,8 +260,8 @@ export default function UpiPaymentModal({
             {/* QR Code Presentation Box */}
             <div className="flex flex-col items-center justify-center p-5 rounded-3xl bg-slate-50 border-2 border-slate-200 text-center relative group">
               
-              {/* Dynamic vs Custom QR Toggle (if custom static QR uploaded) */}
-              {customQr && (
+              {/* Dynamic vs Custom QR Toggle (if both UPI ID and custom static QR available) */}
+              {customQr && hasUpiId && (
                 <div className="flex items-center gap-2 mb-3 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
                   <button
                     type="button"
@@ -292,40 +297,46 @@ export default function UpiPaymentModal({
                 />
               </div>
 
-              {/* Auto Amount Indicator */}
-              <div className="mt-3 inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-100/90 text-emerald-800 text-xs font-bold">
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                <span>Scanning auto-fills ₹{amount.toLocaleString("en-IN")} into your UPI app</span>
-              </div>
+              {/* Auto Amount Indicator (Only if UPI ID entered) */}
+              {hasUpiId ? (
+                <div className="mt-3 inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-100/90 text-emerald-800 text-xs font-bold">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>Scanning auto-fills ₹{amount.toLocaleString("en-IN")} into your UPI app</span>
+                </div>
+              ) : null}
 
               {/* Payee Info */}
               <div className="mt-3 text-xs text-slate-600 space-y-1">
                 <p className="font-extrabold text-slate-800">{payeeName}</p>
-                <div className="inline-flex items-center gap-1.5 bg-white px-3 py-1 rounded-xl border border-slate-200 shadow-2xs">
-                  <span className="font-mono font-bold text-slate-900 select-all">{upiId}</span>
-                  <button
-                    type="button"
-                    onClick={handleCopyUpi}
-                    className="text-primary hover:text-amber-600 p-1 cursor-pointer transition"
-                    title="Copy UPI ID"
-                  >
-                    {copiedUpi ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-                  </button>
-                </div>
+                {upiId ? (
+                  <div className="inline-flex items-center gap-1.5 bg-white px-3 py-1 rounded-xl border border-slate-200 shadow-2xs">
+                    <span className="font-mono font-bold text-slate-900 select-all">{upiId}</span>
+                    <button
+                      type="button"
+                      onClick={handleCopyUpi}
+                      className="text-primary hover:text-amber-600 p-1 cursor-pointer transition"
+                      title="Copy UPI ID"
+                    >
+                      {copiedUpi ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                    </button>
+                  </div>
+                ) : null}
               </div>
 
-              {/* Mobile Direct Deep-Link Button */}
-              <div className="w-full mt-4 sm:hidden">
-                <button
-                  type="button"
-                  onClick={handleOpenMobileUpi}
-                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer transition active:scale-[0.98]"
-                >
-                  <Smartphone className="h-4 w-4" />
-                  <span>Open in UPI App (GPay / PhonePe)</span>
-                  <ExternalLink className="h-3.5 w-3.5 opacity-80" />
-                </button>
-              </div>
+              {/* Mobile Direct Deep-Link Button (Only if UPI ID entered) */}
+              {hasUpiId && (
+                <div className="w-full mt-4 sm:hidden">
+                  <button
+                    type="button"
+                    onClick={handleOpenMobileUpi}
+                    className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer transition active:scale-[0.98]"
+                  >
+                    <Smartphone className="h-4 w-4" />
+                    <span>Open in UPI App (GPay / PhonePe)</span>
+                    <ExternalLink className="h-3.5 w-3.5 opacity-80" />
+                  </button>
+                </div>
+              )}
 
               {/* Supported App Logos / Pills */}
               <div className="mt-4 pt-3 border-t border-slate-200/80 w-full flex flex-wrap items-center justify-center gap-1.5 text-[11px] font-bold text-slate-500">

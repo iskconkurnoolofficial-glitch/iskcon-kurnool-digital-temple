@@ -77,7 +77,6 @@ const NAV: NavItem[] = [
   ]},
   { label: "Activities", children: [
     { label: "Bhakti Steps", href: "/bhakti-steps", subtitle: "5-level progressive spiritual path", icon: Award },
-    { label: "Annual Youth Yatra", href: "/youth-yatra", subtitle: "5-day sacred youth pilgrimage", icon: Compass },
     { label: "House Programmes", href: "/house-programmes", subtitle: "Devotional gatherings at your home", icon: Home },
     { label: "Youth Program", href: "/youth", subtitle: "Inspiring the next generation", icon: Users },
     { label: "Prahlada Badi", href: "/prahlada-badi", subtitle: "Spiritual education for children", icon: GraduationCap },
@@ -471,44 +470,46 @@ export default function Navbar() {
       </div>
 
       {/* Mobile/Tablet Layout */}
-      <div className={`lg:hidden max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between transition-all duration-300 ${
-        scrolled ? "h-16" : "h-20 md:h-24"
+      <div className={`lg:hidden max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between transition-all duration-300 ${
+        scrolled ? "h-16" : "h-18 sm:h-20"
       }`}>
-        <button
-          className="p-2 text-primary hover:bg-muted/50 rounded-full transition-colors"
-          onClick={() => setMobileOpen(true)}
-          aria-label="Open menu"
-        >
-          <Menu className="h-7 w-7" />
-        </button>
-
-        <Link to="/" className="flex-1 flex items-center justify-center" aria-label="ISKCON Kurnool home">
+        {/* Left: Brand Logo, ISKCON Kurnool Title & Subtitle */}
+        <Link to="/" className="flex items-center gap-2.5 shrink-0 min-w-0" aria-label="ISKCON Kurnool home">
           {settings.logo ? (
             <img
               src={getOptimizedCloudinaryUrl(settings.logo, "thumbnail")}
               alt="ISKCON Kurnool"
-              className={`rounded-full object-cover ring-2 ring-secondary/60 transition-all duration-300 ${
-                scrolled ? "h-10 w-10" : "h-14 w-14 md:h-16 md:w-16"
+              className={`rounded-full object-cover ring-2 ring-secondary/60 transition-all duration-300 shrink-0 ${
+                scrolled ? "h-9 w-9" : "h-11 w-11 sm:h-12 sm:w-12"
               }`}
               loading="eager"
               decoding="async"
             />
           ) : (
-            <div className={`rounded-full bg-gradient-hero grid place-items-center text-primary-foreground font-display font-bold shadow-glow transition-all duration-300 ${
-              scrolled ? "h-10 w-10 text-xs" : "h-14 w-14 md:h-16 md:w-16 text-lg"
+            <div className={`rounded-full bg-gradient-hero grid place-items-center text-primary-foreground font-display font-bold shadow-glow transition-all duration-300 shrink-0 ${
+              scrolled ? "h-9 w-9 text-xs" : "h-11 w-11 sm:h-12 sm:w-12 text-sm"
             }`}>
               IK
             </div>
           )}
+          <div className="leading-tight min-w-0">
+            <div className="font-display font-bold text-sm sm:text-base text-primary tracking-tight truncate">
+              ISKCON Kurnool
+            </div>
+            <div className="text-[9px] sm:text-[10px] text-muted-foreground tracking-wide uppercase truncate">
+              Sri Sri Puri Jagannath Temple
+            </div>
+          </div>
         </Link>
 
-        <div className="flex items-center gap-1.5">
+        {/* Right: Live Stream Badge & Menu Button */}
+        <div className="flex items-center gap-2 shrink-0">
           {activeLiveProgramme && (
             <a
               href={activeLiveProgramme.streamUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-red-600 text-white font-extrabold text-[10px] tracking-wider uppercase shadow-sm border border-white/20"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-600 text-white font-extrabold text-[10px] tracking-wider uppercase shadow-sm border border-white/20"
             >
               <span className="relative flex h-1.5 w-1.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
@@ -518,14 +519,13 @@ export default function Navbar() {
             </a>
           )}
 
-          <Link
-            to="/donate"
-            className="relative inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-extrabold text-xs tracking-wider uppercase animate-pulse-glow hover:scale-105 active:scale-95 transition-all duration-200 ring-2 ring-amber-300/30 overflow-hidden group"
+          <button
+            className="p-2 text-primary hover:bg-slate-100 rounded-full transition-colors active:scale-95 cursor-pointer border border-slate-200/80 shadow-2xs"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Open menu"
           >
-            <Heart className="h-3.5 w-3.5 fill-white/30 stroke-[2.5] text-white animate-heartbeat shrink-0" />
-            <span className="relative z-10">DONATE</span>
-            <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
-          </Link>
+            <Menu className="h-6 w-6 text-primary" />
+          </button>
         </div>
       </div>
 
@@ -546,13 +546,13 @@ export default function Navbar() {
                 onClick={() => setMobileOpen(false)} 
               />
               
-              {/* Sidebar Drawer Container */}
+              {/* Sidebar Drawer Container (Right Side Smooth Slide-in) */}
               <motion.div 
-                initial={{ x: "-100%" }}
+                initial={{ x: "100%" }}
                 animate={{ x: 0 }}
-                exit={{ x: "-100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 220 }}
-                className="fixed left-0 top-0 bottom-0 h-full w-[310px] max-w-[85vw] bg-white shadow-2xl border-r border-slate-200 overflow-hidden flex flex-col z-[101]"
+                exit={{ x: "100%" }}
+                transition={{ type: "spring", damping: 28, stiffness: 240, mass: 0.8 }}
+                className="fixed right-0 top-0 bottom-0 h-full w-[320px] max-w-[85vw] bg-white shadow-2xl border-l border-slate-200/80 overflow-hidden flex flex-col z-[101]"
               >
                 {/* Drawer Header */}
                 <div className="bg-slate-50 px-5 py-4 flex justify-between items-center border-b border-slate-200 shrink-0">

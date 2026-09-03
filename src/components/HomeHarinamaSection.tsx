@@ -197,10 +197,20 @@ export default function HomeHarinamaSection() {
               <div className="space-y-3 pt-1 text-xs sm:text-sm text-slate-700">
                 <div className="flex items-start gap-2.5 p-3 rounded-2xl bg-amber-50/80 border border-amber-200">
                   <MapPin className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-                  <span>
-                    <strong className="text-slate-900 block font-bold text-xs">Assembly Point:</strong>
-                    {h?.meetingPoint?.trim() || "Details Coming Soon!"}
-                  </span>
+                  <div className="space-y-1 w-full">
+                    <p className="text-xs">
+                      <strong className="text-slate-900 font-bold">Starting Point:</strong>{" "}
+                      <span className={!(h?.startingPoint?.trim() || h?.meetingPoint?.trim()) ? "text-amber-800 italic font-medium" : "text-slate-700"}>
+                        {h?.startingPoint?.trim() || h?.meetingPoint?.trim() || "Details Coming Soon..."}
+                      </span>
+                    </p>
+                    <p className="text-xs border-t border-amber-200/60 pt-1">
+                      <strong className="text-slate-900 font-bold">Ending Point:</strong>{" "}
+                      <span className={!h?.endingPoint?.trim() ? "text-amber-800 italic font-medium" : "text-slate-700"}>
+                        {h?.endingPoint?.trim() || "Details Coming Soon..."}
+                      </span>
+                    </p>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2 text-xs font-semibold text-emerald-800">

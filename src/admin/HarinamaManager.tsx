@@ -139,16 +139,16 @@ function SettingsTab({ harinama, update }: { harinama: HarinamaData; update: (p:
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className={labelClass}>Schedule Day</label>
+                <label className={labelClass}>Weekly Schedule Day</label>
                 <input 
                   className={inputClass} 
                   value={harinama.scheduleDay || ""} 
                   onChange={(e) => update({ scheduleDay: e.target.value })} 
-                  placeholder="e.g. Every Saturday" 
+                  placeholder="e.g. Every Saturday & Every Ekadashi" 
                 />
               </div>
               <div>
-                <label className={labelClass}>Schedule Time</label>
+                <label className={labelClass}>Starting Time</label>
                 <input 
                   className={inputClass} 
                   value={harinama.scheduleTime || ""} 
@@ -157,19 +157,32 @@ function SettingsTab({ harinama, update }: { harinama: HarinamaData; update: (p:
                 />
               </div>
             </div>
-            <div>
-              <label className={labelClass}>Meeting Point / Route Start Address</label>
-              <textarea 
-                className={inputClass} 
-                rows={3}
-                value={harinama.meetingPoint || ""} 
-                onChange={(e) => update({ meetingPoint: e.target.value })} 
-                placeholder="e.g. ISKCON Kurnool Temple, Sri Sri Puri Jagannath Temple"
-              />
-              <p className="text-[11px] text-amber-800 font-semibold mt-1">
-                💡 Leave any field empty to display <strong>“Details Coming Soon!”</strong> on the public website.
-              </p>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className={labelClass}>Starting Point / Assembly Location</label>
+                <textarea 
+                  className={inputClass} 
+                  rows={2}
+                  value={harinama.startingPoint !== undefined ? harinama.startingPoint : (harinama.meetingPoint || "")} 
+                  onChange={(e) => update({ startingPoint: e.target.value, meetingPoint: e.target.value })} 
+                  placeholder="e.g. ISKCON Kurnool Temple, Sri Sri Puri Jagannath Temple"
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Ending Point / Route Destination</label>
+                <textarea 
+                  className={inputClass} 
+                  rows={2}
+                  value={harinama.endingPoint || ""} 
+                  onChange={(e) => update({ endingPoint: e.target.value })} 
+                  placeholder="e.g. Raj Vihar Circle & Temple Premises"
+                />
+              </div>
             </div>
+            <p className="text-[11px] text-amber-800 font-semibold">
+              💡 Leave any field empty to automatically display <strong>“Details Coming Soon...”</strong> on the public website.
+            </p>
           </div>
         </div>
         

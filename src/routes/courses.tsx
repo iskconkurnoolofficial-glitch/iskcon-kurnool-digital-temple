@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import SiteLayout, { PageHero } from "@/components/SiteLayout";
 import { useAdmin, DailyClass } from "@/context/AdminContext";
+import { isDailyClassLive, parseTimeStrToMinutes, getCurrentTimeIST } from "@/lib/scheduleUtils";
 import { Calendar, Clock, Globe2, Video, Search, Sparkles, BookOpen, ExternalLink, Radio, CheckCircle2, Timer } from "lucide-react";
 
 export const Route = createFileRoute("/courses")({
@@ -45,11 +46,11 @@ function Page() {
   const [selectedLang, setSelectedLang] = useState("All");
   const [now, setNow] = useState(Date.now());
 
-  // Update time every 10 seconds to keep live/upcoming states accurate
+  // Update time every 5 seconds to keep live/upcoming states accurate
   useEffect(() => {
     const timer = setInterval(() => {
       setNow(Date.now());
-    }, 10000);
+    }, 5000);
     return () => clearInterval(timer);
   }, []);
 
@@ -58,23 +59,21 @@ function Page() {
 
   // Group classes by status
   const categorized = activeClasses.map(c => {
-    let start = new Date(c.startAt).getTime();
-    if (c.everyday) {
-      const dt = new Date(c.startAt);
-      const startToday = new Date(now);
-      startToday.setHours(dt.getHours(), dt.getMinutes(), 0, 0);
-      start = startToday.getTime();
-    }
-    const end = start + (c.durationMin || 60) * 60_000;
-    const isLive = now >= start && now <= end;
-    const isUpcoming = now < start;
-    const isPast = now > end;
+    const isLive = isDailyClassLive(c);
+    const startMin = parseTimeStrToMinutes(c.startTimeStr || "");
+    const nowIst = getCurrentTimeIST();
+    const currentMin = nowIst.getHours() * 60 + nowIst.getMinutes();
 
     let status: "live" | "upcoming" | "past" = "past";
-    if (isLive) status = "live";
-    else if (isUpcoming) status = "upcoming";
+    if (isLive) {
+      status = "live";
+    } else if (startMin !== null && currentMin < startMin) {
+      status = "upcoming";
+    } else {
+      status = "past";
+    }
 
-    return { ...c, status, startTimeMs: start };
+    return { ...c, status, startTimeMs: startMin ?? 0 };
   });
 
   // Apply filters

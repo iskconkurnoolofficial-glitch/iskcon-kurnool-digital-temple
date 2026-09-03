@@ -21,7 +21,6 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       <FloatingWhatsApp />
       <LanguageToggle layout="vertical-sticky" />
       <MobileBottomNav />
-      <MobileInstallBanner />
     </div>
   );
 }
@@ -48,7 +47,13 @@ export function PageHero({
   const { heroBanners } = useAdmin();
 
   // Resolve image: either explicit image prop, or from heroBanners using pageKey
-  const resolvedImage = image || (pageKey && heroBanners ? (heroBanners as any)[pageKey] : undefined);
+  const resolvedImage =
+    image ||
+    (pageKey && heroBanners
+      ? (heroBanners as any)[pageKey] ||
+        (pageKey === "festivals" ? heroBanners.upcomingFestivals : undefined) ||
+        (pageKey === "upcomingFestivals" ? heroBanners.festivals : undefined)
+      : undefined);
 
   if (resolvedImage) {
     return (

@@ -32,6 +32,7 @@ export default function HeroBannersManager() {
     { key: "socialMedia", label: "Social Media Page" },
     { key: "courses", label: "Courses Page" },
     { key: "festivals", label: "Festivals Page" },
+    { key: "upcomingFestivals", label: "Upcoming Festivals Page" },
     { key: "gallery", label: "Gallery Page" },
     { key: "darshan", label: "Daily Darshan Page" },
     { key: "goshala", label: "Goshala Page" },
@@ -41,7 +42,6 @@ export default function HeroBannersManager() {
     { key: "youth", label: "Youth Festival Page" },
     { key: "donate", label: "Donate Page" },
     { key: "ekadashi", label: "Ekadashi Page" },
-    { key: "shop", label: "Shop Page" },
   ];
 
   return (

@@ -310,6 +310,8 @@ export type HarinamaData = {
   scheduleDay: string;
   scheduleTime: string;
   meetingPoint: string;
+  startingPoint?: string;
+  endingPoint?: string;
   aboutText: string;
   aboutImage: string;
   gallery: HarinamaGalleryItem[];
@@ -318,9 +320,11 @@ export type HarinamaData = {
 export const defaultHarinama: HarinamaData = {
   whatsappUrl: "https://chat.whatsapp.com/LhB20hR5J1T7xVvH7Hk9y3",
   instagramHandle: "iskconkurnool",
-  scheduleDay: "Every Saturday",
+  scheduleDay: "Every Saturday & Every Ekadashi",
   scheduleTime: "5:00 PM onwards",
   meetingPoint: "ISKCON Kurnool Temple, Sri Sri Puri Jagannath Temple",
+  startingPoint: "ISKCON Kurnool Temple, Sri Sri Puri Jagannath Temple",
+  endingPoint: "Raj Vihar Circle & ISKCON Temple Premises",
   aboutText: "Hari Nama Sankeerthana is the congregational chanting of the holy names of Krishna — Hare Krishna Hare Krishna, Krishna Krishna Hare Hare, Hare Rama Hare Rama, Rama Rama Hare Hare — carried out loudly, joyfully, and publicly, usually while walking through streets, markets, and neighborhoods.\n\nThis practice was given special emphasis by Sri Chaitanya Mahaprabhu, who taught that in this age, chanting the names of God together, in public, is the easiest and most powerful way to purify the heart and connect with the Divine. It doesn't require Sanskrit knowledge, ritual expertise, or any qualification — anyone who joins, chants, or even simply hears, benefits.\n\nAt ISKCON Kurnool, Hari Nama Sankeerthana is not a performance — it's an offering. Devotees walk together with mridangam and karatalas, singing, dancing, and inviting the whole town to taste a moment of transcendence in the middle of an ordinary day.",
   aboutImage: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
   gallery: [],
@@ -758,6 +762,7 @@ export type YatraEvent = {
 
 export type YouthYatraState = {
   activeEventId: string;
+  yatraActive?: boolean;
   events: YatraEvent[];
   registrations: YatraRegistration[];
 };
@@ -1091,6 +1096,7 @@ export const defaultYouthYatra2026: YatraEvent = {
 
 export const defaultYouthYatra: YouthYatraState = {
   activeEventId: "yatra_2026",
+  yatraActive: true,
   events: [defaultYouthYatra2026],
   registrations: [
     {
@@ -1395,6 +1401,7 @@ export type HeroBannersData = {
   connect: string;
   courses: string;
   festivals: string;
+  upcomingFestivals: string;
   gallery: string;
   goshala: string;
   prahladaBadi: string;
@@ -1403,7 +1410,7 @@ export type HeroBannersData = {
   youth: string;
   donate: string;
   ekadashi: string;
-  shop: string;
+  shop?: string;
   temple: string;
   socialMedia: string;
   darshan: string;
@@ -1417,6 +1424,7 @@ export const defaultHeroBanners: HeroBannersData = {
   connect: "",
   courses: "",
   festivals: "",
+  upcomingFestivals: "",
   gallery: "",
   goshala: "",
   prahladaBadi: "",
@@ -2409,7 +2417,7 @@ export function generateUpiUri({
   transactionNote?: string;
   currency?: string;
 }): string {
-  const cleanUpi = (upiId || "iskconkurnool@sbi").trim();
+  const cleanUpi = (upiId || "").trim();
   const cleanName = (payeeName || "ISKCON Kurnool").trim();
   const amtFormatted = amount > 0 ? amount.toFixed(2) : "";
   const note = (transactionNote || "Donation to ISKCON Kurnool").slice(0, 50).trim();

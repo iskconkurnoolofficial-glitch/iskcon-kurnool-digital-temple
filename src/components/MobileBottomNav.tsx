@@ -79,7 +79,7 @@ export default function MobileBottomNav() {
             <span className="h-12 w-12 rounded-full bg-gradient-to-tr from-amber-500 via-orange-500 to-rose-500 text-white grid place-items-center shadow-[0_4px_16px_rgba(249,115,22,0.45)] ring-4 ring-white animate-pulse-glow group-hover:scale-105 transition-all">
               <Heart className="h-5.5 w-5.5 fill-white/20 stroke-[2.4] text-white animate-heartbeat" />
             </span>
-            <span className="text-[10px] font-bold text-amber-800 tracking-tight mt-0.5">Seva</span>
+            <span className="text-[10px] font-bold text-amber-800 tracking-tight mt-0.5">Donate</span>
           </Link>
         </li>
 

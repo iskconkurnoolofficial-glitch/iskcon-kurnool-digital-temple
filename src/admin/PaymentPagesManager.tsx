@@ -209,7 +209,7 @@ export default function PaymentPagesManager() {
   };
 
   const testUpiUri = generateUpiUri({
-    upiId: upiPayment.upiId || "iskconkurnool@sbi",
+    upiId: (upiPayment.upiId || "").trim(),
     payeeName: upiPayment.payeeName || "ISKCON Kurnool",
     amount: 501,
     transactionNote: "Temple Seva Offering",

@@ -53,6 +53,7 @@ function FestivalsPage() {
         eyebrow="Sacred Celebrations" 
         title="Upcoming Festivals" 
         subtitle="Join us in celebrating the divine pastimes of the Lord and seek spiritual blessings through seva offerings." 
+        pageKey="upcomingFestivals"
       />
 
       <section className="py-16 md:py-24 bg-gradient-to-b from-surface to-background relative overflow-hidden">

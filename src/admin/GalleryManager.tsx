@@ -4,7 +4,8 @@ import AdminModal from "./AdminModal";
 import MediaLibraryModal from "./MediaLibraryModal";
 import { 
   Trash2, Plus, X, Pencil, Check, Image as ImageIcon, 
-  Sparkles, Eye, Tag, Search, FolderOpen, ExternalLink, Globe, EyeOff, Folder
+  Sparkles, Eye, Tag, Search, FolderOpen, ExternalLink, Globe, EyeOff, Folder,
+  ArrowUp, ArrowDown, ArrowRight
 } from "lucide-react";
 import { UploadBox } from "./CarouselManager";
 import { toast } from "sonner";
@@ -37,8 +38,9 @@ export default function GalleryManager() {
   const { photos, setPhotos, categories, setCategories, driveAlbums, setDriveAlbums } = useAdmin();
   const [tab, setTab] = useState<"stream" | "albums">("stream");
 
-  // State for Photo Stream Form
+  // State for Photo Stream Form & Notice Modal
   const [busy, setBusy] = useState(false);
+  const [isNoticeModalOpen, setIsNoticeModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -98,6 +100,21 @@ export default function GalleryManager() {
   const openNew = () => {
     resetForm();
     setIsModalOpen(true);
+  };
+
+  const movePhoto = (id: string, direction: "up" | "down") => {
+    const idx = photos.findIndex((p) => p.id === id);
+    if (idx === -1) return;
+
+    const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= photos.length) return;
+
+    const copy = [...photos];
+    const temp = copy[idx];
+    copy[idx] = copy[targetIdx];
+    copy[targetIdx] = temp;
+    setPhotos(copy);
+    toast.success("Gallery photo order updated!");
   };
 
   const startEdit = (p: GalleryPhoto) => {
@@ -315,7 +332,7 @@ export default function GalleryManager() {
             {tab === "stream" ? (
               <button
                 type="button"
-                onClick={openNew}
+                onClick={() => setIsNoticeModalOpen(true)}
                 className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-primary via-purple-700 to-indigo-700 hover:from-primary/90 hover:to-indigo-800 text-white font-bold text-xs sm:text-sm shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer"
               >
                 <Plus className="h-4 w-4" /> Add Photo
@@ -459,45 +476,100 @@ export default function GalleryManager() {
             </div>
           </div>
 
-          {/* Photos Grid */}
+          {/* Photos Grid with Reordering Option */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {filteredPhotos.map((p) => (
-              <div
-                key={p.id}
-                className="bg-white rounded-2xl border border-slate-200/80 shadow-elegant overflow-hidden flex flex-col justify-between group hover:shadow-md transition-all"
-              >
-                <div className="relative aspect-square w-full overflow-hidden bg-slate-900">
-                  <img src={p.url} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <span className="absolute top-2 left-2 bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                    {p.category}
-                  </span>
-                </div>
+            {filteredPhotos.map((p) => {
+              const realIndex = photos.findIndex((x) => x.id === p.id);
+              const isFirst = realIndex === 0;
+              const isLast = realIndex === photos.length - 1;
 
-                <div className="p-3 space-y-2">
-                  <h4 className="font-display font-bold text-xs text-foreground line-clamp-1">
-                    {p.title}
-                  </h4>
+              return (
+                <div
+                  key={p.id}
+                  className="bg-white rounded-2xl border border-slate-200/80 shadow-elegant overflow-hidden flex flex-col justify-between group hover:shadow-md transition-all relative"
+                >
+                  <div className="relative aspect-square w-full overflow-hidden bg-slate-900">
+                    <img src={p.url} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <span className="absolute top-2 left-2 bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      {p.category}
+                    </span>
+                    <span className="absolute top-2 right-2 bg-amber-500/90 text-slate-950 text-[10px] font-extrabold px-1.5 py-0.5 rounded-md shadow-xs">
+                      #{realIndex + 1}
+                    </span>
 
-                  <div className="flex items-center justify-between pt-1 border-t border-slate-100">
-                    <button
-                      type="button"
-                      onClick={() => startEdit(p)}
-                      className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline cursor-pointer"
-                    >
-                      <Pencil className="h-3 w-3" /> Edit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removePhoto(p.id, p.title)}
-                      className="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
-                      title="Delete Photo"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                    {/* Overlay Reordering Controls */}
+                    <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-1 bg-slate-950/85 backdrop-blur-md p-1 rounded-xl opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-[10px] font-bold text-slate-300 pl-1">Order:</span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => movePhoto(p.id, "up")}
+                          disabled={isFirst}
+                          className="p-1 rounded-lg bg-white/10 hover:bg-white/30 text-white disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
+                          title="Move Earlier / Up"
+                        >
+                          <ArrowUp className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => movePhoto(p.id, "down")}
+                          disabled={isLast}
+                          className="p-1 rounded-lg bg-white/10 hover:bg-white/30 text-white disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
+                          title="Move Later / Down"
+                        >
+                          <ArrowDown className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-3 space-y-2">
+                    <h4 className="font-display font-bold text-xs text-foreground line-clamp-1">
+                      {p.title}
+                    </h4>
+
+                    <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                      <button
+                        type="button"
+                        onClick={() => startEdit(p)}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline cursor-pointer"
+                      >
+                        <Pencil className="h-3 w-3" /> Edit
+                      </button>
+
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => movePhoto(p.id, "up")}
+                          disabled={isFirst}
+                          className="p-1 rounded text-slate-500 hover:text-primary hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
+                          title="Move Up"
+                        >
+                          <ArrowUp className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => movePhoto(p.id, "down")}
+                          disabled={isLast}
+                          className="p-1 rounded text-slate-500 hover:text-primary hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
+                          title="Move Down"
+                        >
+                          <ArrowDown className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removePhoto(p.id, p.title)}
+                          className="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
+                          title="Delete Photo"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -586,6 +658,111 @@ export default function GalleryManager() {
         </div>
       )}
 
+      {/* GALLERY QUALITY NOTICE POPUP MODAL */}
+      <AdminModal
+        isOpen={isNoticeModalOpen}
+        onClose={() => setIsNoticeModalOpen(false)}
+        title="Keep the Gallery Unique"
+        subtitle="Gallery Upload Quality Standards"
+        icon={Sparkles}
+        maxWidth="2xl"
+      >
+        <div className="space-y-5 text-slate-800 font-sans">
+          {/* Header Notice Banner */}
+          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-300 text-amber-950 flex items-start gap-3">
+            <Sparkles className="h-6 w-6 text-amber-600 shrink-0 mt-0.5" />
+            <p className="text-xs sm:text-sm font-semibold leading-relaxed">
+              Before uploading, please ensure that you are adding unique and meaningful images to the gallery.
+            </p>
+          </div>
+
+          {/* Do's and Don'ts Grid */}
+          <div className="grid sm:grid-cols-2 gap-4">
+            {/* Upload Only Box */}
+            <div className="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-2.5">
+              <h4 className="font-display font-bold text-xs sm:text-sm text-emerald-900 uppercase tracking-wider">
+                Upload only:
+              </h4>
+              <ul className="space-y-2 text-xs text-emerald-950 font-medium">
+                <li className="flex items-start gap-2">
+                  <span>✅</span> <span>Original images</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span>✅</span> <span>Unique photos that are not already in the gallery</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span>✅</span> <span>Important event, festival, temple, service, or activity photos</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span>✅</span> <span>Clear images suitable for public display</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Please Do Not Upload Box */}
+            <div className="p-4 rounded-2xl bg-rose-50/80 border border-rose-200 space-y-2.5">
+              <h4 className="font-display font-bold text-xs sm:text-sm text-rose-900 uppercase tracking-wider">
+                Please do not upload:
+              </h4>
+              <ul className="space-y-2 text-xs text-rose-950 font-medium">
+                <li className="flex items-start gap-2">
+                  <span>❌</span> <span>Duplicate or repeated images</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span>❌</span> <span>Slightly edited versions of an existing image</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span>❌</span> <span>Multiple regular/ordinary versions of the same photo</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span>❌</span> <span>Low-quality, blurry, or unnecessary images</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span>❌</span> <span>Images that do not add value to the gallery</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Gallery Quality Standard Banner */}
+          <div className="p-4 rounded-2xl bg-purple-900 text-white space-y-1.5 shadow-md">
+            <div className="flex items-center gap-2 font-display font-bold text-sm text-amber-300">
+              <span className="text-base">🎯</span>
+              <span>Gallery Quality Standard</span>
+            </div>
+            <p className="text-xs text-purple-100 leading-relaxed">
+              The gallery is maintained as a curated collection of unique and high-quality photographs. Please check the existing gallery before uploading to avoid duplicates and unnecessary images.
+            </p>
+            <p className="text-xs font-bold text-amber-200 pt-0.5">
+              Every uploaded image should add something new to the gallery.
+            </p>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-200">
+            <button
+              type="button"
+              onClick={() => setIsNoticeModalOpen(false)}
+              className="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-100 transition cursor-pointer"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsNoticeModalOpen(false);
+                openNew();
+              }}
+              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-purple-700 hover:from-primary/90 hover:to-purple-800 text-white font-extrabold text-xs sm:text-sm shadow-md hover:scale-102 active:scale-95 transition-all cursor-pointer flex items-center gap-2"
+            >
+              <span>Proceed to Upload</span>
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </AdminModal>
+
       {/* POPUP MODAL FOR ADD / EDIT PHOTO */}
       <AdminModal
         isOpen={isModalOpen}
@@ -608,14 +785,6 @@ export default function GalleryManager() {
               aspect="aspect-square"
               className="w-full max-w-[200px]"
             />
-            <button
-              type="button"
-              onClick={() => setIsLibraryOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition cursor-pointer"
-            >
-              <ImageIcon className="h-3.5 w-3.5 text-amber-600" />
-              <span>Choose Pre-Uploaded</span>
-            </button>
           </div>
 
           <div className="space-y-4">
@@ -671,15 +840,7 @@ export default function GalleryManager() {
         </div>
       </AdminModal>
 
-      {/* MEDIA LIBRARY MODAL FOR CHOOSE PRE-UPLOADED */}
-      {isLibraryOpen && (
-        <MediaLibraryModal
-          isOpen={isLibraryOpen}
-          onClose={() => setIsLibraryOpen(false)}
-          onSelectImage={onSelectPreUploaded}
-          title="Choose Pre-Uploaded Image"
-        />
-      )}
+
 
       {/* POPUP MODAL FOR ADD / EDIT GOOGLE DRIVE ALBUM */}
       <AdminModal

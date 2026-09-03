@@ -28,7 +28,8 @@ import {
   Pause,
   LayoutGrid,
   SlidersHorizontal,
-  RotateCcw
+  RotateCcw,
+  Instagram
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -311,7 +312,7 @@ function getYouTubeVideoId(url: string) {
 }
 
 function DailyDarshanPage() {
-  const { dailyDarshan } = useAdmin();
+  const { dailyDarshan, settings } = useAdmin();
   const [fullscreenIndex, setFullscreenIndex] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -602,12 +603,43 @@ function DailyDarshanPage() {
               })()}
             </section>
           ) : (
-            <div className="bg-white rounded-3xl p-12 text-center border border-border space-y-4">
-              <Camera className="h-12 w-12 text-muted-foreground mx-auto" />
-              <h3 className="font-display text-2xl font-bold text-primary">No Darshan Published Yet</h3>
-              <p className="text-muted-foreground text-sm max-w-md mx-auto">
-                The temple administration will publish today's Darshan photos shortly after morning worship.
-              </p>
+            <div className="bg-gradient-to-br from-[#240e3f] via-[#1a0832] to-[#120422] rounded-3xl p-8 sm:p-14 text-center border border-purple-500/30 text-white shadow-2xl space-y-6 relative overflow-hidden my-8">
+              {/* Background ambient lighting */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-10 right-0 w-80 h-80 bg-pink-500/15 rounded-full blur-3xl pointer-events-none" />
+
+              <div className="relative z-10 space-y-5 max-w-xl mx-auto">
+                <div className="h-16 w-16 mx-auto rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600 p-0.5 shadow-xl flex items-center justify-center animate-pulse">
+                  <div className="h-full w-full rounded-full bg-slate-950 flex items-center justify-center">
+                    <Instagram className="h-8 w-8 text-amber-300" />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-extrabold uppercase tracking-widest border border-amber-400/30">
+                    <Sparkles className="h-3.5 w-3.5" /> Coming Soon
+                  </span>
+                  <h3 className="font-display font-extrabold text-2xl sm:text-4xl text-white tracking-tight leading-tight">
+                    Coming Soon • Explore in Our Instagram
+                  </h3>
+                </div>
+
+                <p className="text-purple-100/80 text-xs sm:text-sm leading-relaxed max-w-md mx-auto font-sans">
+                  Today's daily deity darshan photos will be published shortly after morning worship. Explore daily reels, live darshan clips, and festival updates on our official Instagram page.
+                </p>
+
+                <div className="pt-2">
+                  <a
+                    href={settings?.instagram || "https://instagram.com/iskcon_kurnool"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-slate-950 font-black text-xs sm:text-sm shadow-gold transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+                  >
+                    <Instagram className="h-5 w-5 stroke-[2.5]" />
+                    <span>ISKCON Kurnool Instagram</span>
+                  </a>
+                </div>
+              </div>
             </div>
           )}
 

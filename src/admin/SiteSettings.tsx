@@ -109,7 +109,7 @@ export default function SiteSettingsForm() {
   };
 
   const previewUpiUri = generateUpiUri({
-    upiId: upi.upiId || "iskconkurnool@sbi",
+    upiId: (upi.upiId || "").trim(),
     payeeName: upi.payeeName || "ISKCON Kurnool",
     amount: testAmount,
     transactionNote: `Devotional Offering - ISKCON Kurnool`,

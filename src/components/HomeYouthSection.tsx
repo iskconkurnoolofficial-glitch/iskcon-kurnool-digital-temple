@@ -21,10 +21,11 @@ import {
 } from "lucide-react";
 
 export default function HomeYouthSection() {
-  const { youth } = useAdmin();
+  const { youth, settings } = useAdmin();
 
   const isLive = isTimeStrLive(youth?.schedule || "6:30 PM – 8:30 PM", 6); // 6 = Saturday
   const whatsappUrl = youth?.whatsappUrl || "https://chat.whatsapp.com/LhB20hR5J1T7xVvH7Hk9y3";
+  const youthLogoUrl = youth?.logo || settings?.logo;
 
   // Gather photos from gallery and features
   const galleryPhotos = useMemo(() => {
@@ -73,9 +74,10 @@ export default function HomeYouthSection() {
       <div className="absolute top-1/2 right-0 -translate-y-1/2 -mr-32 w-96 h-96 rounded-full bg-amber-500/15 blur-3xl pointer-events-none" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-3 max-w-2xl text-left">
+        {/* Section Header with Right-Side Youth Logo */}
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+          {/* Left Content Block */}
+          <div className="space-y-4 max-w-2xl text-left">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-500/20 border border-purple-400/40 text-purple-300 text-xs font-extrabold uppercase tracking-wider shadow-2xs">
               <Users className="h-3.5 w-3.5 text-purple-400" />
               <span>IYF Kurnool • Youth Empowerment</span>
@@ -88,26 +90,44 @@ export default function HomeYouthSection() {
             <p className="text-purple-200/80 text-sm sm:text-base leading-relaxed">
               Empowering youth with timeless Bhagavad Gita wisdom, stress-free living, soul-stirring musical kirtans, adventurous yatras, and positive spiritual brotherhood.
             </p>
+
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm shadow-lg transition-all duration-300 hover:scale-102 cursor-pointer"
+              >
+                <MessageCircle className="h-4.5 w-4.5" />
+                <span>Join WhatsApp Group</span>
+              </a>
+
+              <Link
+                to="/youth"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold text-xs sm:text-sm shadow-gold transition-all duration-300 hover:scale-102 cursor-pointer"
+              >
+                <span>Explore Youth Program</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 shrink-0 self-start md:self-end">
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm shadow-lg transition-all duration-300 hover:scale-102 cursor-pointer"
-            >
-              <MessageCircle className="h-4.5 w-4.5" />
-              <span>Join WhatsApp Group</span>
-            </a>
-
-            <Link
-              to="/youth"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold text-xs sm:text-sm shadow-gold transition-all duration-300 hover:scale-102 cursor-pointer"
-            >
-              <span>Explore Youth Program</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+          {/* Right Side Youth Logo (Clean circular display - No Glow) */}
+          <div className="shrink-0 flex items-center justify-center">
+            {youthLogoUrl ? (
+              <img
+                src={youthLogoUrl}
+                alt="ISKCON Kurnool Youth Program Logo"
+                className="h-28 w-28 sm:h-36 sm:w-36 object-contain rounded-full border border-white/20 p-1"
+              />
+            ) : (
+              <div className="h-28 w-28 sm:h-36 sm:w-36 rounded-full bg-purple-950/40 border border-purple-400/30 flex flex-col items-center justify-center p-3 text-center">
+                <Users className="h-10 w-10 text-amber-400 mb-1.5" />
+                <span className="text-[11px] font-extrabold tracking-wider text-purple-200 uppercase">
+                  IYF Kurnool
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -140,14 +160,6 @@ export default function HomeYouthSection() {
                 <Calendar className="h-3.5 w-3.5 text-amber-400" /> Every Saturday Evening
               </span>
             )}
-
-            <Link
-              to="/youth-yatra"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-500/30 hover:bg-purple-500/50 text-purple-200 hover:text-white text-xs font-bold border border-purple-400/40 transition cursor-pointer"
-            >
-              <Compass className="h-3.5 w-3.5 text-amber-300" />
-              <span>Youth Yatra</span>
-            </Link>
           </div>
         </div>
 

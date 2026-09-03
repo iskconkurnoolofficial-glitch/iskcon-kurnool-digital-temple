@@ -443,6 +443,22 @@ export default function YouthYatraManager() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              onClick={() => {
+                const nextState = youthYatra.yatraActive === false ? true : false;
+                setYouthYatra({ ...youthYatra, yatraActive: nextState });
+                toast.success(nextState ? "Youth Yatra Registration enabled & Active!" : "Youth Yatra set to Coming Soon mode.");
+              }}
+              className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-extrabold transition shadow-sm cursor-pointer ${
+                youthYatra.yatraActive !== false
+                  ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                  : "bg-amber-400 hover:bg-amber-500 text-slate-950"
+              }`}
+            >
+              <Zap className="h-4 w-4" />
+              <span>{youthYatra.yatraActive !== false ? "Yatra Available & Open" : "Registration Coming Soon Mode"}</span>
+            </button>
+
             <a
               href="/youth-yatra"
               target="_blank"

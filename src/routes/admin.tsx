@@ -289,7 +289,6 @@ function AdminPage() {
       title: "Community Focus",
       items: [
         { id: "bhaktiSteps", label: "Bhakti Steps (5 Levels)", icon: Award },
-        { id: "youthYatra", label: "Annual Youth Yatra", icon: Compass },
         { id: "houseProgrammes", label: "House Programmes", icon: Home },
         { id: "prahladaBadi", label: "Prahlada Badi", icon: Baby },
         { id: "youth", label: "Youth Festival", icon: Users },
