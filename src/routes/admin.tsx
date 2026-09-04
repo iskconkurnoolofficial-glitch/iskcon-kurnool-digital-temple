@@ -30,7 +30,6 @@ import TermsManager from "@/admin/TermsManager";
 import PrivacyManager from "@/admin/PrivacyManager";
 import ReceiptSettingsManager from "@/admin/ReceiptSettingsManager";
 import UpiSettingsManager from "@/admin/UpiSettingsManager";
-import LiveLaunchManager from "@/admin/LiveLaunchManager";
 import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard, Video, Bell, ShieldCheck, Compass, Sun, Tv, Award, FileText, Lock, FileCheck, QrCode, Eye, EyeOff, Rocket } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
@@ -38,7 +37,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "welcome" | "liveLaunch" | "dailyDarshan" | "liveProgrammes" | "carousel" | "festivals" | "sevas" | "bhaktiSteps" | "youth" | "youthYatra" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "upiSettings" | "receiptSettings" | "terms" | "privacy" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "featurePopup" | "paymentPages";
+type Tab = "welcome" | "dailyDarshan" | "liveProgrammes" | "carousel" | "festivals" | "sevas" | "bhaktiSteps" | "youth" | "youthYatra" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "upiSettings" | "receiptSettings" | "terms" | "privacy" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "featurePopup" | "paymentPages";
 
 function AdminPage() {
   const { authed, login, logout, settings, contacts, setContacts, paymentRecords, houseProgrammes, markAllHouseProgrammeRequestsRead, markAllPaymentRecordsRead, youthYatra, markAllYatraRegistrationsRead, bhaktiSteps, markAllBhaktiStepsRegistrationsRead, currentUser } = useAdmin();
@@ -302,7 +301,6 @@ function AdminPage() {
     {
       title: "Site Settings",
       items: [
-        { id: "liveLaunch", label: "🚀 Live Website Launch", icon: Rocket },
         { id: "contacts", label: "Contact Messages", icon: Mail },
         { id: "settings", label: "Site Settings", icon: Settings },
         { id: "upiSettings", label: "UPI QR & Bank Settings", icon: QrCode },
@@ -745,7 +743,6 @@ function AdminPage() {
             {tab === "classes" && <DailyClassesManager />}
             {tab === "gallery" && <GalleryManager />}
             {tab === "heroBanners" && <HeroBannersManager />}
-            {tab === "liveLaunch" && <LiveLaunchManager />}
             {tab === "settings" && <SiteSettingsForm />}
             {tab === "upiSettings" && <UpiSettingsManager />}
             {tab === "receiptSettings" && <ReceiptSettingsManager />}

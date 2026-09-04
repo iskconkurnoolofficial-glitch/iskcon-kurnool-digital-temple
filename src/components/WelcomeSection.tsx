@@ -51,8 +51,10 @@ export default function WelcomeSection() {
             <img
               src={welcomeUrl || "https://images.unsplash.com/photo-1609137982420-b1885df33a7e?auto=format&fit=crop&w=800&q=80"}
               alt="Sri Sri Puri Jagannath Deities"
-              loading="lazy"
+              loading="eager"
               decoding="async"
+              // @ts-ignore
+              fetchPriority="high"
               className="w-full h-auto max-w-lg rounded-[32px] object-cover"
             />
           </div>
