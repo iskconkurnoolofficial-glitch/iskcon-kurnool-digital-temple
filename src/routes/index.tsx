@@ -12,7 +12,8 @@ import SocialMediaSection from "@/components/SocialMediaSection";
 import HomeHouseProgrammesSection from "@/components/HomeHouseProgrammesSection";
 import HomeYouthSection from "@/components/HomeYouthSection";
 import HomeHarinamaSection from "@/components/HomeHarinamaSection";
-import FeaturedOfferingsSection from "@/components/FeaturedOfferingsSection";
+import HomePrahladaBadiSection from "@/components/HomePrahladaBadiSection";
+import HomeGitaCourseSection from "@/components/HomeGitaCourseSection";
 import ConnectSection from "@/components/ConnectSection";
 
 export const Route = createFileRoute("/")({
@@ -40,7 +41,8 @@ function Home() {
       <HomeHouseProgrammesSection />
       <HomeYouthSection />
       <HomeHarinamaSection />
-      <FeaturedOfferingsSection />
+      <HomePrahladaBadiSection />
+      <HomeGitaCourseSection />
       <ConnectSection />
     </SiteLayout>
   );

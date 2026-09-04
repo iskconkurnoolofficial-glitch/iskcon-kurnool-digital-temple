@@ -97,26 +97,38 @@ export default function FestivalsManager() {
   };
 
   const move = (id: string, dir: -1 | 1) => {
-    const sorted = [...localList].sort((a, b) => a.order - b.order);
+    // 1. Sort current localList by order
+    const sorted = [...localList].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    
+    // 2. Ensure each item has a unique index if they were missing or duplicate
+    sorted.forEach((item, idx) => {
+      item.order = idx;
+    });
+
     const i = sorted.findIndex((f) => f.id === id);
+    if (i === -1) return;
     const j = i + dir;
     if (j < 0 || j >= sorted.length) return;
-    
-    // Swap orders
-    const tempOrder = sorted[i].order;
-    sorted[i].order = sorted[j].order;
-    sorted[j].order = tempOrder;
-    
-    setLocalList(sorted.sort((a, b) => a.order - b.order));
-    setIsOrderDirty(true);
+
+    // 3. Swap array positions
+    const temp = sorted[i];
+    sorted[i] = sorted[j];
+    sorted[j] = temp;
+
+    // 4. Re-assign clean explicit sequential order numbers
+    const updated = sorted.map((f, idx) => ({ ...f, order: idx }));
+    setLocalList(updated);
+    commit(updated);
+    toast.success(`Moved "${temp.title}" ${dir === -1 ? "up" : "down"}`);
   };
 
   const saveOrder = () => {
     commit(localList);
+    toast.success("Festival order saved!");
   };
 
   const resetOrder = () => {
-    setLocalList([...list].sort((a, b) => a.order - b.order));
+    setLocalList([...list].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
     setIsOrderDirty(false);
   };
 
@@ -290,6 +302,7 @@ function FestivalList({ list, isOrderDirty, onSaveOrder, onResetOrder, onNew, on
             <table className="w-full text-sm">
               <thead className="bg-surface text-left text-muted-foreground">
                 <tr>
+                  <th className="px-4 py-3 font-medium text-center w-16">Order</th>
                   <th className="px-4 py-3 font-medium">Festival</th>
                   <th className="px-4 py-3 font-medium">Date</th>
                   <th className="px-4 py-3 font-medium">Status</th>
@@ -298,8 +311,13 @@ function FestivalList({ list, isOrderDirty, onSaveOrder, onResetOrder, onNew, on
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {rows.map((f) => (
+                {rows.map((f, idx) => (
                   <tr key={f.id} className="hover:bg-surface/50">
+                    <td className="px-4 py-3 text-center">
+                      <span className="inline-flex items-center justify-center h-7 px-2.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-xs font-extrabold border border-amber-300/60">
+                        #{idx + 1}
+                      </span>
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-16 rounded bg-muted overflow-hidden shrink-0">
@@ -325,8 +343,18 @@ function FestivalList({ list, isOrderDirty, onSaveOrder, onResetOrder, onNew, on
 
           {/* Mobile cards */}
           <div className="lg:hidden space-y-3">
-            {rows.map((f) => (
-              <div key={f.id} className="bg-white rounded-xl border p-3">
+            {rows.map((f, idx) => (
+              <div key={f.id} className="bg-white rounded-xl border p-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex items-center justify-center h-6 px-2 rounded-full bg-amber-100 text-amber-900 text-[11px] font-extrabold border border-amber-300">
+                    Position #{idx + 1}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => onMove(f.id, -1)} className="p-1 rounded bg-amber-100 hover:bg-amber-200 text-amber-900 cursor-pointer" title="Move Up"><ArrowUp className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => onMove(f.id, 1)} className="p-1 rounded bg-amber-100 hover:bg-amber-200 text-amber-900 cursor-pointer" title="Move Down"><ArrowDown className="h-3.5 w-3.5" /></button>
+                  </div>
+                </div>
+
                 <div className="flex gap-3">
                   <div className="h-14 w-20 rounded bg-muted overflow-hidden shrink-0">
                     {f.thumbnail && <img src={f.thumbnail} alt="" className="w-full h-full object-cover" />}
@@ -337,7 +365,7 @@ function FestivalList({ list, isOrderDirty, onSaveOrder, onResetOrder, onNew, on
                     <div className="flex gap-1.5 mt-1.5"><StatusBadge f={f} /><LiveBadge f={f} /></div>
                   </div>
                 </div>
-                <div className="mt-3 pt-3 border-t flex justify-end">
+                <div className="pt-2 border-t flex justify-end">
                   <RowActions f={f} sortBy={sortBy} onEdit={onEdit} onPatch={onPatch} onRemove={onRemove} onMove={onMove} />
                 </div>
               </div>
@@ -369,16 +397,14 @@ function RowActions({ f, sortBy, onEdit, onPatch, onRemove, onMove }: {
   onRemove: (id: string) => void;
   onMove: (id: string, dir: -1 | 1) => void;
 }) {
-  const iconBtn = "p-2 rounded hover:bg-muted transition";
-  const isCustom = sortBy === "custom";
+  const iconBtn = "p-2 rounded hover:bg-muted transition cursor-pointer";
   return (
-    <div className="flex items-center justify-end gap-0.5">
-      {isCustom && (
-        <>
-          <button onClick={() => onMove(f.id, -1)} className={iconBtn} title="Move up"><ArrowUp className="h-4 w-4" /></button>
-          <button onClick={() => onMove(f.id, 1)} className={iconBtn} title="Move down"><ArrowDown className="h-4 w-4" /></button>
-        </>
-      )}
+    <div className="flex items-center justify-end gap-1">
+      <div className="flex items-center gap-0.5 bg-amber-500/10 border border-amber-300/40 rounded-lg p-0.5 mr-1" title="Reorder Position">
+        <button onClick={() => onMove(f.id, -1)} className="p-1 rounded hover:bg-amber-200 text-amber-900 transition cursor-pointer" title="Move Up"><ArrowUp className="h-3.5 w-3.5" /></button>
+        <button onClick={() => onMove(f.id, 1)} className="p-1 rounded hover:bg-amber-200 text-amber-900 transition cursor-pointer" title="Move Down"><ArrowDown className="h-3.5 w-3.5" /></button>
+      </div>
+
       {f.status === "published"
         ? <button onClick={() => onPatch(f.id, { status: "draft" })} className={`${iconBtn} text-amber-600`} title="Unpublish"><CircleSlash className="h-4 w-4" /></button>
         : <button onClick={() => onPatch(f.id, { status: "published", hidden: false })} className={`${iconBtn} text-green-600`} title="Publish"><CheckCircle2 className="h-4 w-4" /></button>}
@@ -421,87 +447,6 @@ function FestivalEditor({ draft, setDraft, slugEdited, setSlugEdited, onSave, on
     if (j < 0 || j >= arr.length) return;
     [arr[idx], arr[j]] = [arr[j], arr[idx]];
     setSevas(arr.map((s, i) => ({ ...s, order: i })));
-  };
-
-  const { sevas: globalSevas } = useAdmin();
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [selectedGlobalSevaIds, setSelectedGlobalSevaIds] = useState<string[]>([]);
-  const [sevaSearchQuery, setSevaSearchQuery] = useState("");
-
-  // Find global sevas linked to this festival via festivalId or matching category/title
-  const linkedGlobalSevas = useMemo(() => {
-    if (!globalSevas) return [];
-    return globalSevas.filter((gs) => {
-      if (gs.festivalId && gs.festivalId === draft.id) return true;
-      if (Array.isArray(gs.festivalIds) && gs.festivalIds.includes(draft.id)) return true;
-      if (draft.title && (gs.category?.toLowerCase().includes(draft.title.toLowerCase()) || gs.categories?.some(c => c.toLowerCase().includes(draft.title.toLowerCase())))) return true;
-      return false;
-    });
-  }, [globalSevas, draft.id, draft.title]);
-
-  // Unmerged linked sevas (linked global sevas not yet present in draft.sevas)
-  const unmergedLinkedSevas = useMemo(() => {
-    const currentSevas = draft.sevas || [];
-    return linkedGlobalSevas.filter(
-      (gs) => !currentSevas.some((s) => s.id === gs.id || s.title.toLowerCase().trim() === gs.title.toLowerCase().trim())
-    );
-  }, [linkedGlobalSevas, draft.sevas]);
-
-  // Merge linked global sevas in 1-click
-  const mergeLinkedSevas = () => {
-    if (unmergedLinkedSevas.length === 0) return;
-    const currentSevas = draft.sevas || [];
-    const newItems: Seva[] = unmergedLinkedSevas.map((gs, idx) => ({
-      id: gs.id || `merged_${Date.now()}_${idx}`,
-      thumbnail: gs.thumbnail || "",
-      title: gs.title,
-      description: gs.description || "",
-      prices: gs.prices && gs.prices.length > 0 ? gs.prices : [{ label: "Per Day", amount: 501 }],
-      order: currentSevas.length + idx,
-      active: gs.active ?? true,
-      category: gs.category,
-      categories: gs.categories,
-      festivalId: draft.id
-    }));
-    setSevas([...currentSevas, ...newItems]);
-    toast.success(`Merged ${newItems.length} added sevas into festival!`);
-  };
-
-  // Merge selected global sevas from modal
-  const mergeSelectedSevas = () => {
-    if (selectedGlobalSevaIds.length === 0) {
-      toast.error("Please select at least one seva to merge.");
-      return;
-    }
-    const currentSevas = draft.sevas || [];
-    const toMerge = (globalSevas || []).filter((gs) => selectedGlobalSevaIds.includes(gs.id));
-    const newItems: Seva[] = [];
-    toMerge.forEach((gs, idx) => {
-      const alreadyExists = currentSevas.some((s) => s.id === gs.id || s.title.toLowerCase().trim() === gs.title.toLowerCase().trim());
-      if (!alreadyExists) {
-        newItems.push({
-          id: gs.id || `imported_${Date.now()}_${idx}`,
-          thumbnail: gs.thumbnail || "",
-          title: gs.title,
-          description: gs.description || "",
-          prices: gs.prices && gs.prices.length > 0 ? gs.prices : [{ label: "Per Day", amount: 501 }],
-          order: currentSevas.length + newItems.length,
-          active: gs.active ?? true,
-          category: gs.category,
-          categories: gs.categories,
-          festivalId: draft.id
-        });
-      }
-    });
-
-    if (newItems.length === 0) {
-      toast.info("Selected sevas are already merged in this festival.");
-    } else {
-      setSevas([...currentSevas, ...newItems]);
-      toast.success(`Successfully merged ${newItems.length} sevas!`);
-    }
-    setIsImportModalOpen(false);
-    setSelectedGlobalSevaIds([]);
   };
 
   return (
@@ -742,264 +687,29 @@ function FestivalEditor({ draft, setDraft, slugEdited, setSlugEdited, onSave, on
         <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1"><Clock className="h-3 w-3" /> Festival auto-publishes/unpublishes at the scheduled times.</p>
       </Section>
 
-      {/* Sevas */}
-      <Section 
-        title={`Sevas (${(draft.sevas || []).length})`} 
-        action={
-          <div className="flex flex-wrap items-center gap-2">
-            {unmergedLinkedSevas.length > 0 && (
-              <button
-                type="button"
-                onClick={mergeLinkedSevas}
-                className="text-xs px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition"
-              >
-                <Sparkles className="h-3.5 w-3.5" /> Quick Merge ({unmergedLinkedSevas.length})
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedGlobalSevaIds([]);
-                setSevaSearchQuery("");
-                setIsImportModalOpen(true);
-              }}
-              className="text-xs px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold inline-flex items-center gap-1.5 cursor-pointer transition"
-            >
-              <Sparkles className="h-3.5 w-3.5" /> Merge / Import Sevas
-            </button>
-            <button 
-              type="button"
-              onClick={addSeva} 
-              className="text-xs px-3 py-1.5 rounded-lg bg-accent hover:bg-accent/90 text-white font-bold inline-flex items-center gap-1 cursor-pointer transition"
-            >
-              <Plus className="h-4 w-4" /> Add Seva
-            </button>
-          </div>
-        }
-      >
-        {/* Unmerged Linked Sevas Alert Banner */}
-        {unmergedLinkedSevas.length > 0 && (
-          <div className="mb-4 bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-xs">
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-2 text-amber-900 font-bold text-xs sm:text-sm">
-                <Sparkles className="h-4 w-4 text-amber-600 animate-pulse" />
-                <span>Found {unmergedLinkedSevas.length} added global sevas for this festival!</span>
-              </div>
-              <p className="text-xs text-amber-800/90 font-sans">
-                {unmergedLinkedSevas.map(s => s.title).join(", ")}
-              </p>
+      {/* Sevas & Offerings */}
+      <Section title="Sevas &amp; Offerings">
+        {/* All Sevas Can Be Done in Jagannath Sevas Banner */}
+        <div className="p-5 rounded-2xl bg-amber-500/10 border-2 border-amber-300/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-amber-900 font-bold text-xs sm:text-sm shadow-xs">
+          <div className="flex items-center gap-3 text-left">
+            <div className="p-2.5 rounded-2xl bg-amber-500/20 text-amber-600 shrink-0">
+              <Sparkles className="h-5 w-5 animate-pulse text-amber-600" />
             </div>
-            <button
-              type="button"
-              onClick={mergeLinkedSevas}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs rounded-xl shadow-xs transition cursor-pointer shrink-0 uppercase tracking-wider"
-            >
-              Merge All ({unmergedLinkedSevas.length})
-            </button>
+            <div>
+              <span className="block font-black text-sm sm:text-base text-amber-950">All sevas can be done in Jagannath Sevas</span>
+              <span className="text-xs text-amber-800/90 font-normal block mt-0.5">All festival sevas are centralized and managed in Jagannath Sevas Manager.</span>
+            </div>
           </div>
-        )}
-
-        {!(draft.sevas && draft.sevas.length > 0) ? (
-          <div className="text-center py-8 text-muted-foreground text-sm border-2 border-dashed rounded-lg">
-            No sevas yet. Add one or click "Merge / Import Sevas" to merge existing sevas.
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {draft.sevas.map((s, i) => (
-              <SevaEditor key={s.id} seva={s} index={i} total={draft.sevas.length}
-                onChange={(p) => updSeva(s.id, p)} onDelete={() => delSeva(s.id)} onMove={(dir) => moveSeva(i, dir)} />
-            ))}
-          </div>
-        )}
+          <a
+            href="/admin?tab=sevas"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-black uppercase tracking-wider transition shrink-0 shadow-xs"
+          >
+            Manage Jagannath Sevas ➔
+          </a>
+        </div>
       </Section>
-
-      {/* Import / Merge Sevas Modal */}
-      <AdminModal
-        isOpen={isImportModalOpen}
-        onClose={() => setIsImportModalOpen(false)}
-        title="Merge & Import Existing Sevas"
-        subtitle={`Select global sevas from your library to merge into ${draft.title || "this festival"}`}
-        icon={Sparkles}
-        maxWidth="2xl"
-      >
-        <div className="space-y-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search available sevas..."
-              value={sevaSearchQuery}
-              onChange={(e) => setSevaSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2.5 border rounded-xl bg-white text-xs sm:text-sm font-sans focus:ring-2 focus:ring-primary/20 focus:outline-none"
-            />
-          </div>
-
-          <div className="max-h-[350px] overflow-y-auto space-y-2 pr-1 scrollbar-thin">
-            {(globalSevas || [])
-              .filter((gs) => {
-                const q = sevaSearchQuery.toLowerCase().trim();
-                if (!q) return true;
-                return (
-                  gs.title.toLowerCase().includes(q) ||
-                  gs.description?.toLowerCase().includes(q) ||
-                  gs.category?.toLowerCase().includes(q)
-                );
-              })
-              .map((gs) => {
-                const isSelected = selectedGlobalSevaIds.includes(gs.id);
-                const isAlreadyMerged = draft.sevas.some(
-                  (s) => s.id === gs.id || s.title.toLowerCase().trim() === gs.title.toLowerCase().trim()
-                );
-
-                return (
-                  <div
-                    key={gs.id}
-                    onClick={() => {
-                      if (isAlreadyMerged) return;
-                      setSelectedGlobalSevaIds((prev) =>
-                        prev.includes(gs.id) ? prev.filter((id) => id !== gs.id) : [...prev, gs.id]
-                      );
-                    }}
-                    className={`p-3 rounded-2xl border transition flex items-center justify-between gap-3 ${
-                      isAlreadyMerged
-                        ? "bg-slate-100/70 border-slate-200 opacity-60 cursor-not-allowed"
-                        : isSelected
-                        ? "bg-purple-50 border-purple-400 shadow-2xs cursor-pointer"
-                        : "bg-white border-slate-200 hover:border-purple-300 cursor-pointer"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="checkbox"
-                        checked={isSelected || isAlreadyMerged}
-                        disabled={isAlreadyMerged}
-                        onChange={() => {}}
-                        className="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
-                      />
-                      <div className="h-10 w-10 rounded-xl bg-slate-100 overflow-hidden shrink-0">
-                        {gs.thumbnail ? (
-                          <img src={gs.thumbnail} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <Sparkles className="h-5 w-5 text-slate-400 m-auto mt-2.5" />
-                        )}
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-xs sm:text-sm text-slate-900">{gs.title}</h4>
-                        <p className="text-[11px] text-slate-500 line-clamp-1">
-                          {gs.prices && gs.prices.length > 0
-                            ? `₹${gs.prices[0].amount} (${gs.prices[0].label})`
-                            : "No price set"}
-                          {gs.category ? ` • ${gs.category}` : ""}
-                        </p>
-                      </div>
-                    </div>
-
-                    {isAlreadyMerged ? (
-                      <span className="text-[10px] uppercase font-bold text-slate-500 px-2.5 py-1 rounded-full bg-slate-200">
-                        Already Merged
-                      </span>
-                    ) : (
-                      <span className={`text-xs font-bold px-3 py-1 rounded-full border ${isSelected ? "bg-purple-600 text-white border-purple-600" : "bg-slate-100 text-slate-700 border-slate-200"}`}>
-                        {isSelected ? "Selected" : "Select"}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-          </div>
-
-          <div className="pt-4 border-t flex items-center justify-between gap-3">
-            <button
-              type="button"
-              onClick={mergeSelectedSevas}
-              disabled={selectedGlobalSevaIds.length === 0}
-              className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs sm:text-sm shadow-md transition cursor-pointer disabled:opacity-50"
-            >
-              Merge Selected Sevas ({selectedGlobalSevaIds.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsImportModalOpen(false)}
-              className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      </AdminModal>
-    </div>
-  );
-}
-
-function SevaEditor({ seva, index, total, onChange, onDelete, onMove }: {
-  seva: Seva; index: number; total: number;
-  onChange: (p: Partial<Seva>) => void; onDelete: () => void; onMove: (dir: -1 | 1) => void;
-}) {
-  const [busy, setBusy] = useState(false);
-  const upload = async (file: File) => {
-    setBusy(true);
-    try { onChange({ thumbnail: await uploadToCloudinary(file) }); } catch { alert("Upload failed"); }
-    setBusy(false);
-  };
-  const setPrice = (i: number, p: Partial<SevaPrice>) => onChange({ prices: seva.prices.map((x, j) => (j === i ? { ...x, ...p } : x)) });
-  const addPrice = () => onChange({ prices: [...seva.prices, { label: "Per Day", amount: 501 }] });
-  const delPrice = (i: number) => onChange({ prices: seva.prices.filter((_, j) => j !== i) });
-  const movePrice = (i: number, dir: -1 | 1) => {
-    const arr = [...seva.prices]; const j = i + dir;
-    if (j < 0 || j >= arr.length) return;
-    [arr[i], arr[j]] = [arr[j], arr[i]]; onChange({ prices: arr });
-  };
-
-  return (
-    <div className="border rounded-xl p-4 bg-surface/40">
-      <div className="flex items-center gap-2 mb-3">
-        <GripVertical className="h-4 w-4 text-muted-foreground" />
-        <span className="text-xs font-semibold text-muted-foreground">Seva #{index + 1}</span>
-        <div className="ml-auto flex items-center gap-0.5">
-          <button onClick={() => onMove(-1)} disabled={index === 0} className="p-1.5 rounded hover:bg-muted disabled:opacity-30"><ArrowUp className="h-4 w-4" /></button>
-          <button onClick={() => onMove(1)} disabled={index === total - 1} className="p-1.5 rounded hover:bg-muted disabled:opacity-30"><ArrowDown className="h-4 w-4" /></button>
-          <button onClick={() => onChange({ active: !seva.active })} className="p-1.5 rounded hover:bg-muted" title={seva.active ? "Hide" : "Show"}>
-            {seva.active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
-          </button>
-          <button onClick={onDelete} className="p-1.5 rounded hover:bg-destructive/10 text-destructive"><Trash2 className="h-4 w-4" /></button>
-        </div>
-      </div>
-
-      <div className="grid sm:grid-cols-[100px,1fr] gap-4">
-        <UploadBox
-          label=""
-          url={seva.thumbnail}
-          onPick={upload}
-          aspect="aspect-square"
-          className="w-full max-w-[100px]"
-        />
-
-        <div className="space-y-3">
-          <input className="inp" placeholder="Seva title (e.g. Go Seva)" value={seva.title} onChange={(e) => onChange({ title: e.target.value })} />
-          <textarea className="inp min-h-[60px]" placeholder="Short description" value={seva.description} onChange={(e) => onChange({ description: e.target.value })} />
-
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs font-medium text-foreground/70">Price Options</span>
-              <button onClick={addPrice} className="text-xs text-accent inline-flex items-center gap-1"><Plus className="h-3 w-3" /> Add option</button>
-            </div>
-            <div className="space-y-2">
-              {seva.prices.map((p, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <input className="inp flex-1" placeholder="Label (Per Day)" value={p.label} onChange={(e) => setPrice(i, { label: e.target.value })} />
-                  <div className="relative w-32">
-                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">₹</span>
-                    <input type="number" className="inp pl-6" placeholder="501" value={p.amount} onChange={(e) => setPrice(i, { amount: Number(e.target.value) })} />
-                  </div>
-                  <button onClick={() => movePrice(i, -1)} disabled={i === 0} className="p-1.5 rounded hover:bg-muted disabled:opacity-30"><ArrowUp className="h-3.5 w-3.5" /></button>
-                  <button onClick={() => movePrice(i, 1)} disabled={i === seva.prices.length - 1} className="p-1.5 rounded hover:bg-muted disabled:opacity-30"><ArrowDown className="h-3.5 w-3.5" /></button>
-                  <button onClick={() => delPrice(i)} className="p-1.5 rounded hover:bg-destructive/10 text-destructive"><X className="h-3.5 w-3.5" /></button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

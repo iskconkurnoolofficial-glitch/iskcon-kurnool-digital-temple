@@ -35,7 +35,8 @@ import {
   Check,
   Eye,
   X,
-  AlertCircle
+  AlertCircle,
+  Lock
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -720,6 +721,53 @@ function SettingsTab({
 
   return (
     <div className="space-y-6 max-w-4xl">
+      {/* Registration & Booking Status Selector Tabs */}
+      <div className="bg-white rounded-2xl border p-6 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <Lock className="h-5 w-5 text-primary" />
+              <h3 className="font-display font-bold text-base sm:text-lg text-slate-900">
+                House Programme Booking Status
+              </h3>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Control booking availability. Selecting "Coming Soon" or "Closed" locks booking buttons with a lock icon 🔒 on the website.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200 shrink-0">
+            {(["Coming Soon", "Closed", "Registrations Opened"] as const).map((st) => {
+              const currentStatus = draft.status || "Registrations Opened";
+              const isActive = currentStatus === st;
+              return (
+                <button
+                  key={st}
+                  type="button"
+                  onClick={() => {
+                    const nextDraft = { ...draft, status: st };
+                    setDraft(nextDraft);
+                    onUpdate({ status: st });
+                  }}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs ${
+                    isActive
+                      ? st === "Coming Soon"
+                        ? "bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50"
+                        : st === "Closed"
+                        ? "bg-rose-600 text-white shadow-md ring-2 ring-rose-500/50"
+                        : "bg-emerald-600 text-white shadow-md ring-2 ring-emerald-500/50"
+                      : "text-slate-600 hover:bg-slate-200/70"
+                  }`}
+                >
+                  {st === "Coming Soon" && "⏳ Coming Soon"}
+                  {st === "Closed" && "🔒 Closed"}
+                  {st === "Registrations Opened" && "✅ Registrations Opened"}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
       {/* Hero Section Card */}
       <div className="bg-white rounded-2xl border p-6 shadow-sm space-y-4">
         <h3 className="font-display text-lg font-bold text-primary flex items-center gap-2">

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import SiteLayout from "@/components/SiteLayout";
 import { useAdmin } from "@/context/AdminContext";
-import { Calendar, Clock, Monitor, IndianRupee, Check, BookOpen, Languages, Timer, Sparkles, ArrowRight, Star, Quote, Book, Compass, Award, Heart } from "lucide-react";
+import { Calendar, Clock, Monitor, IndianRupee, Check, BookOpen, Languages, Timer, Sparkles, ArrowRight, Star, Quote, Book, Compass, Award, Heart, Lock } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { isTimeStrLive, getCurrentTimeIST } from "@/lib/scheduleUtils";
 
@@ -128,15 +128,33 @@ function safeUrl(u: string): string | undefined {
   }
 }
 
-function RegisterButton({ url, label = "Register Now" }: { url?: string; label?: string }) {
+function RegisterButton({ url, label = "Register Now", status = "Registrations Opened" }: { url?: string; label?: string; status?: string }) {
   const safe = typeof window !== "undefined" ? safeUrl(url ?? "") : url;
-  if (!safe) {
+
+  if (status === "Coming Soon") {
     return (
-      <button disabled className="inline-flex items-center px-8 py-3.5 rounded-full bg-muted text-muted-foreground font-semibold cursor-not-allowed">
-        Registration opening soon
+      <button disabled className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-amber-500/20 text-amber-300 font-extrabold border border-amber-400/40 cursor-not-allowed opacity-90 shadow-md">
+        <Lock className="h-4 w-4 text-amber-400" /> Registrations Coming Soon
       </button>
     );
   }
+
+  if (status === "Closed") {
+    return (
+      <button disabled className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-slate-200 text-slate-500 font-extrabold border border-slate-300 cursor-not-allowed shadow-md">
+        <Lock className="h-4 w-4 text-slate-500" /> Registrations Closed
+      </button>
+    );
+  }
+
+  if (!safe) {
+    return (
+      <button disabled className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-amber-500/20 text-amber-300 font-extrabold border border-amber-400/40 cursor-not-allowed opacity-90 shadow-md">
+        <Lock className="h-4 w-4 text-amber-400" /> Registrations Coming Soon
+      </button>
+    );
+  }
+
   return (
     <a
       href={safe}
@@ -250,7 +268,7 @@ function Page() {
               </div>
             </div>
             <div className="mt-8">
-              <RegisterButton url={g.registerUrl} />
+              <RegisterButton url={g.registerUrl} status={g.status || "Registrations Opened"} />
             </div>
           </div>
 
@@ -258,8 +276,8 @@ function Page() {
             <div className="animate-fade-up">
               <div className="relative max-w-sm mx-auto">
                 <div className="absolute -inset-3 rounded-[2rem] bg-gradient-to-tr from-secondary/40 to-accent/30 blur-xl opacity-70" />
-                <div className="relative rounded-3xl overflow-hidden shadow-elegant ring-1 ring-white/25">
-                  <img src={g.heroImage} alt="Bhagavad Gita Course" className="w-full h-auto object-cover" style={{ aspectRatio: "1080 / 1350" }} />
+                <div className="relative rounded-3xl overflow-hidden shadow-elegant ring-1 ring-white/25 bg-black/40 p-1.5 flex items-center justify-center">
+                  <img src={g.heroImage} alt="Bhagavad Gita Course" className="w-full h-auto max-h-[550px] object-contain rounded-2xl" />
                 </div>
               </div>
             </div>
@@ -294,11 +312,11 @@ function Page() {
             {/* Right: Image */}
             <div className="flex justify-center lg:justify-end">
               {g.gitaAboutImage ? (
-                <div className="w-full max-w-md rounded-3xl overflow-hidden">
+                <div className="w-full max-w-md rounded-3xl overflow-hidden shadow-lg border border-slate-200/60 bg-slate-900/5 p-2 flex items-center justify-center">
                   <img
                     src={g.gitaAboutImage}
                     alt="How to Read the Bhagavad Gita"
-                    className="w-full h-full object-cover aspect-square"
+                    className="w-full h-auto max-h-[500px] object-contain rounded-2xl"
                   />
                 </div>
               ) : (
@@ -335,11 +353,11 @@ function Page() {
             {/* Left: Image */}
             <div className="flex justify-center lg:justify-start order-2 lg:order-1">
               {g.gitaWhyImage ? (
-                <div className="w-full max-w-md rounded-3xl overflow-hidden">
+                <div className="w-full max-w-md rounded-3xl overflow-hidden shadow-lg border border-slate-200/60 bg-slate-900/5 p-2 flex items-center justify-center">
                   <img
                     src={g.gitaWhyImage}
                     alt="Why Gita Classes Matter"
-                    className="w-full h-full object-cover aspect-square"
+                    className="w-full h-auto max-h-[500px] object-contain rounded-2xl"
                   />
                 </div>
               ) : (
@@ -393,7 +411,7 @@ function Page() {
               Experience a program built around your busy routine, designed to give you clarity and wisdom that stays with you.
             </p>
             <div className="pt-2">
-              <RegisterButton url={g.registerUrl} />
+              <RegisterButton url={g.registerUrl} status={g.status || "Registrations Opened"} />
             </div>
           </div>
           <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -550,11 +568,13 @@ function Page() {
           <div className="bg-white border border-orange-200/20 rounded-3xl p-8 max-w-md mx-auto shadow-2xl space-y-6 text-slate-800 animate-fade-up">
             <div className="space-y-1">
               <div className="text-[10px] uppercase font-bold text-orange-600 tracking-widest">Enrollment Status</div>
-              <div className="text-xl font-extrabold text-slate-900 font-display">Free Registration Open</div>
+              <div className="text-xl font-extrabold text-slate-900 font-display">
+                {(g.status || "Registrations Opened") === "Coming Soon" ? "⏳ Registrations Coming Soon" : (g.status === "Closed" ? "🔒 Registrations Closed" : "Free Registration Open")}
+              </div>
             </div>
             
             <div className="flex flex-col items-center gap-3.5">
-              <RegisterButton url={g.registerUrl} />
+              <RegisterButton url={g.registerUrl} status={g.status || "Registrations Opened"} />
               <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-slate-600 font-semibold mt-1">
                 <span className="flex items-center gap-1"><Check className="h-4 w-4 text-emerald-600 font-bold" /> {g.fee}</span>
                 <span>•</span>

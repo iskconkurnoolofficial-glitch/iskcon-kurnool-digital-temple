@@ -521,9 +521,11 @@ export type HouseProgrammeData = {
   contactPhone: string;
   whatsappNumber: string;
   kartikaImage?: string;
+  status?: "Coming Soon" | "Closed" | "Registrations Opened";
 };
 
 export const defaultHouseProgramme: HouseProgrammeData = {
+  status: "Registrations Opened",
   badgeText: "Devotional Home Gatherings",
   heroTitle: "House Programmes",
   heroSubtitle: "Bring the sacred atmosphere of the temple into your home with joyful chanting, spiritual discourses, and divine prasadam.",
@@ -2056,9 +2058,11 @@ export type GitaCourseData = {
   startLabel: string;
   endLabel: string;
   whyCards?: GitaWhyCard[];
+  status?: "Coming Soon" | "Closed" | "Registrations Opened";
 };
 
 export const defaultGitaCourse: GitaCourseData = {
+  status: "Registrations Opened",
   heroImage: "",
   gitaAboutImage: "",
   gitaWhyImage: "",
@@ -2123,6 +2127,10 @@ export type SiteSettings = {
   welcomeImage?: string;
   quickDonateImage?: string;
   launchPageActive?: boolean;
+  isLaunchingSequence?: boolean;
+  lastLaunchedAt?: number;
+  enableLaunchButton?: boolean;
+  enableLaunchTimer?: boolean;
   launchDate?: string;
   launchBypassCode?: string;
   liveStreamLink?: string;
@@ -3261,8 +3269,11 @@ const defaultSettings: SiteSettings = {
   twitter: "",
   welcomeImage: "",
   quickDonateImage: "",
-  launchPageActive: false,
-  launchDate: "2026-07-15T09:00:00",
+  launchPageActive: true,
+  isLaunchingSequence: false,
+  enableLaunchButton: true,
+  enableLaunchTimer: true,
+  launchDate: "2026-09-04T00:00:00",
   launchBypassCode: "108",
   liveStreamLink: "",
   liveStreamTitle: "",

@@ -86,24 +86,21 @@ function FestivalCard({ f }: { f: Festival }) {
   return (
     <article className="group relative bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-amber-200/70 dark:border-slate-800 shadow-sm hover:shadow-2xl hover:border-amber-400 dark:hover:border-amber-500/50 transition-all duration-500 flex flex-col h-full">
       {/* Top Banner Image with Floating Badges */}
-      <div className="relative w-full aspect-[16/10] overflow-hidden bg-slate-950">
+      <div className="relative w-full aspect-[16/10] overflow-hidden bg-slate-100 dark:bg-slate-900">
         {f.thumbnail ? (
           <img
             src={getOptimizedCloudinaryUrl(f.thumbnail, "card")}
             alt={f.title}
             loading="lazy"
             decoding="async"
-            className="w-full h-full object-cover object-center group-hover:scale-108 group-hover:brightness-105 transition-all duration-700 ease-out"
+            className="w-full h-full object-cover object-center group-hover:scale-108 transition-all duration-700 ease-out"
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center text-amber-300 bg-gradient-to-br from-amber-950 via-purple-950 to-slate-950">
+          <div className="w-full h-full flex flex-col items-center justify-center text-amber-600 bg-gradient-to-br from-amber-100 via-amber-50 to-orange-50">
             <Sparkles className="h-12 w-12 animate-pulse" />
-            <span className="text-xs font-semibold mt-2 text-amber-200/80 uppercase tracking-widest">Auspicious Utsava</span>
+            <span className="text-xs font-semibold mt-2 text-amber-800 uppercase tracking-widest">Auspicious Utsava</span>
           </div>
         )}
-
-        {/* Ambient Dark Gradient for Contrast */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
 
         {/* Floating Countdown & Top Right Badges */}
         <div className="absolute top-3.5 right-3.5 flex flex-col items-end gap-1.5">
@@ -189,7 +186,7 @@ export default function UpcomingFestivals() {
       festivals
         .map(normalizeFestival)
         .filter((f) => isFestivalLive(f))
-        .sort((a, b) => a.order - b.order),
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
     [festivals]
   );
 

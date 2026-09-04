@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAdmin, uploadToCloudinary, GitaCourseData } from "@/context/AdminContext";
-import { Plus, Trash2, BookOpen, Eye, Sparkles, GraduationCap } from "lucide-react";
+import { Plus, Trash2, BookOpen, Eye, Sparkles, GraduationCap, Lock, CheckCircle2, AlertCircle } from "lucide-react";
 import { UploadBox } from "./CarouselManager";
 import { toast } from "sonner";
 
@@ -87,6 +87,50 @@ export default function GitaCourseManager() {
             >
               <Eye className="h-4 w-4 text-accent" /> View Gita Course Page
             </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Registration Status Selector Tabs */}
+      <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <Lock className="h-5 w-5 text-primary" />
+              <h3 className="font-display font-bold text-base sm:text-lg text-slate-900">
+                Course Registration &amp; Enrollment Status
+              </h3>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Control enrollment status. Selecting "Coming Soon" or "Closed" locks registration buttons with a lock icon 🔒 on the website.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200 shrink-0">
+            {(["Coming Soon", "Closed", "Registrations Opened"] as const).map((st) => {
+              const currentStatus = gitaCourse.status || "Registrations Opened";
+              const isActive = currentStatus === st;
+              return (
+                <button
+                  key={st}
+                  type="button"
+                  onClick={() => update({ status: st })}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs ${
+                    isActive
+                      ? st === "Coming Soon"
+                        ? "bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-400/50"
+                        : st === "Closed"
+                        ? "bg-rose-600 text-white shadow-md ring-2 ring-rose-500/50"
+                        : "bg-emerald-600 text-white shadow-md ring-2 ring-emerald-500/50"
+                      : "text-slate-600 hover:bg-slate-200/70"
+                  }`}
+                >
+                  {st === "Coming Soon" && "⏳ Coming Soon"}
+                  {st === "Closed" && "🔒 Closed"}
+                  {st === "Registrations Opened" && "✅ Registrations Opened"}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

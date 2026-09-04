@@ -25,7 +25,8 @@ import {
   IndianRupee,
   Copy,
   Sliders,
-  CheckCircle2
+  CheckCircle2,
+  Rocket
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -382,28 +383,64 @@ export default function SiteSettingsForm() {
         </div>
 
         {s.launchPageActive && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 animate-fade-in bg-amber-50/50 p-4 rounded-2xl border border-amber-200/60">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5 text-primary" />
-                <span>Scheduled Launch Date &amp; Time</span>
-              </label>
-              <input
-                type="datetime-local"
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition font-medium"
-                value={s.launchDate ? s.launchDate.substring(0, 16) : ""}
-                onChange={(e) => update("launchDate", e.target.value)}
-              />
+          <div className="space-y-4 animate-fade-in bg-amber-50/50 p-4 sm:p-5 rounded-2xl border border-amber-200/60">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex items-center justify-between p-3.5 bg-white rounded-xl border border-amber-200/80 shadow-sm">
+                <div>
+                  <span className="font-bold text-xs sm:text-sm text-slate-900 block">Enable Countdown Timer</span>
+                  <span className="text-[11px] text-slate-500">Show or hide the live countdown grid.</span>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-2">
+                  <input
+                    type="checkbox"
+                    checked={s.enableLaunchTimer !== false}
+                    onChange={(e) => update("enableLaunchTimer", e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                </label>
+              </div>
+
+              <div className="flex items-center justify-between p-3.5 bg-white rounded-xl border border-amber-200/80 shadow-sm">
+                <div>
+                  <span className="font-bold text-xs sm:text-sm text-slate-900 block">Enable Launch Button</span>
+                  <span className="text-[11px] text-slate-500">Show or hide the ceremonial ribbon &amp; button.</span>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-2">
+                  <input
+                    type="checkbox"
+                    checked={s.enableLaunchButton !== false}
+                    onChange={(e) => update("enableLaunchButton", e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                </label>
+              </div>
             </div>
 
-            <InputField
-              icon={Lock}
-              label="Admin Bypass Secret Code"
-              placeholder="108"
-              value={s.launchBypassCode || "108"}
-              onChange={(v) => update("launchBypassCode", v)}
-              hint="Admins/Devotees enter this code on the coming soon screen to preview the full site."
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5 text-primary" />
+                  <span>Scheduled Launch Date &amp; Time</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition font-medium"
+                  value={s.launchDate ? s.launchDate.substring(0, 16) : ""}
+                  onChange={(e) => update("launchDate", e.target.value)}
+                />
+              </div>
+
+              <InputField
+                icon={Lock}
+                label="Admin Bypass Secret Code"
+                placeholder="108"
+                value={s.launchBypassCode || "108"}
+                onChange={(v) => update("launchBypassCode", v)}
+                hint="Admins/Devotees enter this code on the coming soon screen to preview the full site."
+              />
+            </div>
           </div>
         )}
       </div>

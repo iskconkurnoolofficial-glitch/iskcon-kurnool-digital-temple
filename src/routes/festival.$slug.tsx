@@ -483,6 +483,26 @@ function Page() {
 
       {/* Sevas Section */}
       <section id="sevas-section" className="max-w-6xl mx-auto px-5 sm:px-6 py-16 sm:py-20 scroll-mt-24 text-slate-900">
+        
+        {/* All Sevas Can Be Done in Jagannath Sevas Message Banner */}
+        <div className="mb-10 p-4 sm:p-5 rounded-3xl bg-amber-500/10 dark:bg-amber-950/40 border-2 border-amber-300/80 dark:border-amber-500/40 flex flex-col sm:flex-row items-center justify-between gap-4 text-amber-950 dark:text-amber-200 font-bold text-xs sm:text-sm shadow-sm">
+          <div className="flex items-center gap-3 text-left">
+            <div className="p-2.5 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 shrink-0">
+              <Sparkles className="h-5.5 w-5.5 animate-pulse text-amber-600" />
+            </div>
+            <div>
+              <span className="block font-black text-sm sm:text-base text-amber-950 dark:text-amber-200">All sevas can be done in Jagannath Sevas</span>
+              <span className="text-xs text-amber-800/80 dark:text-amber-300/80 font-normal block">Explore all temple sevas, Nitya Seva, Anna Dana, and deity worship offerings.</span>
+            </div>
+          </div>
+          <Link
+            to="/donate"
+            className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-extrabold text-xs uppercase tracking-wider transition hover:scale-105 shadow-md shrink-0 cursor-pointer"
+          >
+            Jagannath Sevas ➔
+          </Link>
+        </div>
+
         {sevas.length > 0 && (
           <div className="text-center mb-12 space-y-3 font-sans">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 via-purple-500/10 to-amber-500/15 border border-amber-300/60 dark:border-amber-500/30 text-amber-900 dark:text-amber-300 text-xs font-extrabold uppercase tracking-wider shadow-2xs">

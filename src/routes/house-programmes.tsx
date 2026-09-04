@@ -33,7 +33,8 @@ import {
   Star,
   Check,
   Building,
-  HeartHandshake
+  HeartHandshake,
+  Lock
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -60,6 +61,7 @@ export const Route = createFileRoute("/house-programmes")({
 
 function HouseProgrammesPage() {
   const { houseProgrammes, addHouseProgrammeRequest } = useAdmin();
+  const status = houseProgrammes.status || "Registrations Opened";
   const [selectedPhoto, setSelectedPhoto] = useState<{ url: string; title: string; caption?: string } | null>(null);
 
   // Activity Filter State
@@ -237,13 +239,31 @@ function HouseProgrammesPage() {
         }
         pageKey="houseProgrammes"
       >
-        <button
-          onClick={scrollToForm}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-secondary hover:bg-secondary/95 text-secondary-foreground font-semibold px-6 py-2.5 sm:px-7 sm:py-3 shadow-gold transition hover:scale-[1.02] text-xs sm:text-sm cursor-pointer"
-        >
-          <Home className="h-4 w-4 shrink-0" />
-          Request a House Programme
-        </button>
+        {status === "Coming Soon" ? (
+          <button
+            disabled
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-amber-500/20 text-amber-200 border border-amber-400/40 font-semibold px-6 py-2.5 sm:px-7 sm:py-3 text-xs sm:text-sm cursor-not-allowed opacity-80"
+          >
+            <Lock className="h-4 w-4 shrink-0 text-amber-400" />
+            Bookings Coming Soon
+          </button>
+        ) : status === "Closed" ? (
+          <button
+            disabled
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-rose-500/20 text-rose-200 border border-rose-400/40 font-semibold px-6 py-2.5 sm:px-7 sm:py-3 text-xs sm:text-sm cursor-not-allowed opacity-80"
+          >
+            <Lock className="h-4 w-4 shrink-0 text-rose-400" />
+            Bookings Closed
+          </button>
+        ) : (
+          <button
+            onClick={scrollToForm}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-secondary hover:bg-secondary/95 text-secondary-foreground font-semibold px-6 py-2.5 sm:px-7 sm:py-3 shadow-gold transition hover:scale-[1.02] text-xs sm:text-sm cursor-pointer"
+          >
+            <Home className="h-4 w-4 shrink-0" />
+            Request a House Programme
+          </button>
+        )}
 
         <a
           href={contactWhatsappUrl}
@@ -526,13 +546,31 @@ function HouseProgrammesPage() {
 
               {/* Action Button */}
               <div className="pt-2">
-                <button
-                  onClick={scrollToForm}
-                  className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-extrabold text-sm transition hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
-                >
-                  <Home className="h-4 w-4" />
-                  <span>Request House Programme</span>
-                </button>
+                {status === "Coming Soon" ? (
+                  <button
+                    disabled
+                    className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-400/40 font-extrabold text-sm cursor-not-allowed opacity-80 shadow-sm"
+                  >
+                    <Lock className="h-4 w-4" />
+                    <span>Bookings Coming Soon</span>
+                  </button>
+                ) : status === "Closed" ? (
+                  <button
+                    disabled
+                    className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-400/40 font-extrabold text-sm cursor-not-allowed opacity-80 shadow-sm"
+                  >
+                    <Lock className="h-4 w-4" />
+                    <span>Bookings Closed</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={scrollToForm}
+                    className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-extrabold text-sm transition hover:scale-105 active:scale-95 cursor-pointer shadow-sm"
+                  >
+                    <Home className="h-4 w-4" />
+                    <span>Request House Programme</span>
+                  </button>
+                )}
               </div>
 
             </div>
@@ -671,13 +709,31 @@ function HouseProgrammesPage() {
 
                       {/* Footer Actions */}
                       <div className="pt-4 border-t border-border/60 mt-4 flex items-center justify-end relative z-10">
-                        <button
-                          onClick={() => handleSelectActivity(act.title)}
-                          className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary-foreground hover:bg-primary bg-primary/10 px-4 py-2 rounded-xl transition duration-200 cursor-pointer shadow-xs"
-                        >
-                          <span>Request this Activity</span>
-                          <ChevronRight className="h-3.5 w-3.5" />
-                        </button>
+                        {status === "Coming Soon" ? (
+                          <button
+                            disabled
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 bg-amber-100/80 px-4 py-2 rounded-xl border border-amber-300/60 cursor-not-allowed opacity-80 shadow-xs"
+                          >
+                            <Lock className="h-3.5 w-3.5" />
+                            <span>Bookings Coming Soon</span>
+                          </button>
+                        ) : status === "Closed" ? (
+                          <button
+                            disabled
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-100/80 px-4 py-2 rounded-xl border border-rose-300/60 cursor-not-allowed opacity-80 shadow-xs"
+                          >
+                            <Lock className="h-3.5 w-3.5" />
+                            <span>Bookings Closed</span>
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleSelectActivity(act.title)}
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary-foreground hover:bg-primary bg-primary/10 px-4 py-2 rounded-xl transition duration-200 cursor-pointer shadow-xs"
+                          >
+                            <span>Request this Activity</span>
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          </button>
+                        )}
                       </div>
                     </motion.div>
                   );
@@ -739,12 +795,28 @@ function HouseProgrammesPage() {
 
           {/* Action trigger */}
           <div className="text-center pt-4">
-            <button
-              onClick={scrollToForm}
-              className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-bold shadow-[0_0_20px_rgba(245,197,24,0.35)] text-xs sm:text-sm transition hover:scale-105 cursor-pointer"
-            >
-              <Send className="h-4 w-4" /> Start by Requesting a Programme
-            </button>
+            {status === "Coming Soon" ? (
+              <button
+                disabled
+                className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40 font-bold text-xs sm:text-sm cursor-not-allowed opacity-80 shadow-sm"
+              >
+                <Lock className="h-4 w-4" /> Bookings Coming Soon
+              </button>
+            ) : status === "Closed" ? (
+              <button
+                disabled
+                className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-rose-500/20 text-rose-300 border border-rose-400/40 font-bold text-xs sm:text-sm cursor-not-allowed opacity-80 shadow-sm"
+              >
+                <Lock className="h-4 w-4" /> Bookings Closed
+              </button>
+            ) : (
+              <button
+                onClick={scrollToForm}
+                className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-bold shadow-[0_0_20px_rgba(245,197,24,0.35)] text-xs sm:text-sm transition hover:scale-105 cursor-pointer"
+              >
+                <Send className="h-4 w-4" /> Start by Requesting a Programme
+              </button>
+            )}
           </div>
         </div>
       </section>
@@ -811,7 +883,63 @@ function HouseProgrammesPage() {
                   {/* Top Accent Gradient Bar */}
                   <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-purple-700 via-amber-400 to-orange-500" />
 
-                  {submitted ? (
+                  {status === "Coming Soon" ? (
+                    /* Locked: Coming Soon Screen */
+                    <div className="py-12 px-4 text-center space-y-5 my-auto">
+                      <div className="h-20 w-20 rounded-full bg-amber-100 text-amber-600 grid place-items-center mx-auto shadow-inner border border-amber-200">
+                        <Lock className="h-10 w-10 text-amber-600" />
+                      </div>
+                      <div className="space-y-2">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                          ⏳ Coming Soon
+                        </span>
+                        <h3 className="font-display text-2xl sm:text-3xl font-bold text-primary">
+                          House Programme Bookings Coming Soon
+                        </h3>
+                        <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+                          Bookings for ISKCON Kurnool House Programmes will open soon. Please stay tuned or reach out to us directly via WhatsApp.
+                        </p>
+                      </div>
+                      <div className="pt-2">
+                        <a
+                          href={contactWhatsappUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition hover:scale-105"
+                        >
+                          <MessageCircle className="h-4 w-4" /> Inquiry via WhatsApp
+                        </a>
+                      </div>
+                    </div>
+                  ) : status === "Closed" ? (
+                    /* Locked: Closed Screen */
+                    <div className="py-12 px-4 text-center space-y-5 my-auto">
+                      <div className="h-20 w-20 rounded-full bg-rose-100 text-rose-600 grid place-items-center mx-auto shadow-inner border border-rose-200">
+                        <Lock className="h-10 w-10 text-rose-600" />
+                      </div>
+                      <div className="space-y-2">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300">
+                          🔒 Bookings Closed
+                        </span>
+                        <h3 className="font-display text-2xl sm:text-3xl font-bold text-primary">
+                          House Programme Bookings Closed
+                        </h3>
+                        <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+                          House Programme bookings are currently closed. For urgent requests or future dates, please contact us via WhatsApp.
+                        </p>
+                      </div>
+                      <div className="pt-2">
+                        <a
+                          href={contactWhatsappUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition hover:scale-105"
+                        >
+                          <MessageCircle className="h-4 w-4" /> Inquiry via WhatsApp
+                        </a>
+                      </div>
+                    </div>
+                  ) : submitted ? (
                     /* Submission Success Screen */
                     <div className="py-8 text-center space-y-6 my-auto animate-fade-in">
                       <div className="h-20 w-20 rounded-full bg-emerald-100 text-emerald-600 grid place-items-center mx-auto shadow-inner">
