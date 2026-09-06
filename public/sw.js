@@ -4,7 +4,8 @@ const STATIC_ASSETS = [
   "/",
   "/manifest.webmanifest",
   "/favicon.ico",
-  "/jagannatha.png",
+  "/favicon.png",
+  "/iskcon-logo.png",
   "/krishna.png",
   "/mandala.png"
 ];

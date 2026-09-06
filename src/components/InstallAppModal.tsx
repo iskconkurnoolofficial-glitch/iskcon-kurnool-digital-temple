@@ -31,7 +31,7 @@ export default function InstallAppModal({
   if (!isOpen || isInstalled) return null;
 
   const { isMobile, isIOS, isAndroid } = deviceInfo;
-  const appLogo = settings.logo ? getOptimizedCloudinaryUrl(settings.logo, "thumbnail") : "/jagannatha.png";
+  const appLogo = settings.logo ? getOptimizedCloudinaryUrl(settings.logo, "thumbnail") : "/iskcon-logo.png";
 
   return (
     <AnimatePresence>

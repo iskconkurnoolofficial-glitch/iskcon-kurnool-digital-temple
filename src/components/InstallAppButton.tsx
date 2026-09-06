@@ -13,7 +13,7 @@ interface InstallAppButtonProps {
 export default function InstallAppButton({ variant = "footer", className = "" }: InstallAppButtonProps) {
   const { settings } = useAdmin();
   const { isInstalled, hasNativePrompt, promptInstall, isModalOpen, closeModal, deviceInfo } = usePwaInstall();
-  const appLogo = settings.logo ? getOptimizedCloudinaryUrl(settings.logo, "thumbnail") : "/jagannatha.png";
+  const appLogo = settings.logo ? getOptimizedCloudinaryUrl(settings.logo, "thumbnail") : "/iskcon-logo.png";
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
