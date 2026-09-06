@@ -3242,7 +3242,7 @@ type AdminState = {
   setTerms: (t: TermsData) => void;
   privacy: PrivacyData;
   setPrivacy: (p: PrivacyData) => void;
-  changeSuperAdminPassword: (newPass: string) => Promise<void>;
+  changeSuperAdminPassword: (currentPass: string, newPass: string) => Promise<{ ok: boolean; error?: string }>;
   currentUser: CurrentAdminUser | null;
   authed: boolean;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
@@ -3331,7 +3331,6 @@ const KEYS = {
   privacy: "privacy",
   receiptSettings: "receiptSettings",
   teamMembers: "team_members",
-  superAdminPass: "super_admin_pass",
 } as const;
 
 const Ctx = createContext<AdminState | null>(null);
@@ -3448,7 +3447,6 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [privacy, setPrivacyState] = useState<PrivacyData>(() => getCached(KEYS.privacy, defaultPrivacy));
   const [receiptSettings, setReceiptSettingsState] = useState<ReceiptSettings>(() => getCached(KEYS.receiptSettings, defaultReceiptSettings));
 
-  const [superAdminPass, setSuperAdminPassState] = useState<string>("iskcon@1982");
   const [currentUser, setCurrentUser] = useState<CurrentAdminUser | null>(null);
   const [authed, setAuthed] = useState(false);
   const [donations, setDonationsState] = useState<DonationEntry[]>([]);
@@ -3809,7 +3807,6 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.privacy: setPrivacyState({ ...defaultPrivacy, ...value, sections: Array.isArray(value?.sections) ? value.sections : defaultPrivacy.sections }); break;
       case KEYS.receiptSettings: setReceiptSettingsState({ ...defaultReceiptSettings, ...value }); break;
 
-      case KEYS.superAdminPass: if (typeof value === "string") setSuperAdminPassState(value); break;
     }
   }
 
@@ -4494,9 +4491,30 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setTerms = (v: TermsData) => { setTermsState(v); persist(KEYS.terms, v); };
   const setPrivacy = (v: PrivacyData) => { setPrivacyState(v); persist(KEYS.privacy, v); };
 
-  const changeSuperAdminPassword = async (newPass: string) => {
-    setSuperAdminPassState(newPass);
-    await persist(KEYS.superAdminPass, newPass);
+  const changeSuperAdminPassword = async (currentPass: string, newPass: string) => {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const email = userData.user?.email;
+    if (userError || !email) {
+      return { ok: false, error: "Your admin session has expired. Please sign in again." };
+    }
+
+    // Re-authenticate before changing the password. This prevents a forgotten
+    // or unattended admin session from being used to change the account key.
+    const { error: verifyError } = await supabase.auth.signInWithPassword({
+      email,
+      password: currentPass,
+    });
+    if (verifyError) {
+      return { ok: false, error: "The current password is incorrect." };
+    }
+
+    const { error: updateError } = await supabase.auth.updateUser({ password: newPass });
+    if (updateError) {
+      console.error("[admin] password update failed", updateError);
+      return { ok: false, error: updateError.message || "Unable to change the password." };
+    }
+
+    return { ok: true };
   };
 
   // Apply theme to CSS variables

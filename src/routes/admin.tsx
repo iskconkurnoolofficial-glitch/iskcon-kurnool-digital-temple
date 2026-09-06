@@ -30,7 +30,7 @@ import TermsManager from "@/admin/TermsManager";
 import PrivacyManager from "@/admin/PrivacyManager";
 import ReceiptSettingsManager from "@/admin/ReceiptSettingsManager";
 import UpiSettingsManager from "@/admin/UpiSettingsManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard, Video, Bell, ShieldCheck, Compass, Sun, Tv, Award, FileText, Lock, FileCheck, QrCode, Eye, EyeOff, Rocket } from "lucide-react";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard, Video, Bell, ShieldCheck, Compass, Sun, Tv, Award, FileText, Lock, FileCheck, QrCode, Eye, EyeOff, Rocket, KeyRound } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
@@ -50,6 +50,12 @@ function AdminPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [drawerSearch, setDrawerSearch] = useState("");
   const [showSplash, setShowSplash] = useState(true);
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   // Automatically mark section notifications as read when admin opens that section
   useEffect(() => {
@@ -134,7 +140,7 @@ function AdminPage() {
           <div className="text-center space-y-3">
             <div className="relative inline-block group">
               <div className="absolute inset-0 bg-amber-400/30 rounded-full blur-xl group-hover:bg-amber-400/50 transition-all duration-300" />
-              {settings.logo ? (
+              {hydrated && settings.logo ? (
                 <img
                   src={settings.logo}
                   alt="ISKCON Kurnool Logo"
@@ -358,7 +364,7 @@ function AdminPage() {
             <Menu className="h-5.5 w-5.5" />
           </button>
           <div className="flex items-center gap-2">
-            {settings.logo ? (
+            {hydrated && settings.logo ? (
               <img src={settings.logo} alt="Logo" className="h-7 w-7 rounded-full object-cover ring-1 ring-secondary/60 shadow-sm" />
             ) : (
               <div className="h-7 w-7 rounded-full bg-secondary text-primary font-bold text-xs flex items-center justify-center">IK</div>
@@ -576,7 +582,7 @@ function AdminPage() {
       <aside className="hidden md:flex w-64 h-full bg-gradient-to-b from-[#2d1254] via-[#381668] to-[#250d46] text-white flex-col shrink-0 shadow-2xl relative z-20 border-r border-white/10">
         <div className="p-5 border-b border-white/10 flex items-center justify-between bg-black/10">
           <div className="flex items-center gap-3">
-            {settings.logo ? (
+            {hydrated && settings.logo ? (
               <img src={settings.logo} alt="Logo" className="h-9 w-9 rounded-full object-cover ring-2 ring-amber-400/60 shadow-md" />
             ) : (
               <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-amber-400 to-amber-200 text-slate-950 font-bold text-xs flex items-center justify-center shadow-md">IK</div>
