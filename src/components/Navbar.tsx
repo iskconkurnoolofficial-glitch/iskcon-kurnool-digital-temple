@@ -272,7 +272,7 @@ export default function Navbar() {
       }`}>
         {/* Left: Brand Logo & Title */}
         <Link to="/" className="flex items-center gap-2.5 xl:gap-3 shrink-0" aria-label="ISKCON Kurnool home">
-          {settings.logo ? (
+          {mounted && settings.logo ? (
             <img
               src={getOptimizedCloudinaryUrl(settings.logo, "thumbnail")}
               alt="ISKCON Kurnool"
@@ -475,7 +475,7 @@ export default function Navbar() {
       }`}>
         {/* Left: Brand Logo, ISKCON Kurnool Title & Subtitle */}
         <Link to="/" className="flex items-center gap-2.5 shrink-0 min-w-0" aria-label="ISKCON Kurnool home">
-          {settings.logo ? (
+          {mounted && settings.logo ? (
             <img
               src={getOptimizedCloudinaryUrl(settings.logo, "thumbnail")}
               alt="ISKCON Kurnool"
@@ -557,7 +557,7 @@ export default function Navbar() {
                 {/* Drawer Header */}
                 <div className="bg-slate-50 px-5 py-4 flex justify-between items-center border-b border-slate-200 shrink-0">
                   <div className="flex items-center gap-3">
-                    {settings.logo ? (
+                    {mounted && settings.logo ? (
                       <img
                         src={getOptimizedCloudinaryUrl(settings.logo, "thumbnail")}
                         alt="ISKCON Kurnool"
