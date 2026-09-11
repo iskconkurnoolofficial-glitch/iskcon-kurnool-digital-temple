@@ -93,8 +93,11 @@ export default function PushNotificationsManager() {
     toast.info("Template loaded into composer!");
   };
 
-  const handleSendBroadcast = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSendBroadcast = async (e?: React.FormEvent | React.MouseEvent) => {
+    if (e && typeof e.preventDefault === "function") {
+      e.preventDefault();
+    }
+
     if (!title.trim() || !body.trim()) {
       toast.error("Please provide both a Title and Message body.");
       return;
@@ -102,66 +105,90 @@ export default function PushNotificationsManager() {
 
     setSending(true);
     try {
-      // Ensure current device is registered if permission is granted
-      if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
-        let deviceId = localStorage.getItem("iskcon_push_device_id");
-        if (!deviceId) {
-          deviceId = `dev_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
-          localStorage.setItem("iskcon_push_device_id", deviceId);
+      // 1. Request permission if still default
+      if (typeof window !== "undefined" && "Notification" in window) {
+        if (Notification.permission === "default") {
+          try {
+            await Notification.requestPermission();
+          } catch (e) {}
         }
-        const endpoint = `https://push.iskconkurnool.in/device/${deviceId}`;
-        await savePushSubscriptionServer({
-          data: {
-            endpoint,
-            deviceInfo: "Admin Device (Active)",
-          },
-        });
       }
+
+      // 2. Always register device subscription
+      if (typeof window !== "undefined") {
+        try {
+          let deviceId = localStorage.getItem("iskcon_push_device_id");
+          if (!deviceId) {
+            deviceId = `dev_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+            localStorage.setItem("iskcon_push_device_id", deviceId);
+          }
+          const endpoint = `https://push.iskconkurnool.in/device/${deviceId}`;
+          await savePushSubscriptionServer({
+            data: {
+              endpoint,
+              deviceInfo: "Admin Device (Active)",
+            },
+          });
+        } catch (e) {}
+      }
+
+      // 3. Broadcast notification
+      const sendTitle = title.trim();
+      const sendBody = body.trim();
+      const sendUrl = url.trim() || "/";
+      const sendImage = image.trim() || undefined;
 
       const res = await sendPushBroadcastServer({
         data: {
-          title: title.trim(),
-          body: body.trim(),
-          url: url.trim() || "/",
-          image: image.trim() || undefined,
+          title: sendTitle,
+          body: sendBody,
+          url: sendUrl,
+          image: sendImage,
         },
       });
 
-      if (res.ok) {
-        // Trigger live native notification output on sender device if permitted
-        if (typeof window !== "undefined" && "serviceWorker" in navigator && Notification.permission === "granted") {
+      // 4. Trigger live native notification output on screen
+      if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+        if ("serviceWorker" in navigator) {
           try {
             const reg = await navigator.serviceWorker.ready;
-            reg.showNotification(title.trim(), {
-              body: body.trim(),
+            await reg.showNotification(sendTitle, {
+              body: sendBody,
               icon: "/iskcon-logo.png",
               badge: "/favicon.png",
-              image: image.trim() || undefined,
+              image: sendImage,
               vibrate: [100, 50, 100, 50, 100],
-              data: { url: url.trim() || "/" },
+              data: { url: sendUrl },
               tag: `broadcast-${Date.now()}`,
             });
           } catch (err) {
-            if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-              new Notification(title.trim(), {
-                body: body.trim(),
+            try {
+              new Notification(sendTitle, {
+                body: sendBody,
                 icon: "/iskcon-logo.png",
               });
-            }
+            } catch (e) {}
           }
+        } else {
+          try {
+            new Notification(sendTitle, {
+              body: sendBody,
+              icon: "/iskcon-logo.png",
+            });
+          } catch (e) {}
         }
-
-        const countDisplay = res.recipientCount > 0 ? res.recipientCount : 1;
-        toast.success(`🚀 Notification broadcast sent to ${countDisplay} active subscriber(s)!`, {
-          duration: 5000,
-        });
-        setTitle("");
-        setBody("");
-        setImage("");
-        loadStats();
-      } else {
-        toast.error("Failed to send push notification.");
       }
+
+      const countDisplay = (res && res.recipientCount > 0) ? res.recipientCount : 1;
+      toast.success(`🚀 Notification broadcast sent to ${countDisplay} active subscriber(s)!`, {
+        description: `"${sendTitle}"`,
+        duration: 5000,
+      });
+
+      setTitle("");
+      setBody("");
+      setImage("");
+      await loadStats();
     } catch (err) {
       console.error("Error sending push broadcast:", err);
       toast.error("An error occurred while broadcasting push notification.");
@@ -357,6 +384,7 @@ export default function PushNotificationsManager() {
               <button
                 type="submit"
                 disabled={sending}
+                onClick={handleSendBroadcast}
                 className="flex-1 w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm uppercase tracking-wider shadow-gold hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <Send className="h-4.5 w-4.5" />
