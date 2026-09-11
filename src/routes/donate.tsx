@@ -55,8 +55,7 @@ function loadRazorpay(): Promise<boolean> {
   });
 }
 
-// Quick amount suggestions
-const QUICK_SUGGESTIONS = [108, 251, 501, 1008, 2500, 5001, 11000];
+
 
 export default function Page({ initialSlug }: { initialSlug?: string }) {
   const { sevas, festivals, settings, theme, ready, addDonation, updateDonationStatus, platformFee, addPaymentRecord, sunday, upiPayment } = useAdmin();
@@ -91,8 +90,9 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   const [quantity, setQuantity] = useState<number>(1);
 
   // Quick Donate State with All Details
-  const [quickAmount, setQuickAmount] = useState<number>(501);
-  const [quickCustomInput, setQuickCustomInput] = useState<string>("501");
+  const [quickAmount, setQuickAmount] = useState<number>(0);
+  const [quickCustomInput, setQuickCustomInput] = useState<string>("");
+  const [quickStep, setQuickStep] = useState<1 | 2 | 3>(1);
   const [quickDonorName, setQuickDonorName] = useState("");
   const [quickPhone, setQuickPhone] = useState("");
   const [quickEmail, setQuickEmail] = useState("");
@@ -1135,7 +1135,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                     Quick Devotional Offering
                   </h2>
                   <p className="text-xs text-slate-500 font-sans">
-                    Choose an amount or enter your wish amount, enter your details, and donate securely.
+                    Enter your custom offering amount, fill your details step-by-step, and donate securely.
                   </p>
                 </div>
               </div>
@@ -1151,157 +1151,263 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
               
               {/* Left Column: Form & Amounts */}
               <div className="lg:col-span-7 xl:col-span-8 space-y-5">
-                {/* Quick Amount Suggestions + Custom Amount */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider font-sans">
-                    1. Select Offering Amount (₹)
-                  </label>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {QUICK_SUGGESTIONS.map((amt) => {
-                      const isSelected = quickAmount === amt && quickCustomInput === String(amt);
-                      return (
-                        <button
-                          key={amt}
-                          type="button"
-                          onClick={() => {
-                            setQuickAmount(amt);
-                            setQuickCustomInput(String(amt));
-                          }}
-                          className={`px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center gap-1.5 ${isSelected
-                            ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md scale-105 ring-2 ring-amber-300"
-                            : "bg-slate-100 hover:bg-amber-100/80 text-slate-800 border border-slate-200"
-                            }`}
-                        >
-                          {isSelected && <Check className="h-3.5 w-3.5" />}
-                          ₹{amt.toLocaleString("en-IN")}
-                        </button>
-                      );
-                    })}
+                {/* Interactive Step Navigation Buttons Bar */}
+                <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 rounded-2xl border border-slate-200/80 mb-4 font-sans">
+                  <button
+                    type="button"
+                    onClick={() => setQuickStep(1)}
+                    className={`flex-1 py-2 px-3 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      quickStep === 1
+                        ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm"
+                        : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
+                    }`}
+                  >
+                    <span className={`h-4 w-4 rounded-full flex items-center justify-center text-[10px] font-extrabold ${quickStep === 1 ? "bg-white/30 text-white" : "bg-slate-200 text-slate-700"}`}>1</span>
+                    <span>1. Amount</span>
+                  </button>
 
-                    {/* Inline Custom Amount Input */}
-                    <div className="relative flex-1 min-w-[140px] max-w-[200px]">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-amber-600">₹</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (quickAmount > 0) setQuickStep(2);
+                      else alert("Please enter a donation amount first.");
+                    }}
+                    className={`flex-1 py-2 px-3 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      quickStep === 2
+                        ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm"
+                        : quickAmount > 0
+                        ? "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
+                        : "text-slate-400 opacity-60"
+                    }`}
+                  >
+                    <span className={`h-4 w-4 rounded-full flex items-center justify-center text-[10px] font-extrabold ${quickStep === 2 ? "bg-white/30 text-white" : "bg-slate-200 text-slate-700"}`}>2</span>
+                    <span>2. Details</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (quickAmount <= 0) {
+                        alert("Please enter a donation amount first.");
+                        return;
+                      }
+                      if (!quickDonorName.trim() || !quickPhone.trim()) {
+                        alert("Please enter your name and phone number in Step 2.");
+                        setQuickStep(2);
+                        return;
+                      }
+                      setQuickStep(3);
+                    }}
+                    className={`flex-1 py-2 px-3 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      quickStep === 3
+                        ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm"
+                        : (quickAmount > 0 && quickDonorName.trim() && quickPhone.trim())
+                        ? "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
+                        : "text-slate-400 opacity-60"
+                    }`}
+                  >
+                    <span className={`h-4 w-4 rounded-full flex items-center justify-center text-[10px] font-extrabold ${quickStep === 3 ? "bg-white/30 text-white" : "bg-slate-200 text-slate-700"}`}>3</span>
+                    <span>3. Payment</span>
+                  </button>
+                </div>
+
+                {/* STEP 1 VIEW: Amount Input (Inter font, No Prefill) */}
+                {quickStep === 1 && (
+                  <div className="space-y-4 bg-amber-50/50 p-5 rounded-2xl border border-amber-200/80 animate-in fade-in duration-200 font-sans">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+                        Step 1: Enter Offering Amount (₹) *
+                      </label>
+                    </div>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-extrabold text-amber-600">₹</span>
                       <input
                         type="number"
                         min="1"
-                        placeholder="Custom amount..."
+                        autoFocus
+                        placeholder="Enter offering amount in ₹ (e.g. 500)"
                         value={quickCustomInput}
                         onChange={(e) => {
                           setQuickCustomInput(e.target.value);
                           setQuickAmount(Number(e.target.value) || 0);
                         }}
-                        className="w-full pl-7 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-2xs"
+                        className="w-full pl-11 pr-4 py-4 bg-white border-2 border-amber-400 rounded-2xl text-2xl sm:text-3xl font-extrabold text-slate-900 focus:outline-none focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 shadow-inner font-sans transition-all"
                       />
                     </div>
-                  </div>
-                </div>
-
-                {/* Donor Details & Pay Form */}
-                <form onSubmit={handleQuickPayNow} className="space-y-4 pt-3 border-t border-slate-100">
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider font-sans">
-                    2. Devotee & Receipt Details
-                  </label>
-
-                  {/* Row 1: Name, Phone */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-600 mb-1 font-sans">
-                        Devotee Name *
-                      </label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                        <input
-                          type="text"
-                          required
-                          placeholder="Full Name"
-                          value={quickDonorName}
-                          onChange={(e) => setQuickDonorName(e.target.value)}
-                          className="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-600 mb-1 font-sans">
-                        WhatsApp Phone Number *
-                      </label>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                        <input
-                          type="tel"
-                          required
-                          placeholder="+91 9876543210"
-                          value={quickPhone}
-                          onChange={(e) => setQuickPhone(e.target.value)}
-                          className="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans"
-                        />
-                      </div>
+                    <div className="pt-2 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!quickAmount || quickAmount <= 0) {
+                            alert("Please enter a valid donation amount.");
+                            return;
+                          }
+                          setQuickStep(2);
+                        }}
+                        className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold rounded-xl transition-all shadow-md flex items-center gap-2 text-xs uppercase tracking-wider cursor-pointer"
+                      >
+                        <span>Next: Enter Details</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
+                )}
 
-                  {/* Row 2: Email, Purpose */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-600 mb-1 font-sans">
-                        Email Address (Optional)
-                      </label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                        <input
-                          type="email"
-                          placeholder="donor@example.com"
-                          value={quickEmail}
-                          onChange={(e) => setQuickEmail(e.target.value)}
-                          className="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-600 mb-1 font-sans">
-                        Purpose / Sankalpa (Optional)
-                      </label>
-                      <div className="relative">
-                        <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                        <input
-                          type="text"
-                          placeholder="e.g. Birthday, Family Welfare..."
-                          value={quickPurpose}
-                          onChange={(e) => setQuickPurpose(e.target.value)}
-                          className="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans"
-                        />
-                      </div>
-                      <div className="flex flex-wrap gap-1 mt-1.5">
-                        {["Birthday", "Wedding Anniversary", "Family Welfare", "Good Health", "In Memory of"].map((sug) => (
-                          <button
-                            key={sug}
-                            type="button"
-                            onClick={() => setQuickPurpose(sug)}
-                            className="px-2 py-0.5 bg-slate-100 hover:bg-amber-100/70 border border-slate-200 hover:border-amber-300 text-slate-600 hover:text-slate-800 rounded text-[9px] font-bold transition cursor-pointer"
-                          >
-                            + {sug}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Row 3: PAN Card */}
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1 font-sans">
-                      PAN Card (Optional for 80G Tax Exemption)
+                {/* STEP 2 VIEW: Devotee & Receipt Details */}
+                {quickStep === 2 && (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!quickDonorName.trim() || !quickPhone.trim()) {
+                        alert("Please enter your name and phone number.");
+                        return;
+                      }
+                      setQuickStep(3);
+                    }}
+                    className="space-y-4 bg-slate-50/70 p-5 rounded-2xl border border-slate-200 animate-in fade-in duration-200 font-sans"
+                  >
+                    <label className="block text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-2">
+                      Step 2: Devotee & Receipt Details
                     </label>
-                    <input
-                      type="text"
-                      placeholder="ABCDE1234F"
-                      value={quickPan}
-                      onChange={(e) => setQuickPan(e.target.value.toUpperCase())}
-                      className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs uppercase tracking-wider font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans"
-                    />
-                  </div>
 
-                  {/* Row 4: Platform Fee Checkbox & Total & Dual Pay Actions */}
-                  <div className="space-y-3 pt-2">
+                    {/* Row 1: Name, Phone */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                          Devotee Name *
+                        </label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                          <input
+                            type="text"
+                            required
+                            placeholder="Full Name"
+                            value={quickDonorName}
+                            onChange={(e) => setQuickDonorName(e.target.value)}
+                            className="w-full pl-8 pr-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-sans"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                          WhatsApp Phone Number *
+                        </label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                          <input
+                            type="tel"
+                            required
+                            placeholder="+91 9876543210"
+                            value={quickPhone}
+                            onChange={(e) => setQuickPhone(e.target.value)}
+                            className="w-full pl-8 pr-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-sans"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Row 2: Email, Purpose */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                          Email Address (Optional)
+                        </label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                          <input
+                            type="email"
+                            placeholder="donor@example.com"
+                            value={quickEmail}
+                            onChange={(e) => setQuickEmail(e.target.value)}
+                            className="w-full pl-8 pr-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-sans"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                          Purpose / Sankalpa (Optional)
+                        </label>
+                        <div className="relative">
+                          <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                          <input
+                            type="text"
+                            placeholder="e.g. Birthday, Family Welfare..."
+                            value={quickPurpose}
+                            onChange={(e) => setQuickPurpose(e.target.value)}
+                            className="w-full pl-8 pr-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-sans"
+                          />
+                        </div>
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          {["Birthday", "Wedding Anniversary", "Family Welfare", "Good Health"].map((sug) => (
+                            <button
+                              key={sug}
+                              type="button"
+                              onClick={() => setQuickPurpose(sug)}
+                              className="px-2 py-0.5 bg-slate-100 hover:bg-amber-100/70 border border-slate-200 text-slate-600 rounded text-[9px] font-bold transition cursor-pointer"
+                            >
+                              + {sug}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Row 3: PAN Card */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                        PAN Card (Optional for 80G Tax Exemption)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="ABCDE1234F"
+                        value={quickPan}
+                        onChange={(e) => setQuickPan(e.target.value.toUpperCase())}
+                        className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs uppercase tracking-wider font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-sans"
+                      />
+                    </div>
+
+                    <div className="pt-3 flex items-center justify-between gap-3 border-t border-slate-200">
+                      <button
+                        type="button"
+                        onClick={() => setQuickStep(1)}
+                        className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer"
+                      >
+                        <ArrowLeft className="h-3.5 w-3.5" />
+                        <span>Back</span>
+                      </button>
+
+                      <button
+                        type="submit"
+                        className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold rounded-xl transition-all shadow-md flex items-center gap-2 text-xs uppercase tracking-wider cursor-pointer"
+                      >
+                        <span>Next: Select Payment Method</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {/* STEP 3 VIEW: Payment Selection & Execution */}
+                {quickStep === 3 && (
+                  <div className="space-y-4 bg-amber-50/40 p-5 rounded-2xl border border-amber-200/80 animate-in fade-in duration-200 font-sans">
+                    <label className="block text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+                      Step 3: Select Payment Method
+                    </label>
+
+                    {/* Devotee Offering Summary Badge */}
+                    <div className="bg-white p-3.5 rounded-xl border border-amber-200 shadow-2xs space-y-1 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500">Devotee:</span>
+                        <span className="font-bold text-slate-900">{quickDonorName || "Devotee"} ({quickPhone})</span>
+                      </div>
+                      <div className="flex items-center justify-between border-t border-slate-100 pt-1">
+                        <span className="text-slate-500">Offering Amount:</span>
+                        <span className="font-extrabold text-amber-700 text-sm">₹{currentQuickAmountNum.toLocaleString("en-IN")}</span>
+                      </div>
+                    </div>
+
                     {platformFee.enabled && currentQuickAmountNum > 0 && (
                       <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700">
                         <input
@@ -1316,50 +1422,62 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                       </label>
                     )}
 
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2 border-t border-slate-200">
                       <div className="shrink-0">
-                        <span className="text-[11px] text-slate-500 font-sans block leading-none">Total Offering:</span>
-                        <span className="text-xl sm:text-2xl font-black text-slate-900 font-display">
+                        <span className="text-[11px] text-slate-500 block leading-none">Total Payable:</span>
+                        <span className="text-2xl font-black text-slate-900">
                           ₹{quickTotalPayable.toLocaleString("en-IN")}
                         </span>
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-2.5 flex-1 sm:justify-end">
-                        {/* Primary Button: Cards / NetBanking / Razorpay */}
+                      <div className="flex flex-col sm:flex-row items-stretch gap-3 flex-1 sm:justify-end">
+                        {/* Primary Button: Razorpay Gateway (Cards / NetBanking / UPI) */}
                         {upiPayment.allowRazorpayGateway !== false && (
                           <button
                             type="button"
                             onClick={(e) => handleQuickPayNow(e, "razorpay")}
                             disabled={quickIsSubmitting || currentQuickAmountNum <= 0}
-                            className={`flex-1 ${upiPayment.enabled !== false ? "sm:flex-initial" : ""} px-5 py-3.5 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 disabled:opacity-50 text-white font-extrabold rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wide shadow-md shadow-orange-500/20 hover:shadow-lg hover:scale-[1.02] active:scale-98`}
+                            className="flex-1 px-5 py-3.5 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 disabled:opacity-50 text-white font-extrabold rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 text-xs uppercase tracking-wider shadow-md shadow-orange-500/20 hover:scale-[1.02] active:scale-98 font-sans"
                           >
-                            <CreditCard className="h-4 w-4" />
-                            <span>{upiPayment.enabled !== false ? "Cards / NetBanking" : "Donate Now"}</span>
-                            <Sparkles className="h-3.5 w-3.5 fill-white/20 text-white" />
+                            <CreditCard className="h-4 w-4 shrink-0" />
+                            <div className="text-left">
+                              <div className="leading-tight font-extrabold">Cards / NetBanking</div>
+                              <div className="text-[10px] text-white/80 font-normal normal-case">Razorpay Online Gateway</div>
+                            </div>
+                            <Sparkles className="h-3.5 w-3.5 fill-white/20 text-white ml-auto" />
                           </button>
                         )}
 
-                        {/* Secondary Button: UPI QR (Amount Auto-Filled) */}
+                        {/* Secondary Button: Direct Temple UPI QR Code */}
                         {upiPayment.enabled !== false && (
                           <button
                             type="button"
                             onClick={(e) => handleQuickPayNow(e, "upi")}
                             disabled={quickIsSubmitting || currentQuickAmountNum <= 0}
-                            className="flex-1 sm:flex-initial px-4 py-3 bg-slate-100 hover:bg-slate-200 border border-slate-200 disabled:opacity-50 text-slate-700 font-bold rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 text-xs tracking-wide"
+                            className="flex-1 px-5 py-3.5 bg-emerald-50 hover:bg-emerald-100/90 border-2 border-emerald-300 disabled:opacity-50 text-emerald-950 font-extrabold rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 text-xs uppercase tracking-wider shadow-xs hover:scale-[1.02] active:scale-98 font-sans"
                           >
-                            <QrCode className="h-4 w-4 text-slate-500" />
-                            <span>Pay with UPI QR</span>
+                            <QrCode className="h-4.5 w-4.5 text-emerald-600 shrink-0" />
+                            <div className="text-left">
+                              <div className="leading-tight font-extrabold text-emerald-900">Pay with Direct UPI QR</div>
+                              <div className="text-[10px] text-emerald-700 font-normal normal-case">Instant GPay / PhonePe / Paytm</div>
+                            </div>
                           </button>
                         )}
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider pt-1 border-t border-slate-100">
-                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                      <span>Direct Temple UPI · 100% Tax Exempted under 80G · Downloadable Official Receipt</span>
+                    <div className="pt-2 flex justify-start">
+                      <button
+                        type="button"
+                        onClick={() => setQuickStep(2)}
+                        className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer"
+                      >
+                        <ArrowLeft className="h-3.5 w-3.5" />
+                        <span>Back to Details</span>
+                      </button>
                     </div>
                   </div>
-                </form>
+                )}
               </div>
 
               {/* Right Column: Admin Uploaded Image Banner */}
