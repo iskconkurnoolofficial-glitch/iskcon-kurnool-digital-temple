@@ -73,7 +73,7 @@ export const submitHouseProgrammeRequestServer = createServerFn({ method: "POST"
         await supabaseAdmin.from("contact_messages").insert({
           id: newEntry.id,
           name: newEntry.name,
-          email: "houseprogramme@iskconkurnool.org",
+          email: "houseprogramme@iskconkurnool.in",
           phone: newEntry.phone,
           message: JSON.stringify({
             isHouseProgramme: true,

@@ -238,31 +238,30 @@ export default function GalleryManager() {
       return;
     }
     if (!albumDriveUrl.trim()) {
-      toast.error("Please enter a Google Drive folder URL");
+      toast.error("Please enter an album link or URL");
       return;
     }
 
-    const folderId = extractGoogleDriveFolderId(albumDriveUrl);
-    if (!folderId) {
-      toast.error("Invalid Google Drive folders link. Please paste a valid shared folders link.");
-      return;
+    let url = albumDriveUrl.trim();
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      url = "https://" + url;
     }
 
     const nextAlbum: DriveAlbum = {
       id: editingAlbumId || "da_" + Date.now(),
       title: albumTitle.trim(),
       year: albumYear.trim(),
-      driveUrl: albumDriveUrl.trim(),
+      driveUrl: url,
       coverUrl: albumCoverUrl.trim() || undefined,
       active: albumActive,
     };
 
     if (editingAlbumId) {
       setDriveAlbums(driveAlbums.map((a) => (a.id === editingAlbumId ? nextAlbum : a)));
-      toast.success("Drive album updated successfully!");
+      toast.success("Photo album updated successfully!");
     } else {
       setDriveAlbums([...driveAlbums, nextAlbum]);
-      toast.success("✨ New Google Drive album added!");
+      toast.success("✨ New photo album added!");
     }
     setIsAlbumModalOpen(false);
     resetAlbumForm();
@@ -842,15 +841,15 @@ export default function GalleryManager() {
 
 
 
-      {/* POPUP MODAL FOR ADD / EDIT GOOGLE DRIVE ALBUM */}
+      {/* POPUP MODAL FOR ADD / EDIT PHOTO ALBUM */}
       <AdminModal
         isOpen={isAlbumModalOpen}
         onClose={() => {
           setIsAlbumModalOpen(false);
           resetAlbumForm();
         }}
-        title={editingAlbumId ? "Edit Google Drive Album" : "Add Google Drive Album"}
-        subtitle="Link shared Google Drive folders containing photo archives"
+        title={editingAlbumId ? "Edit Photo Album" : "Add Photo Album"}
+        subtitle="Link shared photo albums (Google Photos, Google Drive, Flickr, iCloud, Website, etc.)"
         icon={FolderOpen}
         maxWidth="2xl"
       >
@@ -895,17 +894,17 @@ export default function GalleryManager() {
 
             <div>
               <label className="block text-xs font-bold font-sans uppercase tracking-wider text-foreground mb-1">
-                Google Drive Folder URL / Share Link <span className="text-destructive">*</span>
+                Photo Album / Gallery Link <span className="text-destructive">*</span>
               </label>
               <input
                 className="w-full px-3.5 py-2.5 border rounded-xl bg-white text-xs sm:text-sm font-sans focus:ring-2 focus:ring-primary/20 focus:outline-none"
-                placeholder="https://drive.google.com/drive/folders/your-folder-id..."
+                placeholder="e.g. https://photos.app.goo.gl/... or https://drive.google.com/..."
                 value={albumDriveUrl}
                 onChange={(e) => setAlbumDriveUrl(e.target.value)}
                 required
               />
               <p className="text-[10px] text-slate-500 mt-1">
-                Ensure the Google Drive folder is set to <strong>"Anyone with the link can view"</strong> so visitors can browse the images.
+                Paste any web link (Google Photos, Google Drive, Flickr, iCloud, custom site). Ensure sharing permissions are set to public/viewable.
               </p>
             </div>
 
@@ -932,7 +931,7 @@ export default function GalleryManager() {
               disabled={albumBusy}
               className="px-8 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs sm:text-sm shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
             >
-              {albumBusy ? "Saving..." : (editingAlbumId ? "Save Changes" : "Link Folder")}
+              {albumBusy ? "Saving..." : (editingAlbumId ? "Save Changes" : "Link Photo Album")}
             </button>
             <button
               type="button"

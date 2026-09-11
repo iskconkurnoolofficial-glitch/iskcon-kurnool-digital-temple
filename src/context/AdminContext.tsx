@@ -127,6 +127,7 @@ export type Festival = {
   locationLink?: string;
   program?: { time: string; title: string; description?: string }[];
   carouselImages?: string[];
+  albumUrl?: string;
 };
 
 /** Generate a URL-safe slug from a title */
@@ -166,6 +167,7 @@ export function normalizeFestival(f: any): Festival {
     locationLink: f.locationLink ?? "",
     program: Array.isArray(f.program) ? f.program : [],
     carouselImages: Array.isArray(f.carouselImages) ? f.carouselImages : [],
+    albumUrl: f.albumUrl ?? f.driveUrl ?? "",
   };
 }
 
@@ -978,9 +980,9 @@ export const defaultYouthYatra2026: YatraEvent = {
     { id: "faq8", question: "Whom can I contact if I have questions before registering?", answer: "You can reach out directly to our Youth Forum coordinators via WhatsApp or phone call using the contact section below.", category: "Support" },
   ],
   coordinators: [
-    { id: "c1", name: "Ramanuja Dasa", role: "Youth Forum Head Coordinator", phone: "+91 95053 77520", whatsapp: "919505377520", email: "youth@iskconkurnool.org" },
-    { id: "c2", name: "Damodara Chaitanya Dasa", role: "Yatra Logistics & Accommodation", phone: "+91 98765 43210", whatsapp: "919876543210", email: "yatra@iskconkurnool.org" },
-    { id: "c3", name: "Keshav Krishna Dasa", role: "Registrations & Accounts Helpdesk", phone: "+91 94400 12345", whatsapp: "919440012345", email: "support@iskconkurnool.org" },
+    { id: "c1", name: "Ramanuja Dasa", role: "Youth Forum Head Coordinator", phone: "+91 95053 77520", whatsapp: "919505377520", email: "youth@iskconkurnool.in" },
+    { id: "c2", name: "Damodara Chaitanya Dasa", role: "Yatra Logistics & Accommodation", phone: "+91 98765 43210", whatsapp: "919876543210", email: "yatra@iskconkurnool.in" },
+    { id: "c3", name: "Keshav Krishna Dasa", role: "Registrations & Accounts Helpdesk", phone: "+91 94400 12345", whatsapp: "919440012345", email: "support@iskconkurnool.in" },
   ],
   travelConfig: {
     primaryMode: "Twin 2+2 AC Deluxe Luxury Pushback Coaches",
@@ -2482,7 +2484,7 @@ export const defaultPaymentPages: PaymentPage[] = [
       { id: "pr_3", label: "Half Sunday Feast Sponsorship", amount: 5500 },
       { id: "pr_4", label: "Full Grand Sunday Feast Sponsorship", amount: 11000 },
     ],
-    contactEmail: "info@iskconkurnool.org",
+    contactEmail: "info@iskconkurnool.in",
     contactPhone: "+91 94916 89255",
     termsAndConditions: "All contributions support sacred prasadam distribution at ISKCON Kurnool. 80G tax exemption receipt is issued upon request.",
     fields: [
@@ -2508,7 +2510,7 @@ export const defaultPaymentPages: PaymentPage[] = [
     raisedAmount: 25555,
     pricingType: "fixed",
     fixedAmount: 5555,
-    contactEmail: "info@iskconkurnool.org",
+    contactEmail: "info@iskconkurnool.in",
     contactPhone: "+91 98765 43210",
     termsAndConditions: "You agree to share information entered on this page with ISKCON Kurnool and Razorpay.",
     fields: [
@@ -2958,7 +2960,7 @@ export const defaultTerms: TermsData = {
       id: "sec_27",
       number: "27",
       title: "Contact Us",
-      content: "For questions regarding these Terms & Conditions, donations, registrations, website usage or other matters, please contact ISKCON Kurnool through the official contact details published on the website.\n\n**ISKCON Kurnool / ISKCON Kurnool Temple**\n\n**Address:** Sri Sri Puri Jagannath Temple, Kurnool, Andhra Pradesh, India\n\n**Phone:** +91 95053 77520\n\n**Email:** iskconkurnool@gmail.com\n\n**Website:** https://iskconkurnool.org"
+      content: "For questions regarding these Terms & Conditions, donations, registrations, website usage or other matters, please contact ISKCON Kurnool through the official contact details published on the website.\n\n**ISKCON Kurnool / ISKCON Kurnool Temple**\n\n**Address:** Sri Sri Puri Jagannath Temple, Kurnool, Andhra Pradesh, India\n\n**Phone:** +91 95053 77520\n\n**Email:** iskconkurnool@gmail.com\n\n**Website:** https://iskconkurnool.in"
     }
   ]
 };
@@ -3130,7 +3132,7 @@ export const defaultPrivacy: PrivacyData = {
       id: "psec_25",
       number: "25",
       title: "Contact Us",
-      content: "For privacy-related questions, requests or concerns, please contact:\n\n**ISKCON Kurnool / ISKCON Kurnool Temple**\n\n**Address:** Sri Sri Puri Jagannath Temple, Kurnool, Andhra Pradesh, India\n\n**Phone:** +91 95053 77520\n\n**Email:** iskconkurnool@gmail.com\n\n**Website:** https://iskconkurnool.org"
+      content: "For privacy-related questions, requests or concerns, please contact:\n\n**ISKCON Kurnool / ISKCON Kurnool Temple**\n\n**Address:** Sri Sri Puri Jagannath Temple, Kurnool, Andhra Pradesh, India\n\n**Phone:** +91 95053 77520\n\n**Email:** iskconkurnool@gmail.com\n\n**Website:** https://iskconkurnool.in"
     }
   ]
 };
@@ -3256,7 +3258,7 @@ type AdminState = {
 const defaultSettings: SiteSettings = {
   phone: "+91 98765 43210",
   whatsapp: "+91 98765 43210",
-  email: "info@iskconkurnool.org",
+  email: "info@iskconkurnool.in",
   instagram: "https://instagram.com/iskconkurnool",
   youtube: "https://youtube.com/@iskconkurnool",
   mapEmbed:
@@ -3468,7 +3470,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     setCurrentUser({
       role: "superadmin",
       name: "Admin",
-      email: email ?? "admin@iskconkurnool.org",
+      email: email ?? "admin@iskconkurnool.in",
       allowedTabs: ["*"],
     });
     setAuthed(true);
@@ -3542,7 +3544,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
         const isHp =
           (parsedHp && typeof parsedHp === "object" && (parsedHp.isHouseProgramme || parsedHp.locationArea || parsedHp.preferredDate)) ||
-          r.email === "houseprogramme@iskconkurnool.org" ||
+          r.email === "houseprogramme@iskconkurnool.in" ||
           (typeof r.message === "string" && r.message.toLowerCase().includes("house programme"));
 
         if (isHp) {
@@ -3980,7 +3982,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       await supabase.from("contact_messages").insert({
         id,
         name: req.name,
-        email: "houseprogramme@iskconkurnool.org",
+        email: "houseprogramme@iskconkurnool.in",
         phone: req.phone,
         message: JSON.stringify({
           isHouseProgramme: true,

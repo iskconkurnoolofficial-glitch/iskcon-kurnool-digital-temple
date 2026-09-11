@@ -31,6 +31,7 @@ function blankFestival(): Festival {
     description: "", shortDescription: "", sevas: [], status: "published", hidden: false,
     publishAt: undefined, unpublishAt: undefined, order: 0,
     schedule: "", location: "", locationAddress: "", locationLink: "", program: [],
+    albumUrl: "",
   };
 }
 
@@ -480,6 +481,9 @@ function FestivalEditor({ draft, setDraft, slugEdited, setSlugEdited, onSave, on
           </Field>
           <Field label="Google Maps Location Link">
             <input className="inp" value={draft.locationLink ?? ""} onChange={(e) => upd({ locationLink: e.target.value })} placeholder="e.g. https://maps.app.goo.gl/..." />
+          </Field>
+          <Field label="Photo Album / Gallery Link (Google Photos, Drive, Flickr, iCloud, etc.)">
+            <input className="inp" value={draft.albumUrl ?? (draft as any).driveUrl ?? ""} onChange={(e) => upd({ albumUrl: e.target.value })} placeholder="e.g. https://photos.app.goo.gl/... or https://drive.google.com/..." />
           </Field>
           <Field label="Short Description (card)">
             <input className="inp" value={draft.shortDescription} onChange={(e) => upd({ shortDescription: e.target.value })} placeholder="Celebrate the divine appearance of Lord Krishna" />

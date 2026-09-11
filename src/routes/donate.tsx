@@ -337,7 +337,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
 
     const curDonorName = (customDetails?.donorName ?? donorName).trim();
     const curPhone = (customDetails?.phone ?? phone).trim();
-    const curEmail = (customDetails?.email ?? email).trim() || `${curPhone.replace(/\D/g, "") || "devotee"}@iskconkurnool.org`;
+    const curEmail = (customDetails?.email ?? email).trim() || `${curPhone.replace(/\D/g, "") || "devotee"}@iskconkurnool.in`;
     const curPan = (customDetails?.pan ?? pan).trim();
     const curPurpose = (customDetails?.purpose ?? purpose).trim();
     const curCoverFee = customDetails ? (customDetails.coverFee ?? true) : coverPlatformFee;

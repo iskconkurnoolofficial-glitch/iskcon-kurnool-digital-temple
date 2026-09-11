@@ -63,7 +63,7 @@ ${data.notes ? `📜 *GOTRAM / NOTES:* ${data.notes}\n` : ""}${data.panNumber ? 
 📜 *Tax Exemption:* ${cfg.taxExemptionText || 'All donations to ISKCON Kurnool are eligible for 80G tax exemption.'}${cfg.taxRegNumber ? ' · Reg. No: ' + cfg.taxRegNumber : ''}
 
 📞 *Temple Helpline:* ${cfg.phone || site?.phone || "+91 95053 77520"}
-🌐 *Website:* https://iskconkurnool.org`;
+🌐 *Website:* https://iskconkurnool.in`;
 }
 
 /**
@@ -248,7 +248,7 @@ export async function generateAndDownloadReceiptPNG(
 
   ctx.font = `14px ${fontFam}`;
   ctx.fillStyle = "#cbd5e1";
-  ctx.fillText(`Email: ${cfg.email || site?.email || "info@iskconkurnool.org"}`, headerTextCenter, 235);
+  ctx.fillText(`Email: ${cfg.email || site?.email || "info@iskconkurnool.in"}`, headerTextCenter, 235);
 
   // 5. Official Receipt Badge
   const badgeY = 310;

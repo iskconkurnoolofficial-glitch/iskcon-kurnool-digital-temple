@@ -318,6 +318,34 @@ function Page() {
               </div>
             )}
 
+            {/* Festival Photo Album & Gallery Link Card */}
+            {(festival.albumUrl || (festival as any).driveUrl) && (
+              <div className="bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-purple-500/5 rounded-3xl border border-amber-300/80 p-6 sm:p-8 space-y-4 shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-amber-500 text-slate-950 rounded-2xl shrink-0 shadow-xs">
+                    <Sparkles className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-display font-black text-lg text-primary">
+                      Festival Photo Album & Gallery
+                    </h3>
+                    <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                      Explore high-resolution photo archives, deity darshan memories, and celebration moments.
+                    </p>
+                  </div>
+                </div>
+                <a
+                  href={festival.albumUrl || (festival as any).driveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:scale-[1.02] active:scale-98 cursor-pointer"
+                >
+                  <span>Open Photo Album</span>
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </div>
+            )}
+
             {/* Sticky Sponsorship Callout Card */}
             <div className="bg-gradient-to-tr from-purple-950 via-primary to-purple-900 rounded-3xl p-6 sm:p-8 text-white shadow-lg space-y-4 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none" />

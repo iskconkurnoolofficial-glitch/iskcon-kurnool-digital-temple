@@ -177,7 +177,7 @@ export default function EkadashiPage() {
     const startDate = item.date.replace(/-/g, "");
     const title = encodeURIComponent(`${item.name} — ISKCON Kurnool Fasting Day`);
     const details = encodeURIComponent(
-      `Fast for ${item.name}.\n🌅 Dwadashi Parana Breaking: ${item.paranaDate} between ${item.paranaStartTime} – ${item.paranaEndTime}.\n🌿 Injunction: Do not pluck Tulsi leaves on Ekadashi or Dwadashi.\n\nMore info: https://iskconkurnool.org/ekadashi`
+      `Fast for ${item.name}.\n🌅 Dwadashi Parana Breaking: ${item.paranaDate} between ${item.paranaStartTime} – ${item.paranaEndTime}.\n🌿 Injunction: Do not pluck Tulsi leaves on Ekadashi or Dwadashi.\n\nMore info: https://iskconkurnool.in/ekadashi`
     );
     const location = encodeURIComponent("ISKCON Kurnool Temple, Andhra Pradesh");
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDate}T060000/${startDate}T200000&details=${details}&location=${location}`;

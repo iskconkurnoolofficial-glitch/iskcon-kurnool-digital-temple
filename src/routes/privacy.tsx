@@ -23,7 +23,7 @@ function PrivacyPage() {
   const phone = settings.phone || "+91 95053 77520";
   const email = settings.email || "iskconkurnool@gmail.com";
   const address = settings.address || "Sri Sri Puri Jagannath Temple, Kurnool, Andhra Pradesh, India";
-  const website = typeof window !== "undefined" ? window.location.origin : "https://iskconkurnool.org";
+  const website = typeof window !== "undefined" ? window.location.origin : "https://iskconkurnool.in";
 
   // Helper for inline **bold** parsing
   const renderInlineFormatting = (text: string) => {

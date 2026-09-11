@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { X, ChevronLeft, ChevronRight, Download, FolderOpen, Image as ImageIcon } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Download, FolderOpen, Image as ImageIcon, ExternalLink } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import { getOptimizedCloudinaryUrl } from "@/utils/cloudinary";
 
@@ -227,14 +227,14 @@ export default function GallerySection() {
                                 {a.title}
                               </h4>
                               <p className="text-[10px] text-slate-500 leading-relaxed font-sans line-clamp-1">
-                                Click to open Google Drive folder
+                                Click to view full photo album
                               </p>
                             </div>
                           </div>
 
                           <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100 text-[11px] font-bold text-primary w-full">
-                            <span>Open Drive Folder</span>
-                            <FolderOpen className="h-3.5 w-3.5 text-accent" />
+                            <span>Open Photo Album</span>
+                            <ExternalLink className="h-3.5 w-3.5 text-accent" />
                           </div>
                         </a>
                       ))}

@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin
 
-Sitemap: https://iskconkurnool.org/sitemap.xml
+Sitemap: https://iskconkurnool.in/sitemap.xml

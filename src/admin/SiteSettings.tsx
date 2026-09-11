@@ -183,7 +183,7 @@ export default function SiteSettingsForm() {
             icon={Mail}
             label="Email Address"
             type="email"
-            placeholder="e.g. info@iskconkurnool.org"
+            placeholder="e.g. info@iskconkurnool.in"
             value={s.email}
             onChange={(v) => update("email", v)}
             hint="Displayed in footer, contact form, and official communications."
