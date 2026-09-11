@@ -18,7 +18,9 @@ if (typeof window !== "undefined") {
   });
 }
 
-export function usePwaInstall() {
+export function usePwaInstall(options?: { autoPromptNewUser?: boolean }) {
+  const { autoPromptNewUser = false } = options || {};
+
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(() => {
     if (typeof window !== "undefined" && (window as any).__pwaDeferredPrompt) {
       return (window as any).__pwaDeferredPrompt;
@@ -76,9 +78,10 @@ export function usePwaInstall() {
           localStorage.setItem("iskcon_app_installed", "true");
         } catch {}
       }
+      return isStandalone;
     };
 
-    checkStandalone();
+    const isStandalone = checkStandalone();
 
     // Listen for beforeinstallprompt
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -91,6 +94,7 @@ export function usePwaInstall() {
       setIsInstalled(true);
       try {
         localStorage.setItem("iskcon_app_installed", "true");
+        localStorage.setItem("iskcon_pwa_popup_shown", "true");
       } catch {}
       (window as any).__pwaDeferredPrompt = null;
       setDeferredPrompt(null);
@@ -115,11 +119,33 @@ export function usePwaInstall() {
         });
     }
 
+    // Auto-popup logic for NEW USERS (displays ONLY ONE TIME)
+    if (autoPromptNewUser && !isStandalone) {
+      const popupShown = localStorage.getItem("iskcon_pwa_popup_shown") === "true";
+      const appInstalled = localStorage.getItem("iskcon_app_installed") === "true";
+      const isAdminRoute = window.location.pathname.startsWith("/admin");
+
+      if (!popupShown && !appInstalled && !isAdminRoute) {
+        const timer = setTimeout(() => {
+          setIsModalOpen(true);
+          try {
+            localStorage.setItem("iskcon_pwa_popup_shown", "true");
+          } catch {}
+        }, 1200);
+
+        return () => {
+          clearTimeout(timer);
+          window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+          window.removeEventListener("appinstalled", handleAppInstalled);
+        };
+      }
+    }
+
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
       window.removeEventListener("appinstalled", handleAppInstalled);
     };
-  }, []);
+  }, [autoPromptNewUser]);
 
   const openModal = useCallback(() => {
     if (isInstalled || (typeof window !== "undefined" && localStorage.getItem("iskcon_app_installed") === "true")) {
@@ -130,6 +156,11 @@ export function usePwaInstall() {
 
   const closeModal = useCallback(() => {
     setIsModalOpen(false);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("iskcon_pwa_popup_shown", "true");
+      } catch {}
+    }
   }, []);
 
   const promptInstall = useCallback(async () => {
@@ -138,11 +169,17 @@ export function usePwaInstall() {
       return;
     }
 
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("iskcon_pwa_popup_shown", "true");
+      } catch {}
+    }
+
     const promptEvent = deferredPrompt || (typeof window !== "undefined" ? (window as any).__pwaDeferredPrompt : null);
 
     if (promptEvent) {
       try {
-        // Direct 1-click install prompt — no intermediate dialog!
+        // Direct 1-click native install prompt — no intermediate steps!
         await promptEvent.prompt();
         const choice = await promptEvent.userChoice;
         if (choice.outcome === "accepted") {
@@ -155,7 +192,7 @@ export function usePwaInstall() {
           setIsModalOpen(false);
           toast.success("ISKCON Kurnool App installed!");
         } else {
-          toast.info("Installation cancelled.");
+          toast.info("Installation postponed.");
         }
       } catch (err) {
         console.error("Error launching native install prompt:", err);
@@ -177,3 +214,4 @@ export function usePwaInstall() {
     deviceInfo,
   };
 }
+
