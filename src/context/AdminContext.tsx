@@ -4492,29 +4492,43 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setPrivacy = (v: PrivacyData) => { setPrivacyState(v); persist(KEYS.privacy, v); };
 
   const changeSuperAdminPassword = async (currentPass: string, newPass: string) => {
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    const email = userData.user?.email;
-    if (userError || !email) {
-      return { ok: false, error: "Your admin session has expired. Please sign in again." };
+    const currentPassword = currentPass;
+    const nextPassword = newPass;
+    if (!currentPassword || nextPassword.length < 8) {
+      return { ok: false, error: "Use at least 8 characters for the new password." };
+    }
+    if (currentPassword === nextPassword) {
+      return { ok: false, error: "Choose a new password different from the current one." };
     }
 
-    // Re-authenticate before changing the password. This prevents a forgotten
-    // or unattended admin session from being used to change the account key.
-    const { error: verifyError } = await supabase.auth.signInWithPassword({
-      email,
-      password: currentPass,
-    });
-    if (verifyError) {
-      return { ok: false, error: "The current password is incorrect." };
-    }
+    try {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      const email = userData.user?.email;
+      if (userError || !email) {
+        return { ok: false, error: "Your admin session has expired. Please sign in again." };
+      }
 
-    const { error: updateError } = await supabase.auth.updateUser({ password: newPass });
-    if (updateError) {
-      console.error("[admin] password update failed", updateError);
-      return { ok: false, error: updateError.message || "Unable to change the password." };
-    }
+      // Re-authenticate before changing the password. This prevents a forgotten
+      // or unattended admin session from being used to change the account key.
+      const { error: verifyError } = await supabase.auth.signInWithPassword({
+        email,
+        password: currentPassword,
+      });
+      if (verifyError) {
+        return { ok: false, error: "The current password is incorrect." };
+      }
 
-    return { ok: true };
+      const { error: updateError } = await supabase.auth.updateUser({ password: nextPassword });
+      if (updateError) {
+        console.error("[admin] password update failed", updateError);
+        return { ok: false, error: updateError.message || "Unable to change the password." };
+      }
+
+      return { ok: true };
+    } catch (error) {
+      console.error("[admin] password change request failed", error);
+      return { ok: false, error: "Unable to change the password right now. Please try again." };
+    }
   };
 
   // Apply theme to CSS variables
