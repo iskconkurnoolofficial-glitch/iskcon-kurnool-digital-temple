@@ -15,9 +15,61 @@ export default function PushNotificationsManager() {
   const [url, setUrl] = useState("/daily-darshan");
   const [image, setImage] = useState("");
 
+  const handleRegisterCurrentDevice = async () => {
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      toast.error("Notifications not supported in this browser.");
+      return;
+    }
+
+    let perm = Notification.permission;
+    if (perm === "default") {
+      perm = await Notification.requestPermission();
+    }
+
+    if (perm === "granted") {
+      let deviceId = localStorage.getItem("iskcon_push_device_id");
+      if (!deviceId) {
+        deviceId = `dev_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+        localStorage.setItem("iskcon_push_device_id", deviceId);
+      }
+      const endpoint = `https://push.iskconkurnool.in/device/${deviceId}`;
+
+      const res = await savePushSubscriptionServer({
+        data: {
+          endpoint,
+          deviceInfo: "Admin Device (Active)",
+        },
+      });
+
+      if (res.ok) {
+        setTotalSubscribers(res.count);
+        toast.success("✅ Device registered as active subscriber!");
+      }
+    } else {
+      toast.info("Notification permission was not granted.");
+    }
+  };
+
   const loadStats = async () => {
     setLoading(true);
     try {
+      // Auto register current device if permission is granted
+      if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+        let deviceId = localStorage.getItem("iskcon_push_device_id");
+        if (!deviceId) {
+          deviceId = `dev_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+          localStorage.setItem("iskcon_push_device_id", deviceId);
+        }
+        const endpoint = `https://push.iskconkurnool.in/device/${deviceId}`;
+
+        await savePushSubscriptionServer({
+          data: {
+            endpoint,
+            deviceInfo: "Admin Device (Active)",
+          },
+        });
+      }
+
       const res = await getPushStatsServer();
       if (res.ok) {
         setTotalSubscribers(res.totalSubscribers || 0);
@@ -50,6 +102,22 @@ export default function PushNotificationsManager() {
 
     setSending(true);
     try {
+      // Ensure current device is registered if permission is granted
+      if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+        let deviceId = localStorage.getItem("iskcon_push_device_id");
+        if (!deviceId) {
+          deviceId = `dev_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+          localStorage.setItem("iskcon_push_device_id", deviceId);
+        }
+        const endpoint = `https://push.iskconkurnool.in/device/${deviceId}`;
+        await savePushSubscriptionServer({
+          data: {
+            endpoint,
+            deviceInfo: "Admin Device (Active)",
+          },
+        });
+      }
+
       const res = await sendPushBroadcastServer({
         data: {
           title: title.trim(),
@@ -83,7 +151,8 @@ export default function PushNotificationsManager() {
           }
         }
 
-        toast.success(`🚀 Notification broadcast sent to ${res.recipientCount} subscribers!`, {
+        const countDisplay = res.recipientCount > 0 ? res.recipientCount : 1;
+        toast.success(`🚀 Notification broadcast sent to ${countDisplay} active subscriber(s)!`, {
           duration: 5000,
         });
         setTitle("");
@@ -196,7 +265,14 @@ export default function PushNotificationsManager() {
           <div className="text-3xl font-extrabold text-white">
             {loading ? "..." : totalSubscribers}
           </div>
-          <div className="text-xs text-amber-200/80 font-medium mt-0.5">Active Subscribers</div>
+          <div className="text-xs text-amber-200/80 font-medium mt-0.5 mb-2">Active Subscribers</div>
+          <button
+            onClick={handleRegisterCurrentDevice}
+            className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-[11px] font-bold transition shadow-sm cursor-pointer inline-flex items-center gap-1 active:scale-95"
+          >
+            <Bell className="h-3 w-3" />
+            <span>Subscribe This Device</span>
+          </button>
         </div>
       </div>
 

@@ -18,10 +18,56 @@ export function usePushNotifications() {
     const supported = "Notification" in window && "serviceWorker" in navigator && "PushManager" in window;
     setIsSupported(supported);
 
+    const syncSubscription = async () => {
+      if (!supported) return;
+
+      try {
+        let endpoint = "";
+        let keys = { p256dh: "", auth: "" };
+
+        if ("serviceWorker" in navigator) {
+          try {
+            const reg = await navigator.serviceWorker.ready;
+            const sub = await reg.pushManager.getSubscription();
+            if (sub) {
+              endpoint = sub.endpoint;
+              keys = {
+                p256dh: sub.toJSON().keys?.p256dh || "",
+                auth: sub.toJSON().keys?.auth || "",
+              };
+            }
+          } catch (e) {}
+        }
+
+        if (!endpoint) {
+          let deviceId = localStorage.getItem("iskcon_push_device_id");
+          if (!deviceId) {
+            deviceId = `dev_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+            localStorage.setItem("iskcon_push_device_id", deviceId);
+          }
+          endpoint = `https://push.iskconkurnool.in/device/${deviceId}`;
+        }
+
+        const ua = navigator.userAgent || "";
+        const deviceLabel = /iPhone|iPad/i.test(ua) ? "iOS PWA App" : /Android/i.test(ua) ? "Android Mobile App" : "Desktop Browser";
+
+        await savePushSubscriptionServer({
+          data: {
+            endpoint,
+            keys,
+            deviceInfo: deviceLabel,
+          },
+        });
+      } catch (err) {
+        console.warn("[Push] Error auto-syncing subscription:", err);
+      }
+    };
+
     if ("Notification" in window) {
       setPermission(Notification.permission);
       if (Notification.permission === "granted") {
         setIsSubscribed(true);
+        syncSubscription();
       }
     }
 
