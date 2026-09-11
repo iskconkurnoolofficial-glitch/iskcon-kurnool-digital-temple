@@ -13,6 +13,7 @@ import { AdminProvider } from "@/context/AdminContext";
 import LaunchPageGate from "@/components/LaunchPageGate";
 import FeaturePopupModal from "@/components/FeaturePopupModal";
 import AutoInstallAppPopup from "@/components/AutoInstallAppPopup";
+import PushNotificationPrompt from "@/components/PushNotificationPrompt";
 
 function NotFoundComponent() {
   return (
@@ -142,6 +143,7 @@ function RootComponent() {
           <Outlet />
           <FeaturePopupModal />
           <AutoInstallAppPopup />
+          <PushNotificationPrompt />
         </LaunchPageGate>
       </AdminProvider>
     </QueryClientProvider>

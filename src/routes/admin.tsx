@@ -30,6 +30,7 @@ import TermsManager from "@/admin/TermsManager";
 import PrivacyManager from "@/admin/PrivacyManager";
 import ReceiptSettingsManager from "@/admin/ReceiptSettingsManager";
 import UpiSettingsManager from "@/admin/UpiSettingsManager";
+import PushNotificationsManager from "@/admin/PushNotificationsManager";
 import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard, Video, Bell, ShieldCheck, Compass, Sun, Tv, Award, FileText, Lock, FileCheck, QrCode, Eye, EyeOff, Rocket, KeyRound } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
@@ -37,7 +38,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "welcome" | "dailyDarshan" | "liveProgrammes" | "carousel" | "festivals" | "sevas" | "bhaktiSteps" | "youth" | "youthYatra" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "upiSettings" | "receiptSettings" | "terms" | "privacy" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "featurePopup" | "paymentPages";
+type Tab = "welcome" | "pushNotifications" | "dailyDarshan" | "liveProgrammes" | "carousel" | "festivals" | "sevas" | "bhaktiSteps" | "youth" | "youthYatra" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "upiSettings" | "receiptSettings" | "terms" | "privacy" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "featurePopup" | "paymentPages";
 
 function AdminPage() {
   const { authed, login, logout, settings, contacts, setContacts, paymentRecords, houseProgrammes, markAllHouseProgrammeRequestsRead, markAllPaymentRecordsRead, youthYatra, markAllYatraRegistrationsRead, bhaktiSteps, markAllBhaktiStepsRegistrationsRead, currentUser, changeSuperAdminPassword } = useAdmin();
@@ -270,6 +271,7 @@ function AdminPage() {
     {
       title: "Main Content",
       items: [
+        { id: "pushNotifications", label: "Push Notifications", icon: Bell },
         { id: "featurePopup", label: "Feature Pop-Up", icon: Megaphone },
         { id: "carousel", label: "Carousel Banners", icon: Image },
         { id: "heroBanners", label: "Hero Banners", icon: Images },
@@ -755,6 +757,7 @@ function AdminPage() {
           >
             {tab === "welcome" && <WelcomeDashboard groups={groups} setTab={setTab} logoUrl={settings.logo} />}
 
+            {tab === "pushNotifications" && <PushNotificationsManager />}
             {tab === "dailyDarshan" && <DailyDarshanManager />}
             {tab === "liveProgrammes" && <LiveProgrammeManager />}
             {tab === "carousel" && <CarouselManager />}

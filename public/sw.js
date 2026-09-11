@@ -1,5 +1,5 @@
 // ISKCON Kurnool Service Worker
-const CACHE_NAME = "iskcon-kurnool-v1";
+const CACHE_NAME = "iskcon-kurnool-v2";
 const STATIC_ASSETS = [
   "/",
   "/manifest.webmanifest",
@@ -71,5 +71,66 @@ self.addEventListener("fetch", (event) => {
           return new Response("Network offline", { status: 503, statusText: "Offline" });
         });
       })
+  );
+});
+
+// ============================================================================
+// WEB PUSH NOTIFICATIONS EVENT HANDLERS
+// ============================================================================
+
+self.addEventListener("push", (event) => {
+  let data = {
+    title: "ISKCON Kurnool",
+    body: "New update from Sri Sri Puri Jagannath Temple!",
+    icon: "/iskcon-logo.png",
+    badge: "/favicon.png",
+    url: "/"
+  };
+
+  if (event.data) {
+    try {
+      data = Object.assign(data, event.data.json());
+    } catch (e) {
+      data.body = event.data.text() || data.body;
+    }
+  }
+
+  const options = {
+    body: data.body,
+    icon: data.icon || "/iskcon-logo.png",
+    badge: data.badge || "/favicon.png",
+    image: data.image || undefined,
+    data: {
+      url: data.url || "/"
+    },
+    vibrate: [100, 50, 100, 50, 100],
+    tag: data.tag || "iskcon-notification",
+    renotify: true,
+    actions: [
+      { action: "open", title: "View Details 🌸" }
+    ]
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const targetUrl = event.notification.data?.url || "/";
+
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && "focus" in client) {
+          client.navigate(targetUrl);
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
   );
 });
