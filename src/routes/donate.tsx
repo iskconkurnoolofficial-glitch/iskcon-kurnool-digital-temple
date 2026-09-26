@@ -351,6 +351,19 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     }
   }, [initialSlug, sevas, festivals, sunday]);
 
+  // Auto-scroll to Step 2 Devotee Details form when a seva checkout page is opened via link
+  useEffect(() => {
+    if (checkoutSeva) {
+      const timer = setTimeout(() => {
+        const target = document.getElementById("donor-form") || document.getElementById("donor-name-input");
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 250);
+      return () => clearTimeout(timer);
+    }
+  }, [checkoutSeva?.id]);
+
   const active = useMemo(() => {
     let list = [...sevas].filter((s) => s.active);
 
@@ -1092,7 +1105,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
               </div>
 
               {/* Right Column: Seva Details & Amount Highlight + Donor Form */}
-              <div className="lg:col-span-7" id="donor-form">
+              <div className="lg:col-span-7 scroll-mt-24 sm:scroll-mt-28" id="donor-form">
                 <form onSubmit={handleFormSubmit} className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 border border-slate-100 shadow-sm space-y-5 sm:space-y-6">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3.5">
                     <div>
