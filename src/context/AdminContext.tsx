@@ -3406,7 +3406,11 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [gitaCourse, setGitaCourseState] = useState<GitaCourseData>(() => getCached(KEYS.gitaCourse, defaultGitaCourse));
   const [sunday, setSundayState] = useState<SundayData>(() => getCached(KEYS.sunday, defaultSunday));
   const [prahladaBadi, setPrahladaBadiState] = useState<PrahladaBadiData>(() => getCached(KEYS.prahladaBadi, defaultPrahladaBadi));
-  const [houseProgrammes, setHouseProgrammesState] = useState<HouseProgrammeData>(() => getCached(KEYS.houseProgrammes, defaultHouseProgramme));
+  const [houseProgrammes, setHouseProgrammesState] = useState<HouseProgrammeData>(() => ({
+    ...defaultHouseProgramme,
+    ...getCached(KEYS.houseProgrammes, defaultHouseProgramme),
+    requests: [],
+  }));
   const [dailyDarshan, setDailyDarshanState] = useState<DailyDarshanData>(() => getCached(KEYS.dailyDarshan, defaultDailyDarshan));
   const [liveProgrammes, setLiveProgrammesState] = useState<LiveProgrammeData>(() => getCached(KEYS.liveProgrammes, defaultLiveProgrammes));
   const [youthYatra, setYouthYatraState] = useState<YouthYatraState>(() => getCached(KEYS.youthYatra, defaultYouthYatra));
@@ -3553,27 +3557,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
       setContactsState(normalContacts);
 
-      if (hpRequests.length > 0) {
-        setHouseProgrammesState((prev) => {
-          const hpMap = new Map<string, HouseProgrammeRequest>();
-          (prev.requests || []).forEach((req) => { if (req && req.id) hpMap.set(req.id, req); });
-          let hasNew = false;
-          hpRequests.forEach((req) => {
-            if (req && req.id && !hpMap.has(req.id)) {
-              hasNew = true;
-            }
-            if (req && req.id) hpMap.set(req.id, req);
-          });
-          const merged = Array.from(hpMap.values()).sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-          const updated = { ...prev, requests: merged };
-          if (hasNew) {
-            persist(KEYS.houseProgrammes, updated);
-          }
-          return updated;
-        });
-      }
+      setHouseProgrammesState((prev) => ({ ...prev, requests: hpRequests }));
     };
 
     const loadDonations = async () => {
@@ -3745,18 +3729,9 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         }
         const incoming = { ...defaultHouseProgramme, ...(valObj || {}) };
         setHouseProgrammesState((prev) => {
-          const map = new Map<string, HouseProgrammeRequest>();
-          (incoming.requests || []).forEach((r: HouseProgrammeRequest) => {
-            if (r && r.id) map.set(r.id, r);
-          });
-          (prev.requests || []).forEach((r: HouseProgrammeRequest) => {
-            if (r && r.id && !map.has(r.id)) map.set(r.id, r);
-          });
           return {
             ...incoming,
-            requests: Array.from(map.values()).sort(
-              (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            ),
+            requests: prev.requests,
           };
         });
         break;
@@ -3790,11 +3765,12 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   }
 
   async function persist(key: string, value: any) {
-    setCache(key, value);
+    const sharedValue = key === KEYS.houseProgrammes ? { ...value, requests: [] } : value;
+    setCache(key, sharedValue);
     pendingWrites.current.set(key, Date.now());
     const { error } = await supabase
       .from("site_data")
-      .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
+      .upsert({ key, value: sharedValue, updated_at: new Date().toISOString() }, { onConflict: "key" });
     if (error) {
       pendingWrites.current.delete(key);
       console.error("[site_data] upsert failed", key, error);
@@ -3944,21 +3920,23 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       requests: updatedRequests,
     };
     setHouseProgrammesState(updated);
-    await persist(KEYS.houseProgrammes, updated);
 
     try {
       const { data: row } = await supabase.from("contact_messages").select("message").eq("id", id).maybeSingle();
       if (row && row.message) {
         try {
-          const parsed = JSON.parse(row.message);
+          const parsed = typeof row.message === "string" ? JSON.parse(row.message) : row.message;
           parsed.status = status;
-          await supabase.from("contact_messages").update({ message: JSON.stringify(parsed), read: true }).eq("id", id);
+          const { error } = await supabase.from("contact_messages").update({ message: JSON.stringify(parsed), read: true }).eq("id", id);
+          if (error) throw error;
         } catch {
-          await supabase.from("contact_messages").update({ read: true }).eq("id", id);
+          const { error } = await supabase.from("contact_messages").update({ read: true }).eq("id", id);
+          if (error) throw error;
         }
       }
-    } catch {
-      // non-critical
+    } catch (error) {
+      console.error("[HouseProgramme] Status update failed:", error);
+      toast.error("Could not save the request status. Please try again.");
     }
   };
 
@@ -3969,12 +3947,13 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       requests: updatedRequests,
     };
     setHouseProgrammesState(updated);
-    await persist(KEYS.houseProgrammes, updated);
 
     try {
-      await supabase.from("contact_messages").delete().eq("id", id);
-    } catch {
-      // non-critical
+      const { error } = await supabase.from("contact_messages").delete().eq("id", id);
+      if (error) throw error;
+    } catch (error) {
+      console.error("[HouseProgramme] Delete failed:", error);
+      toast.error("Could not delete the request. Please try again.");
     }
   };
 
@@ -3986,15 +3965,16 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       requests: updatedRequests,
     };
     setHouseProgrammesState(updated);
-    await persist(KEYS.houseProgrammes, updated);
 
     try {
       const unreadIds = houseProgrammes.requests.filter((r) => !r.read).map((r) => r.id);
       if (unreadIds.length > 0) {
-        await supabase.from("contact_messages").update({ read: true }).in("id", unreadIds);
+        const { error } = await supabase.from("contact_messages").update({ read: true }).in("id", unreadIds);
+        if (error) throw error;
       }
-    } catch {
-      // non-critical
+    } catch (error) {
+      console.error("[HouseProgramme] Mark-all-read failed:", error);
+      toast.error("Could not update request read status. Please try again.");
     }
   };
 
