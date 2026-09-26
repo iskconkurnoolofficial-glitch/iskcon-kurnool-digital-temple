@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import type { HouseProgrammeRequest, HouseProgrammeData } from "@/context/AdminContext";
-import { defaultHouseProgramme } from "@/context/AdminContext";
+import type { HouseProgrammeRequest } from "@/context/AdminContext";
 
 export const submitHouseProgrammeRequestServer = createServerFn({ method: "POST" })
   .inputValidator((data: Omit<HouseProgrammeRequest, "id" | "createdAt" | "read" | "status">) => {
@@ -24,77 +23,44 @@ export const submitHouseProgrammeRequestServer = createServerFn({ method: "POST"
   .handler(async ({ data }) => {
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-      // Fetch current houseProgrammes object from site_data table
-      const { data: row, error: fetchError } = await supabaseAdmin
-        .from("site_data")
-        .select("value")
-        .eq("key", "houseProgrammes")
-        .maybeSingle();
-
-      let currentData: HouseProgrammeData = defaultHouseProgramme;
-      if (!fetchError && row && row.value && typeof row.value === "object") {
-        currentData = { ...defaultHouseProgramme, ...(row.value as any) };
-      }
-
-      const newEntry: HouseProgrammeRequest = {
-        ...data,
-        id: "hp_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
-        status: "pending",
-        createdAt: new Date().toISOString(),
-        read: false,
-      };
-
-      const updatedRequests = [newEntry, ...(currentData.requests || [])];
-      const updatedData: HouseProgrammeData = {
-        ...currentData,
-        requests: updatedRequests,
-      };
-
-      // Persist to site_data via admin client (bypasses RLS safely)
-      const { error: updateError } = await supabaseAdmin
-        .from("site_data")
-        .upsert(
-          {
-            key: "houseProgrammes",
-            value: updatedData as any,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "key" }
-        );
-
-      if (updateError) {
-        console.error("[HouseProgramme] Server upsert failed:", updateError);
-        return { ok: false as const, message: updateError.message };
-      }
-
-      // Also redundancy save into contact_messages table via supabaseAdmin
-      try {
-        await supabaseAdmin.from("contact_messages").insert({
-          id: newEntry.id,
-          name: newEntry.name,
+      const createdAt = new Date().toISOString();
+      const { data: row, error } = await supabaseAdmin
+        .from("contact_messages")
+        .insert({
+          name: data.name,
           email: "houseprogramme@iskconkurnool.in",
-          phone: newEntry.phone,
+          phone: data.phone,
           message: JSON.stringify({
             isHouseProgramme: true,
-            locationArea: newEntry.locationArea,
-            preferredDate: newEntry.preferredDate,
-            preferredTime: newEntry.preferredTime,
-            participantsCount: newEntry.participantsCount,
-            fullAddress: newEntry.fullAddress,
-            googleMapsUrl: newEntry.googleMapsUrl,
-            latitude: newEntry.latitude,
-            longitude: newEntry.longitude,
-            message: newEntry.message,
+            locationArea: data.locationArea,
+            preferredDate: data.preferredDate,
+            preferredTime: data.preferredTime,
+            participantsCount: data.participantsCount,
+            fullAddress: data.fullAddress,
+            googleMapsUrl: data.googleMapsUrl,
+            latitude: data.latitude,
+            longitude: data.longitude,
+            message: data.message,
             status: "pending",
           }),
           read: false,
-        });
-      } catch (cErr) {
-        console.warn("[HouseProgramme] Non-critical contact_messages insert failed:", cErr);
+        })
+        .select("id,created_at")
+        .single();
+
+      if (error || !row) {
+        console.error("[HouseProgramme] Contact message insert failed:", error);
+        return { ok: false as const, message: error?.message || "Could not save your request" };
       }
 
-      return { ok: true as const, request: newEntry };
+      const request: HouseProgrammeRequest = {
+        ...data,
+        id: row.id,
+        status: "pending",
+        createdAt: row.created_at || createdAt,
+        read: false,
+      };
+      return { ok: true as const, request };
     } catch (e: any) {
       console.error("[HouseProgramme] Exception in server submit:", e);
       return { ok: false as const, message: e?.message || "Failed to submit request" };

@@ -3923,62 +3923,16 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   };
 
   const addHouseProgrammeRequest = async (req: Omit<HouseProgrammeRequest, "id" | "createdAt" | "read" | "status">) => {
-    const id = "hp_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
-    const createdAt = new Date().toISOString();
-    const newEntry: HouseProgrammeRequest = {
-      ...req,
-      id,
-      status: "pending",
-      createdAt,
-      read: false,
-    };
-
-    const updated: HouseProgrammeData = {
-      ...houseProgrammes,
-      requests: [newEntry, ...(houseProgrammes.requests || [])],
-    };
-
-    setHouseProgrammesState(updated);
-
-    // Call server function to persist securely via admin client (bypasses RLS)
-    try {
-      const { submitHouseProgrammeRequestServer } = await import("@/lib/house-programme.functions");
-      const res = await submitHouseProgrammeRequestServer({ data: req });
-      if (res?.ok) {
-        return;
-      }
-    } catch (e) {
-      console.error("Server submission fallback for House Programme:", e);
+    const { submitHouseProgrammeRequestServer } = await import("@/lib/house-programme.functions");
+    const result = await submitHouseProgrammeRequestServer({ data: req });
+    if (!result.ok) {
+      throw new Error(result.message || "Failed to save house programme request");
     }
 
-    // Direct fallback persist to site_data
-    await persist(KEYS.houseProgrammes, updated);
-
-    // Redundant client-side contact_messages backup
-    try {
-      await supabase.from("contact_messages").insert({
-        id,
-        name: req.name,
-        email: "houseprogramme@iskconkurnool.in",
-        phone: req.phone,
-        message: JSON.stringify({
-          isHouseProgramme: true,
-          locationArea: req.locationArea,
-          preferredDate: req.preferredDate,
-          preferredTime: req.preferredTime,
-          participantsCount: req.participantsCount,
-          fullAddress: req.fullAddress,
-          googleMapsUrl: req.googleMapsUrl,
-          latitude: req.latitude,
-          longitude: req.longitude,
-          message: req.message,
-          status: "pending",
-        }),
-        read: false,
-      });
-    } catch {
-      // non-critical
-    }
+    setHouseProgrammesState((current) => ({
+      ...current,
+      requests: [result.request, ...(current.requests || []).filter((request) => request.id !== result.request.id)],
+    }));
   };
 
   const updateHouseProgrammeRequestStatus = async (id: string, status: HouseProgrammeRequest["status"]) => {
