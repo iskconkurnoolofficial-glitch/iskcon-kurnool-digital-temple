@@ -711,48 +711,49 @@ function SundayAnnouncementTicker({ sunday, onOpenSponsorModal }: { sunday: any;
   const customText = sunday.tickerText?.trim();
 
   const tickerItem = (
-    <div className="inline-flex items-center gap-3 sm:gap-5 px-6 text-xs sm:text-sm font-sans font-medium text-amber-100/95 whitespace-nowrap">
+    <div className="inline-flex items-center gap-2 sm:gap-4 px-3 sm:px-6 text-[11px] sm:text-sm font-sans font-medium text-amber-100/95 whitespace-nowrap">
       {customText ? (
         <span className="font-semibold text-white/95">{customText}</span>
       ) : (
         <>
-          <span className="inline-flex items-center gap-1.5 text-amber-300 font-bold">
-            <Sparkles className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
-            This Sunday Feast Sponsored By:
+          <span className="inline-flex items-center gap-1 sm:gap-1.5 text-amber-300 font-bold shrink-0">
+            <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-amber-400 animate-pulse shrink-0" />
+            <span className="hidden sm:inline">This Sunday Feast Sponsored By:</span>
+            <span className="sm:hidden">Feast Sponsor:</span>
           </span>
-          <span className="font-extrabold text-white bg-white/10 px-3 py-1 rounded-full border border-white/20 shadow-xs">
+          <span className="font-extrabold text-white bg-white/10 px-2.5 sm:px-3 py-0.5 rounded-full border border-white/20 shadow-xs text-[11px] sm:text-xs">
             {sponsorName}
           </span>
           <span className="text-amber-300/50">•</span>
-          <span className="text-amber-200 font-semibold flex items-center gap-1">
-            <Calendar className="h-3 w-3 text-accent" /> {sponsorDate}
+          <span className="text-amber-200 font-semibold flex items-center gap-1 text-[11px] sm:text-xs shrink-0">
+            <Calendar className="h-3 w-3 text-accent shrink-0" /> {sponsorDate}
           </span>
           <span className="text-amber-300/50">•</span>
-          <span className="text-white/85 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-400/20">{occasion}</span>
+          <span className="text-white/85 bg-amber-500/20 px-2 sm:px-2.5 py-0.5 rounded-full border border-amber-400/20 text-[10px] sm:text-xs">{occasion}</span>
           <span className="text-amber-300/50">•</span>
-          <span className="text-amber-100/80">May Sri Sri Puri Jagannath bestow abundant bhakti & auspicious blessings!</span>
+          <span className="text-amber-100/80 text-[11px] sm:text-xs">May Sri Sri Puri Jagannath bestow abundant bhakti & auspicious blessings!</span>
         </>
       )}
     </div>
   );
 
   return (
-    <div className="bg-[#21093a] text-white border-y-2 border-amber-400/35 py-2.5 shadow-lg relative overflow-hidden z-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3 sm:gap-4">
+    <div className="bg-[#21093a] text-white border-y-2 border-amber-400/35 py-2 sm:py-2.5 shadow-lg relative overflow-hidden z-20">
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 flex items-center justify-between gap-2 sm:gap-4">
         
         {/* Left Fixed Announcement Pill Badge */}
-        <div className="shrink-0 flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-sans text-[11px] sm:text-xs font-black px-3.5 py-1.5 rounded-full shadow-sm tracking-wider uppercase">
-          <Sparkles className="h-3.5 w-3.5 animate-spin" style={{ animationDuration: "4s" }} />
-          <span>Feast Sponsor</span>
+        <div className="shrink-0 flex items-center gap-1 sm:gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-sans text-[10px] sm:text-xs font-black px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full shadow-sm tracking-wider uppercase">
+          <Sparkles className="h-3 sm:h-3.5 w-3 sm:w-3.5 animate-spin shrink-0" style={{ animationDuration: "4s" }} />
+          <span>Sponsor</span>
         </div>
 
         {/* Continuous Moving Marquee Animation */}
         <div 
           onClick={onOpenSponsorModal} 
-          className="flex-1 overflow-hidden relative cursor-pointer block select-none"
+          className="flex-1 overflow-hidden relative cursor-pointer block select-none mask-marquee"
           title="Click to view Sunday Feast Sponsor details"
         >
-          <div className="flex w-max animate-[marquee_25s_linear_infinite] hover:[animation-play-state:paused] will-change-transform py-1">
+          <div className="flex w-max animate-[marquee_25s_linear_infinite] hover:[animation-play-state:paused] active:[animation-play-state:paused] will-change-transform py-0.5 sm:py-1">
             {tickerItem}
             {tickerItem}
             {tickerItem}
@@ -764,12 +765,12 @@ function SundayAnnouncementTicker({ sunday, onOpenSponsorModal }: { sunday: any;
         <button
           type="button"
           onClick={onOpenSponsorModal}
-          className="relative overflow-hidden shrink-0 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-secondary hover:bg-amber-300 text-slate-950 text-xs font-black transition-all hover:scale-105 cursor-pointer shadow-md"
+          className="relative overflow-hidden shrink-0 inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full bg-secondary hover:bg-amber-300 active:bg-amber-300 text-slate-950 text-[11px] sm:text-xs font-black transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md"
         >
           {/* Shimmer Light Sweep */}
           <span className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/80 to-transparent pointer-events-none" />
           <span className="relative z-10">View</span>
-          <ArrowRight className="relative z-10 h-3.5 w-3.5 text-slate-950" />
+          <ArrowRight className="relative z-10 h-3 w-3 sm:h-3.5 sm:w-3.5 text-slate-950 shrink-0" />
         </button>
 
       </div>
