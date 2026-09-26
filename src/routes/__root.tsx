@@ -11,7 +11,6 @@ import {
 import appCss from "../styles.css?url";
 import { AdminProvider } from "@/context/AdminContext";
 import LaunchPageGate from "@/components/LaunchPageGate";
-import AutoInstallAppPopup from "@/components/AutoInstallAppPopup";
 
 function NotFoundComponent() {
   return (
@@ -139,7 +138,6 @@ function RootComponent() {
       <AdminProvider>
         <LaunchPageGate>
           <Outlet />
-          <AutoInstallAppPopup />
         </LaunchPageGate>
       </AdminProvider>
     </QueryClientProvider>
