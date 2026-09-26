@@ -20,7 +20,6 @@ import InstagramManager from "@/admin/InstagramManager";
 import PrahladaBadiManager from "@/admin/PrahladaBadiManager";
 import HouseProgrammesManager from "@/admin/HouseProgrammesManager";
 import TempleScheduleManager from "@/admin/TempleScheduleManager";
-import FeaturePopupManager from "@/admin/FeaturePopupManager";
 import PaymentPagesManager from "@/admin/PaymentPagesManager";
 import YouthYatraManager from "@/admin/YouthYatraManager";
 import DailyDarshanManager from "@/admin/DailyDarshanManager";
@@ -30,16 +29,15 @@ import TermsManager from "@/admin/TermsManager";
 import PrivacyManager from "@/admin/PrivacyManager";
 import ReceiptSettingsManager from "@/admin/ReceiptSettingsManager";
 import UpiSettingsManager from "@/admin/UpiSettingsManager";
-import PushNotificationsManager from "@/admin/PushNotificationsManager";
 import AdminPinGuard from "@/admin/AdminPinGuard";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, Megaphone, CreditCard, Video, Bell, ShieldCheck, Compass, Sun, Tv, Award, FileText, Lock, FileCheck, QrCode, Eye, EyeOff, Rocket, KeyRound } from "lucide-react";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, CreditCard, Video, Bell, ShieldCheck, Compass, Sun, Tv, Award, FileText, Lock, FileCheck, QrCode, Eye, EyeOff, Rocket, KeyRound } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
 
-type Tab = "welcome" | "pushNotifications" | "dailyDarshan" | "liveProgrammes" | "carousel" | "festivals" | "sevas" | "bhaktiSteps" | "youth" | "youthYatra" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "upiSettings" | "receiptSettings" | "terms" | "privacy" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "featurePopup" | "paymentPages";
+type Tab = "welcome" | "dailyDarshan" | "liveProgrammes" | "carousel" | "festivals" | "sevas" | "bhaktiSteps" | "youth" | "youthYatra" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "upiSettings" | "receiptSettings" | "terms" | "privacy" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "paymentPages";
 
 function AdminPage() {
   const { authed, login, logout, settings, contacts, setContacts, paymentRecords, houseProgrammes, markAllHouseProgrammeRequestsRead, markAllPaymentRecordsRead, youthYatra, markAllYatraRegistrationsRead, bhaktiSteps, markAllBhaktiStepsRegistrationsRead, currentUser, changeSuperAdminPassword } = useAdmin();
@@ -272,8 +270,6 @@ function AdminPage() {
     {
       title: "Main Content",
       items: [
-        { id: "pushNotifications", label: "Push Notifications", icon: Bell },
-        { id: "featurePopup", label: "Feature Pop-Up", icon: Megaphone },
         { id: "carousel", label: "Carousel Banners", icon: Image },
         { id: "heroBanners", label: "Hero Banners", icon: Images },
         { id: "gallery", label: "Gallery Photos", icon: Images },
@@ -758,7 +754,6 @@ function AdminPage() {
           >
             {tab === "welcome" && <WelcomeDashboard groups={groups} setTab={setTab} logoUrl={settings.logo} />}
 
-            {tab === "pushNotifications" && <PushNotificationsManager />}
             {tab === "dailyDarshan" && <DailyDarshanManager />}
             {tab === "liveProgrammes" && <LiveProgrammeManager />}
             {tab === "carousel" && <CarouselManager />}
@@ -789,7 +784,6 @@ function AdminPage() {
             {tab === "terms" && <TermsManager />}
             {tab === "privacy" && <PrivacyManager />}
             {tab === "templeSchedule" && <TempleScheduleManager />}
-            {tab === "featurePopup" && <FeaturePopupManager />}
             {tab === "paymentPages" && <PaymentPagesManager />}
           </motion.div>
         </AnimatePresence>

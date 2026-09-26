@@ -2259,24 +2259,6 @@ export const defaultReceiptSettings: ReceiptSettings = {
   showWatermark: true,
 };
 
-export type FeaturePopupData = {
-  active: boolean;
-  image: string;
-  title: string;
-  content: string;
-  buttonText: string;
-  buttonLink: string;
-};
-
-export const defaultFeaturePopup: FeaturePopupData = {
-  active: false,
-  image: "",
-  title: "Special Announcement",
-  content: "Welcome to ISKCON Kurnool Digital Temple. Stay connected for daily darshan, upcoming festivals, and spiritual discourses.",
-  buttonText: "Learn More",
-  buttonLink: "",
-};
-
 export type PaymentPageField = {
   id: string;
   label: string;
@@ -3219,8 +3201,6 @@ type AdminState = {
   setInstagram: (i: InstagramData) => void;
   templeSchedule: TempleScheduleItem[];
   setTempleSchedule: (s: TempleScheduleItem[]) => void;
-  featurePopup: FeaturePopupData;
-  setFeaturePopup: (fp: FeaturePopupData) => void;
   paymentPages: PaymentPage[];
   setPaymentPages: (p: PaymentPage[]) => void;
   paymentRecords: PaymentRecord[];
@@ -3323,7 +3303,6 @@ const KEYS = {
   youthYatra: "youthYatra",
   bhaktiSteps: "bhaktiSteps",
   templeSchedule: "templeSchedule",
-  featurePopup: "featurePopup",
   paymentPages: "paymentPages",
   paymentRecords: "paymentRecords",
   upiPayment: "upiPayment",
@@ -3439,7 +3418,6 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [contacts, setContactsState] = useState<ContactEntry[]>([]);
   const [instagram, setInstagramState] = useState<InstagramData>(() => getCached(KEYS.instagram, defaultInstagram));
   const [templeSchedule, setTempleScheduleState] = useState<TempleScheduleItem[]>(() => getCached(KEYS.templeSchedule, defaultTempleSchedule));
-  const [featurePopup, setFeaturePopupState] = useState<FeaturePopupData>(() => getCached(KEYS.featurePopup, defaultFeaturePopup));
   const [paymentPages, setPaymentPagesState] = useState<PaymentPage[]>(() => getCached(KEYS.paymentPages, defaultPaymentPages));
   const [paymentRecords, setPaymentRecordsState] = useState<PaymentRecord[]>(() => getCached(KEYS.paymentRecords, defaultPaymentRecords));
   const [upiPayment, setUpiPaymentState] = useState<UpiPaymentSettings>(() => getCached(KEYS.upiPayment, defaultUpiPayment));
@@ -3799,7 +3777,6 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       // contacts now live in their own table (contact_messages)
       case KEYS.instagram: setInstagramState({ ...defaultInstagram, ...value }); break;
       case KEYS.templeSchedule: setTempleScheduleState(value || defaultTempleSchedule); break;
-      case KEYS.featurePopup: setFeaturePopupState({ ...defaultFeaturePopup, ...value }); break;
       case KEYS.paymentPages: setPaymentPagesState(Array.isArray(value) ? value : defaultPaymentPages); break;
       case KEYS.paymentRecords: setPaymentRecordsState(Array.isArray(value) ? value : defaultPaymentRecords); break;
       case KEYS.upiPayment: setUpiPaymentState({ ...defaultUpiPayment, ...value }); break;
@@ -4417,7 +4394,6 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   const setInstagram = (v: InstagramData) => { setInstagramState(v); persist(KEYS.instagram, v); };
   const setTempleSchedule = (v: TempleScheduleItem[]) => { setTempleScheduleState(v); persist(KEYS.templeSchedule, v); };
-  const setFeaturePopup = (fp: FeaturePopupData) => { setFeaturePopupState(fp); persist(KEYS.featurePopup, fp); };
   const setPaymentPages = (p: PaymentPage[]) => { setPaymentPagesState(p); persist(KEYS.paymentPages, p); };
   const setPaymentRecords = (v: PaymentRecord[]) => { setPaymentRecordsState(v); persist(KEYS.paymentRecords, v); };
   const setUpiPayment = (u: UpiPaymentSettings) => { setUpiPaymentState(u); persist(KEYS.upiPayment, u); };
@@ -4598,7 +4574,6 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         donations, setDonations, addDonation, updateDonationStatus,
         instagram, setInstagram,
         templeSchedule, setTempleSchedule,
-        featurePopup, setFeaturePopup,
         paymentPages, setPaymentPages,
         paymentRecords, setPaymentRecords, addPaymentRecord, deletePaymentRecord, markAllPaymentRecordsRead,
         upiPayment, setUpiPayment,

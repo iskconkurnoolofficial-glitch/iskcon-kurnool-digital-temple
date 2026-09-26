@@ -485,37 +485,25 @@ export default function LiveProgrammeManager() {
               {/* Advanced Toggles (Force Live Now, Enable Reminder, Published) */}
               <div className="bg-slate-50/70 p-4 rounded-2xl border border-slate-200/80 space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex items-center gap-2.5 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={isManualLiveOverride}
                       onChange={(e) => setIsManualLiveOverride(e.target.checked)}
-                      className="h-4 w-4 text-red-600 rounded border-slate-300 focus:ring-red-500 cursor-pointer"
+                      className="h-5 w-5 text-red-600 rounded border-slate-300 focus:ring-red-500 cursor-pointer"
                     />
                     <div>
-                      <span className="text-xs font-bold text-red-700 flex items-center gap-1">
-                        <Radio className="h-3.5 w-3.5 animate-pulse" /> Force "LIVE NOW" (Single Live Stream Override)
+                      <span className="text-xs font-extrabold text-red-600 flex items-center gap-1.5 uppercase tracking-wide">
+                        <Radio className="h-4 w-4 animate-pulse text-red-600" /> Make it Live (Display LIVE NOW on Website)
                       </span>
-                      <p className="text-[11px] text-muted-foreground">
-                        Immediately displays this programme as LIVE NOW across the entire website. Only 1 programme can be active at a time (saving this deactivates any other forced live streams).
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        Instantly activates and displays this stream with Thumbnail, Details, and Join Now button on the website.
                       </p>
                     </div>
                   </label>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-200">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={enableReminders}
-                      onChange={(e) => setEnableReminders(e.target.checked)}
-                      className="h-4 w-4 text-primary rounded border-slate-300 focus:ring-primary cursor-pointer"
-                    />
-                    <span className="text-xs font-semibold text-foreground">
-                      Enable "Set Reminder" CTA button
-                    </span>
-                  </label>
-
+                <div className="pt-2 border-t border-slate-200">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"

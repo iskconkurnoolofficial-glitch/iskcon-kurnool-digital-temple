@@ -1,9 +1,23 @@
 import { useState, useEffect } from "react";
-import { Radio, ExternalLink } from "lucide-react";
+import { Radio, ExternalLink, Clock } from "lucide-react";
 import { useLiveClass } from "@/hooks/useLiveClass";
 import { useAdmin } from "@/context/AdminContext";
 import { isTimeStrLive } from "@/lib/scheduleUtils";
 import { safeUrl } from "@/lib/utils";
+
+function formatCountdown(diffMs: number): string {
+  if (diffMs <= 0) return "Starting now...";
+  const sec = Math.floor((diffMs / 1000) % 60);
+  const min = Math.floor((diffMs / (1000 * 60)) % 60);
+  const hrs = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  const pad = (n: number) => String(n).padStart(2, "0");
+  if (days > 0) {
+    return `${days}d ${pad(hrs)}h ${pad(min)}m ${pad(sec)}s`;
+  }
+  return `${pad(hrs)}h ${pad(min)}m ${pad(sec)}s`;
+}
 
 export default function LiveClassBanner() {
   const liveClass = useLiveClass();
@@ -13,7 +27,7 @@ export default function LiveClassBanner() {
 
   useEffect(() => {
     setMounted(true);
-    const timer = setInterval(() => setTick((t) => t + 1), 10000);
+    const timer = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -24,6 +38,7 @@ export default function LiveClassBanner() {
     if (!liveProgrammes || !liveProgrammes.enabled) return null;
     const nowMs = Date.now();
     const list = (liveProgrammes.programmes || []).filter((p) => p.published !== false);
+
     for (const item of list) {
       if (item.isManualLiveOverride) return item;
       try {
@@ -69,7 +84,7 @@ export default function LiveClassBanner() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 bg-white text-red-600 font-extrabold text-xs md:text-sm px-4 py-1.5 rounded-full hover:bg-slate-100 hover:scale-105 transition-all shadow-md cursor-pointer border border-white/40"
             >
-              Watch LIVE Stream <ExternalLink className="h-3.5 w-3.5" />
+              Join Now <ExternalLink className="h-3.5 w-3.5" />
             </a>
           </div>
         </div>

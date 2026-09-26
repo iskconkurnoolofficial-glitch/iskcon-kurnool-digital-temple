@@ -39,7 +39,6 @@ export const SITE_MODULE_FOLDER_MAP: Record<string, string> = {
   Receipts: "ISKCON-KURNOOL/Receipts",
   Upi: "ISKCON-KURNOOL/Upi",
   PaymentScreenshots: "ISKCON-KURNOOL/PaymentScreenshots",
-  FeaturePopups: "ISKCON-KURNOOL/FeaturePopups",
   BhaktiSteps: "ISKCON-KURNOOL/BhaktiSteps",
   Instagram: "ISKCON-KURNOOL/Instagram",
   Leads: "ISKCON-KURNOOL/Leads",
