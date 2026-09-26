@@ -182,6 +182,7 @@ export function isFestivalLive(f: Festival, now: number = Date.now()): boolean {
 export type YouthFeature = { title: string; image: string; desc: string };
 export type YouthGalleryItem = { id: string; url: string; label: string };
 export type YouthReview = { id: string; name: string; text: string; rating: number; visible: boolean };
+export type YouthSponsor = SundaySponsor;
 export type YouthData = {
   logo: string;
   whatsappUrl: string;
@@ -191,6 +192,17 @@ export type YouthData = {
   schedule: string;
   gallery: YouthGalleryItem[];
   reviews: YouthReview[];
+  sponsors?: YouthSponsor[];
+  donationCardTitle?: string;
+  donationCardDescription?: string;
+  donationCardButtonLabel?: string;
+  donationCardButtonUrl?: string;
+  donationCardSupportingLine?: string;
+  donationCardImage?: string;
+  donationCardEnabled?: boolean;
+  donationCardAmount?: string;
+  tickerText?: string;
+  tickerEnabled?: boolean;
 };
 
 export const defaultYouth: YouthData = {
@@ -213,6 +225,28 @@ export const defaultYouth: YouthData = {
     { id: "r2", name: "Rohit", text: "Learned so much from the Bhagavad Gita sessions. Truly life-changing.", rating: 5, visible: true },
     { id: "r3", name: "Karthik", text: "Great association of devotees. Music and dance fill you with joy.", rating: 5, visible: true },
   ],
+  sponsors: [
+    {
+      id: "ys1",
+      sponsorName: "Sri Devotee Family",
+      familyName: "Youth Seva Devotee",
+      occasion: "Saturday Youth Feast Seva",
+      date: "Upcoming Saturday",
+      details: "Sponsoring pure sanctified Krishna Prasadam for young boys and students attending the Saturday Youth Program.",
+      blessing: "May Sri Sri Puri Jagannath bestow spiritual clarity, good health, and auspicious blessings upon the sponsor family.",
+      active: true,
+      images: [
+        "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=800&q=80"
+      ]
+    }
+  ],
+  donationCardTitle: "Saturday Youth Feast Annadana Seva",
+  donationCardDescription: "Feed visiting students and young devotees with sanctified Krishna prasadam every Saturday. Sponsoring the Youth Feast brings spiritual clarity, wisdom, and auspicious blessings for your family.",
+  donationCardButtonLabel: "Sponsor Youth Feast Online",
+  donationCardButtonUrl: "/donate/youth-feast",
+  donationCardAmount: "3001",
+  donationCardImage: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=800&q=80",
+  donationCardEnabled: true,
 };
 
 export type PrahladaBadiActivity = {
@@ -2381,6 +2415,7 @@ export type UpiPaymentSettings = {
   notes?: string;
   requireUtrSubmission?: boolean;
   allowRazorpayGateway?: boolean;
+  defaultRazorpayEnabled?: boolean;
 };
 
 export const defaultUpiPayment: UpiPaymentSettings = {
@@ -2394,6 +2429,7 @@ export const defaultUpiPayment: UpiPaymentSettings = {
   notes: "After completing your UPI payment, click 'Payment Completed' (or enter your 12-digit UTR) to instantly download your 80G tax receipt.",
   requireUtrSubmission: true,
   allowRazorpayGateway: true,
+  defaultRazorpayEnabled: false,
 };
 
 export function generateUpiUri({
@@ -3333,6 +3369,21 @@ export const defaultSevas: Seva[] = [
     active: true
   },
   {
+    id: "s_default_youth_feast",
+    title: "Saturday Youth Feast Annadana Seva",
+    slug: "youth-feast",
+    category: "Youth Program Sevas, Annadana Sevas",
+    description: "Feed visiting students and young devotees with sanctified Krishna prasadam every Saturday. Sponsoring the Youth Feast brings spiritual clarity, wisdom, and auspicious blessings for your family.",
+    thumbnail: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=800&q=80",
+    prices: [
+      { label: "Youth Feast Sponsorship", amount: 3001 },
+      { label: "50 Youth Prasadam Seva", amount: 1500 },
+      { label: "100 Youth Prasadam Seva", amount: 3000 },
+    ],
+    order: 1.5,
+    active: true
+  },
+  {
     id: "s_default_pushpalankara",
     title: "Nitya Pushpalankara Seva",
     slug: "nitya-pushpalankara-seva",
@@ -3392,7 +3443,14 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [classes, setClassesState] = useState<DailyClass[]>(() => getCached(KEYS.classes, []));
   const [festivals, setFestivalsState] = useState<Festival[]>(() => getCached(KEYS.festivals, []));
   const [sevas, setSevasState] = useState<Seva[]>(() => getCached(KEYS.sevas, defaultSevas));
-  const [youth, setYouthState] = useState<YouthData>(() => getCached(KEYS.youth, defaultYouth));
+  const [youth, setYouthState] = useState<YouthData>(() => {
+    const cached = getCached<Partial<YouthData>>(KEYS.youth, defaultYouth);
+    return {
+      ...defaultYouth,
+      ...cached,
+      sponsors: Array.isArray(cached?.sponsors) && cached.sponsors.length > 0 ? cached.sponsors : defaultYouth.sponsors,
+    };
+  });
   const [harinama, setHarinamaState] = useState<HarinamaData>(() => getCached(KEYS.harinama, defaultHarinama));
   const [ekadashi, setEkadashiState] = useState<EkadashiData>(() => {
     const cached = getCached<Partial<EkadashiData>>(KEYS.ekadashi, defaultEkadashi);
@@ -3692,13 +3750,15 @@ export function AdminProvider({ children }: { children: ReactNode }) {
             slug: s.slug || s.title?.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-") || s.id
           })) : [];
         
-        // If saved list is missing Sunday Feast or Pushpalankara, merge defaults
+        // If saved list is missing Sunday Feast, Youth Feast, or Pushpalankara, merge defaults
         if (list.length > 0) {
-          const hasSunday = list.some((s: any) => s.slug === "sunday-feast" || s.id === "s_default_sunday_feast");
+          const hasSunday = list.some((s: any) => s.slug === "sunday-feast" || s.slug === "sunday-feast-seva" || s.id === "s_default_sunday_feast");
+          const hasYouth = list.some((s: any) => s.slug === "youth-feast" || s.slug === "youth-feast-seva" || s.id === "s_default_youth_feast");
           const hasPushpa = list.some((s: any) => s.slug === "nitya-pushpalankara-seva" || s.id === "s_default_pushpalankara");
           let merged = [...list];
           if (!hasSunday) merged = [defaultSevas[0], ...merged];
-          if (!hasPushpa) merged = [...merged, defaultSevas[1]];
+          if (!hasYouth) merged = [defaultSevas[1], ...merged];
+          if (!hasPushpa) merged = [...merged, defaultSevas[2]];
           setSevasState(merged);
         } else {
           setSevasState(defaultSevas);
@@ -3787,8 +3847,80 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setCategories = (v: string[]) => { setCategoriesState(v); persist(KEYS.categories, v); };
   const setClasses = (v: DailyClass[]) => { setClassesState(v); persist(KEYS.classes, v); };
   const setFestivals = (v: Festival[]) => { setFestivalsState(v); persist(KEYS.festivals, v); };
-  const setSevas = (v: Seva[]) => { setSevasState(v); persist(KEYS.sevas, v); };
-  const setYouth = (v: YouthData) => { setYouthState(v); persist(KEYS.youth, v); };
+  const setSevas = (v: Seva[]) => { 
+    setSevasState(v); 
+    persist(KEYS.sevas, v); 
+
+    const youthItem = v.find((s) => s.slug === "youth-feast" || s.slug === "youth-feast-seva" || s.id === "s_default_youth_feast" || s.id === "s_youth_feast_auto");
+    if (youthItem) {
+      const mainAmt = youthItem.prices?.[0]?.amount || 3001;
+      setYouthState((prev) => {
+        const updatedYouth: YouthData = {
+          ...prev,
+          donationCardTitle: youthItem.title,
+          donationCardImage: youthItem.thumbnail,
+          donationCardDescription: youthItem.description,
+          donationCardAmount: String(mainAmt),
+          donationCardEnabled: youthItem.active !== false,
+        };
+        persist(KEYS.youth, updatedYouth);
+        return updatedYouth;
+      });
+    }
+  };
+
+  const setYouth = (v: YouthData) => { 
+    setYouthState(v); 
+    persist(KEYS.youth, v); 
+
+    const rawAmt = v.donationCardAmount ? parseInt(v.donationCardAmount.replace(/\D/g, ""), 10) : 3001;
+    const amt = isNaN(rawAmt) || rawAmt <= 0 ? 3001 : rawAmt;
+
+    setSevasState((prevSevas) => {
+      let found = false;
+      const updated = prevSevas.map((s) => {
+        if (s.slug === "youth-feast" || s.slug === "youth-feast-seva" || s.id === "s_default_youth_feast" || s.id === "s_youth_feast_auto") {
+          found = true;
+          const prices = (s.prices && s.prices.length > 0) ? [...s.prices] : [
+            { label: "Youth Feast Sponsorship", amount: amt },
+            { label: "50 Youth Prasadam Seva", amount: 1500 },
+            { label: "100 Youth Prasadam Seva", amount: 3000 },
+          ];
+          if (prices[0]) prices[0] = { ...prices[0], amount: amt };
+          return {
+            ...s,
+            title: v.donationCardTitle || s.title || "Saturday Youth Feast Annadana Seva",
+            thumbnail: v.donationCardImage || s.thumbnail,
+            description: v.donationCardDescription || s.description,
+            active: v.donationCardEnabled !== false,
+            prices,
+          };
+        }
+        return s;
+      });
+
+      if (!found) {
+        const youthSevaItem: Seva = {
+          id: "s_default_youth_feast",
+          title: v.donationCardTitle || "Saturday Youth Feast Annadana Seva",
+          slug: "youth-feast",
+          category: "Youth Program Sevas, Annadana Sevas",
+          description: v.donationCardDescription || "Feed visiting students and young devotees with sanctified Krishna prasadam every Saturday.",
+          thumbnail: v.donationCardImage || "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=800&q=80",
+          prices: [
+            { label: "Youth Feast Sponsorship", amount: amt },
+            { label: "50 Youth Prasadam Seva", amount: 1500 },
+            { label: "100 Youth Prasadam Seva", amount: 3000 },
+          ],
+          order: 1.5,
+          active: v.donationCardEnabled !== false,
+        };
+        updated.push(youthSevaItem);
+      }
+      persist(KEYS.sevas, updated);
+      return updated;
+    });
+  };
   const setHarinama = (v: HarinamaData) => { setHarinamaState(v); persist(KEYS.harinama, v); };
   const setEkadashi = (v: EkadashiData) => { setEkadashiState(v); persist(KEYS.ekadashi, v); };
   const setGitaCourse = (v: GitaCourseData) => { setGitaCourseState(v); persist(KEYS.gitaCourse, v); };

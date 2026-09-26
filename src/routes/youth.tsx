@@ -3,6 +3,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import SiteLayout, { PageHero } from "@/components/SiteLayout";
 import { useAdmin } from "@/context/AdminContext";
 import { isTimeStrLive } from "@/lib/scheduleUtils";
+import YouthSponsorSection from "@/components/YouthSponsorSection";
+import YouthDonationSection from "@/components/YouthDonationSection";
 import { 
   MessageCircle, 
   Star, 
@@ -19,7 +21,8 @@ import {
   Globe, 
   CheckCircle2, 
   ArrowRight,
-  Clock
+  Clock,
+  HandHeart
 } from "lucide-react";
 
 export const Route = createFileRoute("/youth")({
@@ -81,6 +84,13 @@ function YouthPage() {
             >
               <MessageCircle className="h-4.5 w-4.5" /> Join the Youth Program
             </a>
+            <Link
+              to="/donate/$slug"
+              params={{ slug: "youth-feast" }}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-md transition hover:scale-105 border border-amber-300/40 cursor-pointer"
+            >
+              <HandHeart className="h-4.5 w-4.5" /> Sponsor Youth Feast
+            </Link>
             <a
               href={directionsUrl}
               target="_blank"
@@ -372,6 +382,12 @@ function YouthPage() {
           </div>
         </div>
       </section>
+
+      {/* YOUTH FEAST SPONSORSHIP SECTION */}
+      <YouthSponsorSection />
+
+      {/* YOUTH FEAST DONATION CALLOUT SECTION */}
+      <YouthDonationSection />
 
 
 

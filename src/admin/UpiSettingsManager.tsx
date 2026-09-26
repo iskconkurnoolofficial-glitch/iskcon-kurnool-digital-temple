@@ -10,7 +10,8 @@ import {
   Save,
   FileText,
   Copy,
-  Info
+  Info,
+  CreditCard
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -139,6 +140,28 @@ export default function UpiSettingsManager() {
                 onChange={(v) => updateUpi("payeeName", v)}
                 hint="Displayed as verified receiver in UPI apps."
               />
+            </div>
+
+            {/* Default Razorpay Enable Toggle */}
+            <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-200/90 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-950 flex items-center gap-1.5">
+                  <CreditCard className="h-4 w-4 text-indigo-600" />
+                  <span>Default Razorpay Payment Enable &amp; Auto-Select</span>
+                </span>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={upi.defaultRazorpayEnabled === true}
+                    onChange={(e) => updateUpi("defaultRazorpayEnabled", e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+              </div>
+              <p className="text-xs text-slate-700 leading-relaxed">
+                When enabled, **Razorpay Online Gateway is automatically pre-selected** by default for devotees on checkout modals, donation pages, and payment links.
+              </p>
             </div>
 
             {/* Dynamic vs Static QR Selector */}

@@ -1,11 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
 import crypto from "node:crypto";
+import { supabase } from "@/integrations/supabase/client";
 
 const PIN_SALT = "iskcon_kurnool_admin_pin_salt_2026_v1";
 
-// In-memory fallback if Supabase is unavailable in local dev
-let memoryPinHash: { hash: string; updatedAt: string } | null = null;
-let memoryActiveRawPin: { pin: string; generatedAt: string } | null = null;
+// Helper to get a working Supabase client (tries admin service client if present, else standard client)
+async function getDbClient() {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    if (supabaseAdmin) return supabaseAdmin;
+  } catch {}
+  return supabase;
+}
 
 function hashPin(pin: string): string {
   return crypto.createHash("sha256").update(pin.trim() + PIN_SALT).digest("hex");
@@ -16,12 +22,12 @@ function generateRandom6DigitPin(): string {
   return pinNum.toString();
 }
 
-/** Check if an admin PIN is currently configured on the server */
+/** Check if an admin PIN is currently configured in Supabase database */
 export const hasAdminPinConfiguredServer = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { data, error } = await supabaseAdmin
+      const client = await getDbClient();
+      const { data, error } = await client
         .from("site_data")
         .select("value")
         .eq("key", "admin_security_pin_hash")
@@ -30,18 +36,18 @@ export const hasAdminPinConfiguredServer = createServerFn({ method: "GET" })
       if (!error && data && data.value && typeof data.value === "object" && "hash" in (data.value as any)) {
         return { configured: true };
       }
-    } catch {
-      // Fallback check
+    } catch (e) {
+      console.error("[admin-pin] hasConfigured error:", e);
     }
-    return { configured: !!memoryPinHash };
+    return { configured: false };
   });
 
-/** Fetch the currently active generated 6-digit PIN for display on /bank-pin (if not yet consumed) */
+/** Fetch the currently active generated 6-digit PIN from Supabase database for display on /bank-pin */
 export const getActiveAdminPinServer = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { data, error } = await supabaseAdmin
+      const client = await getDbClient();
+      const { data, error } = await client
         .from("site_data")
         .select("value")
         .eq("key", "admin_active_raw_pin")
@@ -53,16 +59,13 @@ export const getActiveAdminPinServer = createServerFn({ method: "GET" })
           generatedAt: (data.value as any).generatedAt as string 
         };
       }
-    } catch {
-      // Fallback
+    } catch (e) {
+      console.error("[admin-pin] getActivePin error:", e);
     }
-    return { 
-      pin: memoryActiveRawPin?.pin || null, 
-      generatedAt: memoryActiveRawPin?.generatedAt || null 
-    };
+    return { pin: null, generatedAt: null };
   });
 
-/** Generate a new 6-digit PIN securely on the server and store its SHA-256 hash */
+/** Generate a new 6-digit PIN securely in Supabase cloud database so any logged in admin account can access it */
 export const generateAdminPinServer = createServerFn({ method: "POST" })
   .handler(async () => {
     const rawPin = generateRandom6DigitPin();
@@ -74,34 +77,35 @@ export const generateAdminPinServer = createServerFn({ method: "POST" })
 
     let saved = false;
     try {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      await Promise.all([
-        supabaseAdmin.from("site_data").upsert(
+      const client = await getDbClient();
+      const [resHash, resRaw] = await Promise.all([
+        client.from("site_data").upsert(
           { key: "admin_security_pin_hash", value: hashRecord, updated_at: updatedAt },
           { onConflict: "key" }
         ),
-        supabaseAdmin.from("site_data").upsert(
+        client.from("site_data").upsert(
           { key: "admin_active_raw_pin", value: rawRecord, updated_at: updatedAt },
           { onConflict: "key" }
         ),
       ]);
-      saved = true;
-    } catch {
-      // Ignore Supabase error and rely on in-memory fallback
+      if (!resHash.error && !resRaw.error) {
+        saved = true;
+      } else {
+        console.error("[admin-pin] upsert error:", resHash.error || resRaw.error);
+      }
+    } catch (e) {
+      console.error("[admin-pin] generate error:", e);
     }
-
-    memoryPinHash = hashRecord;
-    memoryActiveRawPin = rawRecord;
 
     return {
       success: true,
       pin: rawPin,
       updatedAt,
-      persisted: saved || true,
+      persisted: saved,
     };
   });
 
-/** Verify a submitted 6-digit PIN against the server's hashed PIN */
+/** Verify a submitted 6-digit PIN against Supabase cloud database */
 export const verifyAdminPinServer = createServerFn({ method: "POST" })
   .inputValidator((data: { pin: string }) => {
     const pinStr = String(data?.pin || "").trim();
@@ -112,12 +116,11 @@ export const verifyAdminPinServer = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const inputHash = hashPin(data.pin);
-
-    let storedHash: string | null = memoryPinHash?.hash || null;
+    let storedHash: string | null = null;
 
     try {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { data: dbData, error } = await supabaseAdmin
+      const client = await getDbClient();
+      const { data: dbData, error } = await client
         .from("site_data")
         .select("value")
         .eq("key", "admin_security_pin_hash")
@@ -126,8 +129,8 @@ export const verifyAdminPinServer = createServerFn({ method: "POST" })
       if (!error && dbData && dbData.value && typeof dbData.value === "object" && "hash" in (dbData.value as any)) {
         storedHash = (dbData.value as any).hash;
       }
-    } catch {
-      // Use fallback
+    } catch (e) {
+      console.error("[admin-pin] verify error:", e);
     }
 
     if (!storedHash) {
@@ -139,18 +142,16 @@ export const verifyAdminPinServer = createServerFn({ method: "POST" })
     }
 
     if (inputHash === storedHash) {
-      // ONE-TIME USE PIN: Invalidate & delete PIN hash & raw pin immediately upon successful authentication
+      // ONE-TIME USE PIN: Invalidate & delete PIN hash & raw pin immediately upon successful authentication in cloud DB
       try {
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const client = await getDbClient();
         await Promise.all([
-          supabaseAdmin.from("site_data").delete().eq("key", "admin_security_pin_hash"),
-          supabaseAdmin.from("site_data").delete().eq("key", "admin_active_raw_pin"),
+          client.from("site_data").delete().eq("key", "admin_security_pin_hash"),
+          client.from("site_data").delete().eq("key", "admin_active_raw_pin"),
         ]);
-      } catch {
-        // Fallback
+      } catch (e) {
+        console.error("[admin-pin] invalidate error:", e);
       }
-      memoryPinHash = null;
-      memoryActiveRawPin = null;
 
       return { ok: true, verifiedAt: Date.now() };
     } else {

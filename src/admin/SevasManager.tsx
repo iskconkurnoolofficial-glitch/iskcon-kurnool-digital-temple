@@ -12,6 +12,7 @@ import { toast } from "sonner";
 
 export const DEFAULT_SEVA_CATEGORIES = [
   "Regular Sevas",
+  "Youth Program Sevas",
   "Janmashtami Sevas",
   "Radhashtami Sevas",
   "Gaur Purnima Sevas",

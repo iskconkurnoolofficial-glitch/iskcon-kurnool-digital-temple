@@ -58,15 +58,24 @@ function loadRazorpay(): Promise<boolean> {
 
 
 export default function Page({ initialSlug }: { initialSlug?: string }) {
-  const { sevas, festivals, settings, theme, ready, addDonation, updateDonationStatus, platformFee, addPaymentRecord, sunday, upiPayment } = useAdmin();
+  const { sevas, festivals, settings, theme, ready, addDonation, updateDonationStatus, platformFee, addPaymentRecord, sunday, youth, upiPayment } = useAdmin();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selected, setSelected] = useState<Record<string, number>>({});
   const [checkoutSeva, setCheckoutSeva] = useState<Seva | null>(null);
 
-  // Payment method selection: "upi" | "razorpay" | "" (unselected by default)
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"upi" | "razorpay" | "">("");
+  // Payment method selection: "upi" | "razorpay" | ""
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"upi" | "razorpay" | "">(
+    upiPayment.defaultRazorpayEnabled ? "razorpay" : ""
+  );
+
+  useEffect(() => {
+    if (upiPayment.defaultRazorpayEnabled) {
+      setSelectedPaymentMethod("razorpay");
+      setQuickPaymentMethod("razorpay");
+    }
+  }, [upiPayment.defaultRazorpayEnabled]);
 
   // Dynamic UPI Payment Modal state
   const [upiModalData, setUpiModalData] = useState<{
@@ -149,6 +158,27 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
         };
       }
 
+      // Fallback for Youth Feast Seva
+      if (!found && (initialSlug === "youth-feast-seva" || initialSlug === "youth-feast" || initialSlug === "youth-program")) {
+        const rawAmount = youth?.donationCardAmount ? parseInt(youth.donationCardAmount.replace(/\D/g, ""), 10) : 3001;
+        const amt = isNaN(rawAmount) || rawAmount <= 0 ? 3001 : rawAmount;
+        found = {
+          id: "s_youth_feast_fallback",
+          title: youth?.donationCardTitle || "Saturday Youth Feast Annadana Seva",
+          slug: "youth-feast",
+          category: "Youth Program Sevas",
+          description: youth?.donationCardDescription || "Feed visiting students and young devotees with sanctified Krishna prasadam every Saturday. Sponsoring the Youth Feast brings spiritual clarity, wisdom, and auspicious blessings for your family.",
+          thumbnail: youth?.donationCardImage || "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=800&q=80",
+          prices: [
+            { label: "Youth Feast Sponsorship", amount: amt },
+            { label: "50 Youth Prasadam Seva", amount: 1500 },
+            { label: "100 Youth Prasadam Seva", amount: 3000 },
+          ],
+          order: 1,
+          active: true
+        };
+      }
+
       if (found) {
         const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
         const amountParam = searchParams?.get("amount") || searchParams?.get("amt");
@@ -204,8 +234,56 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       list = [sundaySevaItem, ...list];
     }
 
-    return list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  }, [sevas, sunday]);
+    list = list.map((s) => {
+      if (s.slug === "youth-feast-seva" || s.slug === "youth-feast" || s.title.toLowerCase().includes("youth feast")) {
+        const rawAmount = youth?.donationCardAmount ? parseInt(youth.donationCardAmount.replace(/\D/g, ""), 10) : 3001;
+        const amt = isNaN(rawAmount) || rawAmount <= 0 ? 3001 : rawAmount;
+        const prices = (s.prices && s.prices.length > 0) ? [...s.prices] : [
+          { label: "Youth Feast Sponsorship", amount: amt },
+          { label: "50 Youth Prasadam Seva", amount: 1500 },
+          { label: "100 Youth Prasadam Seva", amount: 3000 },
+        ];
+        if (prices[0]) prices[0] = { ...prices[0], amount: amt };
+        return {
+          ...s,
+          title: youth?.donationCardTitle || s.title,
+          description: youth?.donationCardDescription || s.description,
+          thumbnail: youth?.donationCardImage || s.thumbnail,
+          category: s.category || "Youth Program Sevas, Annadana Sevas",
+          prices,
+          active: youth?.donationCardEnabled !== false,
+        };
+      }
+      return s;
+    });
+
+    const hasYouthFeast = list.some(
+      (s) => s.slug === "youth-feast-seva" || s.slug === "youth-feast" || s.title.toLowerCase().includes("youth feast")
+    );
+
+    if (!hasYouthFeast && youth?.donationCardEnabled !== false) {
+      const rawAmount = youth?.donationCardAmount ? parseInt(youth.donationCardAmount.replace(/\D/g, ""), 10) : 3001;
+      const amt = isNaN(rawAmount) || rawAmount <= 0 ? 3001 : rawAmount;
+      const youthSevaItem: Seva = {
+        id: "s_youth_feast_auto",
+        title: youth?.donationCardTitle || "Saturday Youth Feast Annadana Seva",
+        slug: "youth-feast",
+        category: "Youth Program Sevas, Annadana Sevas",
+        description: youth?.donationCardDescription || "Feed visiting students and young devotees with sanctified Krishna prasadam every Saturday. Sponsoring the Youth Feast brings spiritual clarity, wisdom, and auspicious blessings for your family.",
+        thumbnail: youth?.donationCardImage || "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=800&q=80",
+        prices: [
+          { label: "Youth Feast Sponsorship", amount: amt },
+          { label: "50 Youth Prasadam Seva", amount: 1500 },
+          { label: "100 Youth Prasadam Seva", amount: 3000 },
+        ],
+        order: 0.5,
+        active: true,
+      };
+      list = [youthSevaItem, ...list];
+    }
+
+    return list.filter((s) => s.active !== false).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  }, [sevas, sunday, youth]);
 
   // Extract all categories
   const categories = useMemo(() => {

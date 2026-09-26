@@ -65,7 +65,15 @@ function PaymentPageRoute() {
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [coverPlatformFee, setCoverPlatformFee] = useState(true);
-  const [paymentMethodMode, setPaymentMethodMode] = useState<"upi" | "razorpay" | "">("");
+  const [paymentMethodMode, setPaymentMethodMode] = useState<"upi" | "razorpay" | "">(
+    upiPayment.defaultRazorpayEnabled ? "razorpay" : ""
+  );
+
+  useEffect(() => {
+    if (upiPayment.defaultRazorpayEnabled) {
+      setPaymentMethodMode("razorpay");
+    }
+  }, [upiPayment.defaultRazorpayEnabled]);
 
   // Dynamic UPI Payment Modal state
   const [upiModalData, setUpiModalData] = useState<{

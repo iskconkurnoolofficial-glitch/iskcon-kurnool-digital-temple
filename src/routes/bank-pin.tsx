@@ -52,9 +52,10 @@ function BankPinPage() {
   };
 
   useEffect(() => {
-    if (authed) {
-      fetchPin();
-    }
+    if (!authed) return;
+    fetchPin();
+    const interval = setInterval(fetchPin, 3000);
+    return () => clearInterval(interval);
   }, [authed]);
 
   const handleCopy = () => {
