@@ -27,7 +27,8 @@ import {
   ChevronRight,
   QrCode,
   Smartphone,
-  CreditCard
+  CreditCard,
+  Languages
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -42,6 +43,150 @@ export const Route = createFileRoute("/donate")({
 });
 
 const RAZORPAY_KEY = "rzp_live_TTxJXHnvmVNCF8";
+
+const CHECKOUT_I18N = {
+  en: {
+    title: "Sri Sri Jagannath Sevas",
+    subtitle: "Offer your devotion to Lord Jagannath and be blessed. Every seva performed with love reaches the lotus feet of the Lord.",
+    allSevas: "All Sevas",
+    donateNow: "Sponsor / Offer Seva",
+    checkoutTitle: "Devotee & Receipt Details",
+    checkoutSubtitle: "Please provide your details below to process the official offering receipt.",
+    devoteeName: "Devotee Full Name *",
+    devoteeNamePlaceholder: "Enter full name of the devotee",
+    sankalpa: "Purpose of Donation / Sankalpa (Optional)",
+    sankalpaPlaceholder: "e.g. For good health, family welfare, birthdays...",
+    phone: "WhatsApp / Mobile Number *",
+    phonePlaceholder: "e.g. +91 9876543210",
+    email: "Email Address (Optional)",
+    emailPlaceholder: "donor@example.com",
+    pan: "PAN Card No. (For 80G Tax Exemption)",
+    panPlaceholder: "ABCDE1234F",
+    panNote: "For 80G Tax exemption benefits",
+    taxBadge: "80G Tax Exemption",
+    selectPaymentMode: "Select Payment Mode",
+    onlineGateway: "Online Gateway",
+    onlineGatewaySub: "Cards / NetBanking / Razorpay",
+    payWithUpi: "Pay with UPI QR",
+    payWithUpiSub: "Amount pre-filled in UPI apps",
+    coverFee: "I would like to cover payment gateway charges",
+    payViaUpiBtn: "PAY ₹{amt} VIA UPI QR",
+    donateOnlineBtn: "DONATE ₹{amt} ONLINE",
+    donateNowBtn: "DONATE ₹{amt} NOW",
+    securePaymentNote: "100% Secure Payments powered by Razorpay",
+    upiPaymentNote: "Direct Bank Transfer via Official Temple UPI · 80G Tax Exempted",
+    customAmount: "Custom Amount",
+    customAmountLabel: "Enter Offering Amount of Your Wish (₹)",
+    fixedOfferingAmount: "Fixed Offering Amount",
+    useFixedAmount: "Use Fixed Amount",
+    selectedSeva: "Selected Seva:",
+    baseDonation: "Base Donation:",
+    totalPayable: "Total Payable:",
+    step1: "Step 1 of 2: Choose Offering",
+    step2: "Step 2 of 2: Devotee Details",
+    offeringSeva: "Offering Seva",
+    offeringAmount: "Offering Amount",
+    sugBirthday: "Birthday",
+    sugAnniversary: "Wedding Anniversary",
+    sugWelfare: "Family Welfare",
+    sugHealth: "Good Health",
+    sugMemory: "In Memory of"
+  },
+  te: {
+    title: "శ్రీ శ్రీ జగన్నాథ సేవలు",
+    subtitle: "జగన్నాథ స్వామివారికి మీ భక్తి పూర్వక సేవలను సమర్పించి ఆశీస్సులు పొందండి.",
+    allSevas: "అన్ని సేవలు",
+    donateNow: "సేవ సమర్పించండి",
+    checkoutTitle: "భక్తుని వివరాలు & రసీదు",
+    checkoutSubtitle: "అధికారిక సేవా రసీదు పొందేందుకు దయచేసి మీ వివరాలను నమోదు చేయండి.",
+    devoteeName: "భక్తుని పూర్తి పేరు *",
+    devoteeNamePlaceholder: "భక్తుని పూర్తి పేరు ఎంటర్ చేయండి",
+    sankalpa: "సేవా సంకల్పము / ప్రత్యేక ప్రార్థనలు (ఐచ్ఛికం)",
+    sankalpaPlaceholder: "ఉదా: ఆరోగ్య ప్రాప్తి, కుటుంబ శ్రేయస్సు, పుట్టినరోజు...",
+    phone: "వాట్సాప్ / మొబైల్ సంఖ్య *",
+    phonePlaceholder: "ఉదా: +91 9876543210",
+    email: "ఈమెయిల్ విలాసం (ఐచ్ఛికం)",
+    emailPlaceholder: "donor@example.com",
+    pan: "పాన్ కార్డ్ నంబర్ (80G పన్ను మినహాయింపు కోసం)",
+    panPlaceholder: "ABCDE1234F",
+    panNote: "80G పన్ను మినహాయింపు ప్రయోజనాల కొరకు",
+    taxBadge: "80G పన్ను మినహాయింపు",
+    selectPaymentMode: "చెల్లింపు విధానం ఎంచుకోండి",
+    onlineGateway: "ఆన్‌లైన్ పేమెంట్ గేట్‌వే",
+    onlineGatewaySub: "కార్డులు / నెట్ బ్యాంకింగ్ / రేజర్‌పే",
+    payWithUpi: "UPI QR ద్వారా చెల్లించండి",
+    payWithUpiSub: "UPI యాప్‌లలో మొత్తం ఆటోమేటిక్‌గా వస్తుంది",
+    coverFee: "నేను పేమెంట్ గేట్‌వే రుసుమును భరించాలనుకుంటున్నాను",
+    payViaUpiBtn: "UPI QR ద్వారా ₹{amt} చెల్లించండి",
+    donateOnlineBtn: "₹{amt} ఆన్‌లైన్ సేవ సమర్పించండి",
+    donateNowBtn: "₹{amt} సేవ సమర్పించండి",
+    securePaymentNote: "రేజర్‌పే ద్వారా 100% సురక్షితమైన చెల్లింపులు",
+    upiPaymentNote: "అధికారిక ఆలయ UPI ద్వారా నేరుగా బ్యాంక్ బదిలీ · 80G మినహాయింపు",
+    customAmount: "కస్టమ్ మొత్తం",
+    customAmountLabel: "మీ ఇష్టమైన సేవా మొత్తం ఎంటర్ చేయండి (₹)",
+    fixedOfferingAmount: "నిర్ణీత సేవా మొత్తం",
+    useFixedAmount: "నిర్ణీత మొత్తం ఉపయోగించండి",
+    selectedSeva: "ఎంచుకున్న సేవ:",
+    baseDonation: "ప్రాథమిక విరాళం:",
+    totalPayable: "మొత్తం చెల్లించవలసినది:",
+    step1: "దశ 1/2: సేవను ఎంచుకోండి",
+    step2: "దశ 2/2: భక్తుని వివరాలు",
+    offeringSeva: "సమర్పించు సేవ",
+    offeringAmount: "సేవా మొత్తం",
+    sugBirthday: "పుట్టినరోజు",
+    sugAnniversary: "వివాహ వార్షికోత్సవం",
+    sugWelfare: "కుటుంబ శ్రేయస్సు",
+    sugHealth: "ఆరోగ్య ప్రాప్తి",
+    sugMemory: "జ్ఞాపకార్థం"
+  },
+  hi: {
+    title: "श्री श्री जगन्नाथ सेवाएं",
+    subtitle: "भगवान जगन्नाथ जी के श्री चरणों में अपनी भक्ति स्वरूप सेवा अर्पित करें और कृपा प्राप्त करें।",
+    allSevas: "सभी सेवाएँ",
+    donateNow: "सेवा अर्पित करें",
+    checkoutTitle: "भक्त एवं रसीद विवरण",
+    checkoutSubtitle: "आधिकारिक सेवा रसीद प्राप्त करने के लिए कृपया अपना विवरण दर्ज करें।",
+    devoteeName: "भक्त का पूरा नाम *",
+    devoteeNamePlaceholder: "भक्त का पूरा नाम दर्ज करें",
+    sankalpa: "सेवा संकल्प / विशेष प्रार्थनाएँ (ऐच्छिक)",
+    sankalpaPlaceholder: "उदा: उत्तम स्वास्थ्य, परिवार कल्याण, जन्मदिन...",
+    phone: "व्हाट्सएप / मोबाइल नंबर *",
+    phonePlaceholder: "उदा: +91 9876543210",
+    email: "ईमेल आईडी (ऐच्छिक)",
+    emailPlaceholder: "donor@example.com",
+    pan: "पैन कार्ड नंबर (80G आयकर छूट के लिए)",
+    panPlaceholder: "ABCDE1234F",
+    panNote: "80G आयकर छूट लाभ के लिए",
+    taxBadge: "80G आयकर छूट",
+    selectPaymentMode: "भुगतान का प्रकार चुनें",
+    onlineGateway: "ऑनलाइन पेमेंट गेटवे",
+    onlineGatewaySub: "कार्ड / नेटबैंकिंग / रेज़रपे",
+    payWithUpi: "UPI QR से भुगतान करें",
+    payWithUpiSub: "UPI ऐप्स में राशि स्वतः भरी जाएगी",
+    coverFee: "मैं पेमेंट गेटवे शुल्क का भुगतान करना चाहता हूँ",
+    payViaUpiBtn: "UPI QR से ₹{amt} अर्पित करें",
+    donateOnlineBtn: "₹{amt} ऑनलाइन सेवा अर्पित करें",
+    donateNowBtn: "₹{amt} सेवा अर्पित करें",
+    securePaymentNote: "रेज़रपे द्वारा 100% सुरक्षित भुगतान",
+    upiPaymentNote: "मंदिर के आधिकारिक UPI द्वारा सीधा बैंक हस्तांतरण · 80G छूट",
+    customAmount: "कस्टम राशि",
+    customAmountLabel: "अपनी इच्छानुसार सेवा राशि दर्ज करें (₹)",
+    fixedOfferingAmount: "निश्चित सेवा राशि",
+    useFixedAmount: "निश्चित राशि चुनें",
+    selectedSeva: "चयनित सेवा:",
+    baseDonation: "मूल दान:",
+    totalPayable: "कुल देय राशि:",
+    step1: "चरण 1/2: सेवा चुनें",
+    step2: "चरण 2/2: भक्त विवरण",
+    offeringSeva: "अर्पित सेवा",
+    offeringAmount: "सेवा राशि",
+    sugBirthday: "जन्मदिन",
+    sugAnniversary: "विवाह वर्षगांठ",
+    sugWelfare: "परिवार कल्याण",
+    sugHealth: "उत्तम स्वास्थ्य",
+    sugMemory: "की पुण्यस्मृति में"
+  }
+};
 
 function loadRazorpay(): Promise<boolean> {
   return new Promise((resolve) => {
@@ -64,6 +209,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selected, setSelected] = useState<Record<string, number>>({});
   const [checkoutSeva, setCheckoutSeva] = useState<Seva | null>(null);
+  const [checkoutLang, setCheckoutLang] = useState<"en" | "te" | "hi">("en");
 
   // Payment method selection: "upi" | "razorpay" | ""
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"upi" | "razorpay" | "">(
@@ -652,22 +798,27 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   // SINGLE SEVA CHECKOUT VIEW
   // ==========================================
   if (checkoutSeva) {
+    const t = CHECKOUT_I18N[checkoutLang] || CHECKOUT_I18N.en;
+    const canCustomAmount = checkoutSeva.allowCustomAmount !== false;
+
     const selIdx = selected[checkoutSeva.id] ?? 0;
     const standardPrice = checkoutSeva.prices[selIdx] ?? checkoutSeva.prices[0];
     
+    const effectiveIsCustom = canCustomAmount && isCustomCheckoutAmount;
+
     const customAmtNum = Number(customCheckoutAmount) || 0;
     const basePrice = standardPrice?.amount || 0;
-    const finalAmount = isCustomCheckoutAmount ? customAmtNum : (basePrice * quantity);
-    const finalLabel = isCustomCheckoutAmount 
-      ? `Custom Offering (₹${finalAmount.toLocaleString("en-IN")})` 
-      : (quantity > 1 ? `${standardPrice?.label} × ${quantity}` : (standardPrice?.label || "Seva Offering"));
+    const finalAmount = effectiveIsCustom ? customAmtNum : (basePrice * quantity);
+    const finalLabel = effectiveIsCustom 
+      ? `${t.customAmount} (₹${finalAmount.toLocaleString("en-IN")})` 
+      : (quantity > 1 ? `${standardPrice?.label} × ${quantity}` : (standardPrice?.label || t.offeringSeva));
 
     const handleFormSubmit = (e: React.FormEvent) => {
       e.preventDefault();
-      if (!donorName.trim()) { alert("Please enter Donor Name."); return; }
+      if (!donorName.trim()) { alert("Please enter Devotee / Donor Name."); return; }
       if (!phone.trim()) { alert("Please enter WhatsApp Phone Number."); return; }
 
-      if (isCustomCheckoutAmount && (!finalAmount || finalAmount <= 0)) {
+      if (effectiveIsCustom && (!finalAmount || finalAmount <= 0)) {
         alert("Please enter a valid offering amount (minimum ₹1).");
         return;
       }
@@ -678,59 +829,107 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     const platformCharge = platformFee.enabled && coverPlatformFee ? calculatePlatformFee(finalAmount, platformFee) : 0;
     const totalPayable = finalAmount + platformCharge;
 
+    const purposeSuggestions = [
+      { label: t.sugBirthday, val: "Birthday" },
+      { label: t.sugAnniversary, val: "Wedding Anniversary" },
+      { label: t.sugWelfare, val: "Family Welfare" },
+      { label: t.sugHealth, val: "Good Health" },
+      { label: t.sugMemory, val: "In Memory of" },
+    ];
+
     return (
       <SiteLayout>
         <PageHero
           eyebrow="Offer Your Seva"
-          title="Seva Checkout"
+          title={t.checkoutTitle}
           subtitle={`Complete your offering details for ${checkoutSeva.title}.`}
           pageKey="donate"
         />
 
-        <section className="py-12 bg-gradient-to-b from-[#fffbf0] via-[#fdf4d4] to-[#ffffff]">
-          <div className="max-w-6xl mx-auto px-5 sm:px-6">
-            <Link
-              to="/donate"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition mb-8 cursor-pointer font-sans"
-            >
-              <ArrowLeft className="h-4 w-4" /> Back to Sevas list
-            </Link>
+        <section className="py-6 sm:py-12 bg-gradient-to-b from-[#fffbf0] via-[#fdf4d4] to-[#ffffff]">
+          <div className="max-w-6xl mx-auto px-3 sm:px-6">
+            
+            {/* Top Bar: Back Link & Language Switcher */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 sm:mb-8 font-sans">
+              <Link
+                to="/donate"
+                className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-primary hover:text-primary/80 transition cursor-pointer"
+              >
+                <ArrowLeft className="h-4 w-4 shrink-0" /> 
+                <span>{checkoutLang === "te" ? "సేవల జాబితాకు తిరిగి వెళ్లండి" : checkoutLang === "hi" ? "सेवा सूची पर वापस जाएं" : "Back to Sevas list"}</span>
+              </Link>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Mobile Responsive Language Switcher Bar */}
+              <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-2xl sm:rounded-full border border-amber-200/90 shadow-xs overflow-x-auto no-scrollbar max-w-full shrink-0">
+                <Languages className="h-4 w-4 text-amber-700 shrink-0" />
+                <span className="text-xs font-bold text-slate-700 hidden sm:inline shrink-0">Language:</span>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setCheckoutLang("en")}
+                    className={`px-2.5 py-1 rounded-full text-xs font-bold transition cursor-pointer active:scale-95 ${
+                      checkoutLang === "en" ? "bg-primary text-white shadow-2xs" : "text-slate-600 hover:bg-amber-50"
+                    }`}
+                  >
+                    🇬🇧 English
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCheckoutLang("te")}
+                    className={`px-2.5 py-1 rounded-full text-xs font-bold transition cursor-pointer active:scale-95 ${
+                      checkoutLang === "te" ? "bg-primary text-white shadow-2xs" : "text-slate-600 hover:bg-amber-50"
+                    }`}
+                  >
+                    🇮🇳 తెలుగు
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCheckoutLang("hi")}
+                    className={`px-2.5 py-1 rounded-full text-xs font-bold transition cursor-pointer active:scale-95 ${
+                      checkoutLang === "hi" ? "bg-primary text-white shadow-2xs" : "text-slate-600 hover:bg-amber-50"
+                    }`}
+                  >
+                    🇮🇳 हिंदी
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
 
               {/* Left Column */}
-              <div className="lg:col-span-5 space-y-6 font-sans">
-                <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-6">
-                  <div className="rounded-2xl overflow-hidden">
+              <div className="lg:col-span-5 space-y-4 sm:space-y-6 font-sans">
+                <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-100 shadow-sm space-y-4 sm:space-y-6">
+                  <div className="rounded-2xl overflow-hidden max-h-[260px] sm:max-h-none flex items-center justify-center bg-slate-50">
                     {checkoutSeva.thumbnail ? (
-                      <img src={checkoutSeva.thumbnail} alt={checkoutSeva.title} className="w-full h-auto object-contain rounded-2xl shadow-sm border border-slate-100/50" />
+                      <img src={checkoutSeva.thumbnail} alt={checkoutSeva.title} className="w-full h-auto max-h-[260px] sm:max-h-none object-contain rounded-2xl shadow-sm border border-slate-100/50" />
                     ) : (
                       <div className="aspect-[4/3] w-full grid place-items-center text-primary/30 bg-primary/5 rounded-2xl">
-                        <HandHeart className="h-16 w-16" />
+                        <HandHeart className="h-14 w-14 sm:h-16 sm:w-16" />
                       </div>
                     )}
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-1.5 sm:space-y-2">
                     <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-800 text-[11px] font-bold uppercase tracking-wider font-sans">
-                      <span>Step 1 of 2: Choose Offering</span>
+                      <span>{t.step1}</span>
                     </div>
-                    <h3 className="font-display font-extrabold text-2xl text-primary leading-tight">{checkoutSeva.title}</h3>
+                    <h3 className="font-display font-extrabold text-xl sm:text-2xl text-primary leading-tight">{checkoutSeva.title}</h3>
                     {checkoutSeva.description && (
-                      <p className="text-xs text-slate-500 leading-relaxed font-sans">{checkoutSeva.description}</p>
+                      <p className="text-xs text-slate-500 leading-relaxed font-sans line-clamp-3 sm:line-clamp-none">{checkoutSeva.description}</p>
                     )}
                   </div>
 
-                  <div className="space-y-3 pt-4 border-t border-slate-100 font-sans">
+                  <div className="space-y-3 pt-3 sm:pt-4 border-t border-slate-100 font-sans">
                     {/* If multiple price options exist */}
                     {checkoutSeva.prices.length > 1 ? (
                       <>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider font-sans">
                           Select Seva Option
                         </label>
-                        <div className="grid grid-cols-2 gap-2.5 font-sans">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 font-sans">
                           {checkoutSeva.prices.map((p, i) => {
-                            const isSel = !isCustomCheckoutAmount && i === selIdx;
+                            const isSel = !effectiveIsCustom && i === selIdx;
                             return (
                               <button
                                 key={i}
@@ -739,62 +938,66 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                                   setIsCustomCheckoutAmount(false);
                                   setSelected((m) => ({ ...m, [checkoutSeva.id]: i }));
                                 }}
-                                className={`p-3.5 rounded-2xl border flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer font-sans ${isSel
-                                  ? "border-primary bg-primary text-white shadow-md ring-2 ring-primary/20 scale-[1.02]"
+                                className={`p-3 sm:p-3.5 rounded-2xl border flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer font-sans active:scale-98 min-h-[52px] ${isSel
+                                  ? "border-primary bg-primary text-white shadow-md ring-2 ring-primary/20 scale-[1.01]"
                                   : "border-slate-200 bg-slate-50 hover:bg-amber-50/70 hover:border-amber-300 text-slate-800"
                                   }`}
                               >
                                 <span className={`text-xs font-bold leading-tight line-clamp-2 ${isSel ? "text-white/90" : "text-slate-700"}`}>
                                   {p.label || "Offering"}
                                 </span>
-                                <span className={`text-base font-black mt-1 font-sans tracking-tight ${isSel ? "text-amber-300" : "text-primary"}`}>
+                                <span className={`text-base font-black mt-0.5 font-sans tracking-tight ${isSel ? "text-amber-300" : "text-primary"}`}>
                                   ₹{p.amount.toLocaleString("en-IN")}
                                 </span>
                               </button>
                             );
                           })}
 
-                          {/* Custom Amount Button */}
-                          <button
-                            type="button"
-                            onClick={() => setIsCustomCheckoutAmount(true)}
-                            className={`p-3.5 rounded-2xl border flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer font-sans ${isCustomCheckoutAmount
-                              ? "border-amber-500 bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md ring-2 ring-amber-300 scale-[1.02]"
-                              : "border-dashed border-amber-300 bg-amber-50/40 hover:bg-amber-100/60 hover:border-amber-500 text-amber-900"
-                              } ${checkoutSeva.prices.length % 2 === 0 ? "col-span-2" : "col-span-1"}`}
-                          >
-                            <span className={`text-xs font-bold flex items-center gap-1 ${isCustomCheckoutAmount ? "text-white" : "text-amber-800"}`}>
-                              <Sparkles className="h-3.5 w-3.5" />
-                              <span>Custom Amount</span>
-                            </span>
-                            <span className={`text-xs font-extrabold mt-1 font-sans ${isCustomCheckoutAmount ? "text-amber-100" : "text-amber-700"}`}>
-                              Enter Your Wish (₹)
-                            </span>
-                          </button>
+                          {/* Custom Amount Button (Only if allowed) */}
+                          {canCustomAmount && (
+                            <button
+                              type="button"
+                              onClick={() => setIsCustomCheckoutAmount(true)}
+                              className={`p-3 sm:p-3.5 rounded-2xl border flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer font-sans active:scale-98 min-h-[52px] ${effectiveIsCustom
+                                ? "border-amber-500 bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md ring-2 ring-amber-300 scale-[1.01]"
+                                : "border-dashed border-amber-300 bg-amber-50/40 hover:bg-amber-100/60 hover:border-amber-500 text-amber-900"
+                                } ${checkoutSeva.prices.length % 2 === 0 ? "col-span-1 sm:col-span-2" : "col-span-1"}`}
+                            >
+                              <span className={`text-xs font-bold flex items-center gap-1 ${effectiveIsCustom ? "text-white" : "text-amber-800"}`}>
+                                <Sparkles className="h-3.5 w-3.5" />
+                                <span>{t.customAmount}</span>
+                              </span>
+                              <span className={`text-xs font-extrabold mt-0.5 font-sans ${effectiveIsCustom ? "text-amber-100" : "text-amber-700"}`}>
+                                Enter Your Wish (₹)
+                              </span>
+                            </button>
+                          )}
                         </div>
                       </>
                     ) : (
-                      /* Clean Single Amount Card (NO "Per Day", NO complex options) */
-                      <div className="p-4.5 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-amber-50/40 rounded-2xl border border-amber-200/80 flex items-center justify-between gap-4 font-sans">
+                      /* Clean Single Amount Card */
+                      <div className="p-3.5 sm:p-4.5 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-amber-50/40 rounded-2xl border border-amber-200/80 flex items-center justify-between gap-3 font-sans">
                         <div>
-                          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Fixed Offering Amount</span>
-                          <span className="text-2xl sm:text-3xl font-black text-primary font-display mt-0.5 block">
+                          <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider block">{t.fixedOfferingAmount}</span>
+                          <span className="text-xl sm:text-3xl font-black text-primary font-display mt-0.5 block">
                             ₹{basePrice.toLocaleString("en-IN")}
                           </span>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => setIsCustomCheckoutAmount(!isCustomCheckoutAmount)}
-                          className="px-3.5 py-2 rounded-xl bg-white hover:bg-amber-50 text-amber-900 border border-amber-200 text-xs font-bold shadow-2xs transition cursor-pointer"
-                        >
-                          {isCustomCheckoutAmount ? "Use Fixed Amount" : "Custom Amount"}
-                        </button>
+                        {canCustomAmount && (
+                          <button
+                            type="button"
+                            onClick={() => setIsCustomCheckoutAmount(!isCustomCheckoutAmount)}
+                            className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-white hover:bg-amber-50 text-amber-900 border border-amber-200 text-xs font-bold shadow-2xs transition cursor-pointer active:scale-95"
+                          >
+                            {effectiveIsCustom ? t.useFixedAmount : t.customAmount}
+                          </button>
+                        )}
                       </div>
                     )}
 
                     {/* Quantity / Count Selector with - and + buttons */}
-                    {!isCustomCheckoutAmount && (
-                      <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between font-sans">
+                    {!effectiveIsCustom && (
+                      <div className="p-3 sm:p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between font-sans">
                         <div>
                           <span className="text-xs font-bold text-slate-800 block">Quantity / Count</span>
                           <span className="text-[11px] text-slate-500 font-sans">
@@ -802,13 +1005,13 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl p-1 shadow-xs">
+                        <div className="flex items-center gap-2 sm:gap-3 bg-white border border-slate-200 rounded-xl p-1 shadow-xs">
                           <button
                             type="button"
                             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                             disabled={quantity <= 1}
                             aria-label="Decrease quantity"
-                            className="h-7 w-7 rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-30 flex items-center justify-center font-bold text-slate-700 cursor-pointer transition font-sans"
+                            className="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-30 flex items-center justify-center font-bold text-slate-700 cursor-pointer transition font-sans active:scale-95"
                           >
                             <Minus className="h-3.5 w-3.5" />
                           </button>
@@ -821,7 +1024,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                             type="button"
                             onClick={() => setQuantity((q) => q + 1)}
                             aria-label="Increase quantity"
-                            className="h-7 w-7 rounded-lg bg-primary hover:bg-[#4a2282] text-white flex items-center justify-center font-bold cursor-pointer transition shadow-2xs font-sans"
+                            className="h-8 w-8 rounded-lg bg-primary hover:bg-[#4a2282] text-white flex items-center justify-center font-bold cursor-pointer transition shadow-2xs font-sans active:scale-95"
                           >
                             <Plus className="h-3.5 w-3.5" />
                           </button>
@@ -829,11 +1032,11 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                       </div>
                     )}
 
-                    {/* Custom Amount Input Field */}
-                    {isCustomCheckoutAmount && (
-                      <div className="p-4 bg-gradient-to-br from-amber-50/90 to-orange-50/60 rounded-2xl border border-amber-200/80 space-y-3 font-sans">
+                    {/* Custom Amount Input Field (Only if allowed & active) */}
+                    {effectiveIsCustom && (
+                      <div className="p-3.5 sm:p-4 bg-gradient-to-br from-amber-50/90 to-orange-50/60 rounded-2xl border border-amber-200/80 space-y-2.5 font-sans">
                         <label className="block text-xs font-bold text-amber-900 uppercase tracking-wider font-sans">
-                          Enter Offering Amount of Your Wish (₹)
+                          {t.customAmountLabel}
                         </label>
                         <div className="relative">
                           <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-base font-extrabold text-amber-700 font-sans">₹</span>
@@ -857,7 +1060,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                                 const current = Number(customCheckoutAmount) || 0;
                                 setCustomCheckoutAmount(String(current + addVal));
                               }}
-                              className="text-[11px] font-bold px-2 py-1 bg-white hover:bg-amber-100/80 text-amber-800 border border-amber-200 rounded-lg shadow-2xs transition-colors flex items-center gap-0.5 cursor-pointer font-sans"
+                              className="text-[11px] font-bold px-2.5 py-1.5 bg-white hover:bg-amber-100/80 active:scale-95 text-amber-800 border border-amber-200 rounded-lg shadow-2xs transition-colors flex items-center gap-0.5 cursor-pointer font-sans"
                             >
                               <Plus className="h-2.5 w-2.5" /> ₹{addVal.toLocaleString("en-IN")}
                             </button>
@@ -868,10 +1071,10 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                   </div>
 
                   {/* Summary Box in Inter Font */}
-                  <div className="bg-slate-50 rounded-2xl p-4.5 space-y-2.5 border border-slate-100 font-sans">
+                  <div className="bg-slate-50 rounded-2xl p-3.5 sm:p-4.5 space-y-2 border border-slate-100 font-sans">
                     <div className="flex justify-between items-center text-xs text-slate-600 font-sans">
-                      <span>Selected Seva:</span>
-                      <span className="font-semibold text-slate-800 text-right max-w-[200px] truncate">{checkoutSeva.title}</span>
+                      <span>{t.selectedSeva}</span>
+                      <span className="font-semibold text-slate-800 text-right max-w-[180px] sm:max-w-[200px] truncate">{checkoutSeva.title}</span>
                     </div>
                     {checkoutSeva.prices.length > 1 && (
                       <div className="flex justify-between items-center text-xs text-slate-600 font-sans">
@@ -879,10 +1082,10 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                         <span className="font-semibold text-slate-800 text-right">{finalLabel}</span>
                       </div>
                     )}
-                    <div className="h-px bg-slate-200/60 my-2" />
+                    <div className="h-px bg-slate-200/60 my-1.5" />
                     <div className="flex justify-between items-center text-sm font-bold text-primary font-sans">
-                      <span>Base Donation:</span>
-                      <span className="text-base text-accent font-extrabold font-sans">₹{finalAmount.toLocaleString("en-IN")}</span>
+                      <span>{t.baseDonation}</span>
+                      <span className="text-base sm:text-lg text-accent font-extrabold font-sans">₹{finalAmount.toLocaleString("en-IN")}</span>
                     </div>
                   </div>
                 </div>
@@ -890,120 +1093,120 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
 
               {/* Right Column: Seva Details & Amount Highlight + Donor Form */}
               <div className="lg:col-span-7" id="donor-form">
-                <form onSubmit={handleFormSubmit} className="bg-white rounded-3xl p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                <form onSubmit={handleFormSubmit} className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 border border-slate-100 shadow-sm space-y-5 sm:space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3.5">
                     <div>
                       <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-bold uppercase tracking-wider mb-1 font-sans">
-                        <span>Step 2 of 2</span>
+                        <span>{t.step2}</span>
                       </div>
-                      <h4 className="font-display font-extrabold text-xl text-primary">Devotee &amp; Receipt Details</h4>
-                      <p className="text-xs text-muted-foreground mt-0.5 font-sans">Please provide your details below to process the official offering receipt.</p>
+                      <h4 className="font-display font-extrabold text-lg sm:text-xl text-primary">{t.checkoutTitle}</h4>
+                      <p className="text-xs text-muted-foreground mt-0.5 font-sans">{t.checkoutSubtitle}</p>
                     </div>
 
-                    <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full shrink-0 font-sans">
+                    <div className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full shrink-0 self-start sm:self-auto font-sans">
                       <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-                      <span>80G Tax Exemption</span>
+                      <span>{t.taxBadge}</span>
                     </div>
                   </div>
 
                   {/* Selected Seva Details & Total Amount Highlight */}
-                  <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-amber-50/70 rounded-2xl p-4 border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-sans shadow-2xs">
+                  <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-amber-50/70 rounded-2xl p-3.5 sm:p-4 border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 font-sans shadow-2xs">
                     <div className="flex items-center gap-3">
                       {checkoutSeva.thumbnail && (
                         <img
                           src={checkoutSeva.thumbnail}
                           alt={checkoutSeva.title}
-                          className="h-12 w-12 rounded-xl object-contain bg-white border border-amber-200/80 p-0.5 shrink-0 shadow-2xs"
+                          className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl object-contain bg-white border border-amber-200/80 p-0.5 shrink-0 shadow-2xs"
                         />
                       )}
                       <div className="space-y-0.5">
-                        <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">Offering Seva</span>
-                        <h5 className="text-sm font-extrabold text-slate-900 leading-tight line-clamp-1">{checkoutSeva.title}</h5>
+                        <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">{t.offeringSeva}</span>
+                        <h5 className="text-xs sm:text-sm font-extrabold text-slate-900 leading-tight line-clamp-1">{checkoutSeva.title}</h5>
                         <span className="text-xs font-semibold text-primary block">{finalLabel}</span>
                       </div>
                     </div>
 
                     <div className="sm:text-right border-t sm:border-t-0 border-amber-200/60 pt-2 sm:pt-0 shrink-0">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Offering Amount</span>
-                      <span className="text-xl sm:text-2xl font-black text-primary font-sans">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">{t.offeringAmount}</span>
+                      <span className="text-lg sm:text-2xl font-black text-primary font-sans">
                         ₹{finalAmount.toLocaleString("en-IN")}
                       </span>
                     </div>
                   </div>
 
-                  <div className="space-y-4 font-sans">
+                  <div className="space-y-3.5 sm:space-y-4 font-sans">
                     <div>
-                      <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 font-sans">Devotee Name *</label>
+                      <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 font-sans">{t.devoteeName}</label>
                       <input
                         id="donor-name-input"
                         type="text"
                         required
-                        placeholder="Enter full name of the devotee"
+                        placeholder={t.devoteeNamePlaceholder}
                         value={donorName}
                         onChange={(e) => setDonorName(e.target.value)}
-                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans bg-white"
+                        className="w-full px-3.5 py-2.5 sm:px-4 border border-slate-200 rounded-xl text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans bg-white"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 font-sans">Purpose of Donation / Sankalpa (Optional)</label>
+                      <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 font-sans">{t.sankalpa}</label>
                       <input
                         type="text"
-                        placeholder="e.g. For good health, family welfare, birthdays..."
+                        placeholder={t.sankalpaPlaceholder}
                         value={purpose}
                         onChange={(e) => setPurpose(e.target.value)}
-                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans bg-white"
+                        className="w-full px-3.5 py-2.5 sm:px-4 border border-slate-200 rounded-xl text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans bg-white"
                       />
                       <div className="flex flex-wrap gap-1.5 mt-1.5">
-                        {["Birthday", "Wedding Anniversary", "Family Welfare", "Good Health", "In Memory of"].map((sug) => (
+                        {purposeSuggestions.map((sug) => (
                           <button
-                            key={sug}
+                            key={sug.val}
                             type="button"
-                            onClick={() => setPurpose(sug)}
-                            className="px-2.5 py-1 bg-slate-100 hover:bg-amber-100/70 border border-slate-200 hover:border-amber-300 text-slate-700 hover:text-slate-900 rounded-lg text-[10px] font-bold transition cursor-pointer"
+                            onClick={() => setPurpose(sug.val)}
+                            className="px-2.5 py-1 bg-slate-100 hover:bg-amber-100/70 active:scale-95 border border-slate-200 hover:border-amber-300 text-slate-700 hover:text-slate-900 rounded-lg text-[10px] font-bold transition cursor-pointer"
                           >
-                            + {sug}
+                            + {sug.label}
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-sans">Email Address (Optional)</label>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-sans">{t.email}</label>
                         <input
                           type="email"
-                          placeholder="donor@example.com"
+                          placeholder={t.emailPlaceholder}
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          className="w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary font-sans bg-white"
+                          className="w-full px-3.5 py-2.5 sm:px-4 border rounded-xl text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary font-sans bg-white"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-sans">WhatsApp Phone Number *</label>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-sans">{t.phone}</label>
                         <input
                           type="tel"
                           required
-                          placeholder="e.g. +91 9876543210"
+                          placeholder={t.phonePlaceholder}
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
-                          className="w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary font-sans bg-white"
+                          className="w-full px-3.5 py-2.5 sm:px-4 border rounded-xl text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary font-sans bg-white"
                         />
                       </div>
                     </div>
 
                     <div>
                       <div className="flex justify-between items-center mb-1.5">
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider font-sans">PAN Card (Optional)</label>
-                        <span className="text-[10px] text-muted-foreground font-sans">For 80G Tax exemption benefits</span>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider font-sans">{t.pan}</label>
+                        <span className="text-[10px] text-muted-foreground font-sans">{t.panNote}</span>
                       </div>
                       <input
                         type="text"
-                        placeholder="ABCDE1234F"
+                        placeholder={t.panPlaceholder}
                         value={pan}
                         onChange={(e) => setPan(e.target.value.toUpperCase())}
-                        className="w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary font-sans tracking-wide uppercase bg-white"
+                        className="w-full px-3.5 py-2.5 sm:px-4 border rounded-xl text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary font-sans tracking-wide uppercase bg-white"
                       />
                     </div>
                   </div>
@@ -1016,19 +1219,19 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                           type="checkbox"
                           checked={coverPlatformFee}
                           onChange={(e) => setCoverPlatformFee(e.target.checked)}
-                          className="mt-0.5 h-4 w-4 rounded text-primary focus:ring-primary cursor-pointer accent-primary"
+                          className="mt-0.5 h-4 w-4 rounded text-primary focus:ring-primary cursor-pointer accent-primary shrink-0"
                         />
                         <span>
-                          {platformFee.label || "I would like to cover the payment gateway charges"}{" "}
+                          {t.coverFee}{" "}
                           <span className="text-emerald-600 font-bold font-sans">
                             (+₹{calculatePlatformFee(finalAmount, platformFee)})
                           </span>
                         </span>
                       </label>
 
-                      <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-1.5 text-slate-700">
+                      <div className="p-3 sm:p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-1.5 text-slate-700">
                         <div className="flex justify-between">
-                          <span>Donation Amount:</span>
+                          <span>{t.baseDonation}</span>
                           <span className="font-bold font-sans text-slate-900">₹{finalAmount.toLocaleString("en-IN")}.00</span>
                         </div>
                         {coverPlatformFee && (
@@ -1038,7 +1241,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                           </div>
                         )}
                         <div className="flex justify-between font-bold border-t border-slate-200 pt-1.5 text-slate-900 text-sm">
-                          <span>Total Payable:</span>
+                          <span>{t.totalPayable}</span>
                           <span className="font-sans text-primary">₹{totalPayable.toLocaleString("en-IN")}.00</span>
                         </div>
                       </div>
@@ -1049,25 +1252,25 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                   {upiPayment.enabled !== false && (
                     <div className="space-y-2.5 pt-2 border-t border-slate-100 font-sans">
                       <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                        Select Payment Mode
+                        {t.selectPaymentMode}
                       </label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <button
                           type="button"
                           onClick={() => setSelectedPaymentMethod("razorpay")}
-                          className={`p-3 rounded-2xl border-2 text-left transition-all cursor-pointer flex items-center justify-between gap-2 ${
+                          className={`p-3 rounded-2xl border-2 text-left transition-all cursor-pointer flex items-center justify-between gap-2 active:scale-98 ${
                             selectedPaymentMethod === "razorpay"
                               ? "border-primary bg-primary/5 shadow-xs ring-2 ring-primary/20"
                               : "border-slate-200 bg-white hover:bg-slate-50"
                           }`}
                         >
                           <div className="flex items-center gap-2.5">
-                            <div className="p-2 rounded-xl bg-primary text-white shadow-xs">
+                            <div className="p-2 rounded-xl bg-primary text-white shadow-xs shrink-0">
                               <CreditCard className="h-4 w-4" />
                             </div>
                             <div>
-                              <p className="text-xs font-black text-slate-900 leading-tight">Online Gateway</p>
-                              <p className="text-[10px] font-semibold text-slate-500">Cards / NetBanking / Razorpay</p>
+                              <p className="text-xs font-black text-slate-900 leading-tight">{t.onlineGateway}</p>
+                              <p className="text-[10px] font-semibold text-slate-500">{t.onlineGatewaySub}</p>
                             </div>
                           </div>
                           {selectedPaymentMethod === "razorpay" && (
@@ -1080,19 +1283,19 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                         <button
                           type="button"
                           onClick={() => setSelectedPaymentMethod("upi")}
-                          className={`p-3 rounded-2xl border-2 text-left transition-all cursor-pointer flex items-center justify-between gap-2 ${
+                          className={`p-3 rounded-2xl border-2 text-left transition-all cursor-pointer flex items-center justify-between gap-2 active:scale-98 ${
                             selectedPaymentMethod === "upi"
                               ? "border-primary bg-primary/5 shadow-xs ring-2 ring-primary/20"
                               : "border-slate-200 bg-white hover:bg-slate-50"
                           }`}
                         >
                           <div className="flex items-center gap-2.5">
-                            <div className="p-2 rounded-xl bg-slate-600 text-white shadow-xs">
+                            <div className="p-2 rounded-xl bg-slate-600 text-white shadow-xs shrink-0">
                               <QrCode className="h-4 w-4" />
                             </div>
                             <div>
-                              <p className="text-xs font-black text-slate-900 leading-tight">Pay with UPI QR</p>
-                              <p className="text-[10px] font-semibold text-slate-500 font-sans">Amount pre-filled in UPI apps</p>
+                              <p className="text-xs font-black text-slate-900 leading-tight">{t.payWithUpi}</p>
+                              <p className="text-[10px] font-semibold text-slate-500 font-sans">{t.payWithUpiSub}</p>
                             </div>
                           </div>
                           {selectedPaymentMethod === "upi" && (
@@ -1110,38 +1313,36 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                       <button
                         type="submit"
                         disabled={finalAmount <= 0}
-                        className="relative group overflow-hidden w-full py-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:opacity-50 disabled:pointer-events-none text-white font-extrabold rounded-2xl transition-all duration-300 cursor-pointer flex items-center justify-center gap-2.5 text-base tracking-wide uppercase shadow-lg shadow-emerald-700/25 hover:shadow-xl hover:scale-[1.01] active:scale-98"
+                        className="relative group overflow-hidden w-full py-3.5 sm:py-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:opacity-50 disabled:pointer-events-none text-white font-extrabold rounded-2xl transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 text-sm sm:text-base tracking-wide uppercase shadow-lg shadow-emerald-700/25 hover:shadow-xl active:scale-98"
                       >
-                        <QrCode className="h-5 w-5 transition-transform group-hover:scale-110" />
+                        <QrCode className="h-5 w-5 transition-transform group-hover:scale-110 shrink-0" />
                         <span className="relative z-10">
-                          PAY ₹{totalPayable.toLocaleString("en-IN")} VIA UPI QR
+                          {t.payViaUpiBtn.replace("{amt}", totalPayable.toLocaleString("en-IN"))}
                         </span>
-                        <ArrowRight className="h-4.5 w-4.5 transition-transform duration-300 group-hover:translate-x-1" />
+                        <ArrowRight className="h-4.5 w-4.5 transition-transform duration-300 group-hover:translate-x-1 shrink-0" />
                         <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
                       </button>
                     ) : (
                       <button
                         type="submit"
                         disabled={finalAmount <= 0}
-                        className="relative group overflow-hidden w-full py-4 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 disabled:opacity-50 disabled:pointer-events-none text-white font-extrabold rounded-2xl transition-all duration-300 cursor-pointer flex items-center justify-center gap-2.5 text-base tracking-wide uppercase shadow-lg shadow-orange-500/30 hover:shadow-xl hover:scale-[1.01] active:scale-98"
+                        className="relative group overflow-hidden w-full py-3.5 sm:py-4 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 disabled:opacity-50 disabled:pointer-events-none text-white font-extrabold rounded-2xl transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 text-sm sm:text-base tracking-wide uppercase shadow-lg shadow-orange-500/30 hover:shadow-xl active:scale-98"
                       >
-                        <Lock className="h-4.5 w-4.5 transition-transform group-hover:scale-110" />
+                        <Lock className="h-4.5 w-4.5 transition-transform group-hover:scale-110 shrink-0" />
                         <span className="relative z-10">
-                          {upiPayment.enabled !== false 
-                            ? `DONATE ₹${totalPayable.toLocaleString("en-IN")} ONLINE`
-                            : `DONATE ₹${totalPayable.toLocaleString("en-IN")} NOW`}
+                          {(upiPayment.enabled !== false ? t.donateOnlineBtn : t.donateNowBtn).replace("{amt}", totalPayable.toLocaleString("en-IN"))}
                         </span>
-                        <Heart className="h-4.5 w-4.5 fill-white/20 stroke-[2.5] text-white transition-transform duration-300 group-hover:scale-125 group-hover:fill-white" />
+                        <Heart className="h-4.5 w-4.5 fill-white/20 stroke-[2.5] text-white transition-transform duration-300 group-hover:scale-125 group-hover:fill-white shrink-0" />
                         <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/35 to-transparent" />
                       </button>
                     )}
 
-                    <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                      <ShieldCheck className="h-4.5 w-4.5 text-emerald-500" />
+                    <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">
+                      <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" />
                       <span>
                         {upiPayment.enabled !== false && selectedPaymentMethod === "upi"
-                          ? "Direct Bank Transfer via Official Temple UPI · 80G Tax Exempted"
-                          : "100% Secure Payments powered by Razorpay"}
+                          ? t.upiPaymentNote
+                          : t.securePaymentNote}
                       </span>
                     </div>
                   </div>
@@ -1805,46 +2006,46 @@ function CategorySevaRow({
     <div 
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="space-y-4 font-sans bg-white/80 backdrop-blur-xs p-6 sm:p-8 lg:p-9 rounded-3xl border border-amber-200/90 shadow-sm transition-all"
+      className="space-y-3 sm:space-y-4 font-sans bg-white/80 backdrop-blur-xs p-3.5 sm:p-8 lg:p-9 rounded-2xl sm:rounded-3xl border border-amber-200/90 shadow-sm transition-all"
     >
       {/* Category Row Header with Title & Scroll Buttons */}
-      <div className="flex items-center justify-between gap-4 border-b border-amber-200/60 pb-4">
-        <div className="flex items-center gap-3.5">
-          <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white shadow-xs shrink-0">
-            <Sparkles className="h-5 w-5" />
+      <div className="flex items-center justify-between gap-3 border-b border-amber-200/60 pb-3 sm:pb-4">
+        <div className="flex items-center gap-2.5 sm:gap-3.5">
+          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white shadow-xs shrink-0">
+            <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
           <div>
-            <h4 className="font-display font-bold text-xl sm:text-2xl lg:text-3xl text-primary flex items-center gap-2.5 flex-wrap">
+            <h4 className="font-display font-bold text-lg sm:text-2xl lg:text-3xl text-primary flex items-center gap-2 flex-wrap">
               <span>{category}</span>
-              <span className="text-xs font-sans font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200">
+              <span className="text-[10px] sm:text-xs font-sans font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200">
                 {sevas.length} {sevas.length === 1 ? "Offering" : "Offerings"}
               </span>
             </h4>
-            <p className="text-xs sm:text-sm text-muted-foreground font-sans mt-0.5">
+            <p className="text-[11px] sm:text-sm text-muted-foreground font-sans mt-0.5 line-clamp-1 sm:line-clamp-none">
               Explore and sponsor sacred sevas in this offering category
             </p>
           </div>
         </div>
 
         {/* Scroll Controls */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             type="button"
             onClick={() => handleScroll(-1)}
             disabled={!canScrollLeft}
-            className="h-10 w-10 sm:h-11 sm:w-11 rounded-full border border-slate-200 bg-white hover:bg-amber-50 hover:border-amber-300 text-slate-700 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center shadow-xs transition-all cursor-pointer hover:scale-105 active:scale-95"
+            className="h-8 w-8 sm:h-11 sm:w-11 rounded-full border border-slate-200 bg-white hover:bg-amber-50 hover:border-amber-300 text-slate-700 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center shadow-xs transition-all cursor-pointer hover:scale-105 active:scale-95"
             aria-label="Scroll left"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
           <button
             type="button"
             onClick={() => handleScroll(1)}
             disabled={!canScrollRight}
-            className="h-10 w-10 sm:h-11 sm:w-11 rounded-full border border-slate-200 bg-white hover:bg-amber-50 hover:border-amber-300 text-slate-700 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center shadow-xs transition-all cursor-pointer hover:scale-105 active:scale-95"
+            className="h-8 w-8 sm:h-11 sm:w-11 rounded-full border border-slate-200 bg-white hover:bg-amber-50 hover:border-amber-300 text-slate-700 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center shadow-xs transition-all cursor-pointer hover:scale-105 active:scale-95"
             aria-label="Scroll right"
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
         </div>
       </div>
@@ -1853,10 +2054,10 @@ function CategorySevaRow({
       <div
         ref={scrollRef}
         onScroll={checkScroll}
-        className="flex items-stretch gap-6 overflow-x-auto pb-5 pt-1 scroll-smooth snap-x snap-mandatory scrollbar-thin scrollbar-thumb-amber-300/80 scrollbar-track-amber-50/30 -mx-1 px-1"
+        className="flex items-stretch gap-3 sm:gap-6 overflow-x-auto pb-4 pt-1 scroll-smooth snap-x snap-mandatory scrollbar-thin scrollbar-thumb-amber-300/80 scrollbar-track-amber-50/30 -mx-1 px-1"
       >
         {sevas.map((s) => (
-          <div key={s.id} className="w-[320px] sm:w-[370px] md:w-[410px] lg:w-[430px] shrink-0 snap-start flex flex-col">
+          <div key={s.id} className="w-[275px] xs:w-[320px] sm:w-[370px] md:w-[410px] lg:w-[430px] shrink-0 snap-start flex flex-col">
             <SevaCardItem seva={s} onSelectAndNavigate={onSelectAndNavigate} />
           </div>
         ))}
@@ -1896,44 +2097,44 @@ function SevaCardItem({
   const firstPrice = seva.prices?.[0]?.amount;
 
   return (
-    <div className="group relative p-[2px] rounded-3xl bg-gradient-to-br from-amber-400 via-orange-400 to-amber-500 hover:from-amber-300 hover:via-orange-500 hover:to-rose-500 shadow-md hover:shadow-xl hover:shadow-orange-500/20 transition-all duration-500 hover:-translate-y-1 font-sans flex flex-col h-full">
-      <div className="bg-white rounded-[22px] overflow-hidden flex flex-col flex-1 justify-between">
+    <div className="group relative p-[2px] rounded-2xl sm:rounded-3xl bg-gradient-to-br from-amber-400 via-orange-400 to-amber-500 hover:from-amber-300 hover:via-orange-500 hover:to-rose-500 shadow-md hover:shadow-xl hover:shadow-orange-500/20 transition-all duration-500 hover:-translate-y-1 font-sans flex flex-col h-full">
+      <div className="bg-white rounded-[14px] sm:rounded-[22px] overflow-hidden flex flex-col flex-1 justify-between">
         
-        {/* Top Image Banner: Full, clear, uncropped image container */}
-        <div className="relative aspect-square w-full overflow-hidden bg-gradient-to-b from-amber-50/60 via-slate-50 to-white p-3 flex items-center justify-center border-b border-amber-100/60">
-          <div className="w-full h-full rounded-2xl overflow-hidden relative flex items-center justify-center bg-white shadow-2xs">
+        {/* Top Image Banner */}
+        <div className="relative aspect-[4/3] sm:aspect-square w-full overflow-hidden bg-gradient-to-b from-amber-50/60 via-slate-50 to-white p-2.5 sm:p-3 flex items-center justify-center border-b border-amber-100/60">
+          <div className="w-full h-full rounded-xl sm:rounded-2xl overflow-hidden relative flex items-center justify-center bg-white shadow-2xs">
             {seva.thumbnail ? (
               <img 
                 src={seva.thumbnail} 
                 alt={seva.title} 
                 loading="lazy" 
-                className="w-full h-full object-contain rounded-2xl transition-transform duration-500 group-hover:scale-105" 
+                className="w-full h-full object-contain rounded-xl sm:rounded-2xl transition-transform duration-500 group-hover:scale-105" 
               />
             ) : (
-              <div className="w-full h-full grid place-items-center text-primary/30 bg-primary/5 rounded-2xl">
-                <HandHeart className="h-14 w-14" />
+              <div className="w-full h-full grid place-items-center text-primary/30 bg-primary/5 rounded-xl sm:rounded-2xl">
+                <HandHeart className="h-10 w-10 sm:h-14 sm:w-14" />
               </div>
             )}
           </div>
         </div>
 
         {/* Card Content */}
-        <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between space-y-4 font-sans">
+        <div className="p-4 sm:p-6 flex-1 flex flex-col justify-between space-y-3 sm:space-y-4 font-sans">
           
           {/* Category Badges + Title and Short Description */}
-          <div className="space-y-2">
-            <div className="flex flex-wrap items-center gap-1.5">
+          <div className="space-y-1.5 sm:space-y-2">
+            <div className="flex flex-wrap items-center gap-1">
               {getSevaCategories(seva).map((cat) => (
-                <span key={cat} className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-100/90 text-amber-900 border border-amber-300/80 uppercase tracking-wider font-sans">
+                <span key={cat} className="text-[9px] sm:text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100/90 text-amber-900 border border-amber-300/80 uppercase tracking-wider font-sans">
                   {cat}
                 </span>
               ))}
             </div>
 
-            <h3 className="font-display font-extrabold text-lg sm:text-xl text-primary line-clamp-1 leading-snug group-hover:text-amber-600 transition-colors">
+            <h3 className="font-display font-extrabold text-base sm:text-xl text-primary line-clamp-1 leading-snug group-hover:text-amber-600 transition-colors">
               {seva.title}
             </h3>
-            <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed min-h-[34px] font-sans">
+            <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed min-h-[32px] sm:min-h-[34px] font-sans">
               {seva.description || "Support ISKCON Kurnool temple activities and daily deity worship with your generous contribution."}
             </p>
           </div>
@@ -1943,10 +2144,10 @@ function SevaCardItem({
             <button
               type="button"
               onClick={() => onSelectAndNavigate(seva)}
-              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white font-extrabold text-xs sm:text-sm tracking-wide uppercase shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/35 transition-all duration-300 hover:scale-[1.01] active:scale-98 cursor-pointer flex items-center justify-center gap-2 group/btn font-sans"
+              className="w-full py-3 sm:py-3.5 px-3 sm:px-4 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 text-white font-extrabold text-xs sm:text-sm tracking-wide uppercase shadow-md shadow-orange-500/20 hover:shadow-lg transition-all duration-300 active:scale-98 cursor-pointer flex items-center justify-center gap-1.5 sm:gap-2 group/btn font-sans"
             >
-              <Heart className="h-4 w-4 fill-white/20 text-white group-hover/btn:scale-125 transition-transform" />
-              <span>
+              <Heart className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-white/20 text-white group-hover/btn:scale-125 transition-transform shrink-0" />
+              <span className="truncate">
                 Sponsor Seva {firstPrice ? (seva.prices && seva.prices.length > 1 ? `· from ₹${firstPrice.toLocaleString("en-IN")}` : `· ₹${firstPrice.toLocaleString("en-IN")}`) : ""}
               </span>
             </button>

@@ -33,6 +33,7 @@ function emptyDraft(): Partial<Seva> {
     categories: ["Regular Sevas"],
     prices: [{ label: "", amount: 516 }], 
     active: true,
+    allowCustomAmount: true,
     thumbnail: "",
     slug: "",
     festivalId: undefined,
@@ -341,6 +342,7 @@ export default function SevasManager() {
       ...s, 
       category: s.category || cats.join(", "), 
       categories: cats, 
+      allowCustomAmount: s.allowCustomAmount !== false,
       prices: (s.prices && s.prices.length > 0) ? s.prices.map((p) => ({ ...p })) : [{ label: "", amount: 516 }],
       festivalId: s.festivalId || (festIds.length > 0 ? festIds[0] : undefined),
       festivalIds: festIds
@@ -939,6 +941,27 @@ export default function SevasManager() {
                         Multiple Tiers
                       </button>
                     </div>
+                  </div>
+
+                  {/* Custom Amount Option Toggle */}
+                  <div className="bg-white p-4 rounded-xl border border-slate-200 flex items-center justify-between gap-4 font-sans">
+                    <div>
+                      <span className="block text-xs font-bold text-slate-900 uppercase tracking-wider">
+                        Allow Custom Amount Entry
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">
+                        Enable devotees to enter custom ₹ amount on checkout for this seva card
+                      </span>
+                    </div>
+                    <label className="flex items-center gap-2 cursor-pointer font-bold text-xs bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+                      <input
+                        type="checkbox"
+                        checked={draft.allowCustomAmount !== false}
+                        onChange={(e) => setDraft({ ...draft, allowCustomAmount: e.target.checked })}
+                        className="rounded border-slate-300 text-amber-600 focus:ring-amber-500 h-4 w-4 cursor-pointer"
+                      />
+                      <span>{draft.allowCustomAmount !== false ? "Enabled" : "Disabled"}</span>
+                    </label>
                   </div>
 
                   {pricingMode === "single" ? (

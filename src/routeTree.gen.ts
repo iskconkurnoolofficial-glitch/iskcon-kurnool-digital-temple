@@ -28,7 +28,6 @@ import { Route as DailyDarshanRouteImport } from './routes/daily-darshan'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as BhaktiStepsRouteImport } from './routes/bhakti-steps'
-import { Route as BankPinRouteImport } from './routes/bank-pin'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TempleIndexRouteImport } from './routes/temple.index'
@@ -137,11 +136,6 @@ const BhaktiStepsRoute = BhaktiStepsRouteImport.update({
   path: '/bhakti-steps',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BankPinRoute = BankPinRouteImport.update({
-  id: '/bank-pin',
-  path: '/bank-pin',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -206,7 +200,6 @@ const AboutFounderRoute = AboutFounderRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/bank-pin': typeof BankPinRoute
   '/bhakti-steps': typeof BhaktiStepsRoute
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
@@ -240,7 +233,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/bank-pin': typeof BankPinRoute
   '/bhakti-steps': typeof BhaktiStepsRoute
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
@@ -273,7 +265,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/bank-pin': typeof BankPinRoute
   '/bhakti-steps': typeof BhaktiStepsRoute
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
@@ -309,7 +300,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
-    | '/bank-pin'
     | '/bhakti-steps'
     | '/connect'
     | '/courses'
@@ -343,7 +333,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
-    | '/bank-pin'
     | '/bhakti-steps'
     | '/connect'
     | '/courses'
@@ -375,7 +364,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
-    | '/bank-pin'
     | '/bhakti-steps'
     | '/connect'
     | '/courses'
@@ -410,7 +398,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
-  BankPinRoute: typeof BankPinRoute
   BhaktiStepsRoute: typeof BhaktiStepsRoute
   ConnectRoute: typeof ConnectRoute
   CoursesRoute: typeof CoursesRoute
@@ -573,13 +560,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BhaktiStepsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/bank-pin': {
-      id: '/bank-pin'
-      path: '/bank-pin'
-      fullPath: '/bank-pin'
-      preLoaderRoute: typeof BankPinRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -696,7 +676,6 @@ const TempleRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
-  BankPinRoute: BankPinRoute,
   BhaktiStepsRoute: BhaktiStepsRoute,
   ConnectRoute: ConnectRoute,
   CoursesRoute: CoursesRoute,

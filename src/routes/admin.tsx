@@ -29,7 +29,6 @@ import TermsManager from "@/admin/TermsManager";
 import PrivacyManager from "@/admin/PrivacyManager";
 import ReceiptSettingsManager from "@/admin/ReceiptSettingsManager";
 import UpiSettingsManager from "@/admin/UpiSettingsManager";
-import AdminPinGuard from "@/admin/AdminPinGuard";
 import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, CreditCard, Video, Bell, ShieldCheck, Compass, Sun, Tv, Award, FileText, Lock, FileCheck, QrCode, Eye, EyeOff, Rocket, KeyRound } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
@@ -775,11 +774,7 @@ function AdminPage() {
             {tab === "gallery" && <GalleryManager />}
             {tab === "heroBanners" && <HeroBannersManager />}
             {tab === "settings" && <SiteSettingsForm />}
-            {tab === "upiSettings" && (
-              <AdminPinGuard sectionTitle="UPI QR & Bank Settings" sectionDescription="Authenticate with your 6-digit Admin Security PIN to view or modify UPI VPA, QR settings, and manual bank account details.">
-                <UpiSettingsManager />
-              </AdminPinGuard>
-            )}
+            {tab === "upiSettings" && <UpiSettingsManager />}
             {tab === "receiptSettings" && <ReceiptSettingsManager />}
             {tab === "terms" && <TermsManager />}
             {tab === "privacy" && <PrivacyManager />}

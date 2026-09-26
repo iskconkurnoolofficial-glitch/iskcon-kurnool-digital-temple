@@ -53,6 +53,7 @@ export type Seva = {
   slug?: string;
   festivalId?: string;
   festivalIds?: string[];
+  allowCustomAmount?: boolean;
 };
 
 export function getSevaFestivalIds(s?: Partial<Seva> | null): string[] {

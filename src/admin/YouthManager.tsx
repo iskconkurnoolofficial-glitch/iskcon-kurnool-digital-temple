@@ -136,15 +136,27 @@ function SevaCardTab({ youth, update }: { youth: YouthData; update: (p: Partial<
             </p>
           </div>
 
-          <label className="flex items-center gap-2 text-xs font-bold text-foreground cursor-pointer bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 shrink-0">
-            <input
-              type="checkbox"
-              checked={youth.donationCardEnabled !== false}
-              onChange={(e) => update({ donationCardEnabled: e.target.checked })}
-              className="rounded text-primary focus:ring-primary h-4 w-4 cursor-pointer"
-            />
-            Enable Seva Card
-          </label>
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
+            <label className="flex items-center gap-2 text-xs font-bold text-foreground cursor-pointer bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+              <input
+                type="checkbox"
+                checked={youth.allowCustomAmount !== false}
+                onChange={(e) => update({ allowCustomAmount: e.target.checked })}
+                className="rounded text-primary focus:ring-primary h-4 w-4 cursor-pointer"
+              />
+              Allow Custom Amount Entry
+            </label>
+
+            <label className="flex items-center gap-2 text-xs font-bold text-foreground cursor-pointer bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+              <input
+                type="checkbox"
+                checked={youth.donationCardEnabled !== false}
+                onChange={(e) => update({ donationCardEnabled: e.target.checked })}
+                className="rounded text-primary focus:ring-primary h-4 w-4 cursor-pointer"
+              />
+              Enable Seva Card
+            </label>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-12 gap-6 items-start">
