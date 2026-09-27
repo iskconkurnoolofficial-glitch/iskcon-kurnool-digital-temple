@@ -151,7 +151,11 @@ function HouseProgrammesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !phone.trim() || !locationArea.trim() || !preferredDate.trim()) {
-      toast.error("Please fill in all required fields.");
+      toast.error("Please fill in your name, phone number, area, and preferred date.");
+      return;
+    }
+    if (phone.trim().length < 5) {
+      toast.error("Please enter a valid phone number with at least 5 characters.");
       return;
     }
 
@@ -174,7 +178,8 @@ function HouseProgrammesPage() {
       setSubmitted(true);
       toast.success("House Programme requested successfully!");
     } catch (err) {
-      toast.error("Failed to submit request. Please try contacting via WhatsApp.");
+      console.error("[HouseProgramme] Submission failed:", err);
+      toast.error(err instanceof Error ? err.message : "Request could not be saved. Please try again.");
     } finally {
       setSubmitting(false);
     }

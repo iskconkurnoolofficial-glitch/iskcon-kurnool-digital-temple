@@ -4032,16 +4032,29 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   };
 
   const addHouseProgrammeRequest = async (req: Omit<HouseProgrammeRequest, "id" | "createdAt" | "read" | "status">) => {
-    const { submitHouseProgrammeRequestServer } = await import("@/lib/house-programme.functions");
-    const result = await submitHouseProgrammeRequestServer({ data: req });
-    if (!result.ok) {
-      throw new Error(result.message || "Failed to save house programme request");
+    const { error } = await supabase.from("contact_messages").insert({
+      name: req.name.trim().slice(0, 100),
+      email: "houseprogramme@iskconkurnool.in",
+      phone: req.phone.trim().slice(0, 20),
+      message: JSON.stringify({
+        isHouseProgramme: true,
+        locationArea: req.locationArea.trim().slice(0, 100),
+        preferredDate: req.preferredDate.slice(0, 50),
+        preferredTime: req.preferredTime.slice(0, 50),
+        participantsCount: req.participantsCount.slice(0, 50),
+        fullAddress: req.fullAddress.trim().slice(0, 500),
+        googleMapsUrl: req.googleMapsUrl?.slice(0, 500),
+        latitude: req.latitude,
+        longitude: req.longitude,
+        message: req.message?.trim().slice(0, 1000),
+        status: "pending",
+      }),
+      read: false,
+    });
+    if (error) {
+      console.error("[HouseProgramme] Contact message insert failed:", error);
+      throw new Error(error.message || "Failed to save house programme request");
     }
-
-    setHouseProgrammesState((current) => ({
-      ...current,
-      requests: [result.request, ...(current.requests || []).filter((request) => request.id !== result.request.id)],
-    }));
   };
 
   const updateHouseProgrammeRequestStatus = async (id: string, status: HouseProgrammeRequest["status"]) => {
