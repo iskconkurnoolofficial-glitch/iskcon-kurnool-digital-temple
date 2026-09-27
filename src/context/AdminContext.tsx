@@ -2078,6 +2078,15 @@ export type GitaWhyCard = {
   iconName: string;
 };
 
+export type GitaDownloadLead = {
+  id: string;
+  name: string;
+  gender: string;
+  whatsapp: string;
+  email?: string;
+  createdAt: string;
+};
+
 export type GitaCourseData = {
   heroImage: string;
   gitaAboutImage: string;
@@ -2096,6 +2105,12 @@ export type GitaCourseData = {
   endLabel: string;
   whyCards?: GitaWhyCard[];
   status?: "Coming Soon" | "Closed" | "Registrations Opened";
+  gitaPdfUrl?: string;
+  gitaDownloadTitle?: string;
+  gitaDownloadDescription?: string;
+  gitaDownloadImage?: string;
+  gitaDownloadBadge?: string;
+  gitaDownloadFileTitle?: string;
 };
 
 export const defaultGitaCourse: GitaCourseData = {
@@ -2115,6 +2130,12 @@ export const defaultGitaCourse: GitaCourseData = {
   contact: "+91 8500789687",
   startLabel: "July 14, 2026",
   endLabel: "July 31, 2026",
+  gitaPdfUrl: "",
+  gitaDownloadTitle: "Download Bhagavad Gita As It Is — Free PDF Edition",
+  gitaDownloadDescription: "Unlock divine wisdom with the authentic Bhagavad Gita As It Is. Experience deep spiritual clarity, inner peace, and timeless life answers. Free digital download in Telugu & English.",
+  gitaDownloadImage: "/gita-gold-cover.jpg",
+  gitaDownloadBadge: "Free Divine Gift 📖",
+  gitaDownloadFileTitle: "Bhagavad Gita As It Is (Complete PDF)",
   whyCards: [
     { iconName: "book-open", title: "Complete Gita", desc: "All 18 chapters, start to finish — nothing skipped." },
     { iconName: "languages", title: "Plain Telugu", desc: "Explained simply, in Telugu, with real-life context." },
@@ -3179,6 +3200,10 @@ type AdminState = {
   setEkadashi: (e: EkadashiData) => void;
   gitaCourse: GitaCourseData;
   setGitaCourse: (g: GitaCourseData) => void;
+  gitaDownloadLeads: GitaDownloadLead[];
+  addGitaDownloadLead: (lead: Omit<GitaDownloadLead, "id" | "createdAt">) => Promise<boolean>;
+  deleteGitaDownloadLead: (id: string) => Promise<boolean>;
+  clearAllGitaDownloadLeads: () => Promise<boolean>;
   sunday: SundayData;
   setSunday: (s: SundayData) => void;
   prahladaBadi: PrahladaBadiData;
@@ -3345,6 +3370,7 @@ const KEYS = {
   upiPayment: "upiPayment",
   platformFee: "platformFee",
   previewLeads: "previewLeads",
+  gitaDownloadLeads: "gitaDownloadLeads",
   terms: "terms",
   privacy: "privacy",
   receiptSettings: "receiptSettings",
@@ -3486,6 +3512,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [upiPayment, setUpiPaymentState] = useState<UpiPaymentSettings>(() => getCached(KEYS.upiPayment, defaultUpiPayment));
   const [platformFee, setPlatformFeeState] = useState<PlatformFeeSettings>(() => getCached(KEYS.platformFee, defaultPlatformFee));
   const [previewLeads, setPreviewLeadsState] = useState<PreviewLead[]>(() => getCached(KEYS.previewLeads, []));
+  const [gitaDownloadLeads, setGitaDownloadLeadsState] = useState<GitaDownloadLead[]>(() => getCached(KEYS.gitaDownloadLeads, []));
   const [terms, setTermsState] = useState<TermsData>(() => getCached(KEYS.terms, defaultTerms));
   const [privacy, setPrivacyState] = useState<PrivacyData>(() => getCached(KEYS.privacy, defaultPrivacy));
   const [receiptSettings, setReceiptSettingsState] = useState<ReceiptSettings>(() => getCached(KEYS.receiptSettings, defaultReceiptSettings));
@@ -3818,6 +3845,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.upiPayment: setUpiPaymentState({ ...defaultUpiPayment, ...value }); break;
       case KEYS.platformFee: setPlatformFeeState({ ...defaultPlatformFee, ...value }); break;
       case KEYS.previewLeads: setPreviewLeadsState(Array.isArray(value) ? value : []); break;
+      case KEYS.gitaDownloadLeads: setGitaDownloadLeadsState(Array.isArray(value) ? value : []); break;
       case KEYS.terms: setTermsState({ ...defaultTerms, ...value, sections: Array.isArray(value?.sections) ? value.sections : defaultTerms.sections }); break;
       case KEYS.privacy: setPrivacyState({ ...defaultPrivacy, ...value, sections: Array.isArray(value?.sections) ? value.sections : defaultPrivacy.sections }); break;
       case KEYS.receiptSettings: setReceiptSettingsState({ ...defaultReceiptSettings, ...value }); break;
@@ -3925,6 +3953,28 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setHarinama = (v: HarinamaData) => { setHarinamaState(v); persist(KEYS.harinama, v); };
   const setEkadashi = (v: EkadashiData) => { setEkadashiState(v); persist(KEYS.ekadashi, v); };
   const setGitaCourse = (v: GitaCourseData) => { setGitaCourseState(v); persist(KEYS.gitaCourse, v); };
+
+  const addGitaDownloadLead = async (lead: Omit<GitaDownloadLead, "id" | "createdAt">) => {
+    const newLead: GitaDownloadLead = {
+      ...lead,
+      id: "gdl_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+      createdAt: new Date().toISOString(),
+    };
+    const updated = [newLead, ...gitaDownloadLeads];
+    setGitaDownloadLeadsState(updated);
+    return await persist(KEYS.gitaDownloadLeads, updated);
+  };
+
+  const deleteGitaDownloadLead = async (id: string) => {
+    const updated = gitaDownloadLeads.filter((l) => l.id !== id);
+    setGitaDownloadLeadsState(updated);
+    return await persist(KEYS.gitaDownloadLeads, updated);
+  };
+
+  const clearAllGitaDownloadLeads = async () => {
+    setGitaDownloadLeadsState([]);
+    return await persist(KEYS.gitaDownloadLeads, []);
+  };
   const setSunday = (v: SundayData) => { setSundayState(v); persist(KEYS.sunday, v); };
   const setPrahladaBadi = (v: PrahladaBadiData) => { setPrahladaBadiState(v); persist(KEYS.prahladaBadi, v); };
   const setHouseProgrammes = (v: HouseProgrammeData) => { setHouseProgrammesState(v); persist(KEYS.houseProgrammes, v); };
@@ -4638,6 +4688,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         harinama, setHarinama,
         ekadashi, setEkadashi,
         gitaCourse, setGitaCourse,
+        gitaDownloadLeads, addGitaDownloadLead, deleteGitaDownloadLead, clearAllGitaDownloadLeads,
         sunday, setSunday,
         prahladaBadi, setPrahladaBadi,
         houseProgrammes, setHouseProgrammes, addHouseProgrammeRequest, updateHouseProgrammeRequestStatus, deleteHouseProgrammeRequest, markAllHouseProgrammeRequestsRead,

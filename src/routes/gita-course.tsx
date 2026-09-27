@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import SiteLayout from "@/components/SiteLayout";
 import { useAdmin } from "@/context/AdminContext";
-import { Calendar, Clock, Monitor, IndianRupee, Check, BookOpen, Languages, Timer, Sparkles, ArrowRight, Star, Quote, Book, Compass, Award, Heart, Lock } from "lucide-react";
+import { Calendar, Clock, Monitor, IndianRupee, Check, BookOpen, Languages, Timer, Sparkles, ArrowRight, Star, Quote, Book, Compass, Award, Heart, Lock, Download, User, Phone, Mail, CheckCircle2, X } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { isTimeStrLive, getCurrentTimeIST } from "@/lib/scheduleUtils";
+import { toast } from "sonner";
 
 function getGitaIcon(name: string) {
   switch (name) {
@@ -393,6 +394,9 @@ function Page() {
         </div>
       </section>
 
+      {/* DOWNLOAD BHAGAVAD GITA SECTION */}
+      <DownloadGitaSection />
+
       {/* WHY JOIN */}
       <section className="py-20 md:py-28 bg-[#231e3d] text-white relative overflow-hidden">
         {/* Soft glowing decorations */}
@@ -589,6 +593,314 @@ function Page() {
 
     </SiteLayout>
 
+  );
+}
+
+function DownloadGitaModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const { gitaCourse, addGitaDownloadLead } = useAdmin();
+  const [name, setName] = useState("");
+  const [gender, setGender] = useState<"Male" | "Female" | "Other">("Male");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      toast.error("Please enter your name");
+      return;
+    }
+    const cleanPhone = whatsapp.replace(/\D/g, "");
+    if (cleanPhone.length < 10) {
+      toast.error("Please enter a valid 10-digit WhatsApp number");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await addGitaDownloadLead({
+        name: name.trim(),
+        gender,
+        whatsapp: cleanPhone,
+        email: email.trim() || undefined,
+      });
+
+      setDownloadSuccess(true);
+      toast.success("Thank you! Your Bhagavad Gita PDF download has started.");
+
+      // Trigger automatic file download
+      const targetUrl = gitaCourse.gitaPdfUrl?.trim() || "/gita-gold-cover.jpg";
+      const link = document.createElement("a");
+      link.href = targetUrl;
+      link.target = "_blank";
+      link.download = (gitaCourse.gitaDownloadFileTitle || "Bhagavad-Gita-As-It-Is") + (gitaCourse.gitaPdfUrl?.endsWith(".pdf") ? ".pdf" : "");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      toast.error("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-fade-in overflow-y-auto">
+      <div className="relative max-w-md w-full bg-[#181308] border border-amber-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl text-white overflow-hidden my-auto">
+        {/* Close Button */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-amber-200 hover:bg-white/20 transition-all cursor-pointer z-10"
+          title="Close Modal"
+        >
+          <X className="h-5 w-5" />
+        </button>
+
+        {!downloadSuccess ? (
+          <div>
+            <div className="text-center space-y-2 mb-6">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 font-extrabold text-[10px] uppercase tracking-widest border border-amber-400/30">
+                <Sparkles className="h-3 w-3 text-amber-400" /> Free Bhagavad Gita Download
+              </span>
+              <h3 className="font-display font-bold text-2xl sm:text-3xl bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-100 bg-clip-text text-transparent">
+                Download Free E-Book
+              </h3>
+              <p className="text-xs text-amber-100/70 max-w-xs mx-auto">
+                Fill in your details below to receive and download your instant copy of Bhagavad Gita As It Is.
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4 text-left">
+              {/* Name */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-amber-300/90 mb-1.5">
+                  Full Name <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3.5 top-3 h-4 w-4 text-amber-400/60" />
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter your full name"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/10 border border-amber-500/30 text-white placeholder-amber-200/40 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition"
+                  />
+                </div>
+              </div>
+
+              {/* Gender */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-amber-300/90 mb-1.5">
+                  Gender <span className="text-red-400">*</span>
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(["Male", "Female", "Other"] as const).map((g) => (
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => setGender(g)}
+                      className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                        gender === g
+                          ? "bg-amber-500 text-slate-950 border-amber-300 shadow-sm scale-[1.02]"
+                          : "bg-white/5 text-amber-100/80 border-amber-500/20 hover:bg-white/10"
+                      }`}
+                    >
+                      {g}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* WhatsApp Number */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-amber-300/90 mb-1.5">
+                  WhatsApp Number <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3.5 top-3 h-4 w-4 text-emerald-400" />
+                  <input
+                    type="tel"
+                    required
+                    value={whatsapp}
+                    onChange={(e) => setWhatsapp(e.target.value)}
+                    placeholder="10-digit WhatsApp number"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/10 border border-amber-500/30 text-white placeholder-amber-200/40 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition"
+                  />
+                </div>
+              </div>
+
+              {/* Email (Optional) */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-amber-300/90 mb-1.5">
+                  Email Address <span className="text-amber-400/60 font-normal">(Optional)</span>
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-3 h-4 w-4 text-amber-400/60" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your.email@example.com (Optional)"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/10 border border-amber-500/30 text-white placeholder-amber-200/40 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition"
+                  />
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black text-sm uppercase tracking-wider shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 border border-amber-300/50 disabled:opacity-50"
+                >
+                  {loading ? (
+                    <span>Processing...</span>
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4" /> Download Free PDF
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        ) : (
+          <div className="text-center py-6 space-y-4 animate-fade-in">
+            <div className="h-16 w-16 bg-gradient-to-tr from-amber-500 to-yellow-400 rounded-full flex items-center justify-center mx-auto text-slate-950 shadow-lg animate-bounce">
+              <CheckCircle2 className="h-10 w-10" />
+            </div>
+            <h3 className="font-display font-bold text-2xl text-amber-200">
+              Hari Bol! Download Initiated 📖
+            </h3>
+            <p className="text-xs text-amber-100/80 leading-relaxed max-w-xs mx-auto">
+              Your Bhagavad Gita As It Is e-book download has started automatically. If your browser blocks popups, click below to open directly:
+            </p>
+            <div className="pt-3 flex flex-col gap-2">
+              <a
+                href={gitaCourse.gitaPdfUrl?.trim() || "/gita-gold-cover.jpg"}
+                target="_blank"
+                rel="noreferrer"
+                className="py-3 px-6 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition"
+              >
+                Click Here to Open / Download PDF
+              </a>
+              <button
+                type="button"
+                onClick={onClose}
+                className="py-2 text-xs text-amber-300 hover:underline"
+              >
+                Close Window
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DownloadGitaSection() {
+  const { gitaCourse: g } = useAdmin();
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const rawTitle = g.gitaDownloadTitle || "Download Bhagavad Gita As It Is — Free PDF Edition";
+  const desc = g.gitaDownloadDescription || "Unlock divine wisdom with the authentic Bhagavad Gita As It Is. Experience deep spiritual clarity, inner peace, and timeless life answers. Download your free digital copy in Telugu & English.";
+  const image = g.gitaDownloadImage || "/gita-gold-cover.jpg";
+  const badge = g.gitaDownloadBadge || "Free Divine Gift 📖";
+
+  // Split title if it contains "—" or "-" for ultra-modern font layout
+  const hasDash = rawTitle.includes("—") || rawTitle.includes(" - ");
+  const parts = hasDash ? rawTitle.split(/—| - /) : [rawTitle];
+
+  return (
+    <>
+      <section className="py-20 md:py-28 relative overflow-hidden bg-gradient-to-br from-[#161107] via-[#2a200d] to-[#120e06] text-white border-y border-amber-500/30">
+        <div className="max-w-6xl mx-auto px-6 relative z-10">
+          <div className="relative rounded-3xl p-8 md:p-12 border border-amber-500/40 bg-gradient-to-r from-amber-950/50 via-amber-900/30 to-amber-950/50 backdrop-blur-xl shadow-xl overflow-hidden">
+            {/* Shimmer sweep effect */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-amber-400/10 to-transparent -translate-x-full animate-shimmer" />
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+              {/* Left Column: Text & CTA */}
+              <div className="space-y-6 text-center lg:text-left">
+                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/20 text-amber-300 font-extrabold text-xs uppercase tracking-widest border border-amber-400/40 shadow-sm font-sans">
+                  <Sparkles className="h-4 w-4 text-amber-400" /> {badge}
+                </span>
+
+                <h2 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-tight leading-[1.1] text-white">
+                  {parts.length > 1 ? (
+                    <>
+                      <span className="bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-400 bg-clip-text text-transparent block drop-shadow-xs">
+                        {parts[0].trim()}
+                      </span>
+                      <span className="inline-block mt-3 text-lg sm:text-2xl md:text-3xl font-extrabold tracking-normal text-amber-300/95 bg-white/10 px-4 py-1.5 rounded-2xl border border-amber-400/30 backdrop-blur-sm">
+                        {parts[1].trim()}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-100 bg-clip-text text-transparent drop-shadow-xs">
+                      {rawTitle}
+                    </span>
+                  )}
+                </h2>
+
+                <p className="text-amber-100/90 text-sm md:text-base leading-relaxed max-w-xl mx-auto lg:mx-0 font-sans font-normal">
+                  {desc}
+                </p>
+
+                {/* Highlights Pills */}
+                <div className="flex flex-wrap justify-center lg:justify-start gap-3 pt-2 text-xs font-semibold text-amber-200">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-amber-500/20">
+                    <Check className="h-3.5 w-3.5 text-amber-400 font-bold" /> Instant PDF Download
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-amber-500/20">
+                    <Check className="h-3.5 w-3.5 text-amber-400 font-bold" /> Mobile &amp; Tablet Ready
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-amber-500/20">
+                    <Check className="h-3.5 w-3.5 text-amber-400 font-bold" /> 100% Free Gift
+                  </span>
+                </div>
+
+                {/* Download CTA Button */}
+                <div className="pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setModalOpen(true)}
+                    className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black text-sm md:text-base uppercase tracking-wider shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer border border-amber-300"
+                  >
+                    <Download className="h-5 w-5 animate-bounce" /> Download Bhagavad Gita PDF
+                  </button>
+                </div>
+              </div>
+
+              {/* Right Column: Book Image */}
+              <div className="flex justify-center lg:justify-end">
+                <div className="relative group max-w-sm w-full">
+                  {/* Image Container */}
+                  <div className="relative rounded-3xl overflow-hidden shadow-xl border-2 border-amber-400/40 bg-black/40 p-2 transform group-hover:scale-[1.02] transition-transform duration-300">
+                    <img
+                      src={image}
+                      alt="Bhagavad Gita As It Is Free Download"
+                      className="w-full h-auto max-h-[480px] object-contain rounded-2xl"
+                    />
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <DownloadGitaModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
+    </>
   );
 }
 
