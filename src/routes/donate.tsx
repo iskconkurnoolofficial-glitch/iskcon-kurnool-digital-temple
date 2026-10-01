@@ -32,6 +32,7 @@ import {
   Languages
 } from "lucide-react";
 import { toast } from "sonner";
+import { sendTelegramDonationNotification } from "@/lib/telegram-notification";
 
 export const Route = createFileRoute("/donate")({
   head: () => ({
@@ -715,6 +716,17 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
           }
         }
 
+        // Send Telegram notification
+        sendTelegramDonationNotification({
+          paymentId: pId,
+          donorName: finalDonorName,
+          donorPhone: curPhone,
+          donorEmail: curEmail,
+          amount: totalPayable,
+          purpose: curPurpose || `${seva.title}${label ? ` (${label})` : ""}`,
+          paymentMethod: "Razorpay Gateway",
+        });
+
 
 
         const isLpm = checkoutSeva?.slug === "life-patron" || 
@@ -831,6 +843,17 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     } catch (err) {
       console.error("Failed to store UPI payment record:", err);
     }
+
+    // Send Telegram notification
+    sendTelegramDonationNotification({
+      paymentId: utr,
+      donorName: upiModalData.donorName || "Devotee",
+      donorPhone: upiModalData.donorPhone,
+      donorEmail: upiModalData.donorEmail,
+      amount: paidAmt,
+      purpose: upiModalData.sevaTitle,
+      paymentMethod: "UPI QR Payment",
+    });
 
     const isLpm = (checkoutSeva?.slug === "life-patron" ||
                   checkoutSeva?.category === "Patron Memberships" ||
