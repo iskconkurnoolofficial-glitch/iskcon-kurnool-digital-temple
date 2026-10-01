@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAdmin, PaymentPage, calculatePlatformFee } from "@/context/AdminContext";
 import OfficialReceiptModal from "@/components/OfficialReceiptModal";
 import UpiPaymentModal from "@/components/UpiPaymentModal";
+import { sendTelegramDonationNotificationServer } from "@/lib/telegram-notification.functions";
 import { 
   Heart, 
   IndianRupee, 
@@ -264,6 +265,20 @@ function PaymentPageRoute() {
           paymentMethod: "Razorpay",
         });
 
+        try {
+          await sendTelegramDonationNotificationServer({
+            data: {
+              paymentId: pId,
+              donorName: donorNameVal,
+              donorPhone: donorPhoneVal,
+              amount: totalPayableAmount,
+              purpose: page.title,
+            },
+          });
+        } catch (e) {
+          console.error("Failed to send Telegram donation notification", e);
+        }
+
 
       },
     });
@@ -309,6 +324,20 @@ function PaymentPageRoute() {
       });
     } catch (err) {
       console.error("Failed to store UPI payment record:", err);
+    }
+
+    try {
+      await sendTelegramDonationNotificationServer({
+        data: {
+          paymentId: utr,
+          donorName: upiModalData.donorName || "Devotee",
+          donorPhone: upiModalData.donorPhone,
+          amount: paidAmt,
+          purpose: upiModalData.sevaTitle,
+        },
+      });
+    } catch (err) {
+      console.error("Failed to send Telegram notification for UPI payment:", err);
     }
 
     setDevotionalSuccessData({

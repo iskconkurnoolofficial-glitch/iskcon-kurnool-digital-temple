@@ -30,7 +30,8 @@ import {
   Compass,
   Sun,
   Award,
-  Twitter
+  Twitter,
+  Ticket
 } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import { getOptimizedCloudinaryUrl } from "@/utils/cloudinary";
@@ -66,6 +67,7 @@ const NAV: NavItem[] = [
   { label: "Temple", children: [
     { label: "Daily Darshan", href: "/daily-darshan", subtitle: "Today's deity sringara & blessings", icon: Sun },
     { label: "Temple Timings", href: "/temple", subtitle: "Daily Darshan & Aarti schedules", icon: Clock },
+    { label: "Life Patron Membership", href: "/temple/life-patron", subtitle: "Become an ISKCON Life Member & Patron", icon: Ticket },
     { label: "Sunday Program", href: "/temple/sunday", subtitle: "Weekly feast, kirtan & lecture", icon: Calendar },
     { label: "Upcoming Festivals", href: "/festivals", subtitle: "Celebrate sacred days with us", icon: Sparkles },
     { label: "Goshala", href: "/goshala", subtitle: "Cow protection & service", icon: Leaf },
@@ -415,6 +417,13 @@ export default function Navbar() {
                                     isSubActive ? "text-primary" : "text-foreground group-hover:text-primary"
                                   }`}>
                                     {c.label}
+                                    {c.label === "Life Patron Membership" && (
+                                      <span className="relative inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 text-slate-950 shadow-2xs overflow-hidden shrink-0 border border-amber-300/80">
+                                        <Ticket className="h-2.5 w-2.5" />
+                                        <span>LPM</span>
+                                        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/80 to-transparent pointer-events-none animate-shimmer" />
+                                      </span>
+                                    )}
                                     {isLinkLive(c.href) && (
                                       <span className="relative flex h-1.5 w-1.5">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
@@ -649,6 +658,13 @@ export default function Navbar() {
                                         <div className="flex-1 min-w-0">
                                           <div className="flex items-center justify-between gap-1.5 font-semibold leading-snug">
                                             <span className="truncate">{child.label}</span>
+                                            {child.label === "Life Patron Membership" && (
+                                              <span className="relative inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[8px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 text-slate-950 shadow-2xs overflow-hidden shrink-0 border border-amber-300/80">
+                                                <Ticket className="h-2.5 w-2.5" />
+                                                <span>LPM</span>
+                                                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/80 to-transparent pointer-events-none animate-shimmer" />
+                                              </span>
+                                            )}
                                             {isLinkLive(child.href) && (
                                               <span className="inline-flex items-center gap-1 bg-red-600 text-white text-[8px] font-extrabold uppercase px-1.5 py-0.2 rounded shadow-xs shrink-0 animate-pulse">
                                                 Live

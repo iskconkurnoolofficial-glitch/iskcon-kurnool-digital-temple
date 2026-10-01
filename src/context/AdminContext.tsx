@@ -204,6 +204,7 @@ export type YouthData = {
   donationCardAmount?: string;
   tickerText?: string;
   tickerEnabled?: boolean;
+  allowCustomAmount?: boolean;
 };
 
 export const defaultYouth: YouthData = {
@@ -2821,6 +2822,117 @@ export const defaultBhaktiSteps: BhaktiStepsData = {
   ]
 };
 
+export type LifePatronBenefit = {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  image?: string;
+};
+
+export type LifePatronTier = {
+  id: string;
+  name: string;
+  amount: string;
+  badge: string;
+  description: string;
+  highlights: string[];
+  popular?: boolean;
+};
+
+export type LifePatronData = {
+  badgeText: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  heroImage: string;
+  sevaCardImage?: string;
+  cardPassImage?: string;
+  applicationPdfUrl?: string;
+  bhaktiStepsTitle: string;
+  bhaktiStepsSubtitle: string;
+  benefits: LifePatronBenefit[];
+  tiers: LifePatronTier[];
+  contactPhone: string;
+  whatsappNumber: string;
+  cardPassTitle: string;
+  cardPassSubtitle: string;
+  faqs: { question: string; answer: string }[];
+};
+
+export const defaultLifePatron: LifePatronData = {
+  badgeText: "✨ Sacred Life Patron Membership",
+  heroTitle: "Become an ISKCON Kurnool Life Member",
+  heroSubtitle: "Join our global spiritual family as a Life Patron and receive sacred blessings, lifetime temple privileges, and eternal spiritual merit.",
+  heroImage: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=1600&q=85",
+  sevaCardImage: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=1200&q=85",
+  cardPassImage: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=1200&q=85",
+  applicationPdfUrl: "",
+  bhaktiStepsTitle: "Bhakti Steps — The Sacred Patron Journey",
+  bhaktiStepsSubtitle: "5 progressive milestones combining spiritual practice with lifelong temple patron privileges",
+  cardPassTitle: "Official ISKCON Life Patron Pass",
+  cardPassSubtitle: "Global Spiritual Membership Card · Recognised in 800+ Temples Worldwide",
+  contactPhone: "+91 95053 77520",
+  whatsappNumber: "+91 95053 77520",
+  benefits: [
+    { id: "b1", title: "Worldwide Temple Accommodation", description: "3 days complimentary stay every year for patron & family at 800+ ISKCON guest houses globally.", icon: "Building2" },
+    { id: "b2", title: "Lifetime Back to Godhead Magazine", description: "Receive complimentary monthly subscription of the international spiritual magazine for life.", icon: "BookOpen" },
+    { id: "b3", title: "Annual Family Archana & Puja", description: "Special archana and prayers performed on your birthday and wedding anniversary at ISKCON Kurnool.", icon: "Sparkles" },
+    { id: "b4", title: "VIP Darshan & Festival Passes", description: "Priority darshan access, front-row seating, and VIP passes during Janmashtami and major temple festivals.", icon: "Award" },
+    { id: "b5", title: "100% Tax Exemption (80G)", description: "All patron donations are 100% tax deductible under Section 80G of the Indian Income Tax Act.", icon: "ShieldCheck" },
+    { id: "b6", title: "Maha Prasadam & Gold Certificate", description: "Receive a personalized Life Patron Certificate, photo ID membership card, and sacred mahaprasadam package.", icon: "Heart" },
+  ],
+  tiers: [
+    {
+      id: "t1",
+      name: "Life Patron",
+      amount: "₹55,555",
+      badge: "Lifetime Sacred Member",
+      description: "Complete lifetime spiritual membership with global ISKCON privileges and 80G tax exemption benefits.",
+      highlights: [
+        "Complimentary stay in 800+ ISKCON guest houses worldwide (3 days/year)",
+        "Lifetime Back to Godhead magazine subscription",
+        "Official ISKCON Life Member Card & Framed Certificate",
+        "80G Tax Exemption Certificate",
+        "Annual Puja & Prasadam on family milestones",
+      ],
+      popular: true,
+    },
+    {
+      id: "t2",
+      name: "Mahapatron Guardian",
+      amount: "₹1,08,000",
+      badge: "Major Temple Pillar",
+      description: "Dedicated patron supporting deity worship, grand temple construction, daily annadanam, and goshala.",
+      highlights: [
+        "All Life Patron benefits included",
+        "Name etched permanently on the Temple Donors Wall of Honor",
+        "Special Gold Patron Card with priority guest house allocation",
+        "Personalized monthly Deity Chapan Bhoga offering in your name",
+        "VIP Reception & Prasadam for family during Janmashtami",
+      ],
+    },
+    {
+      id: "t3",
+      name: "Shraddhavan Supporter",
+      amount: "₹11,000",
+      badge: "Devotional Patron",
+      description: "Entry-level devotional patron supporting temple education, Bhagavad Gita distribution, and youth programs.",
+      highlights: [
+        "Special Temple Supporter Certificate",
+        "Annual Family Archana Puja",
+        "Back to Godhead 1-Year Magazine Subscription",
+        "80G Tax Benefit Receipt",
+      ],
+    },
+  ],
+  faqs: [
+    { question: "Is the ISKCON Life Membership valid worldwide?", answer: "Yes! The ISKCON Life Patron card is recognized across 800+ ISKCON temples, centres, and guest houses around the world." },
+    { question: "Can my family stay at ISKCON guest houses with this membership?", answer: "Yes, the Life Patron along with immediate family members (spouse and dependent children) can avail 3 days complimentary stay per year at ISKCON guest houses globally, subject to prior booking." },
+    { question: "Is the membership contribution tax deductible?", answer: "Yes, 100% of your contribution to ISKCON Kurnool is eligible for tax exemption under Section 80G of the Income Tax Act." },
+    { question: "How long does it take to receive the official Life Patron Card?", answer: "After enrollment, your digital receipt is issued immediately. The laminated/plastic Photo ID Card and framed certificate will be issued within 2 to 3 weeks." },
+  ]
+};
+
 export type TermsSection = {
   id: string;
   number: string;
@@ -3282,6 +3394,9 @@ type AdminState = {
   receiptSettings: ReceiptSettings;
   setReceiptSettings: (r: ReceiptSettings) => void;
 
+  lifePatron: LifePatronData;
+  setLifePatron: (lp: LifePatronData) => void;
+
   terms: TermsData;
   setTerms: (t: TermsData) => void;
   privacy: PrivacyData;
@@ -3374,6 +3489,7 @@ const KEYS = {
   terms: "terms",
   privacy: "privacy",
   receiptSettings: "receiptSettings",
+  lifePatron: "lifePatron",
   teamMembers: "team_members",
 } as const;
 
@@ -3516,6 +3632,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [terms, setTermsState] = useState<TermsData>(() => getCached(KEYS.terms, defaultTerms));
   const [privacy, setPrivacyState] = useState<PrivacyData>(() => getCached(KEYS.privacy, defaultPrivacy));
   const [receiptSettings, setReceiptSettingsState] = useState<ReceiptSettings>(() => getCached(KEYS.receiptSettings, defaultReceiptSettings));
+  const [lifePatron, setLifePatronState] = useState<LifePatronData>(() => getCached(KEYS.lifePatron, defaultLifePatron));
 
   const [currentUser, setCurrentUser] = useState<CurrentAdminUser | null>(null);
   const [authed, setAuthed] = useState(false);
@@ -3849,6 +3966,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.terms: setTermsState({ ...defaultTerms, ...value, sections: Array.isArray(value?.sections) ? value.sections : defaultTerms.sections }); break;
       case KEYS.privacy: setPrivacyState({ ...defaultPrivacy, ...value, sections: Array.isArray(value?.sections) ? value.sections : defaultPrivacy.sections }); break;
       case KEYS.receiptSettings: setReceiptSettingsState({ ...defaultReceiptSettings, ...value }); break;
+      case KEYS.lifePatron: setLifePatronState({ ...defaultLifePatron, ...value }); break;
 
     }
   }
@@ -4598,6 +4716,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   const setTerms = (v: TermsData) => { setTermsState(v); persist(KEYS.terms, v); };
   const setPrivacy = (v: PrivacyData) => { setPrivacyState(v); persist(KEYS.privacy, v); };
+  const setLifePatron = (v: LifePatronData) => { setLifePatronState(v); persist(KEYS.lifePatron, v); };
 
   const changeSuperAdminPassword = async (currentPass: string, newPass: string) => {
     const currentPassword = currentPass;
@@ -4713,6 +4832,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         terms, setTerms,
         privacy, setPrivacy,
         receiptSettings, setReceiptSettings,
+        lifePatron, setLifePatron,
         changeSuperAdminPassword, currentUser,
         authed, login, logout, ready,
       }}

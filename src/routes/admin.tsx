@@ -29,14 +29,15 @@ import TermsManager from "@/admin/TermsManager";
 import PrivacyManager from "@/admin/PrivacyManager";
 import ReceiptSettingsManager from "@/admin/ReceiptSettingsManager";
 import UpiSettingsManager from "@/admin/UpiSettingsManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, CreditCard, Video, Bell, ShieldCheck, Compass, Sun, Tv, Award, FileText, Lock, FileCheck, QrCode, Eye, EyeOff, Rocket, KeyRound } from "lucide-react";
+import LifePatronManager from "@/admin/LifePatronManager";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, CreditCard, Video, Bell, ShieldCheck, Compass, Sun, Tv, Award, FileText, Lock, FileCheck, QrCode, Eye, EyeOff, Rocket, KeyRound, Ticket } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
 
-type Tab = "welcome" | "dailyDarshan" | "liveProgrammes" | "carousel" | "festivals" | "sevas" | "bhaktiSteps" | "youth" | "youthYatra" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "upiSettings" | "receiptSettings" | "terms" | "privacy" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "paymentPages";
+type Tab = "welcome" | "dailyDarshan" | "liveProgrammes" | "carousel" | "festivals" | "sevas" | "bhaktiSteps" | "lifePatron" | "youth" | "youthYatra" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "upiSettings" | "receiptSettings" | "terms" | "privacy" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "paymentPages";
 
 function AdminPage() {
   const { authed, login, logout, settings, contacts, setContacts, paymentRecords, houseProgrammes, markAllHouseProgrammeRequestsRead, markAllPaymentRecordsRead, youthYatra, markAllYatraRegistrationsRead, bhaktiSteps, markAllBhaktiStepsRegistrationsRead, currentUser, changeSuperAdminPassword } = useAdmin();
@@ -293,6 +294,7 @@ function AdminPage() {
       title: "Community Focus",
       items: [
         { id: "bhaktiSteps", label: "Bhakti Steps (5 Levels)", icon: Award },
+        { id: "lifePatron", label: "Life Patron Membership", icon: Ticket },
         { id: "houseProgrammes", label: "House Programmes", icon: Home },
         { id: "prahladaBadi", label: "Prahlada Badi", icon: Baby },
         { id: "youth", label: "Youth Festival", icon: Users },
@@ -758,6 +760,7 @@ function AdminPage() {
             {tab === "carousel" && <CarouselManager />}
             {tab === "festivals" && <FestivalsManager />}
             {tab === "sevas" && <SevasManager />}
+            {tab === "lifePatron" && <LifePatronManager />}
             {tab === "bhaktiSteps" && <BhaktiStepsManager />}
             {tab === "youth" && <YouthManager />}
             {tab === "youthYatra" && <YouthYatraManager />}

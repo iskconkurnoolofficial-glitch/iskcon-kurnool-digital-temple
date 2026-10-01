@@ -33,6 +33,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as TempleIndexRouteImport } from './routes/temple.index'
 import { Route as DonateIndexRouteImport } from './routes/donate.index'
 import { Route as TempleSundayRouteImport } from './routes/temple.sunday'
+import { Route as TempleLifePatronRouteImport } from './routes/temple.life-patron'
 import { Route as PaySlugRouteImport } from './routes/pay.$slug'
 import { Route as FestivalSlugRouteImport } from './routes/festival.$slug'
 import { Route as DonateSlugRouteImport } from './routes/donate.$slug'
@@ -161,6 +162,11 @@ const TempleSundayRoute = TempleSundayRouteImport.update({
   path: '/sunday',
   getParentRoute: () => TempleRoute,
 } as any)
+const TempleLifePatronRoute = TempleLifePatronRouteImport.update({
+  id: '/life-patron',
+  path: '/life-patron',
+  getParentRoute: () => TempleRoute,
+} as any)
 const PaySlugRoute = PaySlugRouteImport.update({
   id: '/pay/$slug',
   path: '/pay/$slug',
@@ -226,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/donate/$slug': typeof DonateSlugRoute
   '/festival/$slug': typeof FestivalSlugRoute
   '/pay/$slug': typeof PaySlugRoute
+  '/temple/life-patron': typeof TempleLifePatronRoute
   '/temple/sunday': typeof TempleSundayRoute
   '/donate/': typeof DonateIndexRoute
   '/temple/': typeof TempleIndexRoute
@@ -257,6 +264,7 @@ export interface FileRoutesByTo {
   '/donate/$slug': typeof DonateSlugRoute
   '/festival/$slug': typeof FestivalSlugRoute
   '/pay/$slug': typeof PaySlugRoute
+  '/temple/life-patron': typeof TempleLifePatronRoute
   '/temple/sunday': typeof TempleSundayRoute
   '/donate': typeof DonateIndexRoute
   '/temple': typeof TempleIndexRoute
@@ -291,6 +299,7 @@ export interface FileRoutesById {
   '/donate/$slug': typeof DonateSlugRoute
   '/festival/$slug': typeof FestivalSlugRoute
   '/pay/$slug': typeof PaySlugRoute
+  '/temple/life-patron': typeof TempleLifePatronRoute
   '/temple/sunday': typeof TempleSundayRoute
   '/donate/': typeof DonateIndexRoute
   '/temple/': typeof TempleIndexRoute
@@ -326,6 +335,7 @@ export interface FileRouteTypes {
     | '/donate/$slug'
     | '/festival/$slug'
     | '/pay/$slug'
+    | '/temple/life-patron'
     | '/temple/sunday'
     | '/donate/'
     | '/temple/'
@@ -357,6 +367,7 @@ export interface FileRouteTypes {
     | '/donate/$slug'
     | '/festival/$slug'
     | '/pay/$slug'
+    | '/temple/life-patron'
     | '/temple/sunday'
     | '/donate'
     | '/temple'
@@ -390,6 +401,7 @@ export interface FileRouteTypes {
     | '/donate/$slug'
     | '/festival/$slug'
     | '/pay/$slug'
+    | '/temple/life-patron'
     | '/temple/sunday'
     | '/donate/'
     | '/temple/'
@@ -595,6 +607,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TempleSundayRouteImport
       parentRoute: typeof TempleRoute
     }
+    '/temple/life-patron': {
+      id: '/temple/life-patron'
+      path: '/life-patron'
+      fullPath: '/temple/life-patron'
+      preLoaderRoute: typeof TempleLifePatronRouteImport
+      parentRoute: typeof TempleRoute
+    }
     '/pay/$slug': {
       id: '/pay/$slug'
       path: '/pay/$slug'
@@ -661,11 +680,13 @@ const DonateRouteWithChildren =
   DonateRoute._addFileChildren(DonateRouteChildren)
 
 interface TempleRouteChildren {
+  TempleLifePatronRoute: typeof TempleLifePatronRoute
   TempleSundayRoute: typeof TempleSundayRoute
   TempleIndexRoute: typeof TempleIndexRoute
 }
 
 const TempleRouteChildren: TempleRouteChildren = {
+  TempleLifePatronRoute: TempleLifePatronRoute,
   TempleSundayRoute: TempleSundayRoute,
   TempleIndexRoute: TempleIndexRoute,
 }

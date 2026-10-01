@@ -11,6 +11,7 @@ import { UploadBox } from "./CarouselManager";
 import { toast } from "sonner";
 
 export const DEFAULT_SEVA_CATEGORIES = [
+  "Patron Memberships",
   "Regular Sevas",
   "Youth Program Sevas",
   "Janmashtami Sevas",
@@ -42,7 +43,7 @@ function emptyDraft(): Partial<Seva> {
 }
 
 export default function SevasManager() {
-  const { sevas, setSevas, festivals } = useAdmin();
+  const { sevas, setSevas, festivals, lifePatron } = useAdmin();
   const [draft, setDraft] = useState<Partial<Seva>>(emptyDraft());
   const [pricingMode, setPricingMode] = useState<"single" | "multiple">("single");
   const [singleAmount, setSingleAmount] = useState<number>(516);
@@ -351,7 +352,32 @@ export default function SevasManager() {
     setIsModalOpen(true);
   };
 
-  const sorted = [...sevas].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const allSevasWithPatron = useMemo(() => {
+    let list = [...sevas];
+    const hasLifePatron = list.some(
+      (s) => s.slug === "life-patron" || s.slug === "life-patron-membership" || s.title.toLowerCase().includes("life patron")
+    );
+    if (!hasLifePatron) {
+      const lifePatronSevaItem: Seva = {
+        id: "s_life_patron_auto",
+        title: lifePatron?.heroTitle || "ISKCON Kurnool Life Patron Membership",
+        slug: "life-patron-membership",
+        category: "Patron Memberships",
+        categories: ["Patron Memberships"],
+        description: lifePatron?.heroSubtitle || "Become a recognized lifelong patron of Sri Sri Jagannath Baladev Subhadra Temple. Valid in 800+ ISKCON guest houses worldwide with 80G tax exemption benefits.",
+        thumbnail: lifePatron?.sevaCardImage || lifePatron?.cardPassImage || lifePatron?.heroImage || "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
+        prices: [
+          { label: "Life Patron Membership (One-Time Contribution)", amount: 55555 },
+        ],
+        order: -1,
+        active: true,
+      };
+      list = [lifePatronSevaItem, ...list];
+    }
+    return list;
+  }, [sevas, lifePatron]);
+
+  const sorted = [...allSevasWithPatron].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   // Master categories list for tabs & options
   const allCategories = useMemo(() => ["All", ...customCategories], [customCategories]);

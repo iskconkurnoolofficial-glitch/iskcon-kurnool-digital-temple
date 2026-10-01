@@ -4,6 +4,7 @@ import SiteLayout, { PageHero } from "@/components/SiteLayout";
 import { useAdmin, Seva, calculatePlatformFee, getSevaCategories } from "@/context/AdminContext";
 import OfficialReceiptModal, { ReceiptData } from "@/components/OfficialReceiptModal";
 import UpiPaymentModal from "@/components/UpiPaymentModal";
+import LifePatronOnboardingModal, { OnboardingData } from "@/components/LifePatronOnboardingModal";
 import { 
   Heart, 
   Search, 
@@ -31,6 +32,7 @@ import {
   Languages
 } from "lucide-react";
 import { toast } from "sonner";
+import { sendTelegramDonationNotificationServer } from "@/lib/telegram-notification.functions";
 
 export const Route = createFileRoute("/donate")({
   head: () => ({
@@ -203,7 +205,7 @@ function loadRazorpay(): Promise<boolean> {
 
 
 export default function Page({ initialSlug }: { initialSlug?: string }) {
-  const { sevas, festivals, settings, theme, ready, addDonation, updateDonationStatus, platformFee, addPaymentRecord, sunday, youth, upiPayment } = useAdmin();
+  const { sevas, festivals, settings, theme, ready, addDonation, updateDonationStatus, platformFee, addPaymentRecord, sunday, youth, lifePatron, upiPayment } = useAdmin();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
@@ -260,6 +262,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   // Success Receipt Modal State
   const [receiptSuccess, setReceiptSuccess] = useState<ReceiptData | null>(null);
   const [devotionalSuccessData, setDevotionalSuccessData] = useState<{ amount: number; sevaTitle: string; donorName: string } | null>(null);
+  const [lpmOnboardingData, setLpmOnboardingData] = useState<OnboardingData | null>(null);
   const [coverPlatformFee, setCoverPlatformFee] = useState(true);
 
   // Form inputs for standard seva checkout
@@ -325,6 +328,23 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
         };
       }
 
+      // Fallback for Life Patron Membership Seva
+      if (!found && (initialSlug === "life-patron" || initialSlug === "life-patron-membership" || initialSlug === "life-patron-seva")) {
+        found = {
+          id: "s_life_patron_fallback",
+          title: lifePatron?.heroTitle || "ISKCON Kurnool Life Patron Membership",
+          slug: "life-patron-membership",
+          category: "Patron Memberships",
+          description: lifePatron?.heroSubtitle || "Become a recognized lifelong patron of Sri Sri Jagannath Baladev Subhadra Temple. Valid in 800+ ISKCON guest houses worldwide with 80G tax exemption benefits.",
+          thumbnail: lifePatron?.sevaCardImage || lifePatron?.cardPassImage || lifePatron?.heroImage || "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
+          prices: [
+            { label: "Life Patron Membership (One-Time Contribution)", amount: 55555 }
+          ],
+          order: 0,
+          active: true
+        };
+      }
+
       if (found) {
         const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
         const amountParam = searchParams?.get("amount") || searchParams?.get("amt");
@@ -349,7 +369,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     } else {
       setCheckoutSeva(null);
     }
-  }, [initialSlug, sevas, festivals, sunday]);
+  }, [initialSlug, sevas, festivals, sunday, lifePatron]);
 
   // Auto-scroll to Step 2 Devotee Details form when a seva checkout page is opened via link
   useEffect(() => {
@@ -413,6 +433,17 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
           active: youth?.donationCardEnabled !== false,
         };
       }
+
+      if (s.slug === "life-patron" || s.slug === "life-patron-membership" || s.title.toLowerCase().includes("life patron")) {
+        return {
+          ...s,
+          title: lifePatron?.heroTitle || s.title,
+          description: lifePatron?.heroSubtitle || s.description,
+          thumbnail: lifePatron?.sevaCardImage || lifePatron?.cardPassImage || lifePatron?.heroImage || s.thumbnail,
+          category: s.category || "Patron Memberships",
+        };
+      }
+
       return s;
     });
 
@@ -441,8 +472,29 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       list = [youthSevaItem, ...list];
     }
 
+    const hasLifePatron = list.some(
+      (s) => s.slug === "life-patron" || s.slug === "life-patron-membership" || s.title.toLowerCase().includes("life patron")
+    );
+
+    if (!hasLifePatron) {
+      const lifePatronSevaItem: Seva = {
+        id: "s_life_patron_auto",
+        title: lifePatron?.heroTitle || "ISKCON Kurnool Life Patron Membership",
+        slug: "life-patron-membership",
+        category: "Patron Memberships",
+        description: lifePatron?.heroSubtitle || "Become a recognized lifelong patron of Sri Sri Jagannath Baladev Subhadra Temple. Valid in 800+ ISKCON guest houses worldwide with 80G tax exemption benefits.",
+        thumbnail: lifePatron?.sevaCardImage || lifePatron?.cardPassImage || lifePatron?.heroImage || "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
+        prices: [
+          { label: "Life Patron Membership (One-Time Contribution)", amount: 55555 },
+        ],
+        order: -1,
+        active: true,
+      };
+      list = [lifePatronSevaItem, ...list];
+    }
+
     return list.filter((s) => s.active !== false).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  }, [sevas, sunday, youth]);
+  }, [sevas, sunday, youth, lifePatron]);
 
   // Extract all categories
   const categories = useMemo(() => {
@@ -460,13 +512,15 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     
     if (masterList.length > 0) {
       masterList.forEach((c) => set.add(c));
-    } else {
-      active.forEach((s) => {
-        if (s.category && s.category.trim()) {
-          set.add(s.category.trim());
-        }
-      });
     }
+    
+    active.forEach((s) => {
+      const sevaCats = getSevaCategories(s);
+      sevaCats.forEach((c) => {
+        if (c && c.trim()) set.add(c.trim());
+      });
+    });
+
     return Array.from(set);
   }, [active]);
 
@@ -507,8 +561,8 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     // Extract all unique categories present
     const rawCategories = categories.filter((c) => c !== "All Sevas" && c !== "All");
 
-    // Desired priority order: Regular Sevas first, then Janmashtami, etc.
-    const priorityOrder = ["Regular Sevas", "Janmashtami Sevas", "Janmastami Sevas", "Radhashtami Sevas", "Annadana Sevas", "Deity Worship Sevas"];
+    // Desired priority order: Patron Memberships, Regular Sevas, Annadana, etc.
+    const priorityOrder = ["Patron Memberships", "Annadana Sevas", "Regular Sevas", "Deity Worship Sevas", "Janmashtami Sevas", "Janmastami Sevas", "Radhashtami Sevas"];
     const orderedCategories = [...rawCategories].sort((a, b) => {
       const idxA = priorityOrder.findIndex((p) => p.toLowerCase() === a.toLowerCase());
       const idxB = priorityOrder.findIndex((p) => p.toLowerCase() === b.toLowerCase());
@@ -662,22 +716,56 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
           }
         }
 
+        try {
+          await sendTelegramDonationNotificationServer({
+            data: {
+              paymentId: pId,
+              donorName: finalDonorName,
+              donorPhone: curPhone,
+              amount: totalPayable,
+              purpose: curPurpose || `${seva.title}${label ? ` (${label})` : ""}`,
+            },
+          });
+        } catch (e) {
+          console.error("Failed to send Telegram donation notification", e);
+        }
 
 
-        // Show Official Downloadable Receipt Modal
-        setReceiptSuccess({
-          receiptNo: pId,
-          date: new Date().toISOString(),
-          donorName: finalDonorName,
-          donorEmail: curEmail,
-          donorPhone: curPhone,
-          amount: totalPayable,
-          sevaTitle: `${seva.title} (${label})`,
-          category: "General Seva",
-          notes: curPurpose,
-          panNumber: curPan,
-          paymentMethod: "Razorpay",
-        });
+
+        const isLpm = checkoutSeva?.slug === "life-patron" || 
+                      checkoutSeva?.id === "s_life_patron_auto" || 
+                      checkoutSeva?.id === "s_life_patron_fallback" || 
+                      checkoutSeva?.category === "Patron Memberships" ||
+                      (checkoutSeva?.title && checkoutSeva.title.toLowerCase().includes("life patron")) ||
+                      (seva.title && seva.title.toLowerCase().includes("life patron"));
+
+        if (isLpm) {
+          setLpmOnboardingData({
+            paymentId: pId,
+            amount: totalPayable,
+            date: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "2-digit", year: "numeric" }),
+            patronName: finalDonorName,
+            patronPhone: curPhone,
+            patronEmail: curEmail,
+            patronCity: "Kurnool",
+            tierName: label || "Life Patron",
+          });
+        } else {
+          // Show Official Downloadable Receipt Modal for standard sevas
+          setReceiptSuccess({
+            receiptNo: pId,
+            date: new Date().toISOString(),
+            donorName: finalDonorName,
+            donorEmail: curEmail,
+            donorPhone: curPhone,
+            amount: totalPayable,
+            sevaTitle: `${seva.title} (${label})`,
+            category: "General Seva",
+            notes: curPurpose,
+            panNumber: curPan,
+            paymentMethod: "Razorpay",
+          });
+        }
 
         setCheckoutSeva(null);
         setDonorName("");
@@ -693,6 +781,21 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       },
     });
     rzp.open();
+  };
+
+  const handleGenerateLpmReceipt = (data: OnboardingData) => {
+    setReceiptSuccess({
+      receiptNo: data.paymentId,
+      date: new Date().toISOString(),
+      donorName: data.patronName,
+      donorEmail: data.patronEmail,
+      donorPhone: data.patronPhone,
+      amount: data.amount,
+      sevaTitle: `ISKCON Kurnool Life Patron Membership (${data.tierName})`,
+      category: "Life Patron Membership",
+      notes: "Eligible for 80G Income Tax Exemption.",
+      paymentMethod: "Online / Gateway",
+    });
   };
 
   // Handle successful UPI payment completion from UpiPaymentModal
@@ -744,11 +847,42 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       console.error("Failed to store UPI payment record:", err);
     }
 
-    setDevotionalSuccessData({
-      amount: paidAmt,
-      sevaTitle: upiModalData.sevaTitle,
-      donorName: upiModalData.donorName || "Devotee",
-    });
+    try {
+      await sendTelegramDonationNotificationServer({
+        data: {
+          paymentId: utr,
+          donorName: upiModalData.donorName || "Devotee",
+          donorPhone: upiModalData.donorPhone,
+          amount: paidAmt,
+          purpose: upiModalData.sevaTitle,
+        },
+      });
+    } catch (err) {
+      console.error("Failed to send Telegram notification for UPI payment:", err);
+    }
+
+    const isLpm = (checkoutSeva?.slug === "life-patron" ||
+                  checkoutSeva?.category === "Patron Memberships" ||
+                  (upiModalData.sevaTitle && upiModalData.sevaTitle.toLowerCase().includes("life patron")));
+
+    if (isLpm) {
+      setLpmOnboardingData({
+        paymentId: utr,
+        amount: paidAmt,
+        date: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "2-digit", year: "numeric" }),
+        patronName: upiModalData.donorName || "Devotee",
+        patronPhone: upiModalData.donorPhone || "",
+        patronEmail: upiModalData.donorEmail || "",
+        patronCity: "Kurnool",
+        tierName: "Life Patron",
+      });
+    } else {
+      setDevotionalSuccessData({
+        amount: paidAmt,
+        sevaTitle: upiModalData.sevaTitle,
+        donorName: upiModalData.donorName || "Devotee",
+      });
+    }
 
     setUpiModalData(null);
     setCheckoutSeva(null);
@@ -1382,6 +1516,13 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
           />
         )}
 
+        {/* Life Patron Onboarding Flow Modal (Exclusive for LPM Seva) */}
+        <LifePatronOnboardingModal
+          data={lpmOnboardingData}
+          onClose={() => setLpmOnboardingData(null)}
+          onGenerateReceipt={handleGenerateLpmReceipt}
+        />
+
         {/* Official Downloadable Receipt Modal */}
         {receiptSuccess && (
           <OfficialReceiptModal
@@ -1958,6 +2099,13 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
           </div>
         </div>
       )}
+
+      {/* Life Patron Onboarding Flow Modal (Exclusive for LPM Seva) */}
+      <LifePatronOnboardingModal
+        data={lpmOnboardingData}
+        onClose={() => setLpmOnboardingData(null)}
+        onGenerateReceipt={handleGenerateLpmReceipt}
+      />
     </SiteLayout>
   );
 }
