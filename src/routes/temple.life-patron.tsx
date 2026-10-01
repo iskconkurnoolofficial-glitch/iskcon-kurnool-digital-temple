@@ -4,7 +4,6 @@ import SiteLayout from "@/components/SiteLayout";
 import { useAdmin } from "@/context/AdminContext";
 import OfficialReceiptModal from "@/components/OfficialReceiptModal";
 import LifePatronOnboardingModal from "@/components/LifePatronOnboardingModal";
-import { sendTelegramDonationNotificationServer } from "@/lib/telegram-notification.functions";
 import confetti from "canvas-confetti";
 import {
   Award,
@@ -289,20 +288,6 @@ Thank you for becoming a valued Life Patron of ISKCON Kurnool!
         const pId = response?.razorpay_payment_id || `PAY-LP-${Math.floor(100000 + Math.random() * 900000)}`;
         const curDate = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "2-digit", year: "numeric" });
         setIsModalOpen(false);
-
-        try {
-          await sendTelegramDonationNotificationServer({
-            data: {
-              paymentId: pId,
-              donorName: patronName || "Devotee Patron",
-              donorPhone: patronPhone,
-              amount: amountInINR,
-              purpose: `Life Patron Membership (${selectedTier})`,
-            },
-          });
-        } catch (e) {
-          console.error("Failed to send Telegram donation notification", e);
-        }
 
         setOnboardingData({
           paymentId: pId,

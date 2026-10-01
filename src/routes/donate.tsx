@@ -32,7 +32,6 @@ import {
   Languages
 } from "lucide-react";
 import { toast } from "sonner";
-import { sendTelegramDonationNotificationServer } from "@/lib/telegram-notification.functions";
 
 export const Route = createFileRoute("/donate")({
   head: () => ({
@@ -716,20 +715,6 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
           }
         }
 
-        try {
-          await sendTelegramDonationNotificationServer({
-            data: {
-              paymentId: pId,
-              donorName: finalDonorName,
-              donorPhone: curPhone,
-              amount: totalPayable,
-              purpose: curPurpose || `${seva.title}${label ? ` (${label})` : ""}`,
-            },
-          });
-        } catch (e) {
-          console.error("Failed to send Telegram donation notification", e);
-        }
-
 
 
         const isLpm = checkoutSeva?.slug === "life-patron" || 
@@ -845,20 +830,6 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       });
     } catch (err) {
       console.error("Failed to store UPI payment record:", err);
-    }
-
-    try {
-      await sendTelegramDonationNotificationServer({
-        data: {
-          paymentId: utr,
-          donorName: upiModalData.donorName || "Devotee",
-          donorPhone: upiModalData.donorPhone,
-          amount: paidAmt,
-          purpose: upiModalData.sevaTitle,
-        },
-      });
-    } catch (err) {
-      console.error("Failed to send Telegram notification for UPI payment:", err);
     }
 
     const isLpm = (checkoutSeva?.slug === "life-patron" ||
