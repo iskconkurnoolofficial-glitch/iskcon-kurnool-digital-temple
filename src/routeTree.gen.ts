@@ -9,132 +9,42 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as YouthYatraRouteImport } from './routes/youth-yatra'
-import { Route as YouthRouteImport } from './routes/youth'
-import { Route as TermsRouteImport } from './routes/terms'
-import { Route as TempleRouteImport } from './routes/temple'
-import { Route as SocialMediaRouteImport } from './routes/social-media'
-import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as PrahladaBadiRouteImport } from './routes/prahlada-badi'
-import { Route as HouseProgrammesRouteImport } from './routes/house-programmes'
-import { Route as HarinamaRouteImport } from './routes/harinama'
-import { Route as GoshalaRouteImport } from './routes/goshala'
-import { Route as GitaCourseRouteImport } from './routes/gita-course'
-import { Route as GalleryRouteImport } from './routes/gallery'
-import { Route as FestivalsRouteImport } from './routes/festivals'
-import { Route as EkadashiRouteImport } from './routes/ekadashi'
-import { Route as DonateRouteImport } from './routes/donate'
-import { Route as DailyDarshanRouteImport } from './routes/daily-darshan'
-import { Route as CoursesRouteImport } from './routes/courses'
-import { Route as ConnectRouteImport } from './routes/connect'
-import { Route as BhaktiStepsRouteImport } from './routes/bhakti-steps'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as TempleIndexRouteImport } from './routes/temple.index'
-import { Route as DonateIndexRouteImport } from './routes/donate.index'
-import { Route as TempleSundayRouteImport } from './routes/temple.sunday'
-import { Route as TempleLifePatronRouteImport } from './routes/temple.life-patron'
-import { Route as PaySlugRouteImport } from './routes/pay.$slug'
-import { Route as FestivalSlugRouteImport } from './routes/festival.$slug'
-import { Route as DonateSlugRouteImport } from './routes/donate.$slug'
-import { Route as AboutMissionRouteImport } from './routes/about.mission'
-import { Route as AboutKurnoolRouteImport } from './routes/about.kurnool'
-import { Route as AboutIskconRouteImport } from './routes/about.iskcon'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as BhaktiStepsRouteImport } from './routes/bhakti-steps'
+import { Route as ConnectRouteImport } from './routes/connect'
+import { Route as CoursesRouteImport } from './routes/courses'
+import { Route as DailyDarshanRouteImport } from './routes/daily-darshan'
+import { Route as DonateRouteImport } from './routes/donate'
+import { Route as EkadashiRouteImport } from './routes/ekadashi'
+import { Route as FestivalsRouteImport } from './routes/festivals'
+import { Route as GalleryRouteImport } from './routes/gallery'
+import { Route as GitaCourseRouteImport } from './routes/gita-course'
+import { Route as GoshalaRouteImport } from './routes/goshala'
+import { Route as HarinamaRouteImport } from './routes/harinama'
+import { Route as HouseProgrammesRouteImport } from './routes/house-programmes'
+import { Route as PrahladaBadiRouteImport } from './routes/prahlada-badi'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as SocialMediaRouteImport } from './routes/social-media'
+import { Route as TempleRouteImport } from './routes/temple'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as YouthRouteImport } from './routes/youth'
+import { Route as YouthYatraRouteImport } from './routes/youth-yatra'
 import { Route as AboutFounderRouteImport } from './routes/about.founder'
+import { Route as AboutIskconRouteImport } from './routes/about.iskcon'
+import { Route as AboutKurnoolRouteImport } from './routes/about.kurnool'
+import { Route as AboutMissionRouteImport } from './routes/about.mission'
+import { Route as DonateIndexRouteImport } from './routes/donate.index'
+import { Route as DonateSlugRouteImport } from './routes/donate.$slug'
+import { Route as FestivalSlugRouteImport } from './routes/festival.$slug'
+import { Route as PaySlugRouteImport } from './routes/pay.$slug'
+import { Route as TempleIndexRouteImport } from './routes/temple.index'
+import { Route as TempleLifePatronRouteImport } from './routes/temple.life-patron'
+import { Route as TempleSundayRouteImport } from './routes/temple.sunday'
 
-const YouthYatraRoute = YouthYatraRouteImport.update({
-  id: '/youth-yatra',
-  path: '/youth-yatra',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const YouthRoute = YouthRouteImport.update({
-  id: '/youth',
-  path: '/youth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TermsRoute = TermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TempleRoute = TempleRouteImport.update({
-  id: '/temple',
-  path: '/temple',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SocialMediaRoute = SocialMediaRouteImport.update({
-  id: '/social-media',
-  path: '/social-media',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrahladaBadiRoute = PrahladaBadiRouteImport.update({
-  id: '/prahlada-badi',
-  path: '/prahlada-badi',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HouseProgrammesRoute = HouseProgrammesRouteImport.update({
-  id: '/house-programmes',
-  path: '/house-programmes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HarinamaRoute = HarinamaRouteImport.update({
-  id: '/harinama',
-  path: '/harinama',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GoshalaRoute = GoshalaRouteImport.update({
-  id: '/goshala',
-  path: '/goshala',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GitaCourseRoute = GitaCourseRouteImport.update({
-  id: '/gita-course',
-  path: '/gita-course',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GalleryRoute = GalleryRouteImport.update({
-  id: '/gallery',
-  path: '/gallery',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FestivalsRoute = FestivalsRouteImport.update({
-  id: '/festivals',
-  path: '/festivals',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EkadashiRoute = EkadashiRouteImport.update({
-  id: '/ekadashi',
-  path: '/ekadashi',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DonateRoute = DonateRouteImport.update({
-  id: '/donate',
-  path: '/donate',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DailyDarshanRoute = DailyDarshanRouteImport.update({
-  id: '/daily-darshan',
-  path: '/daily-darshan',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CoursesRoute = CoursesRouteImport.update({
-  id: '/courses',
-  path: '/courses',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConnectRoute = ConnectRouteImport.update({
-  id: '/connect',
-  path: '/connect',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BhaktiStepsRoute = BhaktiStepsRouteImport.update({
-  id: '/bhakti-steps',
-  path: '/bhakti-steps',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -142,54 +52,104 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const BhaktiStepsRoute = BhaktiStepsRouteImport.update({
+  id: '/bhakti-steps',
+  path: '/bhakti-steps',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TempleIndexRoute = TempleIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => TempleRoute,
-} as any)
-const DonateIndexRoute = DonateIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => DonateRoute,
-} as any)
-const TempleSundayRoute = TempleSundayRouteImport.update({
-  id: '/sunday',
-  path: '/sunday',
-  getParentRoute: () => TempleRoute,
-} as any)
-const TempleLifePatronRoute = TempleLifePatronRouteImport.update({
-  id: '/life-patron',
-  path: '/life-patron',
-  getParentRoute: () => TempleRoute,
-} as any)
-const PaySlugRoute = PaySlugRouteImport.update({
-  id: '/pay/$slug',
-  path: '/pay/$slug',
+const ConnectRoute = ConnectRouteImport.update({
+  id: '/connect',
+  path: '/connect',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FestivalSlugRoute = FestivalSlugRouteImport.update({
-  id: '/festival/$slug',
-  path: '/festival/$slug',
+const CoursesRoute = CoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DonateSlugRoute = DonateSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => DonateRoute,
-} as any)
-const AboutMissionRoute = AboutMissionRouteImport.update({
-  id: '/about/mission',
-  path: '/about/mission',
+const DailyDarshanRoute = DailyDarshanRouteImport.update({
+  id: '/daily-darshan',
+  path: '/daily-darshan',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AboutKurnoolRoute = AboutKurnoolRouteImport.update({
-  id: '/about/kurnool',
-  path: '/about/kurnool',
+const DonateRoute = DonateRouteImport.update({
+  id: '/donate',
+  path: '/donate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EkadashiRoute = EkadashiRouteImport.update({
+  id: '/ekadashi',
+  path: '/ekadashi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FestivalsRoute = FestivalsRouteImport.update({
+  id: '/festivals',
+  path: '/festivals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GalleryRoute = GalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GitaCourseRoute = GitaCourseRouteImport.update({
+  id: '/gita-course',
+  path: '/gita-course',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GoshalaRoute = GoshalaRouteImport.update({
+  id: '/goshala',
+  path: '/goshala',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HarinamaRoute = HarinamaRouteImport.update({
+  id: '/harinama',
+  path: '/harinama',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HouseProgrammesRoute = HouseProgrammesRouteImport.update({
+  id: '/house-programmes',
+  path: '/house-programmes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrahladaBadiRoute = PrahladaBadiRouteImport.update({
+  id: '/prahlada-badi',
+  path: '/prahlada-badi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SocialMediaRoute = SocialMediaRouteImport.update({
+  id: '/social-media',
+  path: '/social-media',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TempleRoute = TempleRouteImport.update({
+  id: '/temple',
+  path: '/temple',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const YouthRoute = YouthRouteImport.update({
+  id: '/youth',
+  path: '/youth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const YouthYatraRoute = YouthYatraRouteImport.update({
+  id: '/youth-yatra',
+  path: '/youth-yatra',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutFounderRoute = AboutFounderRouteImport.update({
+  id: '/about/founder',
+  path: '/about/founder',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutIskconRoute = AboutIskconRouteImport.update({
@@ -197,10 +157,50 @@ const AboutIskconRoute = AboutIskconRouteImport.update({
   path: '/about/iskcon',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AboutFounderRoute = AboutFounderRouteImport.update({
-  id: '/about/founder',
-  path: '/about/founder',
+const AboutKurnoolRoute = AboutKurnoolRouteImport.update({
+  id: '/about/kurnool',
+  path: '/about/kurnool',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AboutMissionRoute = AboutMissionRouteImport.update({
+  id: '/about/mission',
+  path: '/about/mission',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DonateIndexRoute = DonateIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DonateRoute,
+} as any)
+const DonateSlugRoute = DonateSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => DonateRoute,
+} as any)
+const FestivalSlugRoute = FestivalSlugRouteImport.update({
+  id: '/festival/$slug',
+  path: '/festival/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaySlugRoute = PaySlugRouteImport.update({
+  id: '/pay/$slug',
+  path: '/pay/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TempleIndexRoute = TempleIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => TempleRoute,
+} as any)
+const TempleLifePatronRoute = TempleLifePatronRouteImport.update({
+  id: '/life-patron',
+  path: '/life-patron',
+  getParentRoute: () => TempleRoute,
+} as any)
+const TempleSundayRoute = TempleSundayRouteImport.update({
+  id: '/sunday',
+  path: '/sunday',
+  getParentRoute: () => TempleRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -439,137 +439,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/youth-yatra': {
-      id: '/youth-yatra'
-      path: '/youth-yatra'
-      fullPath: '/youth-yatra'
-      preLoaderRoute: typeof YouthYatraRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/youth': {
-      id: '/youth'
-      path: '/youth'
-      fullPath: '/youth'
-      preLoaderRoute: typeof YouthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/terms': {
-      id: '/terms'
-      path: '/terms'
-      fullPath: '/terms'
-      preLoaderRoute: typeof TermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/temple': {
-      id: '/temple'
-      path: '/temple'
-      fullPath: '/temple'
-      preLoaderRoute: typeof TempleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/social-media': {
-      id: '/social-media'
-      path: '/social-media'
-      fullPath: '/social-media'
-      preLoaderRoute: typeof SocialMediaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/prahlada-badi': {
-      id: '/prahlada-badi'
-      path: '/prahlada-badi'
-      fullPath: '/prahlada-badi'
-      preLoaderRoute: typeof PrahladaBadiRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/house-programmes': {
-      id: '/house-programmes'
-      path: '/house-programmes'
-      fullPath: '/house-programmes'
-      preLoaderRoute: typeof HouseProgrammesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/harinama': {
-      id: '/harinama'
-      path: '/harinama'
-      fullPath: '/harinama'
-      preLoaderRoute: typeof HarinamaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/goshala': {
-      id: '/goshala'
-      path: '/goshala'
-      fullPath: '/goshala'
-      preLoaderRoute: typeof GoshalaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gita-course': {
-      id: '/gita-course'
-      path: '/gita-course'
-      fullPath: '/gita-course'
-      preLoaderRoute: typeof GitaCourseRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gallery': {
-      id: '/gallery'
-      path: '/gallery'
-      fullPath: '/gallery'
-      preLoaderRoute: typeof GalleryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/festivals': {
-      id: '/festivals'
-      path: '/festivals'
-      fullPath: '/festivals'
-      preLoaderRoute: typeof FestivalsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ekadashi': {
-      id: '/ekadashi'
-      path: '/ekadashi'
-      fullPath: '/ekadashi'
-      preLoaderRoute: typeof EkadashiRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/donate': {
-      id: '/donate'
-      path: '/donate'
-      fullPath: '/donate'
-      preLoaderRoute: typeof DonateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/daily-darshan': {
-      id: '/daily-darshan'
-      path: '/daily-darshan'
-      fullPath: '/daily-darshan'
-      preLoaderRoute: typeof DailyDarshanRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/courses': {
-      id: '/courses'
-      path: '/courses'
-      fullPath: '/courses'
-      preLoaderRoute: typeof CoursesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/connect': {
-      id: '/connect'
-      path: '/connect'
-      fullPath: '/connect'
-      preLoaderRoute: typeof ConnectRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/bhakti-steps': {
-      id: '/bhakti-steps'
-      path: '/bhakti-steps'
-      fullPath: '/bhakti-steps'
-      preLoaderRoute: typeof BhaktiStepsRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -579,74 +453,144 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/bhakti-steps': {
+      id: '/bhakti-steps'
+      path: '/bhakti-steps'
+      fullPath: '/bhakti-steps'
+      preLoaderRoute: typeof BhaktiStepsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/temple/': {
-      id: '/temple/'
-      path: '/'
-      fullPath: '/temple/'
-      preLoaderRoute: typeof TempleIndexRouteImport
-      parentRoute: typeof TempleRoute
-    }
-    '/donate/': {
-      id: '/donate/'
-      path: '/'
-      fullPath: '/donate/'
-      preLoaderRoute: typeof DonateIndexRouteImport
-      parentRoute: typeof DonateRoute
-    }
-    '/temple/sunday': {
-      id: '/temple/sunday'
-      path: '/sunday'
-      fullPath: '/temple/sunday'
-      preLoaderRoute: typeof TempleSundayRouteImport
-      parentRoute: typeof TempleRoute
-    }
-    '/temple/life-patron': {
-      id: '/temple/life-patron'
-      path: '/life-patron'
-      fullPath: '/temple/life-patron'
-      preLoaderRoute: typeof TempleLifePatronRouteImport
-      parentRoute: typeof TempleRoute
-    }
-    '/pay/$slug': {
-      id: '/pay/$slug'
-      path: '/pay/$slug'
-      fullPath: '/pay/$slug'
-      preLoaderRoute: typeof PaySlugRouteImport
+    '/connect': {
+      id: '/connect'
+      path: '/connect'
+      fullPath: '/connect'
+      preLoaderRoute: typeof ConnectRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/festival/$slug': {
-      id: '/festival/$slug'
-      path: '/festival/$slug'
-      fullPath: '/festival/$slug'
-      preLoaderRoute: typeof FestivalSlugRouteImport
+    '/courses': {
+      id: '/courses'
+      path: '/courses'
+      fullPath: '/courses'
+      preLoaderRoute: typeof CoursesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/donate/$slug': {
-      id: '/donate/$slug'
-      path: '/$slug'
-      fullPath: '/donate/$slug'
-      preLoaderRoute: typeof DonateSlugRouteImport
-      parentRoute: typeof DonateRoute
-    }
-    '/about/mission': {
-      id: '/about/mission'
-      path: '/about/mission'
-      fullPath: '/about/mission'
-      preLoaderRoute: typeof AboutMissionRouteImport
+    '/daily-darshan': {
+      id: '/daily-darshan'
+      path: '/daily-darshan'
+      fullPath: '/daily-darshan'
+      preLoaderRoute: typeof DailyDarshanRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/about/kurnool': {
-      id: '/about/kurnool'
-      path: '/about/kurnool'
-      fullPath: '/about/kurnool'
-      preLoaderRoute: typeof AboutKurnoolRouteImport
+    '/donate': {
+      id: '/donate'
+      path: '/donate'
+      fullPath: '/donate'
+      preLoaderRoute: typeof DonateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ekadashi': {
+      id: '/ekadashi'
+      path: '/ekadashi'
+      fullPath: '/ekadashi'
+      preLoaderRoute: typeof EkadashiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/festivals': {
+      id: '/festivals'
+      path: '/festivals'
+      fullPath: '/festivals'
+      preLoaderRoute: typeof FestivalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gallery': {
+      id: '/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gita-course': {
+      id: '/gita-course'
+      path: '/gita-course'
+      fullPath: '/gita-course'
+      preLoaderRoute: typeof GitaCourseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/goshala': {
+      id: '/goshala'
+      path: '/goshala'
+      fullPath: '/goshala'
+      preLoaderRoute: typeof GoshalaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/harinama': {
+      id: '/harinama'
+      path: '/harinama'
+      fullPath: '/harinama'
+      preLoaderRoute: typeof HarinamaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/house-programmes': {
+      id: '/house-programmes'
+      path: '/house-programmes'
+      fullPath: '/house-programmes'
+      preLoaderRoute: typeof HouseProgrammesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/prahlada-badi': {
+      id: '/prahlada-badi'
+      path: '/prahlada-badi'
+      fullPath: '/prahlada-badi'
+      preLoaderRoute: typeof PrahladaBadiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/social-media': {
+      id: '/social-media'
+      path: '/social-media'
+      fullPath: '/social-media'
+      preLoaderRoute: typeof SocialMediaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/temple': {
+      id: '/temple'
+      path: '/temple'
+      fullPath: '/temple'
+      preLoaderRoute: typeof TempleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/youth': {
+      id: '/youth'
+      path: '/youth'
+      fullPath: '/youth'
+      preLoaderRoute: typeof YouthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/youth-yatra': {
+      id: '/youth-yatra'
+      path: '/youth-yatra'
+      fullPath: '/youth-yatra'
+      preLoaderRoute: typeof YouthYatraRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about/founder': {
+      id: '/about/founder'
+      path: '/about/founder'
+      fullPath: '/about/founder'
+      preLoaderRoute: typeof AboutFounderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about/iskcon': {
@@ -656,12 +600,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutIskconRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/about/founder': {
-      id: '/about/founder'
-      path: '/about/founder'
-      fullPath: '/about/founder'
-      preLoaderRoute: typeof AboutFounderRouteImport
+    '/about/kurnool': {
+      id: '/about/kurnool'
+      path: '/about/kurnool'
+      fullPath: '/about/kurnool'
+      preLoaderRoute: typeof AboutKurnoolRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/about/mission': {
+      id: '/about/mission'
+      path: '/about/mission'
+      fullPath: '/about/mission'
+      preLoaderRoute: typeof AboutMissionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/donate/': {
+      id: '/donate/'
+      path: '/'
+      fullPath: '/donate/'
+      preLoaderRoute: typeof DonateIndexRouteImport
+      parentRoute: typeof DonateRoute
+    }
+    '/donate/$slug': {
+      id: '/donate/$slug'
+      path: '/$slug'
+      fullPath: '/donate/$slug'
+      preLoaderRoute: typeof DonateSlugRouteImport
+      parentRoute: typeof DonateRoute
+    }
+    '/festival/$slug': {
+      id: '/festival/$slug'
+      path: '/festival/$slug'
+      fullPath: '/festival/$slug'
+      preLoaderRoute: typeof FestivalSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pay/$slug': {
+      id: '/pay/$slug'
+      path: '/pay/$slug'
+      fullPath: '/pay/$slug'
+      preLoaderRoute: typeof PaySlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/temple/': {
+      id: '/temple/'
+      path: '/'
+      fullPath: '/temple/'
+      preLoaderRoute: typeof TempleIndexRouteImport
+      parentRoute: typeof TempleRoute
+    }
+    '/temple/life-patron': {
+      id: '/temple/life-patron'
+      path: '/life-patron'
+      fullPath: '/temple/life-patron'
+      preLoaderRoute: typeof TempleLifePatronRouteImport
+      parentRoute: typeof TempleRoute
+    }
+    '/temple/sunday': {
+      id: '/temple/sunday'
+      path: '/sunday'
+      fullPath: '/temple/sunday'
+      preLoaderRoute: typeof TempleSundayRouteImport
+      parentRoute: typeof TempleRoute
     }
   }
 }
