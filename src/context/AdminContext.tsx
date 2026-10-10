@@ -3446,6 +3446,9 @@ type AdminState = {
 
   lifePatron: LifePatronData;
   setLifePatron: (lp: LifePatronData) => void;
+  lockedAdminSections: string[];
+  toggleLockAdminSection: (sectionId: string) => void;
+  isSectionLocked: (sectionId: string) => boolean;
 
   terms: TermsData;
   setTerms: (t: TermsData) => void;
@@ -3541,6 +3544,7 @@ const KEYS = {
   receiptSettings: "receiptSettings",
   lifePatron: "lifePatron",
   teamMembers: "team_members",
+  lockedAdminSections: "lockedAdminSections",
 } as const;
 
 const Ctx = createContext<AdminState | null>(null);
@@ -3680,6 +3684,20 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [privacy, setPrivacyState] = useState<PrivacyData>(() => getCached(KEYS.privacy, defaultPrivacy));
   const [receiptSettings, setReceiptSettingsState] = useState<ReceiptSettings>(() => getCached(KEYS.receiptSettings, defaultReceiptSettings));
   const [lifePatron, setLifePatronState] = useState<LifePatronData>(() => getCached(KEYS.lifePatron, defaultLifePatron));
+  const [lockedAdminSections, setLockedAdminSectionsState] = useState<string[]>(() => getCached(KEYS.lockedAdminSections, []));
+
+  const toggleLockAdminSection = (sectionId: string) => {
+    setLockedAdminSectionsState((prev) => {
+      const isLocked = prev.includes(sectionId);
+      const updated = isLocked ? prev.filter((id) => id !== sectionId) : [...prev, sectionId];
+      persist(KEYS.lockedAdminSections, updated);
+      return updated;
+    });
+  };
+
+  const isSectionLocked = (sectionId: string): boolean => {
+    return lockedAdminSections.includes(sectionId);
+  };
 
   const [currentUser, setCurrentUser] = useState<CurrentAdminUser | null>(null);
   const [authed, setAuthed] = useState(false);
@@ -4829,6 +4847,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         privacy, setPrivacy,
         receiptSettings, setReceiptSettings,
         lifePatron, setLifePatron,
+        lockedAdminSections, toggleLockAdminSection, isSectionLocked,
         changeSuperAdminPassword, currentUser,
         authed, login, logout, ready,
       }}

@@ -16,6 +16,7 @@ import { Route as TempleRouteImport } from './routes/temple'
 import { Route as SocialMediaRouteImport } from './routes/social-media'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PrahladaBadiRouteImport } from './routes/prahlada-badi'
+import { Route as ManageAdminItemsRouteImport } from './routes/manage-admin-items'
 import { Route as HouseProgrammesRouteImport } from './routes/house-programmes'
 import { Route as HarinamaRouteImport } from './routes/harinama'
 import { Route as GoshalaRouteImport } from './routes/goshala'
@@ -75,6 +76,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const PrahladaBadiRoute = PrahladaBadiRouteImport.update({
   id: '/prahlada-badi',
   path: '/prahlada-badi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManageAdminItemsRoute = ManageAdminItemsRouteImport.update({
+  id: '/manage-admin-items',
+  path: '/manage-admin-items',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HouseProgrammesRoute = HouseProgrammesRouteImport.update({
@@ -218,6 +224,7 @@ export interface FileRoutesByFullPath {
   '/goshala': typeof GoshalaRoute
   '/harinama': typeof HarinamaRoute
   '/house-programmes': typeof HouseProgrammesRoute
+  '/manage-admin-items': typeof ManageAdminItemsRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/privacy': typeof PrivacyRoute
   '/social-media': typeof SocialMediaRoute
@@ -251,6 +258,7 @@ export interface FileRoutesByTo {
   '/goshala': typeof GoshalaRoute
   '/harinama': typeof HarinamaRoute
   '/house-programmes': typeof HouseProgrammesRoute
+  '/manage-admin-items': typeof ManageAdminItemsRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/privacy': typeof PrivacyRoute
   '/social-media': typeof SocialMediaRoute
@@ -285,6 +293,7 @@ export interface FileRoutesById {
   '/goshala': typeof GoshalaRoute
   '/harinama': typeof HarinamaRoute
   '/house-programmes': typeof HouseProgrammesRoute
+  '/manage-admin-items': typeof ManageAdminItemsRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/privacy': typeof PrivacyRoute
   '/social-media': typeof SocialMediaRoute
@@ -321,6 +330,7 @@ export interface FileRouteTypes {
     | '/goshala'
     | '/harinama'
     | '/house-programmes'
+    | '/manage-admin-items'
     | '/prahlada-badi'
     | '/privacy'
     | '/social-media'
@@ -354,6 +364,7 @@ export interface FileRouteTypes {
     | '/goshala'
     | '/harinama'
     | '/house-programmes'
+    | '/manage-admin-items'
     | '/prahlada-badi'
     | '/privacy'
     | '/social-media'
@@ -387,6 +398,7 @@ export interface FileRouteTypes {
     | '/goshala'
     | '/harinama'
     | '/house-programmes'
+    | '/manage-admin-items'
     | '/prahlada-badi'
     | '/privacy'
     | '/social-media'
@@ -422,6 +434,7 @@ export interface RootRouteChildren {
   GoshalaRoute: typeof GoshalaRoute
   HarinamaRoute: typeof HarinamaRoute
   HouseProgrammesRoute: typeof HouseProgrammesRoute
+  ManageAdminItemsRoute: typeof ManageAdminItemsRoute
   PrahladaBadiRoute: typeof PrahladaBadiRoute
   PrivacyRoute: typeof PrivacyRoute
   SocialMediaRoute: typeof SocialMediaRoute
@@ -486,6 +499,13 @@ declare module '@tanstack/react-router' {
       path: '/prahlada-badi'
       fullPath: '/prahlada-badi'
       preLoaderRoute: typeof PrahladaBadiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manage-admin-items': {
+      id: '/manage-admin-items'
+      path: '/manage-admin-items'
+      fullPath: '/manage-admin-items'
+      preLoaderRoute: typeof ManageAdminItemsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/house-programmes': {
@@ -709,6 +729,7 @@ const rootRouteChildren: RootRouteChildren = {
   GoshalaRoute: GoshalaRoute,
   HarinamaRoute: HarinamaRoute,
   HouseProgrammesRoute: HouseProgrammesRoute,
+  ManageAdminItemsRoute: ManageAdminItemsRoute,
   PrahladaBadiRoute: PrahladaBadiRoute,
   PrivacyRoute: PrivacyRoute,
   SocialMediaRoute: SocialMediaRoute,

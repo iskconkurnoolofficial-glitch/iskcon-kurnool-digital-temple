@@ -32,6 +32,8 @@ import UpiSettingsManager from "@/admin/UpiSettingsManager";
 import LifePatronManager from "@/admin/LifePatronManager";
 import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, CreditCard, Video, Bell, ShieldCheck, Compass, Sun, Tv, Award, FileText, Lock, FileCheck, QrCode, Eye, EyeOff, Rocket, KeyRound, Ticket } from "lucide-react";
 
+import { toast } from "sonner";
+
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
@@ -40,7 +42,7 @@ export const Route = createFileRoute("/admin")({
 type Tab = "welcome" | "dailyDarshan" | "liveProgrammes" | "carousel" | "festivals" | "sevas" | "bhaktiSteps" | "lifePatron" | "youth" | "youthYatra" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "upiSettings" | "receiptSettings" | "terms" | "privacy" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "paymentPages";
 
 function AdminPage() {
-  const { authed, login, logout, settings, contacts, setContacts, paymentRecords, houseProgrammes, markAllHouseProgrammeRequestsRead, markAllPaymentRecordsRead, youthYatra, markAllYatraRegistrationsRead, bhaktiSteps, markAllBhaktiStepsRegistrationsRead, currentUser, changeSuperAdminPassword } = useAdmin();
+  const { authed, login, logout, settings, contacts, setContacts, paymentRecords, houseProgrammes, markAllHouseProgrammeRequestsRead, markAllPaymentRecordsRead, youthYatra, markAllYatraRegistrationsRead, bhaktiSteps, markAllBhaktiStepsRegistrationsRead, currentUser, changeSuperAdminPassword, isSectionLocked } = useAdmin();
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -52,6 +54,22 @@ function AdminPage() {
   const [showSplash, setShowSplash] = useState(true);
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+
+  const selectTab = (targetTab: Tab) => {
+    if (targetTab !== "welcome" && isSectionLocked(targetTab)) {
+      const secLabel = tabs.find((t) => t.id === targetTab)?.label || targetTab;
+      toast.error(`🔒 "${secLabel}" section is LOCKED by permissions. Unlock at /manage-admin-items`);
+      return;
+    }
+    setTab(targetTab);
+  };
+
+  useEffect(() => {
+    if (tab !== "welcome" && isSectionLocked(tab)) {
+      toast.error(`🔒 Section is currently LOCKED.`);
+      setTab("welcome");
+    }
+  }, [tab, isSectionLocked]);
 
   useEffect(() => {
     setHydrated(true);
@@ -435,23 +453,28 @@ function AdminPage() {
         {tabs.map((t) => {
           const Icon = t.icon;
           const cnt = getBadgeCount(t.id);
+          const locked = isSectionLocked(t.id);
           return (
             <button
               key={t.id}
-              onClick={() => setTab(t.id)}
+              onClick={() => selectTab(t.id)}
               className={`px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
-                tab === t.id
+                locked
+                  ? "bg-red-950/60 text-red-200 border border-red-500/40"
+                  : tab === t.id
                   ? "bg-secondary text-primary shadow-sm ring-1 ring-white/20"
                   : "bg-white/10 text-white/85 hover:bg-white/20"
               }`}
             >
-              <Icon className="h-3.5 w-3.5" />
+              {locked ? <Lock className="h-3.5 w-3.5 text-red-400" /> : <Icon className="h-3.5 w-3.5" />}
               <span>{t.label}</span>
-              {cnt > 0 && (
+              {locked ? (
+                <span className="text-[8px] uppercase tracking-wider bg-red-600 font-black px-1 rounded text-white">Locked</span>
+              ) : cnt > 0 ? (
                 <span className="flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-red-600 px-1 text-[8px] font-extrabold text-white">
                   {cnt}
                 </span>
-              )}
+              ) : null}
             </button>
           );
         })}
@@ -532,6 +555,7 @@ function AdminPage() {
                 )}
               </button>
 
+
               {groups.map((group) => {
                 const filteredItems = group.items.filter(item => 
                   item.label.toLowerCase().includes(drawerSearch.toLowerCase())
@@ -546,23 +570,28 @@ function AdminPage() {
                     <div className="space-y-1">
                       {(drawerSearch ? filteredItems : group.items).map((t) => {
                         const cnt = getBadgeCount(t.id);
+                        const locked = isSectionLocked(t.id);
                         return (
                           <button
                             key={t.id}
-                            onClick={() => { setTab(t.id); setMobileMenuOpen(false); }}
+                            onClick={() => { selectTab(t.id); setMobileMenuOpen(false); }}
                             className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs transition-all ${
-                              tab === t.id
+                              locked
+                                ? "bg-red-950/40 text-red-200 opacity-60"
+                                : tab === t.id
                                 ? "bg-white/15 text-secondary font-bold border-l-4 border-secondary pl-2.5 shadow-sm"
                                 : "hover:bg-white/10 active:bg-white/15 text-white/85"
                             }`}
                           >
-                            <t.icon className="h-4 w-4 shrink-0" />
+                            {locked ? <Lock className="h-4 w-4 shrink-0 text-red-400" /> : <t.icon className="h-4 w-4 shrink-0" />}
                             <span className="truncate flex-1 text-left">{t.label}</span>
-                            {cnt > 0 && (
+                            {locked ? (
+                              <span className="text-[9px] uppercase tracking-wider bg-red-600 font-extrabold px-1.5 py-0.5 rounded text-white">Locked</span>
+                            ) : cnt > 0 ? (
                               <span className="flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-red-600 px-1.5 text-[9px] font-extrabold text-white shadow-sm animate-pulse">
                                 {cnt}
                               </span>
-                            )}
+                            ) : null}
                             <ChevronRight className="h-3.5 w-3.5 text-white/30" />
                           </button>
                         );
@@ -612,9 +641,9 @@ function AdminPage() {
         </div>
 
         <nav className="flex-1 p-3 space-y-5 overflow-y-auto scrollbar-thin scrollbar-thumb-white/15">
-          <div className="space-y-0.5 border-b border-white/10 pb-3 mb-1">
+          <div className="space-y-1 border-b border-white/10 pb-3 mb-1">
             <button
-              onClick={() => setTab("welcome")}
+              onClick={() => selectTab("welcome")}
               className={`w-full flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
                 tab === "welcome" 
                   ? "bg-amber-400 text-slate-950 shadow-md scale-[1.02]" 
@@ -633,6 +662,8 @@ function AdminPage() {
                 </span>
               )}
             </button>
+
+
           </div>
 
           {groups.map((group) => (
@@ -644,27 +675,32 @@ function AdminPage() {
                 {group.items.map((t) => {
                   const cnt = getBadgeCount(t.id);
                   const isActive = tab === t.id;
+                  const locked = isSectionLocked(t.id);
                   return (
                     <button
                       key={t.id}
-                      onClick={() => setTab(t.id)}
+                      onClick={() => selectTab(t.id)}
                       className={`w-full flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs transition-all duration-200 cursor-pointer ${
-                        isActive 
+                        locked
+                          ? "opacity-60 bg-red-950/40 text-red-200 hover:bg-red-900/40 border border-red-500/30"
+                          : isActive 
                           ? "bg-amber-400 text-slate-950 font-extrabold shadow-md scale-[1.02]" 
                           : "hover:bg-white/10 text-white/80 hover:translate-x-1"
                       }`}
                     >
                       <div className="flex items-center gap-3 truncate">
-                        <t.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-slate-950" : "text-amber-300/80"}`} /> 
+                        <t.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-slate-950" : locked ? "text-red-400" : "text-amber-300/80"}`} /> 
                         <span className="truncate">{t.label}</span>
                       </div>
-                      {cnt > 0 && (
+                      {locked ? (
+                        <Lock className="h-3.5 w-3.5 text-red-400 shrink-0" />
+                      ) : cnt > 0 ? (
                         <span className={`flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-extrabold shadow-xs animate-pulse ${
                           isActive ? "bg-slate-950 text-amber-300" : "bg-red-600 text-white"
                         }`}>
                           {cnt}
                         </span>
-                      )}
+                      ) : null}
                     </button>
                   );
                 })}
@@ -753,7 +789,7 @@ function AdminPage() {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.25 }}
           >
-            {tab === "welcome" && <WelcomeDashboard groups={groups} setTab={setTab} logoUrl={settings.logo} />}
+            {tab === "welcome" && <WelcomeDashboard groups={groups} setTab={selectTab} logoUrl={settings.logo} />}
 
             {tab === "dailyDarshan" && <DailyDarshanManager />}
             {tab === "liveProgrammes" && <LiveProgrammeManager />}
@@ -949,7 +985,7 @@ function WelcomeDashboard({
   setTab: (id: Tab) => void; 
   logoUrl?: string; 
 }) {
-  const { contacts, paymentRecords } = useAdmin();
+  const { contacts, paymentRecords, isSectionLocked } = useAdmin();
   const [q, setQ] = useState("");
   
   const unreadMessagesCount = (contacts || []).filter((c) => !c.read).length;
@@ -993,7 +1029,7 @@ function WelcomeDashboard({
         <div className="absolute -left-12 -bottom-12 w-32 h-32 bg-primary/5 rounded-full blur-2xl pointer-events-none"></div>
         
         <h2 className="font-display text-xl sm:text-3xl font-bold text-primary relative z-10">
-          Hare Krishna! Welcome to Admin
+          Hare Krishna! Welcome to Admin Panel
         </h2>
         <p className="text-muted-foreground text-xs sm:text-sm max-w-md mx-auto relative z-10 leading-relaxed">
           Manage carousel banners, sevas, class schedules, community modules, and temple settings in real-time.
@@ -1035,24 +1071,37 @@ function WelcomeDashboard({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {filtered.map((item) => {
                   const badge = getItemBadge(item.id);
+                  const locked = isSectionLocked(item.id);
                   return (
                     <button 
                       key={item.id}
                       onClick={() => setTab(item.id)}
-                      className="flex items-center justify-between p-3.5 sm:p-4 bg-white hover:bg-slate-50 border border-slate-100 hover:border-primary/20 rounded-2xl text-left transition-all duration-200 shadow-[0_3px_12px_rgba(0,0,0,0.01)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] active:scale-[0.98] group cursor-pointer"
+                      className={`flex items-center justify-between p-3.5 sm:p-4 bg-white hover:bg-slate-50 border rounded-2xl text-left transition-all duration-200 shadow-[0_3px_12px_rgba(0,0,0,0.01)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] active:scale-[0.98] group cursor-pointer ${
+                        locked ? "border-amber-200/80 bg-amber-50/20" : "border-slate-100 hover:border-primary/20"
+                      }`}
                     >
                       <div className="flex items-center gap-3.5">
-                        <div className="h-10 w-10 rounded-xl bg-slate-50 group-hover:bg-primary/5 text-primary flex items-center justify-center shrink-0 transition-colors duration-300">
+                        <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300 ${
+                          locked ? "bg-amber-100 text-amber-600" : "bg-slate-50 group-hover:bg-primary/5 text-primary"
+                        }`}>
                           <item.icon className="h-5 w-5" />
                         </div>
                         <div>
-                          <div className="font-semibold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors duration-300">{item.label}</div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors duration-300">{item.label}</span>
+                            {locked && <Lock className="h-3 w-3 text-amber-600 shrink-0" />}
+                          </div>
                           <div className="text-[10px] text-muted-foreground/80 font-medium tracking-wide mt-0.5">{item.category}</div>
                         </div>
                       </div>
-                      {badge > 0 && (
+                      {badge > 0 && !locked && (
                         <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-extrabold text-white shadow-sm animate-pulse">
                           {badge}
+                        </span>
+                      )}
+                      {locked && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100/80 text-[10px] font-bold text-amber-700">
+                          <Lock className="h-2.5 w-2.5" /> Locked
                         </span>
                       )}
                     </button>
@@ -1071,23 +1120,33 @@ function WelcomeDashboard({
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-4">
                   {group.items.map((item) => {
                     const badge = getItemBadge(item.id);
+                    const locked = isSectionLocked(item.id);
                     return (
                       <button 
                         key={item.id}
                         onClick={() => setTab(item.id)}
-                        className="flex items-center justify-between p-3 sm:p-4 bg-white hover:bg-slate-50 border border-slate-100/90 hover:border-primary/15 rounded-2xl text-left transition-all duration-200 shadow-[0_3px_12px_rgba(0,0,0,0.01)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] active:scale-[0.98] group cursor-pointer"
+                        className={`flex items-center justify-between p-3 sm:p-4 bg-white hover:bg-slate-50 border rounded-2xl text-left transition-all duration-200 shadow-[0_3px_12px_rgba(0,0,0,0.01)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] active:scale-[0.98] group cursor-pointer ${
+                          locked ? "border-amber-200/80 bg-amber-50/20" : "border-slate-100/90 hover:border-primary/15"
+                        }`}
                       >
                         <div className="flex items-center gap-3 truncate">
-                          <div className="h-8.5 w-8.5 sm:h-10 sm:w-10 rounded-xl bg-slate-50 group-hover:bg-primary/5 text-primary flex items-center justify-center shrink-0 transition-colors duration-300">
+                          <div className={`h-8.5 w-8.5 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300 ${
+                            locked ? "bg-amber-100 text-amber-600" : "bg-slate-50 group-hover:bg-primary/5 text-primary"
+                          }`}>
                             <item.icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
                           </div>
                           <span className="font-semibold text-xs sm:text-sm text-foreground/80 group-hover:text-primary transition-colors duration-300 truncate">{item.label}</span>
                         </div>
-                        {badge > 0 && (
-                          <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-extrabold text-white shadow-sm animate-pulse ml-1">
-                            {badge}
-                          </span>
-                        )}
+                        <div className="flex items-center gap-1 shrink-0 ml-1">
+                          {badge > 0 && !locked && (
+                            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-extrabold text-white shadow-sm animate-pulse">
+                              {badge}
+                            </span>
+                          )}
+                          {locked && (
+                            <Lock className="h-3.5 w-3.5 text-amber-600" />
+                          )}
+                        </div>
                       </button>
                     );
                   })}
