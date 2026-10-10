@@ -32,6 +32,7 @@ export interface UpiPaymentModalProps {
   donorName: string;
   donorEmail?: string;
   donorPhone?: string;
+  donorGotra?: string;
   pan?: string;
   notes?: string;
   onPaymentSuccess: (details: {
@@ -51,6 +52,7 @@ export default function UpiPaymentModal({
   donorName,
   donorEmail,
   donorPhone,
+  donorGotra,
   pan,
   notes: initialNotes,
   onPaymentSuccess,
@@ -220,7 +222,7 @@ export default function UpiPaymentModal({
             {currentStep === 1 ? "Scan UPI QR Code" : "Submit Payment Reference"}
           </h3>
           <p className="text-xs text-white/80 mt-1 line-clamp-1">
-            {sevaTitle} · For <span className="font-bold text-amber-200">{donorName || "Devotee"}</span>
+            {sevaTitle} · For <span className="font-bold text-amber-200">{donorName || "Devotee"}</span>{donorGotra ? ` (${donorGotra})` : ""}
           </p>
         </div>
 
@@ -564,7 +566,7 @@ export default function UpiPaymentModal({
 
               <a
                 href={`https://wa.me/${(settings.whatsapp || "9505377520").replace(/\D/g, "")}?text=${encodeURIComponent(
-                  `Hare Krishna! I have made a UPI donation of ₹${amount} for "${sevaTitle}".\nDevotee: ${donorName}\nUTR/Txn ID: ${utrNumber || "Not entered"}\nGotram/Notes: ${donorNotes || "None"}`
+                  `Hare Krishna! I have made a UPI donation of ₹${amount} for "${sevaTitle}".\nDevotee: ${donorName}${donorGotra ? `\nGotram: ${donorGotra}` : ""}\nUTR/Txn ID: ${utrNumber || "Not entered"}\nSankalpa/Notes: ${donorNotes || "None"}`
                 )}`}
                 target="_blank"
                 rel="noreferrer"

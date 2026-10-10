@@ -3,6 +3,7 @@ export interface TelegramDonationData {
   donorName?: string;
   donorPhone?: string;
   donorEmail?: string;
+  donorGotra?: string;
   amount: number | string;
   purpose?: string;
   paymentMethod?: string;
@@ -57,6 +58,7 @@ export async function sendTelegramDonationNotification(data: TelegramDonationDat
     const name = data.donorName?.trim() || "Devotee";
     const mobile = data.donorPhone?.trim() || "N/A";
     const email = data.donorEmail?.trim();
+    const gotra = data.donorGotra?.trim();
     const amountStr =
       typeof data.amount === "number" ? data.amount.toLocaleString("en-IN") : data.amount;
     const purpose = data.purpose?.trim() || "General Seva";
@@ -67,6 +69,9 @@ export async function sendTelegramDonationNotification(data: TelegramDonationDat
     message += `📱 Mobile: ${mobile}\n`;
     if (email) {
       message += `📧 Email: ${email}\n`;
+    }
+    if (gotra) {
+      message += `🪔 Gotra: ${gotra}\n`;
     }
     message += `💰 Amount: ₹${amountStr}\n`;
     message += `🎯 Purpose: ${purpose}\n`;

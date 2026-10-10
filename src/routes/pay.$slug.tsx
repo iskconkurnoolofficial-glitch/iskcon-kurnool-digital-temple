@@ -86,6 +86,7 @@ function PaymentPageRoute() {
     donorName: string;
     donorEmail?: string;
     donorPhone?: string;
+    donorGotra?: string;
     pan?: string;
     notes?: string;
   } | null>(null);
@@ -196,6 +197,7 @@ function PaymentPageRoute() {
     const donorNameVal = fieldValues["f1"] || fieldValues["name"] || Object.values(fieldValues)[0] || "Devotee";
     const donorEmailVal = fieldValues["f2"] || fieldValues["email"] || "";
     const donorPhoneVal = fieldValues["f3"] || fieldValues["phone"] || "";
+    const donorGotraVal = fieldValues["f4"] || fieldValues["gotra"] || fieldValues["donorGotra"] || fieldValues["gotram"] || "";
     const donorPanVal = fieldValues["f6"] || fieldValues["pan"] || "";
     const chosenMethod = methodToUse || paymentMethodMode;
 
@@ -214,6 +216,7 @@ function PaymentPageRoute() {
         donorName: donorNameVal,
         donorEmail: donorEmailVal,
         donorPhone: donorPhoneVal,
+        donorGotra: donorGotraVal,
         pan: donorPanVal,
         notes: Object.entries(fieldValues)
           .map(([k, v]) => {
@@ -271,6 +274,7 @@ function PaymentPageRoute() {
           donorName: donorNameVal,
           donorPhone: donorPhoneVal,
           donorEmail: donorEmailVal,
+          donorGotra: donorGotraVal,
           amount: totalPayableAmount,
           purpose: page.title,
           paymentMethod: "Razorpay Gateway",
@@ -327,6 +331,7 @@ function PaymentPageRoute() {
       donorName: upiModalData.donorName || "Devotee",
       donorPhone: upiModalData.donorPhone,
       donorEmail: upiModalData.donorEmail,
+      donorGotra: upiModalData.donorGotra,
       amount: paidAmt,
       purpose: upiModalData.sevaTitle,
       paymentMethod: "UPI QR Payment",
@@ -978,6 +983,7 @@ function PaymentPageRoute() {
           donorName={upiModalData.donorName}
           donorEmail={upiModalData.donorEmail}
           donorPhone={upiModalData.donorPhone}
+          donorGotra={upiModalData.donorGotra}
           pan={upiModalData.pan}
           notes={upiModalData.notes}
           onPaymentSuccess={handleUpiSuccess}

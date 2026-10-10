@@ -673,7 +673,7 @@ export default function PaymentPagesManager() {
                 <span>Generate Official Receipt</span>
               </h3>
               <p className="text-xs font-semibold text-slate-900/80 mt-1">
-                Edit donor details to generate high-resolution PNG receipt & 80G tax document.
+                Edit donor details to generate high-resolution PNG receipt.
               </p>
             </div>
 
@@ -749,7 +749,7 @@ export default function PaymentPagesManager() {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">PAN CARD (FOR 80G TAX BENEFIT)</label>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">PAN CARD (OPTIONAL)</label>
                   <input
                     type="text"
                     value={formPanNumber}

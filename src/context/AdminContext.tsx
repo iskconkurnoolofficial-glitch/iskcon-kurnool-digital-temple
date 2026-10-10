@@ -2264,6 +2264,7 @@ export type ReceiptSettings = {
   
   useNavLogo: boolean;
   customReceiptLogo: string;
+  rightHeaderImage?: string;
   
   signatoryName: string;
   signatoryTitle: string;
@@ -2284,22 +2285,23 @@ export type ReceiptSettings = {
 };
 
 export const defaultReceiptSettings: ReceiptSettings = {
-  templeName: "ISKCON KURNOOL",
-  deityName: "Sri Sri Jagannath Baladev Subhadra Temple",
-  address: "Sri Sri Puri Jagannath Temple, Kurnool, Andhra Pradesh, India",
-  phone: "+91 95053 77520",
+  templeName: "Sri Sri Puri Jagannath Mandir",
+  deityName: "ISKCON Kurnool",
+  address: "ISKCON Kurnool - Sri Sri Puri Jagannath Mandir\nBhageerathi Complex 2nd floor, Above the Canara Bank, Opp. to Kids World Park Road, Kurnool",
+  phone: "9347126877",
   email: "iskconkurnool@gmail.com",
-  taxExemptionText: "Eligible for 80G Income Tax Exemption · 100% Tax Deductible",
-  taxRegNumber: "AAATI1234F / 80G / 2024-25",
-  receiptTitle: "OFFICIAL DONATION RECEIPT",
+  taxExemptionText: "",
+  taxRegNumber: "",
+  receiptTitle: "COMPUTER GENERATED RECEIPT",
   blessingMessage: "May Lord Sri Jagannath shower eternal blessings upon you and your family.",
-  footerNotes: "All donations to ISKCON Kurnool are eligible for 80G tax exemption. This is a computer-generated official receipt.",
+  footerNotes: "NOTE: Please WhatsApp this computer-generated receipt to 9347126877 to receive the original receipt from ISKCON Kurnool.",
   
   useNavLogo: true,
   customReceiptLogo: "",
+  rightHeaderImage: "",
   
   signatoryName: "Vaishnava Krupa Das",
-  signatoryTitle: "Temple President / Authorised Signatory",
+  signatoryTitle: "General Manager",
   signatoryOrg: "ISKCON Kurnool",
   signatureImage: "",
   showSeal: true,

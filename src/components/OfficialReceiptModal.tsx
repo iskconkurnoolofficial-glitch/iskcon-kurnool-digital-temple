@@ -1,4 +1,4 @@
-import { Download, Printer, X, CheckCircle2, ShieldCheck, Heart, Stamp, Sparkles, MessageCircle, Share2 } from "lucide-react";
+import { Download, Printer, X, CheckCircle2, ShieldCheck, Heart, Stamp, Sparkles, MessageCircle, Share2, MapPin } from "lucide-react";
 import { useAdmin, ReceiptSettings, defaultReceiptSettings, SiteSettings } from "@/context/AdminContext";
 
 export type ReceiptData = {
@@ -36,13 +36,13 @@ export function generateReceiptWhatsAppText(
     minute: "2-digit",
   });
 
-  const templeTitle = cfg.templeName || "ISKCON KURNOOL";
-  const deitySubtitle = cfg.deityName || "Sri Sri Jagannath Baladev Subhadra Temple";
+  const templeTitle = cfg.templeName || "Sri Sri Puri Jagannath Mandir";
+  const deitySubtitle = cfg.deityName || "ISKCON Kurnool";
 
-  return `🙏 *HARE KRISHNA! OFFICIAL DONATION RECEIPT*
+  return `🙏 *HARE KRISHNA! COMPUTER GENERATED RECEIPT*
 🏛️ *${templeTitle}*
 _${deitySubtitle}_
-📍 ${cfg.address ? cfg.address.split("\n")[0] : "Kurnool, Andhra Pradesh"}
+📍 ${cfg.address || "ISKCON Kurnool - Sri Sri Puri Jagannath Mandir Bhageerathi Complex 2nd floor, Above the Canara Bank, Opp. to Kids World Park Road, Kurnool"}
 
 ━━━━━━━━━━━━━━━━━━━━━
 📋 *RECEIPT REF NO:* \`${data.receiptNo}\`
@@ -51,7 +51,7 @@ _${deitySubtitle}_
 📞 *PHONE NUMBER:* ${data.donorPhone || "—"}
 ✉️ *EMAIL ADDRESS:* ${data.donorEmail || "—"}
 🪔 *SEVA / PURPOSE:* ${data.sevaTitle}${data.category ? ` (${data.category})` : ""}
-${data.notes ? `📜 *GOTRAM / NOTES:* ${data.notes}\n` : ""}${data.panNumber ? `🆔 *PAN (80G TAX EXEMPTION):* ${data.panNumber.toUpperCase()}\n` : ""}💳 *PAYMENT MODE:* ${data.paymentMethod || "Online (UPI / Gateway)"}
+${data.notes ? `📜 *GOTRAM / NOTES:* ${data.notes}\n` : ""}💳 *PAYMENT MODE:* ${data.paymentMethod || "Online (UPI / Gateway)"}
 ━━━━━━━━━━━━━━━━━━━━━
 
 💰 *TOTAL CONTRIBUTION RECEIVED:*
@@ -60,9 +60,9 @@ ${data.notes ? `📜 *GOTRAM / NOTES:* ${data.notes}\n` : ""}${data.panNumber ? 
 
 🌺 _"${cfg.blessingMessage || 'May Lord Sri Jagannath shower eternal blessings upon you and your family.'}"_
 
-📜 *Tax Exemption:* ${cfg.taxExemptionText || 'All donations to ISKCON Kurnool are eligible for 80G tax exemption.'}${cfg.taxRegNumber ? ' · Reg. No: ' + cfg.taxRegNumber : ''}
+📌 *NOTE:* Please WhatsApp this computer-generated receipt to *9347126877* to receive the *original receipt from ISKCON Kurnool*.
 
-📞 *Temple Helpline:* ${cfg.phone || site?.phone || "+91 95053 77520"}
+📞 *Temple Helpline:* ${cfg.phone || site?.phone || "9347126877"}
 🌐 *Website:* https://iskconkurnool.in`;
 }
 
@@ -76,7 +76,7 @@ export function getReceiptWhatsAppUrl(
   customSiteSettings?: SiteSettings
 ): string {
   const text = generateReceiptWhatsAppText(data, customReceiptSettings, customSiteSettings);
-  const rawTarget = recipientPhone || customSiteSettings?.whatsapp || customReceiptSettings?.phone || customSiteSettings?.phone || "+91 95053 77520";
+  const rawTarget = recipientPhone || "9347126877";
   const digits = rawTarget.replace(/\D/g, "");
   const formattedDigits = digits.length === 10 ? `91${digits}` : digits;
 
@@ -109,6 +109,33 @@ function loadImage(url: string): Promise<HTMLImageElement | null> {
   });
 }
 
+function drawWrappedCenteredText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  centerX: number,
+  startY: number,
+  maxWidth: number,
+  lineHeight: number
+): number {
+  const words = text.split(" ");
+  let line = "";
+  let currentY = startY;
+
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + " ";
+    const metrics = ctx.measureText(testLine);
+    if (metrics.width > maxWidth && n > 0) {
+      ctx.fillText(line.trim(), centerX, currentY);
+      line = words[n] + " ";
+      currentY += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+  ctx.fillText(line.trim(), centerX, currentY);
+  return currentY;
+}
+
 export async function generateAndDownloadReceiptPNG(
   data: ReceiptData,
   customReceiptSettings?: ReceiptSettings,
@@ -125,10 +152,11 @@ export async function generateAndDownloadReceiptPNG(
     : (cfg.customReceiptLogo || site?.logo || "");
 
   // Asynchronously load images
-  const [logoImg, sigImg, sealImg] = await Promise.all([
+  const [logoImg, sigImg, sealImg, deityImg] = await Promise.all([
     resolvedLogoUrl ? loadImage(resolvedLogoUrl) : Promise.resolve(null),
     cfg.signatureImage ? loadImage(cfg.signatureImage) : Promise.resolve(null),
     cfg.sealImage ? loadImage(cfg.sealImage) : Promise.resolve(null),
+    loadImage(cfg.rightHeaderImage || "/jagannath-deities.jpg"),
   ]);
 
   const canvas = document.createElement("canvas");
@@ -141,7 +169,7 @@ export async function generateAndDownloadReceiptPNG(
   const sColor = cfg.secondaryColor || "#d97706";
   const aColor = cfg.accentColor || "#059669";
   const bgColor = cfg.backgroundColor || "#ffffff";
-  const fontFam = cfg.fontFamily === "Cinzel" ? "'Cinzel', Georgia, serif" : cfg.fontFamily === "Playfair" ? "'Playfair Display', Georgia, serif" : "'Inter', system-ui, -apple-system, sans-serif";
+  const fontFam = "'Cinzel', Georgia, serif";
 
   // 1. Background
   ctx.fillStyle = bgColor;
@@ -189,30 +217,27 @@ export async function generateAndDownloadReceiptPNG(
     ctx.restore();
   }
 
-  // 4. Header Royal Box
-  const headerHeight = 220;
-  if (cfg.headerBgStyle === "solid") {
-    ctx.fillStyle = pColor;
-  } else {
-    const gradient = ctx.createLinearGradient(60, 60, canvas.width - 120, 60 + headerHeight);
-    gradient.addColorStop(0, pColor);
-    gradient.addColorStop(1, "#1e1b4b");
-    ctx.fillStyle = gradient;
-  }
+  // 4. Header Royal Purple Box
+  const headerHeight = 270;
+  const gradient = ctx.createLinearGradient(60, 60, canvas.width - 120, 60 + headerHeight);
+  gradient.addColorStop(0, "#2a0845");
+  gradient.addColorStop(0.5, "#1e1b4b");
+  gradient.addColorStop(1, "#11052c");
+  ctx.fillStyle = gradient;
   ctx.fillRect(60, 60, canvas.width - 120, headerHeight);
 
-  // Gold accent strip on header bottom
+  // Gold accent strip on header bottom & top
+  ctx.strokeStyle = sColor;
+  ctx.lineWidth = 2.5;
+  ctx.strokeRect(60, 60, canvas.width - 120, headerHeight);
   ctx.fillStyle = sColor;
-  ctx.fillRect(60, 60 + headerHeight - 6, canvas.width - 120, 6);
+  ctx.fillRect(60, 60 + headerHeight - 5, canvas.width - 120, 5);
 
-  // Header Logo (Left or Centered)
-  let headerTextCenter = canvas.width / 2;
+  // Left Section — Official ISKCON Logo (Circular)
+  const logoSize = 110;
+  const logoX = 90;
+  const logoY = 100;
   if (logoImg) {
-    const logoSize = 100;
-    const logoX = 100;
-    const logoY = 110;
-
-    // Draw circular mask for logo
     ctx.save();
     ctx.beginPath();
     ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2, 0, Math.PI * 2);
@@ -221,37 +246,75 @@ export async function generateAndDownloadReceiptPNG(
     ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
     ctx.restore();
 
-    // Gold ring around logo
-    ctx.strokeStyle = sColor;
+    ctx.strokeStyle = "#fbbf24";
     ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2, 0, Math.PI * 2);
     ctx.stroke();
-
-    headerTextCenter = canvas.width / 2 + 35;
   }
 
-  // Header Text
+  // Right Section — Sri Sri Jagannath Deities (Circular Mask, EXACT SAME SIZE AS LEFT LOGO)
+  const deitySize = 110;
+  const deityX = canvas.width - 200;
+  const deityY = 100;
+  if (deityImg) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(deityX + deitySize / 2, deityY + deitySize / 2, deitySize / 2, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(deityImg, deityX, deityY, deitySize, deitySize);
+    ctx.restore();
+
+    ctx.strokeStyle = "#fbbf24";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(deityX + deitySize / 2, deityY + deitySize / 2, deitySize / 2, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // Center Section — Temple Identity (Cinzel Font)
+  const headerCenterX = canvas.width / 2;
+
+  // Line 1 — Organization Name (Big White)
   ctx.textAlign = "center";
+  ctx.font = `bold 18px ${fontFam}`;
   ctx.fillStyle = "#ffffff";
-  ctx.font = `bold 40px ${fontFam}`;
-  ctx.fillText(cfg.templeName || "ISKCON KURNOOL", headerTextCenter, 125);
+  ctx.fillText("INTERNATIONAL SOCIETY FOR KRISHNA CONSCIOUSNESS", headerCenterX, 95);
 
-  ctx.font = `bold 22px ${fontFam}`;
-  ctx.fillStyle = sColor;
-  ctx.fillText(cfg.deityName || "Sri Sri Jagannath Baladev Subhadra Temple", headerTextCenter, 168);
+  // Line 2 — Founder-Acharya (Big White)
+  ctx.font = `bold 15px ${fontFam}`;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText("Founder-Acharya: His Divine Grace A.C. Bhaktivedanta Swami Prabhupada", headerCenterX, 120);
 
-  ctx.font = `16px ${fontFam}`;
-  ctx.fillStyle = "#e2e8f0";
-  const contactStr = `${cfg.address ? cfg.address.split("\n")[0] : "Kurnool, Andhra Pradesh"} · Phone: ${cfg.phone || site?.phone || "+91 95053 77520"}`;
-  ctx.fillText(contactStr, headerTextCenter, 205);
+  // Line 3 — Main Temple Name (BIGGER with Top Spacing)
+  ctx.font = `900 44px ${fontFam}`;
+  ctx.fillStyle = "#fef3c7";
+  ctx.shadowColor = "rgba(217, 119, 6, 0.6)";
+  ctx.shadowBlur = 10;
+  ctx.fillText("ISKCON KURNOOL", headerCenterX, 175);
+  ctx.shadowBlur = 0; // reset shadow
 
-  ctx.font = `14px ${fontFam}`;
-  ctx.fillStyle = "#cbd5e1";
-  ctx.fillText(`Email: ${cfg.email || site?.email || "info@iskconkurnool.in"}`, headerTextCenter, 235);
+  // Line 4 — Temple Name (BIGGER)
+  ctx.font = `800 24px ${fontFam}`;
+  ctx.fillStyle = "#fde047";
+  ctx.fillText("SRI SRI PURI JAGANNATH TEMPLE", headerCenterX, 212);
 
-  // 5. Official Receipt Badge
-  const badgeY = 310;
+  // Divider Line
+  ctx.strokeStyle = "rgba(245, 158, 11, 0.4)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(headerCenterX - 300, 232);
+  ctx.lineTo(headerCenterX + 300, 232);
+  ctx.stroke();
+
+  // Contact Info Below Divider
+  ctx.font = `500 13px sans-serif`;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText("Phone: +91 95053 77520   ·   Email: iskconkurnool.official@gmail.com", headerCenterX, 254);
+
+  // 5. Receipt Title Badge (Clean Separated Box)
+  const badgeY = 360;
   const badgeWidth = 520;
   const badgeHeight = 52;
   ctx.fillStyle = "#fffdf0";
@@ -262,10 +325,10 @@ export async function generateAndDownloadReceiptPNG(
 
   ctx.fillStyle = pColor;
   ctx.font = `bold 24px ${fontFam}`;
-  ctx.fillText(cfg.receiptTitle || "OFFICIAL DONATION RECEIPT", canvas.width / 2, badgeY + 36);
+  ctx.fillText(cfg.receiptTitle || "COMPUTER GENERATED RECEIPT", canvas.width / 2, badgeY + 36);
 
-  // 6. Metadata Bar (Receipt Ref & Date)
-  const metaY = 385;
+  // 6. Metadata Bar (Receipt Ref & Date - Clean Separated Box)
+  const metaY = 440;
   ctx.fillStyle = "#f8fafc";
   ctx.fillRect(80, metaY, canvas.width - 160, 56);
   ctx.strokeStyle = "#e2e8f0";
@@ -297,7 +360,7 @@ export async function generateAndDownloadReceiptPNG(
   ctx.fillText(formattedDate, canvas.width - 105, metaY + 35);
 
   // 7. Details Table
-  let currentY = 465;
+  let currentY = 520;
   const items: [string, string][] = [
     ["Devotee Name:", data.donorName],
     ["Phone Number:", data.donorPhone || "—"],
@@ -308,9 +371,6 @@ export async function generateAndDownloadReceiptPNG(
 
   if (data.notes) {
     items.push(["Gotram / Purpose:", data.notes]);
-  }
-  if (data.panNumber) {
-    items.push(["PAN Number (80G):", data.panNumber.toUpperCase()]);
   }
 
   items.forEach(([label, val], idx) => {
@@ -365,26 +425,34 @@ export async function generateAndDownloadReceiptPNG(
   ctx.fillStyle = aColor;
   ctx.fillText(`₹${data.amount.toLocaleString("en-IN")}.00`, canvas.width - 115, currentY + 76);
 
-  // 9. Devotional Blessing & 80G Tax Exemption Note
-  currentY += amtHeight + 40;
+  // 9. Devotional Blessing & Highlighted Note Box
+  currentY += amtHeight + 35;
   ctx.textAlign = "center";
   ctx.font = `italic 20px ${fontFam}`;
   ctx.fillStyle = pColor;
   ctx.fillText(`"${cfg.blessingMessage || 'May Lord Sri Jagannath shower eternal blessings upon you and your family.'}"`, canvas.width / 2, currentY);
 
-  currentY += 34;
-  ctx.font = `bold 16px ${fontFam}`;
-  ctx.fillStyle = "#475569";
-  const taxStr = `${cfg.taxExemptionText || 'All donations to ISKCON Kurnool are eligible for 80G tax exemption.'}${cfg.taxRegNumber ? ' · Reg. No: ' + cfg.taxRegNumber : ''}`;
-  ctx.fillText(taxStr, canvas.width / 2, currentY);
+  // Highlighted NOTE Box
+  currentY += 30;
+  const noteBoxWidth = canvas.width - 160;
+  const noteBoxHeight = 75;
+  const noteBoxX = 80;
+  ctx.fillStyle = "#fffbe6";
+  ctx.fillRect(noteBoxX, currentY, noteBoxWidth, noteBoxHeight);
+  ctx.strokeStyle = "#d97706";
+  ctx.lineWidth = 2.5;
+  ctx.strokeRect(noteBoxX, currentY, noteBoxWidth, noteBoxHeight);
 
-  currentY += 24;
-  ctx.font = `14px ${fontFam}`;
-  ctx.fillStyle = "#94a3b8";
-  ctx.fillText(cfg.footerNotes || "This is a computer-generated official receipt issued by ISKCON Kurnool.", canvas.width / 2, currentY);
+  ctx.textAlign = "center";
+  ctx.font = `bold 16px ${fontFam}`;
+  ctx.fillStyle = "#92400e";
+  ctx.fillText("NOTE: Please WhatsApp this computer-generated receipt to 9347126877", canvas.width / 2, currentY + 30);
+  ctx.fillText("to receive the original receipt from ISKCON Kurnool.", canvas.width / 2, currentY + 54);
+
+  currentY += noteBoxHeight + 15;
 
   // 10. Bottom Footer: Stamp on Left & Signature on Right
-  currentY += 45;
+  currentY += 25;
 
   // Left: Official Temple Stamp / Seal
   if (cfg.showSeal) {
@@ -456,15 +524,39 @@ export async function generateAndDownloadReceiptPNG(
 
   ctx.font = `bold 17px ${fontFam}`;
   ctx.fillStyle = "#334155";
-  ctx.fillText(cfg.signatoryTitle || "Temple President / Authorised Signatory", sigRightX, lineY + 60);
+  ctx.fillText(cfg.signatoryTitle || "General Manager", sigRightX, lineY + 60);
 
   ctx.font = `15px ${fontFam}`;
   ctx.fillStyle = "#64748b";
   ctx.fillText(cfg.signatoryOrg || "ISKCON Kurnool", sigRightX, lineY + 84);
 
+  // 11. Temple Location / Address at Bottom (Neatly Formatted & Multi-Line Wrapped)
+  const bottomAddrY = lineY + 120;
+  ctx.strokeStyle = `${pColor}30`;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(80, bottomAddrY - 15);
+  ctx.lineTo(canvas.width - 80, bottomAddrY - 15);
+  ctx.stroke();
+
+  ctx.textAlign = "center";
+  ctx.font = `bold 18px ${fontFam}`;
+  ctx.fillStyle = pColor;
+  ctx.fillText("📍 TEMPLE ADDRESS", canvas.width / 2, bottomAddrY + 10);
+
+  ctx.font = `600 21px ${fontFam}`;
+  ctx.fillStyle = "#1e293b";
+  const displayAddress = cfg.address || "ISKCON Kurnool - Sri Sri Puri Jagannath Mandir\nBhageerathi Complex 2nd floor, Above the Canara Bank, Opp. to Kids World Park Road, Kurnool";
+  
+  const addrLines = displayAddress.split("\n");
+  let yCursor = bottomAddrY + 42;
+  addrLines.forEach((addrLine) => {
+    yCursor = drawWrappedCenteredText(ctx, addrLine, canvas.width / 2, yCursor, 1000, 30) + 30;
+  });
+
   // Trigger Download
   const link = document.createElement("a");
-  link.download = `ISKCON_Kurnool_Official_Receipt_${data.receiptNo}.png`;
+  link.download = `ISKCON_Kurnool_Receipt_${data.receiptNo}.png`;
   link.href = canvas.toDataURL("image/png");
   link.click();
 }
@@ -507,7 +599,7 @@ export default function OfficialReceiptModal({
         <div className="flex items-center justify-between border-b pb-3 print:hidden">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-            <h3 className="font-display font-bold text-slate-900 text-sm">Official Donation Receipt</h3>
+            <h3 className="font-display font-bold text-slate-900 text-sm">Computer Generated Receipt</h3>
           </div>
           <div className="flex items-center gap-2">
             <a
@@ -560,55 +652,69 @@ export default function OfficialReceiptModal({
             </div>
           )}
 
-          {/* Header Banner */}
+          {/* Header Banner — Royal 3-Column ISKCON Kurnool Design */}
           <div
-            className="rounded-2xl p-4 sm:p-5 text-center text-white relative shadow-sm"
+            className="rounded-2xl p-4 sm:p-5 text-center text-white relative shadow-md overflow-hidden border-2 border-amber-400/50"
             style={{
-              background: cfg.headerBgStyle === "solid"
-                ? cfg.primaryColor
-                : `linear-gradient(135deg, ${cfg.primaryColor} 0%, #1e1b4b 100%)`,
-              borderBottom: `3px solid ${cfg.secondaryColor}`,
+              background: "linear-gradient(135deg, #2a0845 0%, #1e1b4b 50%, #11052c 100%)",
+              fontFamily: "'Cinzel', Georgia, serif",
             }}
           >
-            {resolvedLogo ? (
-              <img
-                src={resolvedLogo}
-                alt="ISKCON Logo"
-                className="h-14 w-14 rounded-full mx-auto mb-2.5 object-cover shadow-md ring-2"
-                style={{ borderColor: cfg.secondaryColor }}
-              />
-            ) : (
-              <div
-                className="h-14 w-14 rounded-full font-bold text-lg flex items-center justify-center mx-auto mb-2.5 shadow-md border-2"
-                style={{
-                  backgroundColor: cfg.secondaryColor,
-                  color: cfg.primaryColor,
-                  borderColor: "#ffffff",
-                }}
-              >
-                IK
-              </div>
-            )}
+            {/* Subtle background pattern */}
+            <div className="absolute inset-0 bg-[url('/mandala.png')] bg-center bg-no-repeat opacity-[0.06] bg-contain pointer-events-none" />
 
-            <h2 className="font-display font-black text-xl tracking-wider text-white uppercase">
-              {cfg.templeName || "ISKCON KURNOOL"}
-            </h2>
-            <p className="text-xs font-semibold mt-0.5" style={{ color: cfg.secondaryColor }}>
-              {cfg.deityName || "Sri Sri Jagannath Baladev Subhadra Temple"}
-            </p>
-            <p className="text-[11px] text-white/80 mt-1">
-              {cfg.address || "Kurnool, Andhra Pradesh"} · Phone: {cfg.phone || settings?.phone || "+91 95053 77520"}
-            </p>
+            <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+              {/* Left Section — ISKCON Logo */}
+              <div className="shrink-0">
+                <img
+                  src={resolvedLogo || "/iskcon-logo.png"}
+                  alt="ISKCON Official Logo"
+                  className="h-16 w-16 sm:h-20 sm:w-20 rounded-full object-cover shadow-md ring-2 ring-amber-300 bg-purple-950 p-0.5"
+                />
+              </div>
+
+              {/* Center Section — Temple Identity */}
+              <div className="text-center flex-1 max-w-md px-1">
+                <p className="text-white text-xs sm:text-sm font-bold tracking-wider uppercase drop-shadow-xs">
+                  International Society for Krishna Consciousness
+                </p>
+                <p className="text-white/95 text-[11px] sm:text-xs font-semibold tracking-wide mt-0.5">
+                  Founder-Acharya: His Divine Grace A.C. Bhaktivedanta Swami Prabhupada
+                </p>
+                <h2 className="mt-2.5 sm:mt-3.5 font-black text-2xl sm:text-3xl md:text-4xl tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-amber-300 to-amber-500 drop-shadow-sm uppercase py-0.5 leading-tight">
+                  ISKCON KURNOOL
+                </h2>
+                <h3 className="mt-0.5 text-xs sm:text-sm md:text-base font-extrabold text-amber-200 tracking-[0.18em] uppercase">
+                  SRI SRI PURI JAGANNATH TEMPLE
+                </h3>
+              </div>
+
+              {/* Right Section — Sri Sri Jagannath Deities (Exact Same Size & Circular Frame as Left Logo) */}
+              <div className="shrink-0">
+                <img
+                  src={cfg.rightHeaderImage || "/jagannath-deities.jpg"}
+                  alt="Sri Sri Puri Jagannath Deities"
+                  className="h-16 w-16 sm:h-20 sm:w-20 rounded-full object-cover shadow-md ring-2 ring-amber-300 bg-purple-950 p-0.5"
+                />
+              </div>
+            </div>
+
+            {/* Divider & Contact Info */}
+            <div className="mt-3 pt-2.5 border-t border-amber-400/30 text-[11px] text-amber-100/90 flex flex-wrap items-center justify-center gap-3 font-sans">
+              <span>📞 Phone: +91 95053 77520</span>
+              <span className="hidden sm:inline">·</span>
+              <span>✉️ Email: iskconkurnool.official@gmail.com</span>
+            </div>
 
             <div
               className="mt-3 inline-block px-4 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider shadow-xs"
               style={{
                 backgroundColor: "#fffdf0",
-                color: cfg.primaryColor,
-                border: `1.5px solid ${cfg.secondaryColor}`,
+                color: cfg.primaryColor || "#5b2c9b",
+                border: `1.5px solid ${cfg.secondaryColor || "#d97706"}`,
               }}
             >
-              {cfg.receiptTitle || "OFFICIAL DONATION RECEIPT"}
+              {cfg.receiptTitle || "COMPUTER GENERATED RECEIPT"}
             </div>
           </div>
 
@@ -662,12 +768,6 @@ export default function OfficialReceiptModal({
                 <span className="font-semibold text-slate-800">{data.notes}</span>
               </div>
             )}
-            {data.panNumber && (
-              <div className="flex justify-between py-1.5">
-                <span className="text-slate-500">PAN Number (80G):</span>
-                <span className="font-mono font-bold uppercase text-slate-900">{data.panNumber}</span>
-              </div>
-            )}
             <div className="flex justify-between pt-1.5">
               <span className="text-slate-500">Payment Mode:</span>
               <span className="font-semibold text-slate-800">{data.paymentMethod || "Online (Razorpay / UPI)"}</span>
@@ -708,7 +808,7 @@ export default function OfficialReceiptModal({
             </div>
 
             <p className="text-[11px] text-emerald-800 leading-relaxed">
-              Instantly forward all donation details (Ref No, Seva, Amount, PAN, Gotram) to the Temple WhatsApp Desk for receipt tracking or share to your personal chat.
+              Instantly forward all donation details to <strong>9347126877</strong> to receive the original receipt from ISKCON Kurnool.
             </p>
 
             <div className="flex flex-wrap items-center gap-2 pt-0.5">
@@ -718,7 +818,7 @@ export default function OfficialReceiptModal({
                 rel="noreferrer"
                 className="flex-1 py-2 px-3 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs"
               >
-                <MessageCircle className="h-3.5 w-3.5" /> Send to Temple WhatsApp
+                <MessageCircle className="h-3.5 w-3.5" /> Send to WhatsApp (9347126877)
               </a>
               <a
                 href={whatsappShareUrl}
@@ -726,20 +826,27 @@ export default function OfficialReceiptModal({
                 rel="noreferrer"
                 className="py-2 px-3 bg-white hover:bg-emerald-100/60 text-emerald-900 border border-emerald-300 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs"
               >
-                <Share2 className="h-3.5 w-3.5 text-emerald-700" /> Share on WhatsApp
+                <Share2 className="h-3.5 w-3.5 text-emerald-700" /> Share Details
               </a>
             </div>
           </div>
 
-          {/* Footer Blessing & 80G Note */}
-          <div className="text-center text-xs space-y-1 pt-1">
+          {/* Devotional Blessing & HIGHLIGHTED NOTE */}
+          <div className="text-center text-xs space-y-3 pt-1">
             <p className="font-semibold italic" style={{ color: cfg.primaryColor }}>
               "{cfg.blessingMessage || 'May Lord Sri Jagannath shower eternal blessings upon you and your family.'}"
             </p>
-            <p className="text-[11px] text-slate-500">
-              {cfg.taxExemptionText || 'All donations to ISKCON Kurnool are eligible for 80G tax exemption.'}
-              {cfg.taxRegNumber ? ` · Reg: ${cfg.taxRegNumber}` : ''}
-            </p>
+
+            {/* HIGHLIGHTED NOTE CARD */}
+            <div className="bg-amber-50 border-2 border-amber-400 rounded-2xl p-3.5 text-center shadow-sm space-y-1">
+              <p className="text-xs font-black text-amber-950 tracking-wide uppercase flex items-center justify-center gap-1.5">
+                <span className="bg-amber-500 text-slate-950 text-[10px] px-2 py-0.5 rounded-md font-extrabold">NOTE</span>
+                Important Notice
+              </p>
+              <p className="text-xs font-semibold text-slate-900 leading-relaxed">
+                Please WhatsApp this computer-generated receipt to <strong className="font-extrabold text-amber-900 underline text-sm">9347126877</strong> to receive the <strong className="font-extrabold text-primary">original receipt from ISKCON Kurnool</strong>.
+              </p>
+            </div>
           </div>
 
           {/* BOTTOM SIGNATURE BLOCK */}
@@ -785,12 +892,23 @@ export default function OfficialReceiptModal({
                 {cfg.signatoryName || "Vaishnava Krupa Das"}
               </p>
               <p className="text-[10px] sm:text-xs font-bold text-slate-700">
-                {cfg.signatoryTitle || "Temple President / Authorised Signatory"}
+                {cfg.signatoryTitle || "General Manager"}
               </p>
               <p className="text-[9px] sm:text-[10px] text-slate-500">
                 {cfg.signatoryOrg || "ISKCON Kurnool"}
               </p>
             </div>
+          </div>
+
+          {/* BOTTOM TEMPLE ADDRESS FOOTER */}
+          <div className="pt-3.5 border-t border-slate-200/80 text-center space-y-1">
+            <p className="text-xs font-extrabold text-amber-900 uppercase tracking-wider flex items-center justify-center gap-1">
+              <MapPin className="h-4 w-4 text-amber-600 shrink-0" />
+              <span>Temple Address</span>
+            </p>
+            <p className="text-xs sm:text-sm font-bold text-slate-800 leading-relaxed max-w-lg mx-auto whitespace-pre-line">
+              {cfg.address || "ISKCON Kurnool - Sri Sri Puri Jagannath Mandir\nBhageerathi Complex 2nd floor, Above the Canara Bank, Opp. to Kids World Park Road, Kurnool"}
+            </p>
           </div>
         </div>
 
@@ -800,7 +918,7 @@ export default function OfficialReceiptModal({
             onClick={handleDownloadPNG}
             className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-xs shadow-md transition cursor-pointer flex items-center justify-center gap-2"
           >
-            <Download className="h-4 w-4" /> Download Official Receipt (PNG)
+            <Download className="h-4 w-4" /> Download Receipt (PNG)
           </button>
           <a
             href={whatsappDeskUrl}
@@ -821,3 +939,4 @@ export default function OfficialReceiptModal({
     </div>
   );
 }
+

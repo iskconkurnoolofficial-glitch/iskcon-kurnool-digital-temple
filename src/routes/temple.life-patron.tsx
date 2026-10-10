@@ -120,6 +120,7 @@ export default function LifePatronPage() {
   const [patronName, setPatronName] = useState("");
   const [patronPhone, setPatronPhone] = useState("");
   const [patronEmail, setPatronEmail] = useState("");
+  const [patronGotra, setPatronGotra] = useState("");
   const [patronCity, setPatronCity] = useState("Kurnool");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cardName, setCardName] = useState("SRI DEVOTEE PATRON");
@@ -296,6 +297,7 @@ Thank you for becoming a valued Life Patron of ISKCON Kurnool!
           donorName: patronName || "Devotee Patron",
           donorPhone: patronPhone,
           donorEmail: patronEmail,
+          donorGotra: patronGotra,
           amount: amountInINR,
           purpose: `Life Patron Membership (${selectedTier})`,
           paymentMethod: "Razorpay Gateway",
@@ -1360,6 +1362,19 @@ Thank you for becoming a valued Life Patron of ISKCON Kurnool!
                       placeholder="Kurnool"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Gotra / Gotram (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={patronGotra}
+                    onChange={(e) => setPatronGotra(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    placeholder="e.g. Kasyapa, Bharadwaja, Vasishta..."
+                  />
                 </div>
 
                 <div>

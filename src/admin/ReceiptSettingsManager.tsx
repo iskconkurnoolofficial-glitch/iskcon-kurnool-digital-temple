@@ -69,6 +69,7 @@ export default function ReceiptSettingsManager() {
   const [activeTab, setActiveTab] = useState<"temple" | "logo" | "signature" | "styling">("temple");
   const [isSaving, setIsSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingRightImg, setUploadingRightImg] = useState(false);
   const [uploadingSig, setUploadingSig] = useState(false);
   const [uploadingSeal, setUploadingSeal] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -117,6 +118,19 @@ export default function ReceiptSettingsManager() {
       toast.error("Failed to upload logo.");
     } finally {
       setUploadingLogo(false);
+    }
+  };
+
+  const handleUploadRightHeaderImage = async (file: File) => {
+    setUploadingRightImg(true);
+    try {
+      const url = await uploadToCloudinary(file, "ISKCON-KURNOOL/Receipts");
+      update("rightHeaderImage", url);
+      toast.success("Right header emblem image uploaded successfully.");
+    } catch {
+      toast.error("Failed to upload right header image.");
+    } finally {
+      setUploadingRightImg(false);
     }
   };
 
@@ -184,7 +198,7 @@ export default function ReceiptSettingsManager() {
               <FileCheck className="h-7 w-7 text-amber-400" /> Official Receipt Customizer
             </h1>
             <p className="text-slate-300 text-xs sm:text-sm max-w-2xl leading-relaxed">
-              Design and customize the temple donation receipts with instant PNG download, automatic navbar logo inheritance, bottom-right authorized signature upload, custom colors, ornate borders, and 80G tax certificates.
+              Design and customize the computer-generated temple donation receipts with instant PNG download, automatic navbar logo inheritance, bottom-right General Manager signature upload, custom colors, and ornate borders.
             </p>
           </div>
 
@@ -247,7 +261,7 @@ export default function ReceiptSettingsManager() {
                 activeTab === "temple" ? "bg-primary text-white shadow-sm" : "text-slate-600 hover:bg-slate-100"
               }`}
             >
-              <Building2 className="h-4 w-4" /> Temple &amp; 80G
+              <Building2 className="h-4 w-4" /> Temple &amp; Receipt Details
             </button>
             <button
               type="button"
@@ -278,7 +292,7 @@ export default function ReceiptSettingsManager() {
             </button>
           </div>
 
-          {/* TAB 1: TEMPLE & 80G DETAILS */}
+          {/* TAB 1: TEMPLE & RECEIPT DETAILS */}
           {activeTab === "temple" && (
             <div className="bg-white rounded-3xl p-5 sm:p-6 border shadow-sm space-y-5 animate-fade-in">
               <div className="border-b pb-3 flex items-center justify-between">
@@ -297,7 +311,7 @@ export default function ReceiptSettingsManager() {
                     value={form.templeName}
                     onChange={(e) => update("templeName", e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs font-medium"
-                    placeholder="ISKCON KURNOOL"
+                    placeholder="Sri Sri Puri Jagannath Mandir"
                   />
                 </div>
 
@@ -308,7 +322,7 @@ export default function ReceiptSettingsManager() {
                     value={form.deityName}
                     onChange={(e) => update("deityName", e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs font-medium"
-                    placeholder="Sri Sri Jagannath Baladev Subhadra Temple"
+                    placeholder="ISKCON Kurnool"
                   />
                 </div>
 
@@ -319,7 +333,7 @@ export default function ReceiptSettingsManager() {
                     value={form.address}
                     onChange={(e) => update("address", e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs font-medium"
-                    placeholder="Sri Sri Puri Jagannath Temple, Kurnool, Andhra Pradesh, India"
+                    placeholder="ISKCON Kurnool - Sri Sri Puri Jagannath Mandir Bhageerathi Complex 2nd floor, Above the Canara Bank, Opp. to Kids World Park Road, Kurnool"
                   />
                 </div>
 
@@ -330,7 +344,7 @@ export default function ReceiptSettingsManager() {
                     value={form.phone}
                     onChange={(e) => update("phone", e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs font-medium"
-                    placeholder="+91 95053 77520"
+                    placeholder="9347126877"
                   />
                 </div>
 
@@ -352,29 +366,7 @@ export default function ReceiptSettingsManager() {
                     value={form.receiptTitle}
                     onChange={(e) => update("receiptTitle", e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs font-medium"
-                    placeholder="OFFICIAL DONATION RECEIPT"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">80G Registration Number</label>
-                  <input
-                    type="text"
-                    value={form.taxRegNumber}
-                    onChange={(e) => update("taxRegNumber", e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs font-medium"
-                    placeholder="AAATI1234F / 80G / 2024-25"
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">80G Tax Exemption Notice Text</label>
-                  <input
-                    type="text"
-                    value={form.taxExemptionText}
-                    onChange={(e) => update("taxExemptionText", e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs font-medium"
-                    placeholder="Eligible for 80G Income Tax Exemption · 100% Tax Deductible"
+                    placeholder="COMPUTER GENERATED RECEIPT"
                   />
                 </div>
 
@@ -390,13 +382,13 @@ export default function ReceiptSettingsManager() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Footer Legal / Acknowledgement Note</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Footer Important Note (WhatsApp Instruction)</label>
                   <textarea
                     rows={2}
                     value={form.footerNotes}
                     onChange={(e) => update("footerNotes", e.target.value)}
                     className="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs font-medium resize-none"
-                    placeholder="All donations to ISKCON Kurnool are eligible for 80G tax exemption. This is a computer-generated official receipt."
+                    placeholder="NOTE: Please WhatsApp this computer-generated receipt to 9347126877 to receive the original receipt from ISKCON Kurnool."
                   />
                 </div>
               </div>
@@ -499,6 +491,76 @@ export default function ReceiptSettingsManager() {
                   </div>
                 </div>
               )}
+
+              {/* Right Header Image / Deity Emblem Upload Section */}
+              <div className="border-t pt-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-bold text-xs text-slate-900">Right Header Image / Deity Emblem</h4>
+                    <p className="text-[11px] text-slate-500">Upload a custom right deity logo / image to display opposite the left logo.</p>
+                  </div>
+                  {form.rightHeaderImage && (
+                    <button
+                      type="button"
+                      onClick={() => update("rightHeaderImage", "")}
+                      className="text-[11px] text-rose-600 hover:text-rose-700 flex items-center gap-1 font-semibold cursor-pointer"
+                    >
+                      <Trash2 className="h-3 w-3" /> Reset to Default
+                    </button>
+                  )}
+                </div>
+
+                <div className="border rounded-2xl p-4 bg-slate-50 flex items-center gap-4">
+                  <div className="h-16 w-16 rounded-full bg-purple-950 border-2 border-amber-300 shadow-sm flex items-center justify-center overflow-hidden shrink-0">
+                    <img
+                      src={form.rightHeaderImage || "/jagannath-deities.jpg"}
+                      alt="Right Header Emblem"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="space-y-1 flex-1 min-w-0">
+                    <p className="text-xs font-bold text-slate-800 truncate">
+                      {form.rightHeaderImage ? "Custom Right Emblem Active" : "Default Sri Sri Puri Jagannath Deities Active"}
+                    </p>
+                    <p className="text-[10px] text-slate-500 truncate">
+                      {form.rightHeaderImage || "Using /jagannath-deities.jpg"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="border-2 border-dashed border-slate-300 rounded-2xl p-5 text-center hover:border-primary transition cursor-pointer relative bg-slate-50/50">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleUploadRightHeaderImage(file);
+                    }}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    disabled={uploadingRightImg}
+                  />
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                      <Upload className="h-4 w-4" />
+                    </div>
+                    <p className="text-xs font-bold text-slate-700">
+                      {uploadingRightImg ? "Uploading right emblem..." : "Click or drag to upload Right Header Image"}
+                    </p>
+                    <p className="text-[10px] text-slate-500">Transparent PNG or deity photo recommended (500x500)</p>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-bold text-slate-600">Or Paste Right Image URL directly</label>
+                  <input
+                    type="text"
+                    value={form.rightHeaderImage || ""}
+                    onChange={(e) => update("rightHeaderImage", e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
+                    placeholder="https://example.com/deities.jpg"
+                  />
+                </div>
+              </div>
             </div>
           )}
 
@@ -533,7 +595,7 @@ export default function ReceiptSettingsManager() {
                     value={form.signatoryTitle}
                     onChange={(e) => update("signatoryTitle", e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs font-medium"
-                    placeholder="Temple President / Authorised Signatory"
+                    placeholder="General Manager"
                   />
                 </div>
 
@@ -906,55 +968,69 @@ export default function ReceiptSettingsManager() {
               </div>
             )}
 
-            {/* Header Banner */}
+            {/* Header Banner — Royal 3-Column ISKCON Kurnool Design */}
             <div 
-              className="rounded-xl p-4 sm:p-5 text-center text-white relative shadow-sm mb-4"
+              className="rounded-2xl p-4 sm:p-5 text-center text-white relative shadow-md overflow-hidden border-2 border-amber-400/50 mb-4"
               style={{
-                background: form.headerBgStyle === "solid"
-                  ? form.primaryColor
-                  : `linear-gradient(135deg, ${form.primaryColor} 0%, #1e1b4b 100%)`,
-                borderBottom: `3px solid ${form.secondaryColor}`
+                background: "linear-gradient(135deg, #2a0845 0%, #1e1b4b 50%, #11052c 100%)",
+                fontFamily: "'Cinzel', Georgia, serif"
               }}
             >
-              {/* Emblem / Logo */}
-              <div className="flex justify-center mb-2">
-                {resolvedLogo ? (
+              {/* Subtle background pattern */}
+              <div className="absolute inset-0 bg-[url('/mandala.png')] bg-center bg-no-repeat opacity-[0.06] bg-contain pointer-events-none" />
+
+              <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-3">
+                {/* Left Section — ISKCON Logo */}
+                <div className="shrink-0">
                   <img
-                    src={resolvedLogo}
-                    alt="Logo"
-                    className="h-12 w-12 sm:h-14 sm:w-14 rounded-full object-cover shadow-md ring-2"
-                    style={{ borderColor: form.secondaryColor }}
+                    src={resolvedLogo || "/iskcon-logo.png"}
+                    alt="ISKCON Logo"
+                    className="h-14 w-14 sm:h-16 sm:w-16 rounded-full object-cover shadow-md ring-2 ring-amber-300 bg-purple-950 p-0.5"
                   />
-                ) : (
-                  <div 
-                    className="h-12 w-12 rounded-full font-bold text-lg flex items-center justify-center shadow-md border-2"
-                    style={{ backgroundColor: form.secondaryColor, color: form.primaryColor, borderColor: "#ffffff" }}
-                  >
-                    IK
-                  </div>
-                )}
+                </div>
+
+                {/* Center Section — Temple Identity */}
+                <div className="text-center flex-1 max-w-sm px-1">
+                  <p className="text-white text-[10px] sm:text-xs font-bold tracking-wider uppercase">
+                    International Society for Krishna Consciousness
+                  </p>
+                  <p className="text-white/95 text-[9px] sm:text-[10px] font-semibold mt-0.5">
+                    Founder-Acharya: His Divine Grace A.C. Bhaktivedanta Swami Prabhupada
+                  </p>
+                  <h2 className="mt-2 font-black text-xl sm:text-2xl tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-amber-300 to-amber-500 drop-shadow-sm uppercase py-0.5 leading-tight">
+                    ISKCON KURNOOL
+                  </h2>
+                  <h3 className="mt-0.5 text-[11px] sm:text-xs font-extrabold text-amber-200 tracking-widest uppercase">
+                    SRI SRI PURI JAGANNATH TEMPLE
+                  </h3>
+                </div>
+
+                {/* Right Section — Jagannath Deities (Exact Same Size & Circular Frame as Left Logo) */}
+                <div className="shrink-0">
+                  <img
+                    src={form.rightHeaderImage || "/jagannath-deities.jpg"}
+                    alt="Right Header Emblem"
+                    className="h-14 w-14 sm:h-16 sm:w-16 rounded-full object-cover shadow-md ring-2 ring-amber-300 bg-purple-950 p-0.5"
+                  />
+                </div>
               </div>
 
-              <h2 className="font-display font-black text-lg sm:text-xl tracking-wider uppercase text-white">
-                {form.templeName || "ISKCON KURNOOL"}
-              </h2>
-              <p className="text-xs font-semibold mt-0.5" style={{ color: form.secondaryColor }}>
-                {form.deityName || "Sri Sri Jagannath Baladev Subhadra Temple"}
-              </p>
-              <p className="text-[10px] text-white/80 mt-1">
-                {form.address || "Kurnool, Andhra Pradesh · Phone: " + (form.phone || "+91 95053 77520")}
-              </p>
+              {/* Divider & Contact Info */}
+              <div className="mt-2.5 pt-2 border-t border-amber-400/30 text-[10px] text-amber-100/90 flex flex-wrap items-center justify-center gap-2 font-sans">
+                <span>📞 Phone: +91 95053 77520</span>
+                <span className="hidden sm:inline">·</span>
+                <span>✉️ Email: iskconkurnool.official@gmail.com</span>
+              </div>
 
-              {/* Receipt Title Badge */}
               <div 
-                className="mt-3 inline-block px-4 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider shadow-xs"
+                className="mt-2.5 inline-block px-3.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider shadow-xs"
                 style={{ 
                   backgroundColor: "#fffdf0", 
-                  color: form.primaryColor,
-                  border: `1.5px solid ${form.secondaryColor}` 
+                  color: form.primaryColor || "#5b2c9b",
+                  border: `1.5px solid ${form.secondaryColor || "#d97706"}` 
                 }}
               >
-                {form.receiptTitle || "OFFICIAL DONATION RECEIPT"}
+                {form.receiptTitle || "COMPUTER GENERATED RECEIPT"}
               </div>
             </div>
 
@@ -994,12 +1070,6 @@ export default function ReceiptSettingsManager() {
                 <span className="text-slate-500">Gotram / Notes:</span>
                 <span className="font-semibold text-slate-700 truncate max-w-[220px]">
                   {sampleReceiptData.notes}
-                </span>
-              </div>
-              <div className="flex justify-between py-1">
-                <span className="text-slate-500">80G PAN Ref:</span>
-                <span className="font-mono font-bold uppercase text-slate-800">
-                  {sampleReceiptData.panNumber}
                 </span>
               </div>
               <div className="flex justify-between py-1">
@@ -1043,7 +1113,7 @@ export default function ReceiptSettingsManager() {
               </div>
 
               <p className="text-[10px] text-emerald-800 leading-relaxed">
-                Forwards full receipt details (Ref No, Seva, Amount, PAN, Gotram) directly to Temple WhatsApp or personal chat.
+                Forwards receipt details directly to <strong>9347126877</strong> for original receipt issuance.
               </p>
 
               <div className="flex items-center gap-2 pt-0.5">
@@ -1053,27 +1123,21 @@ export default function ReceiptSettingsManager() {
                   rel="noreferrer"
                   className="flex-1 py-1.5 px-2.5 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1 shadow-xs"
                 >
-                  <MessageCircle className="h-3 w-3" /> Send to Temple
-                </a>
-                <a
-                  href={getReceiptShareUrl(sampleReceiptData, form, settings)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="py-1.5 px-2.5 bg-white hover:bg-emerald-100/60 text-emerald-900 border border-emerald-300 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1 shadow-xs"
-                >
-                  <Share2 className="h-3 w-3 text-emerald-700" /> Share
+                  <MessageCircle className="h-3 w-3" /> Send to WhatsApp (9347126877)
                 </a>
               </div>
             </div>
 
-            {/* Blessing Quote & 80G */}
-            <div className="text-center space-y-1 py-1 mb-4">
+            {/* Blessing Quote & Highlighted Note */}
+            <div className="text-center space-y-2 py-1 mb-4">
               <p className="text-xs font-semibold italic" style={{ color: form.primaryColor }}>
                 "{form.blessingMessage}"
               </p>
-              <p className="text-[10px] text-slate-500">
-                {form.taxExemptionText} · Reg: {form.taxRegNumber}
-              </p>
+              
+              <div className="bg-amber-50 border border-amber-300 rounded-xl p-2.5 text-center text-amber-950 text-[11px] font-semibold">
+                <span className="bg-amber-500 text-slate-950 text-[9px] px-1.5 py-0.5 rounded font-extrabold uppercase mr-1">NOTE</span>
+                Please WhatsApp this computer-generated receipt to <strong>9347126877</strong> to receive the original receipt from ISKCON Kurnool.
+              </div>
             </div>
 
             {/* BOTTOM-RIGHT SIGNATURE BLOCK */}
@@ -1119,12 +1183,19 @@ export default function ReceiptSettingsManager() {
                   {form.signatoryName || "Vaishnava Krupa Das"}
                 </p>
                 <p className="text-[10px] sm:text-xs font-bold text-slate-700">
-                  {form.signatoryTitle || "Temple President / Authorised Signatory"}
+                  {form.signatoryTitle || "General Manager"}
                 </p>
                 <p className="text-[9px] sm:text-[10px] text-slate-500">
                   {form.signatoryOrg || "ISKCON Kurnool"}
                 </p>
               </div>
+            </div>
+
+            {/* BOTTOM TEMPLE ADDRESS FOOTER */}
+            <div className="pt-3 border-t border-slate-200/80 text-center mt-3">
+              <p className="text-xs sm:text-sm font-bold text-slate-800 flex items-center justify-center gap-1 leading-relaxed">
+                <span>📍 Temple Address: {form.address || "ISKCON Kurnool - Sri Sri Puri Jagannath Mandir Bhageerathi Complex 2nd floor, Above the Canara Bank, Opp. to Kids World Park Road, Kurnool"}</span>
+              </p>
             </div>
           </div>
         </div>

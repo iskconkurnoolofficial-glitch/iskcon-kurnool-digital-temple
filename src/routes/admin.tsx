@@ -310,7 +310,7 @@ function AdminPage() {
         { id: "contacts", label: "Contact Messages", icon: Mail },
         { id: "settings", label: "Site Settings", icon: Settings },
         { id: "upiSettings", label: "UPI QR & Bank Settings", icon: QrCode },
-        { id: "receiptSettings", label: "Receipt & 80G Design", icon: FileCheck },
+        { id: "receiptSettings", label: "Donation Receipt Design", icon: FileCheck },
         { id: "terms", label: "Terms & Conditions", icon: FileText },
         { id: "privacy", label: "Privacy Policy", icon: ShieldCheck },
       ]

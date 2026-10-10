@@ -58,6 +58,8 @@ const CHECKOUT_I18N = {
     devoteeNamePlaceholder: "Enter full name of the devotee",
     sankalpa: "Purpose of Donation / Sankalpa (Optional)",
     sankalpaPlaceholder: "e.g. For good health, family welfare, birthdays...",
+    gotra: "Gotra / Gotram (Optional)",
+    gotraPlaceholder: "e.g. Kasyapa, Bharadwaja, Vasishta...",
     phone: "WhatsApp / Mobile Number *",
     phonePlaceholder: "e.g. +91 9876543210",
     email: "Email Address (Optional)",
@@ -105,6 +107,8 @@ const CHECKOUT_I18N = {
     devoteeNamePlaceholder: "భక్తుని పూర్తి పేరు ఎంటర్ చేయండి",
     sankalpa: "సేవా సంకల్పము / ప్రత్యేక ప్రార్థనలు (ఐచ్ఛికం)",
     sankalpaPlaceholder: "ఉదా: ఆరోగ్య ప్రాప్తి, కుటుంబ శ్రేయస్సు, పుట్టినరోజు...",
+    gotra: "గోత్రము (ఐచ్ఛికం)",
+    gotraPlaceholder: "ఉదా: కాశ్యప, భరద్వాజ, వశిష్ట...",
     phone: "వాట్సాప్ / మొబైల్ సంఖ్య *",
     phonePlaceholder: "ఉదా: +91 9876543210",
     email: "ఈమెయిల్ విలాసం (ఐచ్ఛికం)",
@@ -152,6 +156,8 @@ const CHECKOUT_I18N = {
     devoteeNamePlaceholder: "भक्त का पूरा नाम दर्ज करें",
     sankalpa: "सेवा संकल्प / विशेष प्रार्थनाएँ (ऐच्छिक)",
     sankalpaPlaceholder: "उदा: उत्तम स्वास्थ्य, परिवार कल्याण, जन्मदिन...",
+    gotra: "गोत्र (ऐच्छिक)",
+    gotraPlaceholder: "उदा: काश्यप, भारद्वाज, वशिष्ठ...",
     phone: "व्हाट्सएप / मोबाइल नंबर *",
     phonePlaceholder: "उदा: +91 9876543210",
     email: "ईमेल आईडी (ऐच्छिक)",
@@ -235,6 +241,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     donorName: string;
     donorEmail?: string;
     donorPhone?: string;
+    donorGotra?: string;
     pan?: string;
     notes?: string;
     enquiryId?: string | null;
@@ -253,6 +260,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   const [quickDonorName, setQuickDonorName] = useState("");
   const [quickPhone, setQuickPhone] = useState("");
   const [quickEmail, setQuickEmail] = useState("");
+  const [quickGotra, setQuickGotra] = useState("");
   const [quickPurpose, setQuickPurpose] = useState("");
   const [quickPan, setQuickPan] = useState("");
   const [quickCoverFee, setQuickCoverFee] = useState(true);
@@ -270,6 +278,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   const [purpose, setPurpose] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [gotra, setGotra] = useState("");
   const [pan, setPan] = useState("");
 
   useEffect(() => {
@@ -615,6 +624,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       donorName: string;
       phone: string;
       email?: string;
+      gotra?: string;
       pan?: string;
       purpose?: string;
       coverFee?: boolean;
@@ -629,6 +639,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     const curDonorName = (customDetails?.donorName ?? donorName).trim();
     const curPhone = (customDetails?.phone ?? phone).trim();
     const curEmail = (customDetails?.email ?? email).trim() || `${curPhone.replace(/\D/g, "") || "devotee"}@iskconkurnool.in`;
+    const curGotra = (customDetails?.gotra ?? gotra).trim();
     const curPan = (customDetails?.pan ?? pan).trim();
     const curPurpose = (customDetails?.purpose ?? purpose).trim();
     const curCoverFee = customDetails ? (customDetails.coverFee ?? true) : coverPlatformFee;
@@ -645,7 +656,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       email: curEmail,
       phone: curPhone,
       pan: curPan,
-      purpose: curPurpose,
+      purpose: curGotra ? `${curPurpose ? `${curPurpose} | ` : ""}Gotra: ${curGotra}` : curPurpose,
       sevaTitle: seva.title,
       optionLabel: label,
       amount,
@@ -665,6 +676,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
         donorName: curDonorName,
         donorEmail: curEmail,
         donorPhone: curPhone,
+        donorGotra: curGotra,
         pan: curPan,
         notes: curPurpose,
         enquiryId,
@@ -693,6 +705,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
         baseDonation: amount,
         platformFeeCovered: platformCharge,
         donorName: curDonorName,
+        gotra: curGotra,
         purpose: curPurpose,
         email: curEmail,
         phone: curPhone,
@@ -722,12 +735,11 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
           donorName: finalDonorName,
           donorPhone: curPhone,
           donorEmail: curEmail,
+          donorGotra: curGotra,
           amount: totalPayable,
           purpose: curPurpose || `${seva.title}${label ? ` (${label})` : ""}`,
           paymentMethod: "Razorpay Gateway",
         });
-
-
 
         const isLpm = checkoutSeva?.slug === "life-patron" || 
                       checkoutSeva?.id === "s_life_patron_auto" || 
@@ -755,6 +767,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
             donorName: finalDonorName,
             donorEmail: curEmail,
             donorPhone: curPhone,
+            gotram: curGotra,
             amount: totalPayable,
             sevaTitle: `${seva.title} (${label})`,
             category: "General Seva",
@@ -769,10 +782,12 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
         setPurpose("");
         setEmail("");
         setPhone("");
+        setGotra("");
         setPan("");
         setQuickDonorName("");
         setQuickPhone("");
         setQuickEmail("");
+        setQuickGotra("");
         setQuickPurpose("");
         setQuickPan("");
       },
@@ -819,7 +834,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       }
     }
 
-    const finalNotes = userNotes || upiModalData.notes;
+    const finalNotes = [upiModalData.notes, userNotes].filter(Boolean).join(" | ");
 
     try {
       await addPaymentRecord({
@@ -837,7 +852,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
         paymentMethod: "UPI QR Payment",
         screenshotUrl: screenshotUrl,
         panNumber: upiModalData.pan,
-        notes: finalNotes,
+        notes: upiModalData.donorGotra ? `Gotra: ${upiModalData.donorGotra}${finalNotes ? ` | ${finalNotes}` : ""}` : finalNotes,
         taxReceiptRequested: !!upiModalData.pan,
       });
     } catch (err) {
@@ -850,6 +865,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       donorName: upiModalData.donorName || "Devotee",
       donorPhone: upiModalData.donorPhone,
       donorEmail: upiModalData.donorEmail,
+      donorGotra: upiModalData.donorGotra,
       amount: paidAmt,
       purpose: upiModalData.sevaTitle,
       paymentMethod: "UPI QR Payment",
@@ -876,6 +892,22 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
         sevaTitle: upiModalData.sevaTitle,
         donorName: upiModalData.donorName || "Devotee",
       });
+      if (upiModalData.donorGotra || upiModalData.pan || upiModalData.donorEmail) {
+        setReceiptSuccess({
+          receiptNo: utr,
+          date: new Date().toISOString(),
+          donorName: upiModalData.donorName || "Devotee",
+          donorEmail: upiModalData.donorEmail,
+          donorPhone: upiModalData.donorPhone,
+          gotram: upiModalData.donorGotra,
+          amount: paidAmt,
+          sevaTitle: upiModalData.sevaTitle,
+          category: "General Seva",
+          notes: finalNotes,
+          panNumber: upiModalData.pan,
+          paymentMethod: "UPI QR Payment",
+        });
+      }
     }
 
     setUpiModalData(null);
@@ -884,10 +916,12 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
     setPurpose("");
     setEmail("");
     setPhone("");
+    setGotra("");
     setPan("");
     setQuickDonorName("");
     setQuickPhone("");
     setQuickEmail("");
+    setQuickGotra("");
     setQuickPurpose("");
     setQuickPan("");
   };
@@ -924,6 +958,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
           donorName: quickDonorName,
           phone: quickPhone,
           email: quickEmail,
+          gotra: quickGotra,
           pan: quickPan,
           purpose: quickPurpose || "Quick Devotional Offering",
           coverFee: quickCoverFee,
@@ -1338,6 +1373,17 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                     </div>
 
                     <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-sans">{t.gotra}</label>
+                      <input
+                        type="text"
+                        placeholder={t.gotraPlaceholder}
+                        value={gotra}
+                        onChange={(e) => setGotra(e.target.value)}
+                        className="w-full px-3.5 py-2.5 sm:px-4 border border-slate-200 rounded-xl text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary font-sans bg-white"
+                      />
+                    </div>
+
+                    <div>
                       <div className="flex justify-between items-center mb-1.5">
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider font-sans">{t.pan}</label>
                         <span className="text-[10px] text-muted-foreground font-sans">{t.panNote}</span>
@@ -1734,7 +1780,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                       </div>
                     </div>
 
-                    {/* Row 2: Email, Purpose */}
+                    {/* Row 2: Email, Gotra */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-[11px] font-bold text-slate-600 mb-1">
@@ -1754,30 +1800,47 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
 
                       <div>
                         <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                          Purpose / Sankalpa (Optional)
+                          Gotra / Gotram (Optional)
                         </label>
                         <div className="relative">
-                          <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                          <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                           <input
                             type="text"
-                            placeholder="e.g. Birthday, Family Welfare..."
-                            value={quickPurpose}
-                            onChange={(e) => setQuickPurpose(e.target.value)}
+                            placeholder="e.g. Kasyapa, Bharadwaja..."
+                            value={quickGotra}
+                            onChange={(e) => setQuickGotra(e.target.value)}
                             className="w-full pl-8 pr-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-sans"
                           />
                         </div>
-                        <div className="flex flex-wrap gap-1 mt-1.5">
-                          {["Birthday", "Wedding Anniversary", "Family Welfare", "Good Health"].map((sug) => (
-                            <button
-                              key={sug}
-                              type="button"
-                              onClick={() => setQuickPurpose(sug)}
-                              className="px-2 py-0.5 bg-slate-100 hover:bg-amber-100/70 border border-slate-200 text-slate-600 rounded text-[9px] font-bold transition cursor-pointer"
-                            >
-                              + {sug}
-                            </button>
-                          ))}
-                        </div>
+                      </div>
+                    </div>
+
+                    {/* Row 3: Purpose */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                        Purpose / Sankalpa (Optional)
+                      </label>
+                      <div className="relative">
+                        <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                        <input
+                          type="text"
+                          placeholder="e.g. Birthday, Family Welfare..."
+                          value={quickPurpose}
+                          onChange={(e) => setQuickPurpose(e.target.value)}
+                          className="w-full pl-8 pr-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-sans"
+                        />
+                      </div>
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {["Birthday", "Wedding Anniversary", "Family Welfare", "Good Health"].map((sug) => (
+                          <button
+                            key={sug}
+                            type="button"
+                            onClick={() => setQuickPurpose(sug)}
+                            className="px-2 py-0.5 bg-slate-100 hover:bg-amber-100/70 border border-slate-200 text-slate-600 rounded text-[9px] font-bold transition cursor-pointer"
+                          >
+                            + {sug}
+                          </button>
+                        ))}
                       </div>
                     </div>
 
@@ -2033,6 +2096,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
           donorName={upiModalData.donorName}
           donorEmail={upiModalData.donorEmail}
           donorPhone={upiModalData.donorPhone}
+          donorGotra={upiModalData.donorGotra}
           pan={upiModalData.pan}
           notes={upiModalData.notes}
           onPaymentSuccess={handleUpiSuccess}
