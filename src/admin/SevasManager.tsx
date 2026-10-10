@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
-import { useAdmin, uploadToCloudinary, Seva, SevaPrice, getSevaCategories, getSevaFestivalIds } from "@/context/AdminContext";
+import { useAdmin, uploadToCloudinary, Seva, SevaPrice, getSevaCategories, getSevaFestivalIds, generateUniqueSevaId, ensureUniqueSevaSlugs } from "@/context/AdminContext";
 import AdminModal from "./AdminModal";
 import { 
   Trash2, Eye, EyeOff, HandHeart, Pencil, X, Plus, 
   ArrowUp, ArrowDown, IndianRupee, Sparkles, Search,
   Tag, Check, ChevronRight, ChevronLeft, Image as ImageIcon,
-  CheckCircle2, AlertCircle, LayoutGrid, HeartHandshake, Layers
+  CheckCircle2, AlertCircle, LayoutGrid, List, Copy, Filter,
+  ExternalLink, SlidersHorizontal, RefreshCw, Layers, Flame, Link as LinkIcon
 } from "lucide-react";
 import { UploadBox } from "./CarouselManager";
 import { toast } from "sonner";
@@ -24,7 +25,7 @@ export const DEFAULT_SEVA_CATEGORIES = [
   "Special Occasions"
 ];
 
-const PRESET_DONATION_AMOUNTS = [516, 1008, 2100, 5000, 11000, 21000];
+const PRESET_DONATION_AMOUNTS = [516, 1008, 2100, 5000, 5116, 11000, 21000, 55555];
 
 function emptyDraft(): Partial<Seva> {
   return { 
@@ -58,6 +59,8 @@ export default function SevasManager() {
   const [editCatInput, setEditCatInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [viewMode, setViewMode] = useState<"grid" | "table">("table");
 
   // Master Categories State (persisted in localStorage)
   const [customCategories, setCustomCategories] = useState<string[]>(() => {
@@ -250,6 +253,19 @@ export default function SevasManager() {
     });
   };
 
+  const copySevaLink = (s: Seva) => {
+    const slug = s.slug || s.id;
+    const url = `${window.location.origin}/donate/${slug}`;
+    navigator.clipboard.writeText(url);
+    toast.success(`🔗 Copied direct link: ${url}`);
+  };
+
+  const toggleActiveStatus = (s: Seva) => {
+    const nextActive = s.active === false;
+    setSevas(sevas.map((x) => (x.id === s.id ? { ...x, active: nextActive } : x)));
+    toast.success(nextActive ? `"${s.title}" is now Active` : `"${s.title}" is now Hidden`);
+  };
+
   const save = () => {
     if (!draft.title?.trim()) { 
       toast.error("Please enter a Seva Title in Step 1");
@@ -270,7 +286,20 @@ export default function SevasManager() {
       }
     }
 
-    const generatedSlug = draft.slug?.trim() || draft.title.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-") || Date.now().toString();
+    const generatedSlug = (draft.slug?.trim() || draft.title.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-") || Date.now().toString())
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, "");
+    
+    // Strict uniqueness check across all other sevas
+    const duplicateSeva = sevas.find(
+      (s) => s.id !== editingId && s.slug?.toLowerCase() === generatedSlug
+    );
+
+    if (duplicateSeva) {
+      toast.error(`❌ Duplicate URL Slug! The slug "${generatedSlug}" is already assigned to "${duplicateSeva.title}". Every Seva must have a unique URL slug.`);
+      setWizardStep(1);
+      return;
+    }
     
     // Multi-select categories
     const selectedCats = getSevaCategories(draft);
@@ -312,7 +341,7 @@ export default function SevasManager() {
     } else {
       const maxOrder = sevas.reduce((m, s) => Math.max(m, s.order ?? 0), 0);
       const item: Seva = {
-        id: "s_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+        id: generateUniqueSevaId(draft.title || draft.slug),
         thumbnail: draft.thumbnail || "",
         title: draft.title.trim(),
         description: draft.description?.trim() || "",
@@ -352,41 +381,32 @@ export default function SevasManager() {
     setIsModalOpen(true);
   };
 
-  const allSevasWithPatron = useMemo(() => {
-    let list = [...sevas];
-    const hasLifePatron = list.some(
-      (s) => s.slug === "life-patron" || s.slug === "life-patron-membership" || s.title.toLowerCase().includes("life patron")
-    );
-    if (!hasLifePatron) {
-      const lifePatronSevaItem: Seva = {
-        id: "s_life_patron_auto",
-        title: lifePatron?.heroTitle || "ISKCON Kurnool Life Patron Membership",
-        slug: "life-patron-membership",
-        category: "Patron Memberships",
-        categories: ["Patron Memberships"],
-        description: lifePatron?.heroSubtitle || "Become a recognized lifelong patron of Sri Sri Jagannath Baladev Subhadra Temple. Valid in 800+ ISKCON guest houses worldwide with 80G tax exemption benefits.",
-        thumbnail: lifePatron?.sevaCardImage || lifePatron?.cardPassImage || lifePatron?.heroImage || "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
-        prices: [
-          { label: "Life Patron Membership (One-Time Contribution)", amount: 55555 },
-        ],
-        order: -1,
-        active: true,
-      };
-      list = [lifePatronSevaItem, ...list];
-    }
-    return list;
-  }, [sevas, lifePatron]);
-
-  const sorted = [...allSevasWithPatron].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const sorted = useMemo(() => {
+    return [...sevas]
+      .filter((s) => s.id !== "s_life_patron_auto")
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  }, [sevas]);
 
   // Master categories list for tabs & options
   const allCategories = useMemo(() => ["All", ...customCategories], [customCategories]);
   const modalCategoryOptions = customCategories;
 
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { All: sorted.length };
+    for (const cat of customCategories) {
+      counts[cat] = sorted.filter(s => getSevaCategories(s).some(c => c.toLowerCase() === cat.toLowerCase())).length;
+    }
+    return counts;
+  }, [sorted, customCategories]);
+
   const filtered = sorted.filter((s) => {
     const sevaCats = getSevaCategories(s);
     const matchesCategory = categoryFilter === "All" || sevaCats.some(c => c.toLowerCase() === categoryFilter.toLowerCase());
     if (!matchesCategory) return false;
+
+    if (statusFilter === "active" && s.active === false) return false;
+    if (statusFilter === "inactive" && s.active !== false) return false;
+
     if (!searchTerm.trim()) return true;
     const q = searchTerm.toLowerCase();
     return s.title.toLowerCase().includes(q) || (s.description && s.description.toLowerCase().includes(q)) || sevaCats.some(c => c.toLowerCase().includes(q));
@@ -402,6 +422,10 @@ export default function SevasManager() {
   };
 
   const remove = (id: string, title: string) => {
+    if (id === "s_1791632192816_zf3l" || id === "s_saturdayyouthfe_44fa16b6" || id === "s_sundayfeastanna_4459b2e0") {
+      toast.error("Delete option is disabled for this seva.");
+      return;
+    }
     if (confirm(`Are you sure you want to delete "${title}"?`)) {
       setSevas(sevas.filter((s) => s.id !== id));
       if (editingId === id) {
@@ -414,45 +438,59 @@ export default function SevasManager() {
 
   const totalCount = sevas.length;
   const activeCount = sevas.filter((s) => s.active !== false).length;
+  const inactiveCount = sevas.filter((s) => s.active === false).length;
 
   return (
     <div className="space-y-6 font-sans">
-      {/* Modern Banner Header */}
-      <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-50/50 rounded-3xl p-6 sm:p-8 border border-amber-300/40 shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      {/* Premium Header KPI Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-50/60 rounded-3xl p-6 sm:p-8 border border-amber-300/50 shadow-xs">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           <div className="flex items-start gap-4">
             <div className="p-3.5 bg-gradient-to-br from-amber-500 to-orange-500 text-white rounded-2xl shrink-0 shadow-md">
-              <HandHeart className="h-7 w-7" />
+              <HandHeart className="h-7 w-7 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="font-display text-2xl font-bold text-primary">Jagannath Sevas Manager</h2>
-                <span className="bg-amber-100 text-amber-900 text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full border border-amber-300 font-sans">
-                  Nitya &amp; Festival Sevas
+                <span className="bg-amber-100 text-amber-900 text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full border border-amber-300 font-sans flex items-center gap-1">
+                  <Flame className="h-3 w-3 text-amber-600" /> Nitya &amp; Festival Sevas
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-2xl leading-relaxed font-sans">
-                Configure temple donation opportunities such as Bhoga Seva, Pushpalankara, Deepa Daan, Janmashtami, and Deity Abhishek in a quick, step-by-step wizard.
+                Manage temple sevas, offering amounts, multi-category tags, and festival links. Changes update immediately on the public donation portal.
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 font-sans">
-            <div className="bg-white/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-amber-200 shadow-2xs text-center">
-              <span className="text-[11px] text-muted-foreground block font-medium">Total Sevas</span>
-              <strong className="font-display text-lg text-primary">{totalCount}</strong>
+            {/* KPI Cards */}
+            <div className="flex items-center gap-2 bg-white/90 backdrop-blur-md p-1.5 rounded-2xl border border-amber-200/80 shadow-2xs">
+              <div className="px-3 py-1 text-center">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground block">Total</span>
+                <strong className="font-display text-base text-primary">{totalCount}</strong>
+              </div>
+              <div className="h-6 w-px bg-amber-200" />
+              <div className="px-3 py-1 text-center">
+                <span className="text-[10px] uppercase font-bold text-green-600 block">Active</span>
+                <strong className="font-display text-base text-green-600">{activeCount}</strong>
+              </div>
+              {inactiveCount > 0 && (
+                <>
+                  <div className="h-6 w-px bg-amber-200" />
+                  <div className="px-3 py-1 text-center">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Hidden</span>
+                    <strong className="font-display text-base text-slate-500">{inactiveCount}</strong>
+                  </div>
+                </>
+              )}
             </div>
-            <div className="bg-white/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-amber-200 shadow-2xs text-center">
-              <span className="text-[11px] text-muted-foreground block font-medium">Active Sevas</span>
-              <strong className="font-display text-lg text-green-600">{activeCount}</strong>
-            </div>
-            
+
             <button
               type="button"
               onClick={() => setIsCategoryModalOpen(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-white hover:bg-amber-50 text-amber-900 font-bold text-xs sm:text-sm border border-amber-300 shadow-2xs hover:scale-105 active:scale-95 transition-all cursor-pointer font-sans"
+              className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-white hover:bg-amber-50 text-amber-950 font-bold text-xs sm:text-sm border border-amber-300 shadow-2xs hover:scale-105 active:scale-95 transition-all cursor-pointer font-sans"
             >
-              <Tag className="h-4 w-4 text-amber-600" /> Categories
+              <Tag className="h-4 w-4 text-amber-600" /> Categories ({customCategories.length})
             </button>
 
             <button
@@ -466,161 +504,460 @@ export default function SevasManager() {
               href="/donate"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs sm:text-sm border border-slate-200 shadow-xs transition-all cursor-pointer font-sans"
+              className="inline-flex items-center justify-center gap-2 px-3.5 py-3 rounded-2xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs sm:text-sm border border-slate-200 shadow-2xs transition-all cursor-pointer font-sans"
+              title="Open Public Seva Page"
             >
-              <Eye className="h-4 w-4 text-accent" /> Live View
+              <ExternalLink className="h-4 w-4 text-accent" />
             </a>
           </div>
         </div>
       </div>
 
-      {/* Category Filter Tabs Bar */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search sevas by title, category, or description..."
-            className="w-full pl-10 pr-4 py-2.5 border rounded-xl bg-white focus:ring-2 focus:ring-primary/20 focus:outline-none text-xs sm:text-sm shadow-2xs"
-          />
+      {/* Smart Search, Status & View Mode Filter Bar */}
+      <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+          
+          {/* Search Box */}
+          <div className="relative flex-1 w-full max-w-md">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search sevas by title, category, or description..."
+              className="w-full pl-10 pr-9 py-2 border rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:outline-none text-xs sm:text-sm transition-all"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded-full"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+            {/* Status Filter */}
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+              <button
+                type="button"
+                onClick={() => setStatusFilter("all")}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+                  statusFilter === "all" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                All ({sorted.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusFilter("active")}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+                  statusFilter === "active" ? "bg-white text-green-700 shadow-2xs" : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                Active
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusFilter("inactive")}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+                  statusFilter === "inactive" ? "bg-white text-slate-700 shadow-2xs" : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                Hidden
+              </button>
+            </div>
+
+            {/* View Mode Switcher (Grid vs Table) */}
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                className={`p-1.5 rounded-lg transition cursor-pointer ${
+                  viewMode === "grid" ? "bg-white text-primary shadow-2xs" : "text-slate-400 hover:text-slate-600"
+                }`}
+                title="Grid Cards View"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("table")}
+                className={`p-1.5 rounded-lg transition cursor-pointer ${
+                  viewMode === "table" ? "bg-white text-primary shadow-2xs" : "text-slate-400 hover:text-slate-600"
+                }`}
+                title="Compact Table List View"
+              >
+                <List className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Category Pills Bar */}
-        <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1 scrollbar-none">
+        {/* Category Filter Pills Bar */}
+        <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pt-1 pb-1 scrollbar-none border-t border-slate-100">
           {allCategories.map((cat) => {
             const isAct = categoryFilter.toLowerCase() === cat.toLowerCase();
+            const count = categoryCounts[cat] || 0;
             return (
               <button
                 key={cat}
                 type="button"
                 onClick={() => setCategoryFilter(cat)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 ${isAct
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 flex items-center gap-1.5 ${isAct
                   ? "bg-primary text-white shadow-2xs"
-                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                  : "bg-slate-50 text-slate-700 border border-slate-200/80 hover:bg-slate-100"
                   }`}
               >
-                {cat}
+                <span>{cat}</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                  isAct ? "bg-white/20 text-white" : "bg-slate-200 text-slate-600"
+                }`}>
+                  {count}
+                </span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Sevas Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filtered.map((s, idx) => (
-          <div
-            key={s.id}
-            className="p-[2px] rounded-3xl bg-gradient-to-br from-amber-400 via-orange-400 to-amber-500 hover:from-amber-300 hover:via-orange-500 hover:to-rose-500 shadow-sm hover:shadow-lg transition-all duration-300 group flex flex-col"
-          >
-            <div className="bg-white rounded-[22px] overflow-hidden flex flex-col justify-between h-full">
-              <div>
-                <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-900">
-                  {s.thumbnail ? (
-                    <img src={s.thumbnail} alt={s.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  ) : (
-                    <div className="w-full h-full grid place-items-center bg-amber-50/50 text-amber-400">
-                      <HandHeart className="h-10 w-10 opacity-40" />
-                    </div>
-                  )}
-                  <span className="absolute top-3 left-3 bg-black/70 backdrop-blur-md text-white font-sans text-xs font-bold px-2.5 py-1 rounded-full">
-                    #{idx + 1}
-                  </span>
-                  <span className={`absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold shadow-xs ${s.active !== false ? "bg-green-600 text-white" : "bg-slate-700 text-white"
-                    }`}>
-                    {s.active !== false ? "Active" : "Inactive"}
-                  </span>
-                </div>
-
-                <div className="p-5 space-y-2">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    {getSevaCategories(s).map((cat) => (
-                      <span key={cat} className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300/80 uppercase tracking-wider">
-                        {cat}
-                      </span>
-                    ))}
-                    {s.festivalId && (
-                      <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-purple-100 text-primary border border-purple-300/80 uppercase tracking-wider">
-                        Linked: {(festivals || []).find((f) => f.id === s.festivalId)?.title || "Festival"}
-                      </span>
-                    )}
-                  </div>
-
-                  <h4 className="font-display font-bold text-base text-foreground line-clamp-1">
-                    {s.title}
-                  </h4>
-                  {s.description && (
-                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                      {s.description}
-                    </p>
-                  )}
-
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {(!s.prices || s.prices.length <= 1) ? (
-                      <span className="text-xs font-black bg-amber-50 text-amber-950 border border-amber-300 px-2.5 py-0.5 rounded-lg font-sans">
-                        ₹{s.prices?.[0]?.amount || 516}
-                      </span>
-                    ) : (
-                      s.prices.map((p, i) => (
-                        <span key={i} className="text-[11px] font-bold bg-slate-50 text-slate-800 border border-slate-200 px-2 py-0.5 rounded-lg font-sans">
-                          {p.label ? `${p.label}: ` : ""}₹{p.amount}
-                        </span>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-5 pt-0 border-t border-slate-100 mt-2 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => move(s.id, -1)}
-                    className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                    title="Move Up"
-                  >
-                    <ArrowUp className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    onClick={() => move(s.id, 1)}
-                    className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                    title="Move Down"
-                  >
-                    <ArrowDown className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    onClick={() => setSevas(sevas.map((x) => x.id === s.id ? { ...x, active: !x.active } : x))}
-                    className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${s.active !== false ? "bg-green-50 border-green-200 text-green-700" : "bg-slate-100 border-slate-200 text-muted-foreground"
-                      }`}
-                    title={s.active !== false ? "Hide from website" : "Make active"}
-                  >
-                    {s.active !== false ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => startEdit(s)}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80 text-xs font-bold transition-colors cursor-pointer"
-                  >
-                    <Pencil className="h-3.5 w-3.5" /> Edit
-                  </button>
-                  <button
-                    onClick={() => remove(s.id, s.title)}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold transition-colors cursor-pointer"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
-
-            </div>
+      {/* Empty State Notice */}
+      {filtered.length === 0 && (
+        <div className="bg-white rounded-3xl p-12 border border-dashed border-slate-300 text-center space-y-3 font-sans">
+          <div className="h-14 w-14 bg-amber-50 text-amber-500 rounded-full grid place-items-center mx-auto">
+            <HandHeart className="h-7 w-7" />
           </div>
-        ))}
-      </div>
+          <h3 className="font-display text-lg font-bold text-slate-800">No Sevas Found</h3>
+          <p className="text-xs text-muted-foreground max-w-md mx-auto">
+            No sevas match your current filter settings "{categoryFilter}". Try resetting your category filter or search criteria.
+          </p>
+          <div className="flex justify-center gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setSearchTerm("");
+                setCategoryFilter("All");
+                setStatusFilter("all");
+              }}
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition cursor-pointer"
+            >
+              Reset Filters
+            </button>
+            <button
+              type="button"
+              onClick={openNew}
+              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-xs transition cursor-pointer"
+            >
+              + Create New Seva
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* GRID VIEW LAYOUT */}
+      {viewMode === "grid" && filtered.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filtered.map((s, idx) => {
+            const isAutoPatron = s.id === "s_life_patron_auto";
+            return (
+              <div
+                key={s.id}
+                className="p-[2px] rounded-3xl bg-gradient-to-br from-amber-400 via-orange-400 to-amber-500 hover:from-amber-300 hover:via-orange-500 hover:to-rose-500 shadow-sm hover:shadow-md transition-all duration-300 group flex flex-col"
+              >
+                <div className="bg-white rounded-[22px] overflow-hidden flex flex-col justify-between h-full">
+                  <div>
+                    {/* Thumbnail Image Container */}
+                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-900">
+                      {s.thumbnail ? (
+                        <img 
+                          src={s.thumbnail} 
+                          alt={s.title} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                        />
+                      ) : (
+                        <div className="w-full h-full grid place-items-center bg-amber-50/50 text-amber-400">
+                          <HandHeart className="h-10 w-10 opacity-40" />
+                        </div>
+                      )}
+                      
+                      <span className="absolute top-3 left-3 bg-black/70 backdrop-blur-md text-white font-sans text-xs font-bold px-2.5 py-1 rounded-full">
+                        #{idx + 1}
+                      </span>
+                      
+                      {/* Interactive Active Toggle Pill */}
+                      <button
+                        type="button"
+                        onClick={() => toggleActiveStatus(s)}
+                        className={`absolute top-3 right-3 px-3 py-1 rounded-full text-[10px] font-extrabold shadow-sm transition-transform active:scale-95 cursor-pointer flex items-center gap-1 ${
+                          s.active !== false 
+                            ? "bg-green-600 text-white" 
+                            : "bg-slate-800/90 text-slate-200 backdrop-blur-md"
+                        }`}
+                        title={s.active !== false ? "Click to Hide Seva" : "Click to Make Active"}
+                      >
+                        <span className={`h-1.5 w-1.5 rounded-full ${s.active !== false ? "bg-white animate-pulse" : "bg-slate-400"}`} />
+                        <span>{s.active !== false ? "Active" : "Hidden"}</span>
+                      </button>
+                    </div>
+
+                    {/* Card Body */}
+                    <div className="p-5 space-y-3">
+                      {/* Categories, Unique Seva ID & Festival Badges */}
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(s.id);
+                            toast.success(`Copied Seva ID: ${s.id}`);
+                          }}
+                          className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 flex items-center gap-1 cursor-pointer transition-colors"
+                          title="Click to copy Unique Seva ID"
+                        >
+                          <Tag className="h-2.5 w-2.5 text-slate-400" />
+                          <span>ID: {s.id}</span>
+                          <Copy className="h-2.5 w-2.5 text-slate-400" />
+                        </button>
+                        {getSevaCategories(s).map((cat) => (
+                          <span key={cat} className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300/80 uppercase tracking-wider">
+                            {cat}
+                          </span>
+                        ))}
+                        {s.festivalId && (
+                          <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-purple-100 text-primary border border-purple-300/80 uppercase tracking-wider flex items-center gap-1">
+                            <Sparkles className="h-2.5 w-2.5 text-purple-600" />
+                            <span>{(festivals || []).find((f) => f.id === s.festivalId)?.title || "Festival"}</span>
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Title & Description */}
+                      <h4 className="font-display font-bold text-base text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                        {s.title}
+                      </h4>
+                      {s.description && (
+                        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-sans">
+                          {s.description}
+                        </p>
+                      )}
+
+                      {/* Price Tiers Display */}
+                      <div className="flex flex-wrap gap-1.5 pt-1 border-t border-slate-100">
+                        {(!s.prices || s.prices.length <= 1) ? (
+                          <span className="text-xs font-black bg-amber-50 text-amber-950 border border-amber-300/80 px-2.5 py-0.5 rounded-lg font-sans">
+                            ₹{(s.prices?.[0]?.amount || 516).toLocaleString("en-IN")}
+                          </span>
+                        ) : (
+                          s.prices.map((p, i) => (
+                            <span key={i} className="text-[11px] font-bold bg-slate-50 text-slate-800 border border-slate-200 px-2 py-0.5 rounded-lg font-sans">
+                              {p.label ? `${p.label}: ` : ""}₹{(p.amount || 0).toLocaleString("en-IN")}
+                            </span>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card Bottom Toolbar */}
+                  <div className="p-4 pt-0 border-t border-slate-100 mt-2 flex items-center justify-between gap-2 bg-slate-50/50 rounded-b-[20px]">
+                    {/* Reorder & Copy Buttons */}
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => move(s.id, -1)}
+                        className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer"
+                        title="Move Up"
+                      >
+                        <ArrowUp className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => move(s.id, 1)}
+                        className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer"
+                        title="Move Down"
+                      >
+                        <ArrowDown className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => copySevaLink(s)}
+                        className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-amber-50 text-slate-600 hover:text-amber-700 transition-colors cursor-pointer flex items-center gap-1"
+                        title="Copy Direct Seva Link"
+                      >
+                        <LinkIcon className="h-3.5 w-3.5 text-amber-600" />
+                      </button>
+                    </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => startEdit(s)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 text-xs font-bold transition-all cursor-pointer"
+                        >
+                          <Pencil className="h-3.5 w-3.5" /> Edit
+                        </button>
+                        {s.id !== "s_1791632192816_zf3l" && s.id !== "s_saturdayyouthfe_44fa16b6" && s.id !== "s_sundayfeastanna_4459b2e0" && (
+                          <button
+                            onClick={() => remove(s.id, s.title)}
+                            className="inline-flex items-center gap-1 p-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 transition-colors cursor-pointer"
+                            title="Delete Seva"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* TABLE / LIST VIEW LAYOUT */}
+      {viewMode === "table" && filtered.length > 0 && (
+        <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs font-sans">
+              <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-extrabold text-[10px] tracking-wider">
+                <tr>
+                  <th className="py-3.5 px-4 text-center w-12">#</th>
+                  <th className="py-3.5 px-4">Seva Title</th>
+                  <th className="py-3.5 px-4">Categories</th>
+                  <th className="py-3.5 px-4">Offering Amount</th>
+                  <th className="py-3.5 px-4 text-center">Status</th>
+                  <th className="py-3.5 px-4 text-center">Reorder</th>
+                  <th className="py-3.5 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filtered.map((s, idx) => {
+                  const isAutoPatron = s.id === "s_life_patron_auto";
+                  return (
+                    <tr key={s.id} className="hover:bg-amber-50/40 transition-colors">
+                      <td className="py-3 px-4 text-center font-bold text-slate-400">
+                        {idx + 1}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-200">
+                            {s.thumbnail ? (
+                              <img src={s.thumbnail} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full grid place-items-center text-slate-300">
+                                <HandHeart className="h-5 w-5" />
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <div className="font-bold text-slate-900 text-xs sm:text-sm flex items-center gap-1.5 flex-wrap">
+                              <span>{s.title}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(s.id);
+                                  toast.success(`Copied Seva ID: ${s.id}`);
+                                }}
+                                className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-500 border border-slate-200 inline-flex items-center gap-1 cursor-pointer"
+                                title="Click to copy Unique Seva ID"
+                              >
+                                <span>ID: {s.id}</span>
+                                <Copy className="h-2 w-2" />
+                              </button>
+                            </div>
+                            {s.description && (
+                              <div className="text-[11px] text-slate-500 line-clamp-1 max-w-xs">{s.description}</div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex flex-wrap gap-1 max-w-xs">
+                          {getSevaCategories(s).map((cat) => (
+                            <span key={cat} className="text-[9px] font-extrabold px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300/60 uppercase">
+                              {cat}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="font-bold text-amber-800">
+                          {(!s.prices || s.prices.length <= 1) ? (
+                            <span>₹{(s.prices?.[0]?.amount || 516).toLocaleString("en-IN")}</span>
+                          ) : (
+                            <span className="text-[11px]">
+                              {s.prices.length} Tiers (From ₹{(s.prices[0]?.amount || 0).toLocaleString("en-IN")})
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <button
+                          type="button"
+                          onClick={() => toggleActiveStatus(s)}
+                          className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold transition cursor-pointer inline-flex items-center gap-1 ${
+                            s.active !== false 
+                              ? "bg-green-100 text-green-800 border border-green-300" 
+                              : "bg-slate-100 text-slate-600 border border-slate-200"
+                          }`}
+                        >
+                          <span className={`h-1.5 w-1.5 rounded-full ${s.active !== false ? "bg-green-600" : "bg-slate-400"}`} />
+                          <span>{s.active !== false ? "Active" : "Hidden"}</span>
+                        </button>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            onClick={() => move(s.id, -1)}
+                            className="p-1 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 cursor-pointer"
+                            title="Move Up"
+                          >
+                            <ArrowUp className="h-3 w-3" />
+                          </button>
+                          <button
+                            onClick={() => move(s.id, 1)}
+                            className="p-1 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 cursor-pointer"
+                            title="Move Down"
+                          >
+                            <ArrowDown className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="inline-flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => copySevaLink(s)}
+                            className="p-1.5 rounded-lg border border-slate-200 hover:bg-amber-50 text-slate-600 hover:text-amber-800 transition cursor-pointer"
+                            title="Copy Direct Seva Link"
+                          >
+                            <LinkIcon className="h-3.5 w-3.5 text-amber-600" />
+                          </button>
+                          <button
+                            onClick={() => startEdit(s)}
+                            className="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-950 text-xs font-bold transition cursor-pointer flex items-center gap-1"
+                          >
+                            <Pencil className="h-3 w-3" /> Edit
+                          </button>
+                          {s.id !== "s_1791632192816_zf3l" && s.id !== "s_saturdayyouthfe_44fa16b6" && s.id !== "s_sundayfeastanna_4459b2e0" && (
+                            <button
+                              onClick={() => remove(s.id, s.title)}
+                              className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition cursor-pointer"
+                              title="Delete"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* ================================================================= */}
-      {/* STEP-BY-STEP SEVA WIZARD MODAL                                    */}
+      {/* SEVA EDITOR MODAL WIZARD                                          */}
       {/* ================================================================= */}
       <AdminModal
         isOpen={isModalOpen}
@@ -629,19 +966,19 @@ export default function SevasManager() {
           resetForm();
         }}
         title={editingId ? "Edit Jagannath Seva" : "Add New Jagannath Seva"}
-        subtitle="Follow the step-by-step process to configure title, categories, donation pricing, and media"
+        subtitle="Configure title, multi-categories, donation pricing, and media thumbnail"
         icon={HandHeart}
-        maxWidth="2xl"
+        maxWidth="3xl"
       >
         <div className="space-y-5 font-sans">
           
-          {/* Wizard Step Indicator Bar */}
+          {/* Step Indicator Bar */}
           <div className="flex items-center justify-between border-b border-slate-200 pb-4">
-            <div className="flex items-center gap-2 sm:gap-4 w-full">
+            <div className="flex items-center gap-2 sm:gap-3 w-full">
               <button
                 type="button"
                 onClick={() => setWizardStep(1)}
-                className={`flex-1 flex items-center justify-center gap-2 p-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   wizardStep === 1 
                     ? "bg-amber-500 text-white shadow-xs" 
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -650,7 +987,7 @@ export default function SevasManager() {
                 <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-extrabold ${
                   wizardStep === 1 ? "bg-white text-amber-600" : "bg-slate-300 text-slate-700"
                 }`}>1</span>
-                <span>Basic Info &amp; Categories</span>
+                <span>1. Title &amp; Categories</span>
               </button>
 
               <ChevronRight className="h-4 w-4 text-slate-300 shrink-0 hidden sm:block" />
@@ -664,7 +1001,7 @@ export default function SevasManager() {
                   }
                   setWizardStep(2);
                 }}
-                className={`flex-1 flex items-center justify-center gap-2 p-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   wizardStep === 2 
                     ? "bg-amber-500 text-white shadow-xs" 
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -673,7 +1010,7 @@ export default function SevasManager() {
                 <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-extrabold ${
                   wizardStep === 2 ? "bg-white text-amber-600" : "bg-slate-300 text-slate-700"
                 }`}>2</span>
-                <span>Donation Pricing</span>
+                <span>2. Donation Pricing</span>
               </button>
 
               <ChevronRight className="h-4 w-4 text-slate-300 shrink-0 hidden sm:block" />
@@ -687,7 +1024,7 @@ export default function SevasManager() {
                   }
                   setWizardStep(3);
                 }}
-                className={`flex-1 flex items-center justify-center gap-2 p-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   wizardStep === 3 
                     ? "bg-amber-500 text-white shadow-xs" 
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -696,21 +1033,19 @@ export default function SevasManager() {
                 <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-extrabold ${
                   wizardStep === 3 ? "bg-white text-amber-600" : "bg-slate-300 text-slate-700"
                 }`}>3</span>
-                <span>Media &amp; Preview</span>
+                <span>3. Media &amp; Preview</span>
               </button>
             </div>
           </div>
 
           <form onSubmit={(e) => { e.preventDefault(); save(); }} className="space-y-5">
             
-            {/* ============================================================== */}
-            {/* STEP 1: BASIC INFO, CATEGORIES & FESTIVALS                      */}
-            {/* ============================================================== */}
+            {/* STEP 1: BASIC INFO & CATEGORIES */}
             {wizardStep === 1 && (
               <div className="space-y-5 animate-in fade-in duration-200">
-                <div className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold font-sans uppercase tracking-wider text-foreground mb-1">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-foreground mb-1">
                       Seva Title <span className="text-destructive">*</span>
                     </label>
                     <input
@@ -724,30 +1059,51 @@ export default function SevasManager() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold font-sans uppercase tracking-wider text-foreground mb-1">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-foreground mb-1">
                       Custom URL Slug
                     </label>
                     <input
-                      className="w-full px-3.5 py-2 border rounded-xl bg-white text-xs font-mono focus:ring-2 focus:ring-amber-500/20 focus:outline-none"
+                      className="w-full px-3.5 py-2.5 border rounded-xl bg-white text-xs font-mono focus:ring-2 focus:ring-amber-500/20 focus:outline-none"
                       value={draft.slug || ""}
                       onChange={(e) => setDraft({ ...draft, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })}
-                      placeholder="e.g. rajbhoga-seva (leave blank to auto-generate)"
+                      placeholder="e.g. rajbhoga-seva (auto-generated if empty)"
                     />
+                    {(() => {
+                      const currentSlug = (draft.slug?.trim() || draft.title?.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-") || "")
+                        .toLowerCase()
+                        .replace(/[^a-z0-9-]/g, "");
+                      const isDup = currentSlug && sevas.some((s) => s.id !== editingId && s.slug?.toLowerCase() === currentSlug);
+                      if (isDup) {
+                        return (
+                          <span className="text-[10px] font-bold text-red-600 mt-1 flex items-center gap-1">
+                            <AlertCircle className="h-3 w-3 shrink-0" /> Slug "{currentSlug}" is already taken by another Seva. Please change it.
+                          </span>
+                        );
+                      }
+                      if (currentSlug) {
+                        return (
+                          <span className="text-[10px] font-bold text-green-600 mt-1 flex items-center gap-1">
+                            <CheckCircle2 className="h-3 w-3 shrink-0" /> Unique URL Slug: /donate/{currentSlug}
+                          </span>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 </div>
 
                 {/* Multi-Select Seva Categories */}
-                <div className="bg-amber-50/50 p-4 rounded-2xl border border-amber-200/80 space-y-3 font-sans">
+                <div className="bg-amber-50/60 p-4 rounded-2xl border border-amber-200/90 space-y-3 font-sans">
                   <div className="flex items-center justify-between">
                     <div>
-                      <label className="block text-xs font-bold font-sans uppercase tracking-wider text-amber-950">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-amber-950">
                         Seva Categories (Multi-Select) <span className="text-destructive">*</span>
                       </label>
                       <span className="text-[11px] text-amber-800/80">
-                        Choose categories where this seva will be displayed
+                        Select one or more categories where this seva will appear
                       </span>
                     </div>
-                    <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-200 text-amber-900 shrink-0">
+                    <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-200 text-amber-950 shrink-0">
                       {getSevaCategories(draft).length} Selected
                     </span>
                   </div>
@@ -824,11 +1180,11 @@ export default function SevasManager() {
                   </div>
                 </div>
 
-                {/* Festival Linkage Section */}
+                {/* Festival Linkage */}
                 <div className="bg-purple-50/70 p-4 rounded-2xl border border-purple-200/80 space-y-3 font-sans">
                   <div className="flex items-center justify-between">
                     <div>
-                      <label className="block text-xs font-bold font-sans uppercase tracking-wider text-purple-950">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-purple-950">
                         Link to Festivals (Optional)
                       </label>
                       <span className="text-[11px] text-purple-800/80">
@@ -922,15 +1278,13 @@ export default function SevasManager() {
               </div>
             )}
 
-            {/* ============================================================== */}
-            {/* STEP 2: PRICING & DONATION TIERS                               */}
-            {/* ============================================================== */}
+            {/* STEP 2: PRICING & DONATION TIERS */}
             {wizardStep === 2 && (
               <div className="space-y-5 animate-in fade-in duration-200">
                 <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4 font-sans">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                      <label className="text-xs font-bold font-sans uppercase tracking-wider text-foreground block">
+                      <label className="text-xs font-bold uppercase tracking-wider text-foreground block">
                         Pricing Setup Mode <span className="text-destructive">*</span>
                       </label>
                       <span className="text-[11px] text-muted-foreground">
@@ -1032,7 +1386,7 @@ export default function SevasManager() {
                                   : "bg-slate-50 hover:bg-amber-50 text-slate-700 border-slate-200"
                               }`}
                             >
-                              ₹{amt}
+                              ₹{amt.toLocaleString("en-IN")}
                             </button>
                           ))}
                         </div>
@@ -1088,15 +1442,13 @@ export default function SevasManager() {
               </div>
             )}
 
-            {/* ============================================================== */}
-            {/* STEP 3: MEDIA, DESCRIPTION & PREVIEW                           */}
-            {/* ============================================================== */}
+            {/* STEP 3: MEDIA, DESCRIPTION & PREVIEW */}
             {wizardStep === 3 && (
               <div className="space-y-5 animate-in fade-in duration-200">
                 <div className="grid sm:grid-cols-[160px,1fr] gap-5 items-start">
                   <div>
-                    <label className="block text-xs font-bold font-sans uppercase tracking-wider text-foreground mb-1">
-                      Seva Thumbnail Image
+                    <label className="block text-xs font-bold uppercase tracking-wider text-foreground mb-1">
+                      Thumbnail Image
                     </label>
                     <UploadBox
                       label="Thumbnail"
@@ -1110,25 +1462,28 @@ export default function SevasManager() {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-xs font-bold font-sans uppercase tracking-wider text-foreground mb-1">
-                        Short Description / Spiritual Benefit
+                      <label className="block text-xs font-bold uppercase tracking-wider text-foreground mb-1">
+                        Description / Spiritual Benefit
                       </label>
                       <textarea
                         rows={4}
                         className="w-full px-3.5 py-2.5 border rounded-xl bg-white text-xs resize-y focus:ring-2 focus:ring-amber-500/20 focus:outline-none leading-relaxed"
                         value={draft.description || ""}
                         onChange={(e) => setDraft({ ...draft, description: e.target.value })}
-                        placeholder="Describe the transcendental benefit of offering this sacred seva to Sri Sri Radha Govinda..."
+                        placeholder="Describe the transcendental benefit of offering this sacred seva to Sri Sri Puri Jagannath..."
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Live Preview Card */}
-                <div className="bg-slate-900 p-4 rounded-2xl space-y-2 text-white">
-                  <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
-                    <Sparkles className="h-3 w-3" /> Website Preview Card
-                  </span>
+                {/* Live Public Website Preview Card */}
+                <div className="bg-slate-900 p-4 rounded-2xl space-y-2 text-white shadow-md">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                      <Sparkles className="h-3.5 w-3.5" /> Website Live Preview Card
+                    </span>
+                    <span className="text-[10px] text-slate-400">Public View (/donate)</span>
+                  </div>
                   <div className="bg-white text-slate-900 rounded-xl p-4 flex gap-4 items-center border border-slate-200 shadow-sm">
                     <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden shrink-0 border border-slate-200">
                       {draft.thumbnail ? (
@@ -1148,9 +1503,9 @@ export default function SevasManager() {
                     </div>
                     <div className="text-right shrink-0">
                       <span className="text-sm font-black text-amber-700 block">
-                        ₹{pricingMode === "single" ? (singleAmount || 516) : (prices[0]?.amount || 516)}
+                        ₹{pricingMode === "single" ? (singleAmount || 516).toLocaleString("en-IN") : (prices[0]?.amount || 516).toLocaleString("en-IN")}
                       </span>
-                      <span className="text-[10px] bg-primary text-white px-2 py-0.5 rounded-md font-bold inline-block mt-0.5">
+                      <span className="text-[10px] bg-primary text-white px-2.5 py-1 rounded-md font-bold inline-block mt-0.5 shadow-2xs">
                         Donate
                       </span>
                     </div>
@@ -1217,9 +1572,7 @@ export default function SevasManager() {
         </div>
       </AdminModal>
 
-      {/* ================================================================= */}
-      {/* MANAGE CATEGORIES MODAL                                           */}
-      {/* ================================================================= */}
+      {/* MANAGE CATEGORIES MODAL */}
       <AdminModal
         isOpen={isCategoryModalOpen}
         onClose={() => setIsCategoryModalOpen(false)}
@@ -1229,7 +1582,6 @@ export default function SevasManager() {
         maxWidth="lg"
       >
         <div className="space-y-6 font-sans">
-          
           {/* Add new category input */}
           <div className="bg-amber-50/70 p-4 rounded-2xl border border-amber-200/80 space-y-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-amber-950 font-sans">

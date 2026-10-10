@@ -84,13 +84,19 @@ function YouthPage() {
             >
               <MessageCircle className="h-4.5 w-4.5" /> Join the Youth Program
             </a>
-            <Link
-              to="/donate/$slug"
-              params={{ slug: "youth-feast" }}
+            <a
+              href="#youth-annadana-seva"
+              onClick={(e) => {
+                e.preventDefault();
+                const section = document.getElementById("youth-annadana-seva");
+                if (section) {
+                  section.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+              }}
               className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-md transition hover:scale-105 border border-amber-300/40 cursor-pointer"
             >
               <HandHeart className="h-4.5 w-4.5" /> Sponsor Youth Feast
-            </Link>
+            </a>
             <a
               href={directionsUrl}
               target="_blank"

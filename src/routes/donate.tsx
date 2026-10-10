@@ -316,27 +316,6 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
         };
       }
 
-      // Fallback for Youth Feast Seva
-      if (!found && (initialSlug === "youth-feast-seva" || initialSlug === "youth-feast" || initialSlug === "youth-program")) {
-        const rawAmount = youth?.donationCardAmount ? parseInt(youth.donationCardAmount.replace(/\D/g, ""), 10) : 3001;
-        const amt = isNaN(rawAmount) || rawAmount <= 0 ? 3001 : rawAmount;
-        found = {
-          id: "s_youth_feast_fallback",
-          title: youth?.donationCardTitle || "Saturday Youth Feast Annadana Seva",
-          slug: "youth-feast",
-          category: "Youth Program Sevas",
-          description: youth?.donationCardDescription || "Feed visiting students and young devotees with sanctified Krishna prasadam every Saturday. Sponsoring the Youth Feast brings spiritual clarity, wisdom, and auspicious blessings for your family.",
-          thumbnail: youth?.donationCardImage || "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=800&q=80",
-          prices: [
-            { label: "Youth Feast Sponsorship", amount: amt },
-            { label: "50 Youth Prasadam Seva", amount: 1500 },
-            { label: "100 Youth Prasadam Seva", amount: 3000 },
-          ],
-          order: 1,
-          active: true
-        };
-      }
-
       // Fallback for Life Patron Membership Seva
       if (!found && (initialSlug === "life-patron" || initialSlug === "life-patron-membership" || initialSlug === "life-patron-seva")) {
         found = {
@@ -396,114 +375,10 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
   const active = useMemo(() => {
     let list = [...sevas].filter((s) => s.active);
 
-    const hasSundayFeast = list.some(
-      (s) => s.slug === "sunday-feast-seva" || s.slug === "sunday-feast" || s.title.toLowerCase().includes("sunday feast")
-    );
-
-    if (!hasSundayFeast && sunday.donationCardEnabled !== false) {
-      const rawAmount = sunday.donationCardAmount ? parseInt(sunday.donationCardAmount.replace(/\D/g, ""), 10) : 5001;
-      const amt = isNaN(rawAmount) || rawAmount <= 0 ? 5001 : rawAmount;
-      const sundaySevaItem: Seva = {
-        id: "s_sunday_feast_auto",
-        title: sunday.donationCardTitle || "Sunday Feast Annadana Seva",
-        slug: "sunday-feast-seva",
-        category: "Annadana Sevas",
-        description: sunday.donationCardDescription || "Feed visiting devotees with sanctified Krishna prasadam every Sunday. Sponsoring the Sunday Feast brings immense spiritual peace, auspiciousness, and blessings for your family.",
-        thumbnail: sunday.donationCardImage || "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
-        prices: [
-          { label: "Sunday Feast Sponsorship", amount: amt },
-          { label: "50 Devotees Prasadam Seva", amount: 1500 },
-          { label: "100 Devotees Prasadam Seva", amount: 3000 },
-          { label: "Full Grand Feast Sponsorship", amount: 11000 },
-        ],
-        order: 0,
-        active: true,
-      };
-      list = [sundaySevaItem, ...list];
-    }
-
-    list = list.map((s) => {
-      if (s.slug === "youth-feast-seva" || s.slug === "youth-feast" || s.title.toLowerCase().includes("youth feast")) {
-        const rawAmount = youth?.donationCardAmount ? parseInt(youth.donationCardAmount.replace(/\D/g, ""), 10) : 3001;
-        const amt = isNaN(rawAmount) || rawAmount <= 0 ? 3001 : rawAmount;
-        const prices = (s.prices && s.prices.length > 0) ? [...s.prices] : [
-          { label: "Youth Feast Sponsorship", amount: amt },
-          { label: "50 Youth Prasadam Seva", amount: 1500 },
-          { label: "100 Youth Prasadam Seva", amount: 3000 },
-        ];
-        if (prices[0]) prices[0] = { ...prices[0], amount: amt };
-        return {
-          ...s,
-          title: youth?.donationCardTitle || s.title,
-          description: youth?.donationCardDescription || s.description,
-          thumbnail: youth?.donationCardImage || s.thumbnail,
-          category: s.category || "Youth Program Sevas, Annadana Sevas",
-          prices,
-          active: youth?.donationCardEnabled !== false,
-        };
-      }
-
-      if (s.slug === "life-patron" || s.slug === "life-patron-membership" || s.title.toLowerCase().includes("life patron")) {
-        return {
-          ...s,
-          title: lifePatron?.heroTitle || s.title,
-          description: lifePatron?.heroSubtitle || s.description,
-          thumbnail: lifePatron?.sevaCardImage || lifePatron?.cardPassImage || lifePatron?.heroImage || s.thumbnail,
-          category: s.category || "Patron Memberships",
-        };
-      }
-
-      return s;
-    });
-
-    const hasYouthFeast = list.some(
-      (s) => s.slug === "youth-feast-seva" || s.slug === "youth-feast" || s.title.toLowerCase().includes("youth feast")
-    );
-
-    if (!hasYouthFeast && youth?.donationCardEnabled !== false) {
-      const rawAmount = youth?.donationCardAmount ? parseInt(youth.donationCardAmount.replace(/\D/g, ""), 10) : 3001;
-      const amt = isNaN(rawAmount) || rawAmount <= 0 ? 3001 : rawAmount;
-      const youthSevaItem: Seva = {
-        id: "s_youth_feast_auto",
-        title: youth?.donationCardTitle || "Saturday Youth Feast Annadana Seva",
-        slug: "youth-feast",
-        category: "Youth Program Sevas, Annadana Sevas",
-        description: youth?.donationCardDescription || "Feed visiting students and young devotees with sanctified Krishna prasadam every Saturday. Sponsoring the Youth Feast brings spiritual clarity, wisdom, and auspicious blessings for your family.",
-        thumbnail: youth?.donationCardImage || "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=800&q=80",
-        prices: [
-          { label: "Youth Feast Sponsorship", amount: amt },
-          { label: "50 Youth Prasadam Seva", amount: 1500 },
-          { label: "100 Youth Prasadam Seva", amount: 3000 },
-        ],
-        order: 0.5,
-        active: true,
-      };
-      list = [youthSevaItem, ...list];
-    }
-
-    const hasLifePatron = list.some(
-      (s) => s.slug === "life-patron" || s.slug === "life-patron-membership" || s.title.toLowerCase().includes("life patron")
-    );
-
-    if (!hasLifePatron) {
-      const lifePatronSevaItem: Seva = {
-        id: "s_life_patron_auto",
-        title: lifePatron?.heroTitle || "ISKCON Kurnool Life Patron Membership",
-        slug: "life-patron-membership",
-        category: "Patron Memberships",
-        description: lifePatron?.heroSubtitle || "Become a recognized lifelong patron of Sri Sri Jagannath Baladev Subhadra Temple. Valid in 800+ ISKCON guest houses worldwide with 80G tax exemption benefits.",
-        thumbnail: lifePatron?.sevaCardImage || lifePatron?.cardPassImage || lifePatron?.heroImage || "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
-        prices: [
-          { label: "Life Patron Membership (One-Time Contribution)", amount: 55555 },
-        ],
-        order: -1,
-        active: true,
-      };
-      list = [lifePatronSevaItem, ...list];
-    }
-
-    return list.filter((s) => s.active !== false).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  }, [sevas, sunday, youth, lifePatron]);
+    return list
+      .filter((s) => s.active !== false && s.id !== "s_life_patron_auto" && s.id !== "s_default_sunday_feast" && s.id !== "s_sunday_feast_auto" && s.id !== "s_default_youth_feast" && s.id !== "s_youth_feast_auto" && s.slug !== "youth-feast" && s.slug !== "youth-feast-seva")
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  }, [sevas, sunday, youth]);
 
   // Extract all categories
   const categories = useMemo(() => {
@@ -1155,7 +1030,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
                       <div className="p-3.5 sm:p-4.5 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-amber-50/40 rounded-2xl border border-amber-200/80 flex items-center justify-between gap-3 font-sans">
                         <div>
                           <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider block">{t.fixedOfferingAmount}</span>
-                          <span className="text-xl sm:text-3xl font-black text-primary font-display mt-0.5 block">
+                          <span className="text-xl sm:text-3xl font-black text-primary font-roboto mt-0.5 block">
                             ₹{basePrice.toLocaleString("en-IN")}
                           </span>
                         </div>

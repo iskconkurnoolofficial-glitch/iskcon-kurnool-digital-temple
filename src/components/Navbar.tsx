@@ -290,7 +290,7 @@ export default function Navbar() {
             </div>
           )}
           <div className="leading-tight">
-            <div className="font-display font-bold text-base xl:text-lg text-primary tracking-tight">ISKCON Kurnool</div>
+            <div className="font-cinzel font-black text-base xl:text-lg text-primary tracking-tight uppercase" style={{ fontFamily: "'Cinzel', Georgia, serif", fontWeight: 900 }}>ISKCON KURNOOL</div>
             <div className="text-[9px] xl:text-[10px] text-muted-foreground tracking-wide uppercase">Sri Sri Puri Jagannath Temple</div>
           </div>
         </Link>
@@ -502,8 +502,8 @@ export default function Navbar() {
             </div>
           )}
           <div className="leading-tight min-w-0">
-            <div className="font-display font-bold text-sm sm:text-base text-primary tracking-tight truncate">
-              ISKCON Kurnool
+            <div className="font-cinzel font-black text-sm sm:text-base text-primary tracking-tight truncate uppercase" style={{ fontFamily: "'Cinzel', Georgia, serif", fontWeight: 900 }}>
+              ISKCON KURNOOL
             </div>
             <div className="text-[9px] sm:text-[10px] text-muted-foreground tracking-wide uppercase truncate">
               Sri Sri Puri Jagannath Temple
@@ -580,7 +580,7 @@ export default function Navbar() {
                       </div>
                     )}
                     <div>
-                      <span className="font-display font-bold text-sm text-slate-900 block leading-tight">ISKCON Kurnool</span>
+                      <span className="font-cinzel font-black text-sm text-slate-900 block leading-tight uppercase" style={{ fontFamily: "'Cinzel', Georgia, serif", fontWeight: 900 }}>ISKCON KURNOOL</span>
                       <span className="text-[10px] text-slate-500 font-medium tracking-tight">Main Navigation Menu</span>
                     </div>
                   </div>

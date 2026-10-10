@@ -108,8 +108,8 @@ export default function Footer() {
                 </div>
               )}
               <div>
-                <div className="font-display font-black text-2xl text-white tracking-tight leading-tight">
-                  ISKCON Kurnool
+                <div className="font-cinzel font-black text-2xl text-white tracking-tight leading-tight uppercase" style={{ fontFamily: "'Cinzel', Georgia, serif" }}>
+                  ISKCON KURNOOL
                 </div>
                 <div className="text-xs text-amber-300 font-medium">
                   Sri Sri Puri Jagannath Temple

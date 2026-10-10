@@ -276,16 +276,24 @@ export default function YouthSponsorModal({
 
           {/* Bottom Action CTA */}
           <div className="pt-2 text-center flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              to="/donate/$slug"
-              params={{ slug: "youth-feast" }}
-              onClick={onClose}
+            <a
+              href="#youth-annadana-seva"
+              onClick={(e) => {
+                e.preventDefault();
+                onClose();
+                setTimeout(() => {
+                  const section = document.getElementById("youth-annadana-seva");
+                  if (section) {
+                    section.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }
+                }, 100);
+              }}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-sans font-bold text-sm shadow-md transition hover:scale-105"
             >
               <HandHeart className="h-4 w-4" />
               <span>Sponsor Upcoming Youth Feast</span>
               <ArrowRight className="h-4 w-4" />
-            </Link>
+            </a>
 
             <button
               onClick={onClose}

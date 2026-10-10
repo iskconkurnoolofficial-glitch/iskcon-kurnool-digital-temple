@@ -230,31 +230,97 @@ export default function LifePatronManager() {
           </div>
         </div>
 
-        {/* Bhakti Steps Section Info */}
+        {/* Featured Membership Card Settings */}
         <div className="pt-6 border-t border-slate-100 space-y-4">
           <div className="flex items-center gap-2">
-            <Ticket className="h-5 w-5 text-amber-600" />
-            <h4 className="font-display text-base font-bold text-primary">Bhakti Steps Patron Theme Headlines</h4>
+            <Award className="h-5 w-5 text-amber-600" />
+            <h4 className="font-display text-base font-bold text-primary">Featured Membership Card Settings (Fest Card Style)</h4>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>Bhakti Steps Section Title</label>
+              <label className={labelClass}>Top Badge Text</label>
               <input
                 className={inputClass}
-                value={lifePatron.bhaktiStepsTitle || ""}
-                onChange={(e) => update({ bhaktiStepsTitle: e.target.value })}
-                placeholder="Bhakti Steps — The Sacred Patron Journey"
+                value={lifePatron.membershipCardBadge || ""}
+                onChange={(e) => update({ membershipCardBadge: e.target.value })}
+                placeholder="Official Temple Membership • ISKCON Kurnool"
               />
             </div>
+
             <div>
-              <label className={labelClass}>Bhakti Steps Section Subtitle</label>
+              <label className={labelClass}>Membership Main Title</label>
               <input
                 className={inputClass}
-                value={lifePatron.bhaktiStepsSubtitle || ""}
-                onChange={(e) => update({ bhaktiStepsSubtitle: e.target.value })}
-                placeholder="5 progressive milestones combining spiritual practice with lifelong temple patron privileges"
+                value={lifePatron.membershipCardTitle || ""}
+                onChange={(e) => update({ membershipCardTitle: e.target.value })}
+                placeholder="ISKCON Kurnool Life Membership"
               />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className={labelClass}>Membership Subtitle / Description</label>
+              <textarea
+                className={inputClass}
+                rows={2}
+                value={lifePatron.membershipCardDescription || ""}
+                onChange={(e) => update({ membershipCardDescription: e.target.value })}
+                placeholder="Become a recognized lifelong patron of Sri Sri Jagannath Baladev Subhadra Temple..."
+              />
+            </div>
+
+            <div>
+              <label className={labelClass}>Contribution Label</label>
+              <input
+                className={inputClass}
+                value={lifePatron.membershipCardPriceLabel || ""}
+                onChange={(e) => update({ membershipCardPriceLabel: e.target.value })}
+                placeholder="One-Time Lifelong Devotional Contribution"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelClass}>Membership Amount</label>
+                <input
+                  className={inputClass}
+                  value={lifePatron.membershipCardAmount || ""}
+                  onChange={(e) => update({ membershipCardAmount: e.target.value })}
+                  placeholder="₹55,555"
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Amount Suffix</label>
+                <input
+                  className={inputClass}
+                  value={lifePatron.membershipCardAmountSuffix || ""}
+                  onChange={(e) => update({ membershipCardAmountSuffix: e.target.value })}
+                  placeholder="Only (Lifetime Membership)"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>Installment Badge Title</label>
+              <input
+                className={inputClass}
+                value={lifePatron.membershipCardInstallmentTitle || ""}
+                onChange={(e) => update({ membershipCardInstallmentTitle: e.target.value })}
+                placeholder="Flexible Installment Options Available"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className={labelClass}>Enroll Online Button Redirect Link / URL</label>
+              <input
+                className={inputClass}
+                value={lifePatron.enrollRedirectUrl || ""}
+                onChange={(e) => update({ enrollRedirectUrl: e.target.value })}
+                placeholder="/donate/life-patron-membership or https://payment-gateway-link.com"
+              />
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Enter an internal page path (e.g. <code className="font-mono">/donate/life-patron-membership</code>) or an external Razorpay/UPI checkout URL.
+              </p>
             </div>
           </div>
         </div>

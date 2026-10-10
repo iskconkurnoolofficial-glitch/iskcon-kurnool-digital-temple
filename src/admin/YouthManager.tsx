@@ -136,27 +136,6 @@ function SevaCardTab({ youth, update }: { youth: YouthData; update: (p: Partial<
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
-            <label className="flex items-center gap-2 text-xs font-bold text-foreground cursor-pointer bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
-              <input
-                type="checkbox"
-                checked={youth.allowCustomAmount !== false}
-                onChange={(e) => update({ allowCustomAmount: e.target.checked })}
-                className="rounded text-primary focus:ring-primary h-4 w-4 cursor-pointer"
-              />
-              Allow Custom Amount Entry
-            </label>
-
-            <label className="flex items-center gap-2 text-xs font-bold text-foreground cursor-pointer bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
-              <input
-                type="checkbox"
-                checked={youth.donationCardEnabled !== false}
-                onChange={(e) => update({ donationCardEnabled: e.target.checked })}
-                className="rounded text-primary focus:ring-primary h-4 w-4 cursor-pointer"
-              />
-              Enable Seva Card
-            </label>
-          </div>
         </div>
 
         <div className="grid md:grid-cols-12 gap-6 items-start">
@@ -177,14 +156,48 @@ function SevaCardTab({ youth, update }: { youth: YouthData; update: (p: Partial<
 
           {/* Right Column: Editable Seva Form Fields */}
           <div className="md:col-span-8 space-y-4">
-            <div>
-              <label className={labelClass}>Seva Card Title</label>
-              <input
-                className={inputClass}
-                value={youth.donationCardTitle || "Saturday Youth Feast Annadana Seva"}
-                onChange={(e) => update({ donationCardTitle: e.target.value })}
-                placeholder="Saturday Youth Feast Annadana Seva"
-              />
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className={labelClass}>Top Header Badge</label>
+                <input
+                  className={inputClass}
+                  value={youth.donationCardBadge || "Sacred Youth Annadana Seva"}
+                  onChange={(e) => update({ donationCardBadge: e.target.value })}
+                  placeholder="Sacred Youth Annadana Seva"
+                />
+              </div>
+
+              <div>
+                <label className={labelClass}>Tax Exemption Badge</label>
+                <input
+                  className={inputClass}
+                  value={youth.donationCardTaxBadge || "80G Tax Exemption Available"}
+                  onChange={(e) => update({ donationCardTaxBadge: e.target.value })}
+                  placeholder="80G Tax Exemption Available"
+                />
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className={labelClass}>Seva Card Title</label>
+                <input
+                  className={inputClass}
+                  value={youth.donationCardTitle || "Saturday Youth Feast Annadana Seva"}
+                  onChange={(e) => update({ donationCardTitle: e.target.value })}
+                  placeholder="Saturday Youth Feast Annadana Seva"
+                />
+              </div>
+
+              <div>
+                <label className={labelClass}>Image Floating Badge</label>
+                <input
+                  className={inputClass}
+                  value={youth.donationCardImageBadge || "Youth Program Annadana Seva"}
+                  onChange={(e) => update({ donationCardImageBadge: e.target.value })}
+                  placeholder="Youth Program Annadana Seva"
+                />
+              </div>
             </div>
 
             <div>
@@ -200,6 +213,16 @@ function SevaCardTab({ youth, update }: { youth: YouthData; update: (p: Partial<
 
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
+                <label className={labelClass}>Fixed Amount Header Label</label>
+                <input
+                  className={inputClass}
+                  value={youth.donationCardAmountLabel || "Fixed Youth Feast Sponsorship Amount"}
+                  onChange={(e) => update({ donationCardAmountLabel: e.target.value })}
+                  placeholder="Fixed Youth Feast Sponsorship Amount"
+                />
+              </div>
+
+              <div>
                 <label className={labelClass}>Fixed Sponsorship Amount (₹)</label>
                 <input
                   className={inputClass}
@@ -209,6 +232,18 @@ function SevaCardTab({ youth, update }: { youth: YouthData; update: (p: Partial<
                 />
               </div>
 
+              <div className="sm:col-span-2">
+                <label className={labelClass}>Amount Subtitle / Frequency Note</label>
+                <input
+                  className={inputClass}
+                  value={youth.donationCardAmountSubtitle || "One Saturday Youth Program Prasadam Sponsorship"}
+                  onChange={(e) => update({ donationCardAmountSubtitle: e.target.value })}
+                  placeholder="One Saturday Youth Program Prasadam Sponsorship"
+                />
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className={labelClass}>Button CTA Text</label>
                 <input
@@ -219,13 +254,23 @@ function SevaCardTab({ youth, update }: { youth: YouthData; update: (p: Partial<
                 />
               </div>
 
-              <div className="sm:col-span-2">
-                <label className={labelClass}>Button Target URL</label>
+              <div>
+                <label className={labelClass}>Button Redirecting URL (Internal or External)</label>
                 <input
                   className={inputClass}
                   value={youth.donationCardButtonUrl || "/donate/youth-feast"}
                   onChange={(e) => update({ donationCardButtonUrl: e.target.value })}
-                  placeholder="/donate/youth-feast"
+                  placeholder="/donate/youth-feast or https://..."
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className={labelClass}>Bottom Supporting Note</label>
+                <input
+                  className={inputClass}
+                  value={youth.donationCardSupportingLine || "Special Archana prayers for sponsor family"}
+                  onChange={(e) => update({ donationCardSupportingLine: e.target.value })}
+                  placeholder="Special Archana prayers for sponsor family"
                 />
               </div>
             </div>

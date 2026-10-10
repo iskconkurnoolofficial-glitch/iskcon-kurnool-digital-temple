@@ -76,7 +76,7 @@ export default function InstallAppModal({
                 </span>
                 <span className="text-[10px] font-semibold text-amber-200/70">1-Tap Install</span>
               </div>
-              <h3 className="text-xl font-extrabold font-display text-white mt-1 leading-tight tracking-tight">
+              <h3 className="text-xl font-extrabold font-cinzel text-white mt-1 leading-tight tracking-tight" style={{ fontFamily: "'Cinzel', Georgia, serif" }}>
                 INSTALL ISKCON KURNOOL APP
               </h3>
               <p className="text-xs text-amber-100/70 mt-0.5">Sri Sri Puri Jagannath Temple</p>

@@ -194,14 +194,19 @@ export type YouthData = {
   gallery: YouthGalleryItem[];
   reviews: YouthReview[];
   sponsors?: YouthSponsor[];
+  donationCardBadge?: string;
   donationCardTitle?: string;
+  donationCardTaxBadge?: string;
+  donationCardImageBadge?: string;
   donationCardDescription?: string;
+  donationCardAmountLabel?: string;
+  donationCardAmount?: string;
+  donationCardAmountSubtitle?: string;
   donationCardButtonLabel?: string;
   donationCardButtonUrl?: string;
   donationCardSupportingLine?: string;
   donationCardImage?: string;
   donationCardEnabled?: boolean;
-  donationCardAmount?: string;
   tickerText?: string;
   tickerEnabled?: boolean;
   allowCustomAmount?: boolean;
@@ -242,11 +247,17 @@ export const defaultYouth: YouthData = {
       ]
     }
   ],
+  donationCardBadge: "Sacred Youth Annadana Seva",
   donationCardTitle: "Saturday Youth Feast Annadana Seva",
+  donationCardTaxBadge: "80G Tax Exemption Available",
+  donationCardImageBadge: "Youth Program Annadana Seva",
   donationCardDescription: "Feed visiting students and young devotees with sanctified Krishna prasadam every Saturday. Sponsoring the Youth Feast brings spiritual clarity, wisdom, and auspicious blessings for your family.",
-  donationCardButtonLabel: "Sponsor Youth Feast Online",
-  donationCardButtonUrl: "/donate/youth-feast",
+  donationCardAmountLabel: "Fixed Youth Feast Sponsorship Amount",
   donationCardAmount: "3001",
+  donationCardAmountSubtitle: "One Saturday Youth Program Prasadam Sponsorship",
+  donationCardButtonLabel: "Sponsor Youth Feast Online",
+  donationCardButtonUrl: "/donate",
+  donationCardSupportingLine: "Special Archana prayers for sponsor family",
   donationCardImage: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=800&q=80",
   donationCardEnabled: true,
 };
@@ -1283,14 +1294,21 @@ export type SundayData = {
   timingsImage?: string;
   activities?: SundayActivityItem[];
   sponsors?: SundaySponsor[];
+  donationCardBadge?: string;
+  donationCardTaxBadge?: string;
   donationCardTitle?: string;
   donationCardDescription?: string;
   donationCardButtonLabel?: string;
   donationCardButtonUrl?: string;
   donationCardSupportingLine?: string;
   donationCardImage?: string;
+  donationCardImageTag?: string;
   donationCardEnabled?: boolean;
   donationCardAmount?: string;
+  donationCardAmountLabel?: string;
+  donationCardAmountSubtitle?: string;
+  donationCardOccasionsTitle?: string;
+  donationCardOccasions?: string[];
   tickerText?: string;
   tickerEnabled?: boolean;
 };
@@ -1300,6 +1318,26 @@ export const defaultSunday: SundayData = {
   scheduleTitle: "Weekly Schedule (Every Sunday)",
   tickerText: "",
   tickerEnabled: true,
+  donationCardBadge: "Sacred Annadana Seva",
+  donationCardTaxBadge: "80G Tax Exemption Available",
+  donationCardTitle: "Sunday Feast Annadana Seva",
+  donationCardDescription: "Feed visiting devotees with sanctified Krishna prasadam every Sunday. Sponsoring the Sunday Feast brings immense spiritual peace, auspiciousness, and blessings for your family.",
+  donationCardButtonLabel: "Sponsor Sunday Feast Online",
+  donationCardButtonUrl: "/donate/sunday-feast",
+  donationCardSupportingLine: "Special Archana prayers for sponsor family",
+  donationCardImage: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
+  donationCardImageTag: "Sri Sri Jagannath Annadana Seva",
+  donationCardEnabled: true,
+  donationCardAmount: "5001",
+  donationCardAmountLabel: "Fixed Sunday Feast Sponsorship Amount",
+  donationCardAmountSubtitle: "One Sunday Complete Feast Prasadam Distribution",
+  donationCardOccasionsTitle: "Auspicious Occasions to Sponsor:",
+  donationCardOccasions: [
+    "Birthdays & Milestones",
+    "Wedding Anniversaries",
+    "In Loving Memory",
+    "General Devotional Gratitude"
+  ],
   sponsors: [
     {
       id: "sp_default_1",
@@ -1363,15 +1401,7 @@ export const defaultSunday: SundayData = {
       description: "A sumptuous, sanctified vegetarian feast (prasadam) served with love to all visiting guests and devotees.",
       image: ""
     }
-  ],
-  donationCardTitle: "Sponsor Sunday Feast",
-  donationCardDescription: "Help us serve a nourishing prasadam feast to devotees and guests every Sunday. Your contribution supports the preparation and serving of prasadam.",
-  donationCardButtonLabel: "Sponsor Sunday Feast",
-  donationCardButtonUrl: "/donate/sunday-feast",
-  donationCardSupportingLine: "Every contribution helps us serve more devotees.",
-  donationCardImage: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=800&q=80",
-  donationCardEnabled: true,
-  donationCardAmount: "5001"
+  ]
 };
 
 export type GoshalaGalleryItem = { id: string; url: string; label: string };
@@ -2859,6 +2889,15 @@ export type LifePatronData = {
   cardPassTitle: string;
   cardPassSubtitle: string;
   faqs: { question: string; answer: string }[];
+  membershipCardBadge?: string;
+  membershipCardTitle?: string;
+  membershipCardDescription?: string;
+  membershipCardPriceLabel?: string;
+  membershipCardAmount?: string;
+  membershipCardAmountSuffix?: string;
+  membershipCardInstallmentTitle?: string;
+  membershipCardInstallmentDetail?: string;
+  enrollRedirectUrl?: string;
 };
 
 export const defaultLifePatron: LifePatronData = {
@@ -2875,6 +2914,15 @@ export const defaultLifePatron: LifePatronData = {
   cardPassSubtitle: "Global Spiritual Membership Card · Recognised in 800+ Temples Worldwide",
   contactPhone: "+91 95053 77520",
   whatsappNumber: "+91 95053 77520",
+  membershipCardBadge: "Official Temple Membership • ISKCON Kurnool",
+  membershipCardTitle: "ISKCON Kurnool Life Membership",
+  membershipCardDescription: "Become a recognized lifelong patron of Sri Sri Jagannath Baladev Subhadra Temple with lifetime devotional privileges worldwide.",
+  membershipCardPriceLabel: "One-Time Lifelong Devotional Contribution",
+  membershipCardAmount: "₹55,555",
+  membershipCardAmountSuffix: "Only (Lifetime Membership)",
+  membershipCardInstallmentTitle: "Flexible Installment Options Available",
+  membershipCardInstallmentDetail: "Easy monthly installment options are available. Please contact ISKCON Kurnool temple office for details.",
+  enrollRedirectUrl: "/donate/life-patron-membership",
   benefits: [
     { id: "b1", title: "Worldwide Temple Accommodation", description: "3 days complimentary stay every year for patron & family at 800+ ISKCON guest houses globally.", icon: "Building2" },
     { id: "b2", title: "Lifetime Back to Godhead Magazine", description: "Receive complimentary monthly subscription of the international spiritual magazine for life.", icon: "BookOpen" },
@@ -3497,37 +3545,34 @@ const KEYS = {
 
 const Ctx = createContext<AdminState | null>(null);
 
+export function generateUniqueSevaId(prefixOrSlug: string = "seva"): string {
+  const cleanPrefix = prefixOrSlug.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 15) || "seva";
+  const uniqueHash = typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID().replace(/-/g, "").slice(0, 8)
+    : `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+  return `s_${cleanPrefix}_${uniqueHash}`;
+}
+
+export function ensureUniqueSevaSlugs(sevas: Seva[]): Seva[] {
+  const seenSlugs = new Set<string>();
+  return sevas.map((s) => {
+    let baseSlug = (s.slug || s.title?.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-") || s.id)
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, "");
+    if (!baseSlug) baseSlug = s.id;
+
+    let uniqueSlug = baseSlug;
+    let counter = 1;
+    while (seenSlugs.has(uniqueSlug)) {
+      uniqueSlug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+    seenSlugs.add(uniqueSlug);
+    return { ...s, slug: uniqueSlug };
+  });
+}
+
 export const defaultSevas: Seva[] = [
-  {
-    id: "s_default_sunday_feast",
-    title: "Sunday Feast Annadana Seva",
-    slug: "sunday-feast",
-    description: "Feed visiting devotees with sanctified Krishna prasadam every Sunday. Sponsoring the Sunday Feast brings immense spiritual peace, auspiciousness, and blessings for your family.",
-    thumbnail: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
-    prices: [
-      { label: "50 Devotees Prasadam Seva", amount: 1500 },
-      { label: "100 Devotees Prasadam Seva", amount: 3000 },
-      { label: "Half Sunday Feast Sponsorship", amount: 5500 },
-      { label: "Full Grand Sunday Feast Sponsorship", amount: 11000 },
-    ],
-    order: 1,
-    active: true
-  },
-  {
-    id: "s_default_youth_feast",
-    title: "Saturday Youth Feast Annadana Seva",
-    slug: "youth-feast",
-    category: "Youth Program Sevas, Annadana Sevas",
-    description: "Feed visiting students and young devotees with sanctified Krishna prasadam every Saturday. Sponsoring the Youth Feast brings spiritual clarity, wisdom, and auspicious blessings for your family.",
-    thumbnail: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=800&q=80",
-    prices: [
-      { label: "Youth Feast Sponsorship", amount: 3001 },
-      { label: "50 Youth Prasadam Seva", amount: 1500 },
-      { label: "100 Youth Prasadam Seva", amount: 3000 },
-    ],
-    order: 1.5,
-    active: true
-  },
   {
     id: "s_default_pushpalankara",
     title: "Nitya Pushpalankara Seva",
@@ -3892,20 +3937,17 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.festivals: setFestivalsState(value); break;
       case KEYS.sevas: {
         const list = Array.isArray(value) ? value
+          .filter((s: any) => s && s.id !== "s_default_sunday_feast" && s.id !== "s_sunday_feast_auto" && s.id !== "s_default_youth_feast" && s.id !== "s_youth_feast_auto" && s.slug !== "youth-feast" && s.slug !== "youth-feast-seva")
           .map((s: any) => ({
             ...s,
             slug: s.slug || s.title?.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-") || s.id
           })) : [];
         
-        // If saved list is missing Sunday Feast, Youth Feast, or Pushpalankara, merge defaults
+        // If saved list is missing Pushpalankara, merge defaults
         if (list.length > 0) {
-          const hasSunday = list.some((s: any) => s.slug === "sunday-feast" || s.slug === "sunday-feast-seva" || s.id === "s_default_sunday_feast");
-          const hasYouth = list.some((s: any) => s.slug === "youth-feast" || s.slug === "youth-feast-seva" || s.id === "s_default_youth_feast");
           const hasPushpa = list.some((s: any) => s.slug === "nitya-pushpalankara-seva" || s.id === "s_default_pushpalankara");
           let merged = [...list];
-          if (!hasSunday) merged = [defaultSevas[0], ...merged];
-          if (!hasYouth) merged = [defaultSevas[1], ...merged];
-          if (!hasPushpa) merged = [...merged, defaultSevas[2]];
+          if (!hasPushpa) merged = [...merged, defaultSevas[0]];
           setSevasState(merged);
         } else {
           setSevasState(defaultSevas);
@@ -4021,54 +4063,6 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setYouth = (v: YouthData) => { 
     setYouthState(v); 
     persist(KEYS.youth, v); 
-
-    const rawAmt = v.donationCardAmount ? parseInt(v.donationCardAmount.replace(/\D/g, ""), 10) : 3001;
-    const amt = isNaN(rawAmt) || rawAmt <= 0 ? 3001 : rawAmt;
-
-    setSevasState((prevSevas) => {
-      let found = false;
-      const updated = prevSevas.map((s) => {
-        if (s.slug === "youth-feast" || s.slug === "youth-feast-seva" || s.id === "s_default_youth_feast" || s.id === "s_youth_feast_auto") {
-          found = true;
-          const prices = (s.prices && s.prices.length > 0) ? [...s.prices] : [
-            { label: "Youth Feast Sponsorship", amount: amt },
-            { label: "50 Youth Prasadam Seva", amount: 1500 },
-            { label: "100 Youth Prasadam Seva", amount: 3000 },
-          ];
-          if (prices[0]) prices[0] = { ...prices[0], amount: amt };
-          return {
-            ...s,
-            title: v.donationCardTitle || s.title || "Saturday Youth Feast Annadana Seva",
-            thumbnail: v.donationCardImage || s.thumbnail,
-            description: v.donationCardDescription || s.description,
-            active: v.donationCardEnabled !== false,
-            prices,
-          };
-        }
-        return s;
-      });
-
-      if (!found) {
-        const youthSevaItem: Seva = {
-          id: "s_default_youth_feast",
-          title: v.donationCardTitle || "Saturday Youth Feast Annadana Seva",
-          slug: "youth-feast",
-          category: "Youth Program Sevas, Annadana Sevas",
-          description: v.donationCardDescription || "Feed visiting students and young devotees with sanctified Krishna prasadam every Saturday.",
-          thumbnail: v.donationCardImage || "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=800&q=80",
-          prices: [
-            { label: "Youth Feast Sponsorship", amount: amt },
-            { label: "50 Youth Prasadam Seva", amount: 1500 },
-            { label: "100 Youth Prasadam Seva", amount: 3000 },
-          ],
-          order: 1.5,
-          active: v.donationCardEnabled !== false,
-        };
-        updated.push(youthSevaItem);
-      }
-      persist(KEYS.sevas, updated);
-      return updated;
-    });
   };
   const setHarinama = (v: HarinamaData) => { setHarinamaState(v); persist(KEYS.harinama, v); };
   const setEkadashi = (v: EkadashiData) => { setEkadashiState(v); persist(KEYS.ekadashi, v); };

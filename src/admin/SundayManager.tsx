@@ -126,6 +126,18 @@ function SettingsTab({ sunday, update }: { sunday: SundayData; update: (p: Parti
     setBusy(false);
   };
 
+  const pickCardImage = async (f: File) => {
+    setBusy(true);
+    try {
+      const url = await uploadToCloudinary(f, "ISKCON-KURNOOL/SundayFeast");
+      update({ donationCardImage: url });
+      toast.success("Sunday Feast Card image uploaded!");
+    } catch {
+      toast.error("Upload failed");
+    }
+    setBusy(false);
+  };
+
   const inputClass = "w-full px-3.5 py-2.5 border rounded-xl bg-white text-xs sm:text-sm font-sans focus:ring-2 focus:ring-primary/20 focus:outline-none shadow-2xs";
   const labelClass = "block text-xs font-bold font-sans uppercase tracking-wider text-foreground mb-1";
 
@@ -194,43 +206,190 @@ function SettingsTab({ sunday, update }: { sunday: SundayData; update: (p: Parti
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl shadow-elegant p-6 border border-slate-200/80 space-y-4">
-        <h3 className="font-display text-lg font-bold text-primary flex items-center gap-2">
-          <Heart className="h-5 w-5 text-red-500" /> Sunday Feast Annadana Seva Card
-        </h3>
-        <div className="grid md:grid-cols-2 gap-4">
+      <div className="bg-white rounded-3xl shadow-elegant p-6 border border-slate-200/80 space-y-5">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
           <div>
-            <label className={labelClass}>Supporting Subtitle</label>
+            <h3 className="font-display text-lg font-bold text-primary flex items-center gap-2">
+              <Heart className="h-5 w-5 text-red-500" /> Sunday Feast Annadana Seva Card
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Customize all fields, images, amounts, and button redirecting URL of the featured Sunday Feast sponsorship card.
+            </p>
+          </div>
+          <label className="flex items-center gap-2 text-xs font-bold text-foreground cursor-pointer bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200 shadow-2xs">
+            <input
+              type="checkbox"
+              checked={sunday.donationCardEnabled !== false}
+              onChange={(e) => update({ donationCardEnabled: e.target.checked })}
+              className="rounded text-primary focus:ring-primary h-4 w-4 cursor-pointer"
+            />
+            Show Card on Sunday Page
+          </label>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-5">
+          {/* Card Top Badges */}
+          <div>
+            <label className={labelClass}>Top Badge Text</label>
             <input
               className={inputClass}
-              value={sunday.donationCardSupportingLine || "Auspicious Sunday Seva"}
-              onChange={(e) => update({ donationCardSupportingLine: e.target.value })}
-              placeholder="e.g. Receive unlimited spiritual merits..."
+              value={sunday.donationCardBadge || "Sacred Annadana Seva"}
+              onChange={(e) => update({ donationCardBadge: e.target.value })}
+              placeholder="e.g. Sacred Annadana Seva"
             />
           </div>
+
           <div>
-            <label className={labelClass}>Button CTA Label</label>
+            <label className={labelClass}>Tax Exemption Badge Text</label>
             <input
               className={inputClass}
-              value={sunday.donationCardButtonLabel || "Sponsor Sunday Feast Online"}
-              onChange={(e) => update({ donationCardButtonLabel: e.target.value })}
+              value={sunday.donationCardTaxBadge || "80G Tax Exemption Available"}
+              onChange={(e) => update({ donationCardTaxBadge: e.target.value })}
+              placeholder="e.g. 80G Tax Exemption Available"
             />
           </div>
+
+          {/* Main Seva Title */}
           <div className="md:col-span-2">
-            <label className={labelClass}>Seva Title</label>
+            <label className={labelClass}>Seva Card Title</label>
             <input
               className={inputClass}
               value={sunday.donationCardTitle || "Sunday Feast Annadana Seva"}
               onChange={(e) => update({ donationCardTitle: e.target.value })}
+              placeholder="e.g. Sunday Feast Annadana Seva"
             />
           </div>
+
+          {/* Description */}
           <div className="md:col-span-2">
             <label className={labelClass}>Purpose & Description</label>
             <textarea
               className={inputClass}
-              rows={2}
+              rows={3}
               value={sunday.donationCardDescription || "Feed visiting devotees with sanctified Krishna prasadam every Sunday. Sponsoring the Sunday Feast brings immense spiritual peace, auspiciousness, and blessings for your family."}
               onChange={(e) => update({ donationCardDescription: e.target.value })}
+              placeholder="Enter full seva description..."
+            />
+          </div>
+
+          {/* Card Image & Floating Badge */}
+          <div className="space-y-3">
+            <UploadBox
+              label="Card Main Image"
+              url={sunday.donationCardImage || "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80"}
+              onPick={pickCardImage}
+              aspect="aspect-square"
+              className="w-full max-w-[160px]"
+            />
+            {sunday.donationCardImage && (
+              <button
+                type="button"
+                onClick={() => update({ donationCardImage: "" })}
+                className="text-xs text-red-600 hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                <X className="h-3.5 w-3.5" /> Reset Image to Default
+              </button>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className={labelClass}>Image Overlay Tag / Badge</label>
+              <input
+                className={inputClass}
+                value={sunday.donationCardImageTag || "Sri Sri Jagannath Annadana Seva"}
+                onChange={(e) => update({ donationCardImageTag: e.target.value })}
+                placeholder="e.g. Sri Sri Jagannath Annadana Seva"
+              />
+            </div>
+            
+            <div>
+              <label className={labelClass}>Occasions Section Header</label>
+              <input
+                className={inputClass}
+                value={sunday.donationCardOccasionsTitle || "Auspicious Occasions to Sponsor:"}
+                onChange={(e) => update({ donationCardOccasionsTitle: e.target.value })}
+                placeholder="e.g. Auspicious Occasions to Sponsor:"
+              />
+            </div>
+          </div>
+
+          {/* Occasions List */}
+          <div className="md:col-span-2">
+            <label className={labelClass}>Auspicious Occasions List (One per line)</label>
+            <textarea
+              className={inputClass}
+              rows={4}
+              value={(sunday.donationCardOccasions || [
+                "Birthdays & Milestones",
+                "Wedding Anniversaries",
+                "In Loving Memory",
+                "General Devotional Gratitude"
+              ]).join("\n")}
+              onChange={(e) => update({ donationCardOccasions: e.target.value.split("\n").map(s => s.trim()).filter(Boolean) })}
+              placeholder="Birthdays & Milestones&#10;Wedding Anniversaries&#10;In Loving Memory&#10;General Devotional Gratitude"
+            />
+          </div>
+
+          {/* Sponsorship Amount Section */}
+          <div>
+            <label className={labelClass}>Amount Header Label</label>
+            <input
+              className={inputClass}
+              value={sunday.donationCardAmountLabel || "Fixed Sunday Feast Sponsorship Amount"}
+              onChange={(e) => update({ donationCardAmountLabel: e.target.value })}
+              placeholder="e.g. Fixed Sunday Feast Sponsorship Amount"
+            />
+          </div>
+
+          <div>
+            <label className={labelClass}>Sponsorship Amount (₹)</label>
+            <input
+              className={inputClass}
+              value={sunday.donationCardAmount || "5001"}
+              onChange={(e) => update({ donationCardAmount: e.target.value })}
+              placeholder="e.g. 5001"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className={labelClass}>Amount Subtitle / Explanation</label>
+            <input
+              className={inputClass}
+              value={sunday.donationCardAmountSubtitle || "One Sunday Complete Feast Prasadam Distribution"}
+              onChange={(e) => update({ donationCardAmountSubtitle: e.target.value })}
+              placeholder="e.g. One Sunday Complete Feast Prasadam Distribution"
+            />
+          </div>
+
+          {/* Action Button & Redirect URL */}
+          <div>
+            <label className={labelClass}>Button CTA Text</label>
+            <input
+              className={inputClass}
+              value={sunday.donationCardButtonLabel || "Sponsor Sunday Feast Online"}
+              onChange={(e) => update({ donationCardButtonLabel: e.target.value })}
+              placeholder="e.g. Sponsor Sunday Feast Online"
+            />
+          </div>
+
+          <div>
+            <label className={labelClass}>Button Redirecting URL / Link</label>
+            <input
+              className={inputClass}
+              value={sunday.donationCardButtonUrl || "/donate/sunday-feast"}
+              onChange={(e) => update({ donationCardButtonUrl: e.target.value })}
+              placeholder="e.g. /donate/sunday-feast or https://..."
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className={labelClass}>Bottom Supporting Line</label>
+            <input
+              className={inputClass}
+              value={sunday.donationCardSupportingLine || "Special Archana prayers for sponsor family"}
+              onChange={(e) => update({ donationCardSupportingLine: e.target.value })}
+              placeholder="e.g. Special Archana prayers for sponsor family"
             />
           </div>
         </div>

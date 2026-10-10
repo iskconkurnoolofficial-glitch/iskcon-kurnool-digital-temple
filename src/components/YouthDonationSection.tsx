@@ -18,18 +18,23 @@ export default function YouthDonationSection({ className = "" }: { className?: s
   const rawAmount = youth.donationCardAmount ? parseInt(youth.donationCardAmount.replace(/\D/g, ""), 10) : sevaPriceAmount || 3001;
   const sponsorshipAmount = isNaN(rawAmount) || rawAmount <= 0 ? (sevaPriceAmount || 3001) : rawAmount;
 
+  const badgeText = youth.donationCardBadge || "Sacred Youth Annadana Seva";
   const title = youth.donationCardTitle || youthSeva?.title || "Saturday Youth Feast Annadana Seva";
+  const taxBadge = youth.donationCardTaxBadge || "80G Tax Exemption Available";
+  const imageBadge = youth.donationCardImageBadge || "Youth Program Annadana Seva";
   const description = youth.donationCardDescription || youthSeva?.description || "Feed visiting students and young devotees with sanctified Krishna prasadam every Saturday. Sponsoring the Youth Feast brings spiritual clarity, wisdom, and auspicious blessings for your family.";
+  const amountLabel = youth.donationCardAmountLabel || "Fixed Youth Feast Sponsorship Amount";
+  const amountSubtitle = youth.donationCardAmountSubtitle || "One Saturday Youth Program Prasadam Sponsorship";
   const buttonLabel = youth.donationCardButtonLabel || `Sponsor Youth Feast Online`;
+  const supportingLine = youth.donationCardSupportingLine || "Special Archana prayers for sponsor family";
   
   const sevaImage = youth.donationCardImage || youthSeva?.thumbnail || "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=800&q=80";
 
   let targetUrl = youth.donationCardButtonUrl?.trim() || "/donate/youth-feast";
-  if (!targetUrl.startsWith("/")) targetUrl = `/${targetUrl}`;
-  const checkoutUrl = targetUrl;
+  const isExternal = targetUrl.startsWith("http://") || targetUrl.startsWith("https://") || targetUrl.startsWith("whatsapp://");
 
   return (
-    <section className={`py-16 md:py-24 bg-gradient-to-b from-[#180528] via-[#2a0e4b] to-[#120320] text-white border-t border-amber-400/20 relative overflow-hidden ${className}`}>
+    <section id="youth-annadana-seva" className={`py-16 md:py-24 bg-gradient-to-b from-[#180528] via-[#2a0e4b] to-[#120320] text-white border-t border-amber-400/20 relative overflow-hidden ${className}`}>
       {/* Ambient background glows */}
       <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-amber-500/15 to-orange-500/10 rounded-full blur-3xl pointer-events-none -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-gradient-to-tl from-purple-600/20 to-accent/15 rounded-full blur-3xl pointer-events-none translate-x-1/2 translate-y-1/2" />
@@ -46,17 +51,19 @@ export default function YouthDonationSection({ className = "" }: { className?: s
           <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 border-b border-white/15 pb-6 mb-8">
             <div className="space-y-1.5">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-secondary/25 border border-secondary/40 text-amber-300 text-xs font-extrabold uppercase tracking-widest shadow-inner">
-                <Sparkles className="h-3.5 w-3.5 text-accent animate-pulse" /> Sacred Youth Annadana Seva
+                <Sparkles className="h-3.5 w-3.5 text-accent animate-pulse" /> {badgeText}
               </span>
               <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
                 {title}
               </h2>
             </div>
 
-            <div className="inline-flex items-center gap-1.5 text-xs text-amber-200 bg-white/10 backdrop-blur-md border border-white/20 px-3.5 py-1.5 rounded-full font-semibold shadow-xs">
-              <ShieldCheck className="h-4 w-4 text-emerald-400" />
-              <span>80G Tax Exemption Available</span>
-            </div>
+            {taxBadge && (
+              <div className="inline-flex items-center gap-1.5 text-xs text-amber-200 bg-white/10 backdrop-blur-md border border-white/20 px-3.5 py-1.5 rounded-full font-semibold shadow-xs">
+                <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                <span>{taxBadge}</span>
+              </div>
+            )}
           </div>
 
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
@@ -72,11 +79,13 @@ export default function YouthDonationSection({ className = "" }: { className?: s
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
                 
                 {/* Floating Badge on Image */}
-                <div className="absolute bottom-4 left-4 right-4 text-center">
-                  <span className="inline-block px-4 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-white/25 text-white font-sans text-xs font-bold tracking-wide shadow-md">
-                    Youth Program Annadana Seva
-                  </span>
-                </div>
+                {imageBadge && (
+                  <div className="absolute bottom-4 left-4 right-4 text-center">
+                    <span className="inline-block px-4 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-white/25 text-white font-sans text-xs font-bold tracking-wide shadow-md">
+                      {imageBadge}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -119,31 +128,46 @@ export default function YouthDonationSection({ className = "" }: { className?: s
                 
                 <div className="space-y-1">
                   <span className="text-[11px] font-bold text-amber-300 uppercase tracking-widest font-sans block">
-                    Fixed Youth Feast Sponsorship Amount
+                    {amountLabel}
                   </span>
                   {/* Big Inter font amount in luminous golden amber */}
                   <div className="font-sans font-black text-5xl sm:text-6xl lg:text-7xl text-amber-300 tracking-tight flex items-center justify-center gap-1.5 leading-none py-1 drop-shadow-md">
                     <span>₹{sponsorshipAmount.toLocaleString("en-IN")}</span>
                   </div>
-                  <span className="text-xs text-amber-100/75 font-sans font-medium block pt-1">
-                    One Saturday Youth Program Prasadam Sponsorship
-                  </span>
+                  {amountSubtitle && (
+                    <span className="text-xs text-amber-100/75 font-sans font-medium block pt-1">
+                      {amountSubtitle}
+                    </span>
+                  )}
                 </div>
 
                 {/* Saffron Action Button */}
                 <div className="pt-2">
-                  <Link
-                    to={checkoutUrl}
-                    className="w-full inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-sans font-bold text-base sm:text-lg shadow-[0_10px_25px_-5px_rgba(249,115,22,0.55)] hover:shadow-[0_15px_30px_-5px_rgba(249,115,22,0.7)] transition-all duration-300 hover:scale-[1.02] border border-amber-300/50 cursor-pointer"
-                  >
-                    <HandHeart className="h-5 w-5 text-white" />
-                    <span>{buttonLabel}</span>
-                    <ArrowRight className="h-5 w-5 text-white ml-1" />
-                  </Link>
+                  {isExternal ? (
+                    <a
+                      href={targetUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-sans font-bold text-base sm:text-lg shadow-[0_10px_25px_-5px_rgba(249,115,22,0.55)] hover:shadow-[0_15px_30px_-5px_rgba(249,115,22,0.7)] transition-all duration-300 hover:scale-[1.02] border border-amber-300/50 cursor-pointer"
+                    >
+                      <HandHeart className="h-5 w-5 text-white" />
+                      <span>{buttonLabel}</span>
+                      <ArrowRight className="h-5 w-5 text-white ml-1" />
+                    </a>
+                  ) : (
+                    <Link
+                      to={targetUrl}
+                      className="w-full inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-sans font-bold text-base sm:text-lg shadow-[0_10px_25px_-5px_rgba(249,115,22,0.55)] hover:shadow-[0_15px_30px_-5px_rgba(249,115,22,0.7)] transition-all duration-300 hover:scale-[1.02] border border-amber-300/50 cursor-pointer"
+                    >
+                      <HandHeart className="h-5 w-5 text-white" />
+                      <span>{buttonLabel}</span>
+                      <ArrowRight className="h-5 w-5 text-white ml-1" />
+                    </Link>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between text-xs text-amber-100/70 px-2 pt-1 gap-2 font-sans">
-                  <span>Special Archana prayers for sponsor family</span>
+                  <span>{supportingLine}</span>
                   <Link
                     to="/donate"
                     className="font-bold text-amber-300 hover:text-amber-200 hover:underline flex items-center gap-1"

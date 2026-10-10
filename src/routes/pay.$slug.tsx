@@ -466,7 +466,7 @@ function PaymentPageRoute() {
             {page.pricingType === "fixed" && (
               <div className="bg-slate-900 text-white p-4 rounded-2xl flex items-center justify-between">
                 <span className="text-xs text-secondary font-bold uppercase">Fixed Seva Offering</span>
-                <span className="text-2xl font-extrabold font-sans text-secondary">
+                <span className="text-2xl font-extrabold font-roboto text-secondary">
                   ₹{(page.fixedAmount || 0).toLocaleString("en-IN")}.00
                 </span>
               </div>
@@ -664,7 +664,7 @@ function PaymentPageRoute() {
                       <div className="text-[10px] text-secondary uppercase font-bold tracking-wider">Fixed Seva Amount</div>
                       <div className="text-[11px] sm:text-xs text-white/80 font-medium">Divine Offering</div>
                     </div>
-                    <span className="text-xl sm:text-2xl font-extrabold font-sans text-secondary">
+                    <span className="text-xl sm:text-2xl font-extrabold font-roboto text-secondary">
                       ₹{(page.fixedAmount || 0).toLocaleString("en-IN")}.00
                     </span>
                   </div>
