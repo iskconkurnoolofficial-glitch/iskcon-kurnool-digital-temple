@@ -2857,6 +2857,7 @@ export const defaultBhaktiSteps: BhaktiStepsData = {
 export type LifePatronBenefit = {
   id: string;
   title: string;
+  badge?: string;
   description: string;
   icon: string;
   image?: string;
@@ -2878,6 +2879,12 @@ export type LifePatronData = {
   heroSubtitle: string;
   heroImage: string;
   sevaCardImage?: string;
+  sevaCardBadge?: string;
+  sevaCardTitle?: string;
+  sevaCardDescription?: string;
+  sevaCardTag1?: string;
+  sevaCardTag2?: string;
+  sevaCardImageCaption?: string;
   cardPassImage?: string;
   applicationPdfUrl?: string;
   bhaktiStepsTitle: string;
@@ -2906,6 +2913,12 @@ export const defaultLifePatron: LifePatronData = {
   heroSubtitle: "Join our global spiritual family as a Life Patron and receive sacred blessings, lifetime temple privileges, and eternal spiritual merit.",
   heroImage: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=1600&q=85",
   sevaCardImage: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=1200&q=85",
+  sevaCardBadge: "Seva – Opportunity to Serve",
+  sevaCardTitle: "Seva – Opportunity to Serve",
+  sevaCardDescription: "Become part of the service activities of ISKCON Kurnool and contribute towards the service of Sri Krishna. Your support helps the temple continue its spiritual, cultural, and community activities.",
+  sevaCardTag1: "Sri Krishna Devotional Seva",
+  sevaCardTag2: "Community & Cultural Growth",
+  sevaCardImageCaption: "✨ Dedicated Seva at Sri Sri Jagannath Baladev Subhadra Temple",
   cardPassImage: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=1200&q=85",
   applicationPdfUrl: "",
   bhaktiStepsTitle: "Bhakti Steps — The Sacred Patron Journey",
@@ -2924,12 +2937,54 @@ export const defaultLifePatron: LifePatronData = {
   membershipCardInstallmentDetail: "Easy monthly installment options are available. Please contact ISKCON Kurnool temple office for details.",
   enrollRedirectUrl: "/donate/life-patron-membership",
   benefits: [
-    { id: "b1", title: "Worldwide Temple Accommodation", description: "3 days complimentary stay every year for patron & family at 800+ ISKCON guest houses globally.", icon: "Building2" },
-    { id: "b2", title: "Lifetime Back to Godhead Magazine", description: "Receive complimentary monthly subscription of the international spiritual magazine for life.", icon: "BookOpen" },
-    { id: "b3", title: "Annual Family Archana & Puja", description: "Special archana and prayers performed on your birthday and wedding anniversary at ISKCON Kurnool.", icon: "Sparkles" },
-    { id: "b4", title: "VIP Darshan & Festival Passes", description: "Priority darshan access, front-row seating, and VIP passes during Janmashtami and major temple festivals.", icon: "Award" },
-    { id: "b5", title: "100% Tax Exemption (80G)", description: "All patron donations are 100% tax deductible under Section 80G of the Indian Income Tax Act.", icon: "ShieldCheck" },
-    { id: "b6", title: "Maha Prasadam & Gold Certificate", description: "Receive a personalized Life Patron Certificate, photo ID membership card, and sacred mahaprasadam package.", icon: "Heart" },
+    {
+      id: "b1",
+      title: "Spiritual Knowledge",
+      badge: "📖 Vedic Wisdom & Scriptures",
+      description: "Receive spiritual books and resources that help you explore the teachings of Bhagavad-gita, Srimad-Bhagavatam, and other Vedic scriptures.",
+      icon: "BookOpen",
+      image: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      id: "b2",
+      title: "Prasadam",
+      badge: "🍲 Sanctified Feast Tradition",
+      description: "Experience the spiritual tradition of prasadam and participate in devotional programs and special occasions at ISKCON centres, subject to the applicable Life Member facilities.",
+      icon: "Heart",
+      image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      id: "b3",
+      title: "Life Member / Patron Card",
+      badge: "💳 Official Patron Recognition",
+      description: "Receive your Life Membership card as recognition of your association with ISKCON. The card helps establish your Life Member status when availing applicable facilities at participating ISKCON centres.",
+      icon: "Ticket",
+      image: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      id: "b4",
+      title: "Support ISKCON Kurnool",
+      badge: "🏛️ Temple Maintenance & Sevas",
+      description: "Your contribution supports the development and maintenance of ISKCON Kurnool and helps facilitate spiritual programs, festivals, prasadam distribution, educational activities, and other community services.",
+      icon: "Building2",
+      image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      id: "b5",
+      title: "Special Occasions",
+      badge: "🎉 Birthdays & Anniversaries",
+      description: "Life Members may receive special prasadam or other devotional facilities on occasions such as birthdays and anniversaries, according to the facilities offered by the temple.",
+      icon: "Sparkles",
+      image: "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+      id: "b6",
+      title: "Book Set",
+      badge: "📚 Sacred Literature Set",
+      description: "Life Members may receive spiritual literature as part of their membership benefits. The book set can be collected from the temple after completion of the applicable membership contribution. Additional charges may apply for delivery to the member's address.",
+      icon: "Layers",
+      image: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=800&q=80",
+    },
   ],
   tiers: [
     {

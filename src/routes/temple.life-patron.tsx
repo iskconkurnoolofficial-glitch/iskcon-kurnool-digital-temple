@@ -763,281 +763,254 @@ Thank you for becoming a valued Life Patron of ISKCON Kurnool!
         </div>
       </section>
 
-      {/* SECTION 4: LIFE MEMBERSHIP BENEFITS (WARM GRADIENT BACKGROUND WITH THUMBNAIL CARDS) */}
-      <section className="py-20 bg-gradient-to-b from-[#fdf6ec] via-[#f8ead7] to-[#f3dfc8] text-slate-900 relative overflow-hidden border-t border-b border-amber-300/60 shadow-inner">
-        {/* Warm Ambient Radial Glows */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-amber-400/20 rounded-full blur-[140px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-orange-400/20 rounded-full blur-[140px] pointer-events-none" />
+      {/* SECTION 4: LIFE MEMBERSHIP BENEFITS (MODERN ULTRA-PREMIUM BENTO GRID) */}
+      <section className="py-24 bg-gradient-to-b from-[#fdf8f0] via-[#f7ebd9] to-[#f2dfc5] text-slate-900 relative overflow-hidden border-t border-b border-amber-300/60 shadow-inner">
+        {/* Ambient Decorative Light Orbs */}
+        <div className="absolute top-1/4 -right-20 w-[600px] h-[600px] bg-amber-400/25 rounded-full blur-[150px] pointer-events-none" />
+        <div className="absolute bottom-10 -left-20 w-[600px] h-[600px] bg-orange-500/20 rounded-full blur-[150px] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(#d97706_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.04] pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-14">
           
-          {/* Header */}
-          <div className="text-center space-y-4 max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/15 text-amber-900 font-extrabold text-xs uppercase tracking-wider border border-amber-400/50 shadow-xs">
-              <Sparkles className="h-4 w-4 text-amber-700" />
+          {/* Section Header */}
+          <div className="text-center space-y-5 max-w-3xl mx-auto">
+            <motion.div 
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-amber-500/20 text-amber-950 font-extrabold text-xs uppercase tracking-widest border border-amber-400/60 shadow-xs"
+            >
+              <Sparkles className="h-4 w-4 text-amber-700 animate-pulse" />
               <span>Sacred Devotional Privileges</span>
-            </div>
-            <h2 className="font-display font-black text-3xl sm:text-5xl text-primary tracking-tight">
+            </motion.div>
+
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="font-display font-black text-3xl sm:text-5xl lg:text-6xl text-slate-950 tracking-tight leading-tight"
+            >
               Life Membership Benefits
-            </h2>
-            <p className="text-base sm:text-lg text-slate-700 font-normal leading-relaxed">
-              Explore the spiritual, devotional, and institutional benefits available to all ISKCON Kurnool Life Members.
-            </p>
+            </motion.h2>
+
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="text-base sm:text-lg text-slate-700 font-normal leading-relaxed font-sans max-w-2xl mx-auto"
+            >
+              Explore the spiritual, devotional, and institutional benefits available to all ISKCON Kurnool Life Members worldwide.
+            </motion.p>
+
+            {/* Quick Metrics Bar */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 }}
+              className="pt-2 flex flex-wrap justify-center items-center gap-4 sm:gap-8"
+            >
+              <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/80 backdrop-blur-md border border-amber-200 shadow-xs text-xs font-bold text-slate-800">
+                <Globe className="h-4 w-4 text-amber-600" />
+                <span>800+ Guest Houses Worldwide</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/80 backdrop-blur-md border border-amber-200 shadow-xs text-xs font-bold text-slate-800">
+                <ShieldCheck className="h-4 w-4 text-amber-600" />
+                <span>100% Tax Exempt (80G)</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/80 backdrop-blur-md border border-amber-200 shadow-xs text-xs font-bold text-slate-800">
+                <Star className="h-4 w-4 text-amber-600" />
+                <span>Lifelong Devotional Merit</span>
+              </div>
+            </motion.div>
           </div>
 
-          {/* FEATURED SEVA CARD WITH ADMIN UPLOADED IMAGE */}
-          <div className="bg-white/90 backdrop-blur-md rounded-3xl p-6 sm:p-10 border border-amber-300/80 shadow-elegant overflow-hidden relative group hover:shadow-2xl transition-all duration-300">
-            <div className="grid lg:grid-cols-12 gap-8 items-center">
+          {/* FEATURED SEVA HERO CARD (ULTRA-MODERN DARK & GOLD GLASS CARD) */}
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="bg-gradient-to-br from-[#1a0c2e] via-[#2a1347] to-[#120722] rounded-[2.5rem] p-7 sm:p-12 border-2 border-amber-500/40 shadow-[0_25px_60px_rgba(0,0,0,0.3)] text-white overflow-hidden relative group"
+          >
+            <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/15 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/15 rounded-full blur-[100px] pointer-events-none" />
+
+            <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center relative z-10">
               
-              <div className="lg:col-span-7 space-y-5">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 text-xs font-black uppercase tracking-wider shadow-xs">
-                  <Sun className="h-3.5 w-3.5" />
-                  <span>Seva – Opportunity to Serve</span>
+              <div className="lg:col-span-6 space-y-6">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-slate-950 text-xs font-black uppercase tracking-wider shadow-lg">
+                  <Sun className="h-4 w-4" />
+                  <span>{lifePatron.sevaCardBadge || "Seva – Opportunity to Serve"}</span>
                 </div>
 
-                <h3 className="font-display font-black text-2xl sm:text-4xl text-primary leading-snug">
-                  Seva – Opportunity to Serve
+                <h3 className="font-display font-black text-3xl sm:text-5xl text-amber-100 leading-tight">
+                  {lifePatron.sevaCardTitle || "Seva – Opportunity to Serve"}
                 </h3>
 
-                <p className="text-sm sm:text-base text-slate-700 leading-relaxed font-sans">
-                  Become part of the service activities of ISKCON Kurnool and contribute towards the service of Sri Krishna. Your support helps the temple continue its spiritual, cultural, and community activities.
+                <p className="text-base sm:text-lg text-amber-100/80 leading-relaxed font-sans font-light">
+                  {lifePatron.sevaCardDescription || "Become part of the service activities of ISKCON Kurnool and contribute towards the service of Sri Krishna. Your support helps the temple continue its spiritual, cultural, and community activities."}
                 </p>
 
-                <div className="pt-2 flex flex-wrap items-center gap-3">
-                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-900 text-xs font-bold border border-amber-200">
-                    <CheckCircle2 className="h-4 w-4 text-amber-600" />
-                    <span>Sri Krishna Devotional Seva</span>
-                  </div>
-                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-900 text-xs font-bold border border-amber-200">
-                    <CheckCircle2 className="h-4 w-4 text-amber-600" />
-                    <span>Community &amp; Cultural Growth</span>
-                  </div>
+                <div className="pt-3 flex flex-wrap items-center gap-3">
+                  {lifePatron.sevaCardTag1 && (
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/10 backdrop-blur-md text-amber-200 text-xs font-bold border border-amber-300/30">
+                      <CheckCircle2 className="h-4 w-4 text-amber-400" />
+                      <span>{lifePatron.sevaCardTag1}</span>
+                    </div>
+                  )}
+                  {lifePatron.sevaCardTag2 && (
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/10 backdrop-blur-md text-amber-200 text-xs font-bold border border-amber-300/30">
+                      <CheckCircle2 className="h-4 w-4 text-amber-400" />
+                      <span>{lifePatron.sevaCardTag2}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-4">
+                  <a
+                    href="#official-membership-card"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      document.getElementById("official-membership-card")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 text-slate-950 font-black text-sm uppercase tracking-wider shadow-[0_0_30px_rgba(245,197,24,0.4)] hover:scale-105 active:scale-95 transition-all cursor-pointer border border-amber-300"
+                  >
+                    <Award className="h-5 w-5" />
+                    <span>Become a Life Patron</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </a>
                 </div>
               </div>
 
-              {/* Admin Uploaded Image Card */}
-              <div className="lg:col-span-5 relative">
-                <div className="relative rounded-2xl overflow-hidden shadow-lg border-2 border-amber-300/60 aspect-4/3">
+              {/* Seva Hero Image Card */}
+              <div className="lg:col-span-6 relative">
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl border-2 border-amber-400/40 h-80 sm:h-[420px] w-full group/img">
                   <img
                     src={lifePatron.sevaCardImage || "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=1200&q=85"}
-                    alt="Seva Opportunity to Serve"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    alt={lifePatron.sevaCardTitle || "Seva Opportunity to Serve"}
+                    className="w-full h-full object-cover group-hover/img:scale-108 transition-transform duration-700"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent" />
-                  <div className="absolute bottom-3 left-3 right-3 text-white text-xs font-bold font-display px-3 py-1.5 rounded-xl bg-slate-950/60 backdrop-blur-md border border-white/20">
-                    ✨ Dedicated Seva at Sri Sri Jagannath Baladev Subhadra Temple
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4 text-white text-xs sm:text-sm font-bold font-display px-4 py-3 rounded-2xl bg-slate-950/70 backdrop-blur-xl border border-white/20 flex items-center gap-2.5">
+                    <Sparkles className="h-4 w-4 text-amber-400 shrink-0" />
+                    <span>{lifePatron.sevaCardImageCaption || "✨ Dedicated Seva at Sri Sri Jagannath Baladev Subhadra Temple"}</span>
                   </div>
                 </div>
               </div>
 
             </div>
+          </motion.div>
+
+          {/* BENEFIT CARDS WITH ADMIN UPLOADED IMAGES (MODERN BENTO GRID LAYOUT) */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8 lg:gap-10">
+            {(lifePatron.benefits || []).map((benefit, idx) => {
+              const getBenefitIcon = (name?: string) => {
+                switch (name) {
+                  case "BookOpen": return <BookOpen className="h-5 w-5" />;
+                  case "Heart": return <Heart className="h-5 w-5" />;
+                  case "Ticket": return <Ticket className="h-5 w-5" />;
+                  case "Building2": return <Building2 className="h-5 w-5" />;
+                  case "Sparkles": return <Sparkles className="h-5 w-5" />;
+                  case "Layers": return <Layers className="h-5 w-5" />;
+                  case "Award": return <Award className="h-5 w-5" />;
+                  case "ShieldCheck": return <ShieldCheck className="h-5 w-5" />;
+                  default: return <Sparkles className="h-5 w-5" />;
+                }
+              };
+
+              return (
+                <motion.div
+                  key={benefit.id || idx}
+                  initial={{ opacity: 0, y: 25 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: idx * 0.1 }}
+                  whileHover={{ y: -6 }}
+                  className="bg-white/95 backdrop-blur-xl rounded-[2rem] overflow-hidden border-2 border-amber-300/70 shadow-[0_15px_45px_rgba(0,0,0,0.06)] hover:shadow-[0_25px_60px_rgba(245,197,24,0.2)] transition-all duration-300 group flex flex-col justify-between w-full"
+                >
+                  <div>
+                    {/* Image Box */}
+                    <div className="relative h-64 sm:h-80 w-full overflow-hidden bg-slate-100">
+                      <img
+                        src={benefit.image || "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80"}
+                        alt={benefit.title}
+                        className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+                      
+                      {/* Top Right Floating Badge */}
+                      {benefit.badge && (
+                        <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between pointer-events-none">
+                          <span className="text-xs font-bold text-white bg-slate-950/75 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/20 shadow-md">
+                            {benefit.badge}
+                          </span>
+                          <span className="text-[11px] font-extrabold text-amber-900 bg-amber-400 px-2.5 py-1 rounded-lg uppercase tracking-wider shadow-sm">
+                            Benefit #{idx + 1}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Card Body */}
+                    <div className="p-7 space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-slate-950 shadow-md group-hover:scale-110 transition-transform duration-300">
+                          {getBenefitIcon(benefit.icon)}
+                        </div>
+                        <h3 className="font-display font-bold text-2xl text-slate-900 group-hover:text-amber-800 transition-colors">
+                          {benefit.title}
+                        </h3>
+                      </div>
+
+                      <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-sans">
+                        {benefit.description}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
 
-          {/* 7 BENEFIT CARDS WITH ADMIN THUMBNAIL IMAGES */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            
-            {/* Spiritual Knowledge */}
-            <div className="bg-white/90 backdrop-blur-md rounded-3xl overflow-hidden border border-amber-300/70 shadow-sm hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between">
-              <div>
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=800&q=80"
-                    alt="Spiritual Knowledge"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
-                  <span className="absolute bottom-3 left-3 text-[11px] font-bold text-white bg-slate-950/60 backdrop-blur-md px-3 py-1 rounded-lg border border-white/20">
-                    📖 Vedic Wisdom &amp; Scriptures
+          {/* VISITING ISKCON CENTRES PASSPORT CARD */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="bg-gradient-to-r from-amber-500/10 via-amber-400/15 to-orange-500/10 backdrop-blur-xl rounded-3xl p-7 sm:p-9 border-2 border-amber-300/80 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
+          >
+            <div className="flex items-start gap-4">
+              <div className="p-3.5 bg-gradient-to-br from-amber-400 to-orange-500 text-slate-950 rounded-2xl shrink-0 shadow-md">
+                <Globe className="h-6 w-6" />
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="font-display font-bold text-xl text-slate-950 flex items-center gap-2">
+                  <span>Visiting ISKCON Guest Houses Worldwide</span>
+                  <span className="bg-amber-200 text-amber-950 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border border-amber-400">
+                    800+ Locations
                   </span>
-                </div>
-
-                <div className="p-6 space-y-3">
-                  <div className="flex items-center gap-2.5 text-primary">
-                    <div className="p-2 rounded-xl bg-amber-500/15 text-amber-700">
-                      <BookOpen className="h-5 w-5" />
-                    </div>
-                    <h3 className="font-display font-bold text-xl text-primary">
-                      Spiritual Knowledge
-                    </h3>
-                  </div>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
-                    Receive spiritual books and resources that help you explore the teachings of Bhagavad-gita, Srimad-Bhagavatam, and other Vedic scriptures.
-                  </p>
-                </div>
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-sans max-w-3xl">
+                  Life Members can contact official ISKCON centres globally when planning visits to enquire about guest house accommodation. Please contact the respective ISKCON centre in advance to confirm booking details and carry your valid Life Membership card.
+                </p>
               </div>
             </div>
 
-            {/* Prasadam */}
-            <div className="bg-white/90 backdrop-blur-md rounded-3xl overflow-hidden border border-amber-300/70 shadow-sm hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between">
-              <div>
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=800&q=80"
-                    alt="Prasadam"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
-                  <span className="absolute bottom-3 left-3 text-[11px] font-bold text-white bg-slate-950/60 backdrop-blur-md px-3 py-1 rounded-lg border border-white/20">
-                    🍲 Sanctified Feast Tradition
-                  </span>
-                </div>
-
-                <div className="p-6 space-y-3">
-                  <div className="flex items-center gap-2.5 text-primary">
-                    <div className="p-2 rounded-xl bg-amber-500/15 text-amber-700">
-                      <Heart className="h-5 w-5" />
-                    </div>
-                    <h3 className="font-display font-bold text-xl text-primary">
-                      Prasadam
-                    </h3>
-                  </div>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
-                    Experience the spiritual tradition of prasadam and participate in devotional programs and special occasions at ISKCON centres, subject to the applicable Life Member facilities.
-                  </p>
-                </div>
-              </div>
+            <div className="shrink-0 w-full md:w-auto">
+              <a
+                href={`https://wa.me/${(lifePatron.whatsappNumber || settings.whatsapp || "+919505377520").replace(/\D/g, "")}?text=Hare%20Krishna!%20I%20have%20questions%20regarding%20ISKCON%20Life%20Member%20guest%20house%20reservations.`}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full md:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all cursor-pointer"
+              >
+                <MessageCircle className="h-4 w-4" />
+                <span>Enquire Guest House Stay</span>
+              </a>
             </div>
-
-            {/* Life Member / Patron Card */}
-            <div className="bg-white/90 backdrop-blur-md rounded-3xl overflow-hidden border border-amber-300/70 shadow-sm hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between">
-              <div>
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src="https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80"
-                    alt="Life Member / Patron Card"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
-                  <span className="absolute bottom-3 left-3 text-[11px] font-bold text-white bg-slate-950/60 backdrop-blur-md px-3 py-1 rounded-lg border border-white/20">
-                    💳 Official Patron Recognition
-                  </span>
-                </div>
-
-                <div className="p-6 space-y-3">
-                  <div className="flex items-center gap-2.5 text-primary">
-                    <div className="p-2 rounded-xl bg-amber-500/15 text-amber-700">
-                      <Ticket className="h-5 w-5" />
-                    </div>
-                    <h3 className="font-display font-bold text-xl text-primary">
-                      Life Member / Patron Card
-                    </h3>
-                  </div>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
-                    Receive your Life Membership card as recognition of your association with ISKCON. The card helps establish your Life Member status when availing applicable facilities at participating ISKCON centres.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Support ISKCON Kurnool */}
-            <div className="bg-white/90 backdrop-blur-md rounded-3xl overflow-hidden border border-amber-300/70 shadow-sm hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between">
-              <div>
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src="https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80"
-                    alt="Support ISKCON Kurnool"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
-                  <span className="absolute bottom-3 left-3 text-[11px] font-bold text-white bg-slate-950/60 backdrop-blur-md px-3 py-1 rounded-lg border border-white/20">
-                    🏛️ Temple Maintenance &amp; Sevas
-                  </span>
-                </div>
-
-                <div className="p-6 space-y-3">
-                  <div className="flex items-center gap-2.5 text-primary">
-                    <div className="p-2 rounded-xl bg-amber-500/15 text-amber-700">
-                      <Building2 className="h-5 w-5" />
-                    </div>
-                    <h3 className="font-display font-bold text-xl text-primary">
-                      Support ISKCON Kurnool
-                    </h3>
-                  </div>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
-                    Your contribution supports the development and maintenance of ISKCON Kurnool and helps facilitate spiritual programs, festivals, prasadam distribution, educational activities, and other community services.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Special Occasions */}
-            <div className="bg-white/90 backdrop-blur-md rounded-3xl overflow-hidden border border-amber-300/70 shadow-sm hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between">
-              <div>
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src="https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=800&q=80"
-                    alt="Special Occasions"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
-                  <span className="absolute bottom-3 left-3 text-[11px] font-bold text-white bg-slate-950/60 backdrop-blur-md px-3 py-1 rounded-lg border border-white/20">
-                    🎉 Birthdays &amp; Anniversaries
-                  </span>
-                </div>
-
-                <div className="p-6 space-y-3">
-                  <div className="flex items-center gap-2.5 text-primary">
-                    <div className="p-2 rounded-xl bg-amber-500/15 text-amber-700">
-                      <Sparkles className="h-5 w-5" />
-                    </div>
-                    <h3 className="font-display font-bold text-xl text-primary">
-                      Special Occasions
-                    </h3>
-                  </div>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
-                    Life Members may receive special prasadam or other devotional facilities on occasions such as birthdays and anniversaries, according to the facilities offered by the temple.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Book Set */}
-            <div className="bg-white/90 backdrop-blur-md rounded-3xl overflow-hidden border border-amber-300/70 shadow-sm hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between">
-              <div>
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=800&q=80"
-                    alt="Book Set"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
-                  <span className="absolute bottom-3 left-3 text-[11px] font-bold text-white bg-slate-950/60 backdrop-blur-md px-3 py-1 rounded-lg border border-white/20">
-                    📚 Sacred Literature Set
-                  </span>
-                </div>
-
-                <div className="p-6 space-y-3">
-                  <div className="flex items-center gap-2.5 text-primary">
-                    <div className="p-2 rounded-xl bg-amber-500/15 text-amber-700">
-                      <Layers className="h-5 w-5" />
-                    </div>
-                    <h3 className="font-display font-bold text-xl text-primary">
-                      Book Set
-                    </h3>
-                  </div>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
-                    Life Members may receive spiritual literature as part of their membership benefits. The book set can be collected from the temple after completion of the applicable membership contribution. Additional charges may apply for delivery to the member's address.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          {/* VISITING ISKCON CENTRES WIDE CARD */}
-          <div className="bg-white/90 backdrop-blur-md rounded-2xl p-6 sm:p-7 border border-amber-200/80 shadow-xs space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-amber-100 text-amber-800 rounded-xl shrink-0">
-                <Globe className="h-5 w-5 text-amber-700" />
-              </div>
-              <h3 className="font-display font-bold text-lg text-slate-900">
-                Visiting ISKCON Centres
-              </h3>
-            </div>
-            <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-sans pl-0 sm:pl-11">
-              Life Members can contact official ISKCON centres when planning visits and enquire about the facilities available to Life Members. Please contact the respective ISKCON centre in advance to confirm accommodation and other facilities, and carry your valid Life Membership card/details when visiting.
-            </p>
-          </div>
+          </motion.div>
 
         </div>
       </section>

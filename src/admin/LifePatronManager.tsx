@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useAdmin, uploadToCloudinary, LifePatronData } from "@/context/AdminContext";
-import { Award, Eye, Sparkles, Image as ImageIcon, Ticket, Phone, MessageCircle, ShieldCheck, Heart } from "lucide-react";
+import { useAdmin, uploadToCloudinary, LifePatronData, LifePatronBenefit } from "@/context/AdminContext";
+import { Award, Eye, Sparkles, Image as ImageIcon, Ticket, Phone, MessageCircle, ShieldCheck, Heart, Plus, Trash2, Layers, BookOpen, Building2, Sun } from "lucide-react";
 import { UploadBox } from "./CarouselManager";
 import { toast } from "sonner";
 
@@ -49,6 +49,23 @@ export default function LifePatronManager() {
     setBusy(false);
   };
 
+  const pickBenefitImage = async (index: number, f: File) => {
+    setBusy(true);
+    try {
+      const url = await uploadToCloudinary(f, "ISKCON-KURNOOL/LifePatron");
+      const current = lifePatron.benefits || [];
+      const updated = [...current];
+      if (updated[index]) {
+        updated[index] = { ...updated[index], image: url };
+        update({ benefits: updated });
+        toast.success(`Benefit card image uploaded successfully!`);
+      }
+    } catch {
+      toast.error("Upload failed");
+    }
+    setBusy(false);
+  };
+
   const pickApplicationPdf = async (f: File) => {
     setBusy(true);
     try {
@@ -81,7 +98,7 @@ export default function LifePatronManager() {
                 </span>
               </div>
               <p className="text-sm text-muted-foreground mt-1 max-w-2xl leading-relaxed">
-                Upload custom right-side hero image, customize "Become an ISKCON Kurnool Life Member" headlines, and manage Bhakti Steps patron benefits.
+                Upload custom hero images, manage Life Membership Benefits cards with admin uploaded images, and configure member enrollment details.
               </p>
             </div>
           </div>
@@ -103,7 +120,7 @@ export default function LifePatronManager() {
       <div className="bg-white rounded-3xl shadow-elegant p-6 sm:p-8 border border-slate-200/80 space-y-6">
         <div className="flex items-center gap-2 pb-4 border-b border-slate-100">
           <Sparkles className="h-5 w-5 text-amber-500" />
-          <h3 className="font-display text-lg font-bold text-primary">Hero Title & Admin Image Upload</h3>
+          <h3 className="font-display text-lg font-bold text-primary">Hero Title & Main Banner Images</h3>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
@@ -227,6 +244,189 @@ export default function LifePatronManager() {
                 Featured on the "Official ISKCON Life Patron Pass" section.
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* Featured Seva Card Content Settings */}
+        <div className="pt-6 border-t border-slate-100 space-y-4">
+          <div className="flex items-center gap-2">
+            <Sun className="h-5 w-5 text-amber-600" />
+            <h4 className="font-display text-base font-bold text-primary">Seva – Opportunity to Serve Card Settings</h4>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>Top Badge Text</label>
+              <input
+                className={inputClass}
+                value={lifePatron.sevaCardBadge || ""}
+                onChange={(e) => update({ sevaCardBadge: e.target.value })}
+                placeholder="Seva – Opportunity to Serve"
+              />
+            </div>
+
+            <div>
+              <label className={labelClass}>Card Main Title</label>
+              <input
+                className={inputClass}
+                value={lifePatron.sevaCardTitle || ""}
+                onChange={(e) => update({ sevaCardTitle: e.target.value })}
+                placeholder="Seva – Opportunity to Serve"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className={labelClass}>Card Description</label>
+              <textarea
+                className={inputClass}
+                rows={2}
+                value={lifePatron.sevaCardDescription || ""}
+                onChange={(e) => update({ sevaCardDescription: e.target.value })}
+                placeholder="Become part of the service activities of ISKCON Kurnool..."
+              />
+            </div>
+
+            <div>
+              <label className={labelClass}>Tag 1</label>
+              <input
+                className={inputClass}
+                value={lifePatron.sevaCardTag1 || ""}
+                onChange={(e) => update({ sevaCardTag1: e.target.value })}
+                placeholder="Sri Krishna Devotional Seva"
+              />
+            </div>
+
+            <div>
+              <label className={labelClass}>Tag 2</label>
+              <input
+                className={inputClass}
+                value={lifePatron.sevaCardTag2 || ""}
+                onChange={(e) => update({ sevaCardTag2: e.target.value })}
+                placeholder="Community & Cultural Growth"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className={labelClass}>Image Bottom Overlay Caption</label>
+              <input
+                className={inputClass}
+                value={lifePatron.sevaCardImageCaption || ""}
+                onChange={(e) => update({ sevaCardImageCaption: e.target.value })}
+                placeholder="✨ Dedicated Seva at Sri Sri Jagannath Baladev Subhadra Temple"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Life Membership Benefits Cards (Images Uploaded by Admin) */}
+        <div className="pt-6 border-t border-slate-100 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ImageIcon className="h-5 w-5 text-amber-600" />
+              <div>
+                <h4 className="font-display text-base font-bold text-primary">Life Membership Benefits Cards &amp; Uploaded Images</h4>
+                <p className="text-xs text-muted-foreground">Upload custom benefit images, badges, titles, and descriptions displayed on the Life Patron page.</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const current = lifePatron.benefits || [];
+                const newBenefit: LifePatronBenefit = {
+                  id: `b_${Date.now()}`,
+                  title: "New Membership Benefit",
+                  badge: "✨ Special Privilege",
+                  description: "Details regarding this Life Membership benefit.",
+                  icon: "BookOpen",
+                  image: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80",
+                };
+                update({ benefits: [...current, newBenefit] });
+              }}
+              className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Benefit Card</span>
+            </button>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {(lifePatron.benefits || []).map((benefit, idx) => (
+              <div key={benefit.id || idx} className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-4 relative group">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-200/60">
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-amber-900 bg-amber-100 px-3 py-1 rounded-lg border border-amber-200">
+                    Benefit Card #{idx + 1}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = (lifePatron.benefits || []).filter((_, i) => i !== idx);
+                      update({ benefits: updated });
+                    }}
+                    className="text-xs text-rose-600 hover:text-rose-700 font-bold px-2.5 py-1 rounded-lg hover:bg-rose-50 flex items-center gap-1 cursor-pointer transition-colors"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span>Delete</span>
+                  </button>
+                </div>
+
+                <div className="grid sm:grid-cols-12 gap-4 items-start">
+                  <div className="sm:col-span-5 space-y-2">
+                    <UploadBox
+                      label="Benefit Image (Uploaded by Admin)"
+                      url={benefit.image}
+                      onPick={(f) => pickBenefitImage(idx, f)}
+                      aspect="aspect-video"
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-7 space-y-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">Card Title</label>
+                      <input
+                        className={inputClass}
+                        value={benefit.title || ""}
+                        onChange={(e) => {
+                          const updated = [...(lifePatron.benefits || [])];
+                          updated[idx] = { ...updated[idx], title: e.target.value };
+                          update({ benefits: updated });
+                        }}
+                        placeholder="e.g. Spiritual Knowledge"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">Badge Tag</label>
+                      <input
+                        className={inputClass}
+                        value={benefit.badge || ""}
+                        onChange={(e) => {
+                          const updated = [...(lifePatron.benefits || [])];
+                          updated[idx] = { ...updated[idx], badge: e.target.value };
+                          update({ benefits: updated });
+                        }}
+                        placeholder="e.g. 📖 Vedic Wisdom & Scriptures"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">Description</label>
+                      <textarea
+                        className={inputClass}
+                        rows={2}
+                        value={benefit.description || ""}
+                        onChange={(e) => {
+                          const updated = [...(lifePatron.benefits || [])];
+                          updated[idx] = { ...updated[idx], description: e.target.value };
+                          update({ benefits: updated });
+                        }}
+                        placeholder="Description of the benefit..."
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -405,3 +605,4 @@ export default function LifePatronManager() {
     </div>
   );
 }
+
