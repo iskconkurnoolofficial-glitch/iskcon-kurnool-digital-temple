@@ -3600,6 +3600,8 @@ type AdminState = {
   toggleLockAdminSection: (sectionId: string) => void;
   isSectionLocked: (sectionId: string) => boolean;
   refreshLockedSections: () => Promise<void>;
+  adminPanelUid: string;
+  revokeAdminPanelUid: () => Promise<string>;
 
   terms: TermsData;
   setTerms: (t: TermsData) => void;
@@ -3697,7 +3699,21 @@ const KEYS = {
   teamMembers: "team_members",
   lockedAdminSections: "lockedAdminSections",
   homeSevasConfig: "homeSevasConfig",
+  adminPanelUid: "adminPanelUid",
 } as const;
+
+export const DEFAULT_ADMIN_PANEL_UID = "cd5b6222-87a8-4a88-a42c-3cf401078d4c";
+
+export function generateAdminPanelUid(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
 
 const Ctx = createContext<AdminState | null>(null);
 
@@ -3842,6 +3858,25 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [lifePatron, setLifePatronState] = useState<LifePatronData>(() => getCached(KEYS.lifePatron, defaultLifePatron));
   const [lockedAdminSections, setLockedAdminSectionsState] = useState<string[]>(() => getCached(KEYS.lockedAdminSections, []));
   const [homeSevasConfig, setHomeSevasConfigState] = useState<HomeSevasConfig>(() => getCached(KEYS.homeSevasConfig, defaultHomeSevasConfig));
+  const [adminPanelUid, setAdminPanelUidState] = useState<string>(() => getCached(KEYS.adminPanelUid, DEFAULT_ADMIN_PANEL_UID));
+
+  const revokeAdminPanelUid = async (): Promise<string> => {
+    const newUid = generateAdminPanelUid();
+    setAdminPanelUidState(newUid);
+    setCache(KEYS.adminPanelUid, newUid);
+    await persist(KEYS.adminPanelUid, newUid);
+
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("iskcon_admin_panel_uid_change", { detail: newUid }));
+      try {
+        const bc = new BroadcastChannel("iskcon_admin_sync");
+        bc.postMessage({ type: "PANEL_UID_CHANGE", uid: newUid });
+        bc.close();
+      } catch {}
+    }
+
+    return newUid;
+  };
 
   const toggleLockAdminSection = (sectionId: string) => {
     setLockedAdminSectionsState((prev) => {
@@ -3874,8 +3909,9 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         .eq("key", KEYS.lockedAdminSections)
         .maybeSingle();
       if (data && Array.isArray(data.value)) {
-        setCache(KEYS.lockedAdminSections, data.value);
-        setLockedAdminSectionsState(data.value);
+        const sections = data.value.filter((s): s is string => typeof s === "string");
+        setCache(KEYS.lockedAdminSections, sections);
+        setLockedAdminSectionsState(sections);
       }
     } catch {}
   }, []);
@@ -3891,6 +3927,9 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         if (event.data?.type === "LOCK_CHANGE" && Array.isArray(event.data.updated)) {
           setLockedAdminSectionsState(event.data.updated);
         }
+        if (event.data?.type === "PANEL_UID_CHANGE" && typeof event.data.uid === "string") {
+          setAdminPanelUidState(event.data.uid);
+        }
       };
     } catch {}
 
@@ -3903,6 +3942,14 @@ export function AdminProvider({ children }: { children: ReactNode }) {
           }
         } catch {}
       }
+      if (e.key === "iskcon_cache_" + KEYS.adminPanelUid && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (typeof parsed === "string") {
+            setAdminPanelUidState(parsed);
+          }
+        } catch {}
+      }
     };
 
     const handleCustomEvent = (e: Event) => {
@@ -3912,8 +3959,16 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       }
     };
 
+    const handlePanelUidChange = (e: Event) => {
+      const custom = e as CustomEvent;
+      if (typeof custom.detail === "string") {
+        setAdminPanelUidState(custom.detail);
+      }
+    };
+
     window.addEventListener("storage", handleStorage);
     window.addEventListener("iskcon_admin_lock_change", handleCustomEvent);
+    window.addEventListener("iskcon_admin_panel_uid_change", handlePanelUidChange);
 
     return () => {
       if (bc) {
@@ -3921,6 +3976,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       }
       window.removeEventListener("storage", handleStorage);
       window.removeEventListener("iskcon_admin_lock_change", handleCustomEvent);
+      window.removeEventListener("iskcon_admin_panel_uid_change", handlePanelUidChange);
     };
   }, []);
 
@@ -4140,6 +4196,23 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
+    // Fast-path fetch for adminPanelUid so it resolves immediately without waiting for entire site_data table
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("site_data")
+          .select("value")
+          .eq("key", KEYS.adminPanelUid)
+          .maybeSingle();
+
+        if (!mounted) return;
+        if (typeof data?.value === "string" && data.value.trim()) {
+          setAdminPanelUidState(data.value.trim());
+          setCache(KEYS.adminPanelUid, data.value.trim());
+        }
+      } catch {}
+    })();
+
     (async () => {
       const { data, error } = await supabase.from("site_data").select("key,value");
       if (!mounted) return;
@@ -4262,6 +4335,12 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.lifePatron: setLifePatronState({ ...defaultLifePatron, ...value }); break;
       case KEYS.homeSevasConfig: setHomeSevasConfigState({ ...defaultHomeSevasConfig, ...value }); break;
       case KEYS.lockedAdminSections: setLockedAdminSectionsState(Array.isArray(value) ? value : []); break;
+      case KEYS.adminPanelUid: {
+        if (typeof value === "string" && value.trim()) {
+          setAdminPanelUidState(value.trim());
+        }
+        break;
+      }
     }
   }
 
@@ -5082,6 +5161,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         lifePatron, setLifePatron,
         homeSevasConfig, setHomeSevasConfig,
         lockedAdminSections, toggleLockAdminSection, isSectionLocked, refreshLockedSections,
+        adminPanelUid, revokeAdminPanelUid,
         changeSuperAdminPassword, currentUser,
         authed, login, logout, ready,
       }}

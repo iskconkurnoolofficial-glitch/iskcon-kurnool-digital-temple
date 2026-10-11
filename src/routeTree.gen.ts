@@ -16,7 +16,9 @@ import { Route as TempleRouteImport } from './routes/temple'
 import { Route as SocialMediaRouteImport } from './routes/social-media'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PrahladaBadiRouteImport } from './routes/prahlada-badi'
+import { Route as ManageAdminItemsCd5b622287a84a88A42c3cf401078d4cRouteImport } from './routes/manage-admin-items-cd5b6222-87a8-4a88-a42c-3cf401078d4c'
 import { Route as ManageAdminItemsRouteImport } from './routes/manage-admin-items'
+import { Route as IskconkurnoolOsPanelChar123uidChar125RouteImport } from './routes/iskconkurnool-os-panel-{$uid}'
 import { Route as IskconkurnoolOsPanelRouteImport } from './routes/iskconkurnool-os-panel'
 import { Route as HouseProgrammesRouteImport } from './routes/house-programmes'
 import { Route as HarinamaRouteImport } from './routes/harinama'
@@ -78,11 +80,23 @@ const PrahladaBadiRoute = PrahladaBadiRouteImport.update({
   path: '/prahlada-badi',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ManageAdminItemsCd5b622287a84a88A42c3cf401078d4cRoute =
+  ManageAdminItemsCd5b622287a84a88A42c3cf401078d4cRouteImport.update({
+    id: '/manage-admin-items-cd5b6222-87a8-4a88-a42c-3cf401078d4c',
+    path: '/manage-admin-items-cd5b6222-87a8-4a88-a42c-3cf401078d4c',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ManageAdminItemsRoute = ManageAdminItemsRouteImport.update({
   id: '/manage-admin-items',
   path: '/manage-admin-items',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IskconkurnoolOsPanelChar123uidChar125Route =
+  IskconkurnoolOsPanelChar123uidChar125RouteImport.update({
+    id: '/iskconkurnool-os-panel-{$uid}',
+    path: '/iskconkurnool-os-panel-{$uid}',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const IskconkurnoolOsPanelRoute = IskconkurnoolOsPanelRouteImport.update({
   id: '/iskconkurnool-os-panel',
   path: '/iskconkurnool-os-panel',
@@ -224,7 +238,9 @@ export interface FileRoutesByFullPath {
   '/harinama': typeof HarinamaRoute
   '/house-programmes': typeof HouseProgrammesRoute
   '/iskconkurnool-os-panel': typeof IskconkurnoolOsPanelRoute
+  '/iskconkurnool-os-panel-{$uid}': typeof IskconkurnoolOsPanelChar123uidChar125Route
   '/manage-admin-items': typeof ManageAdminItemsRoute
+  '/manage-admin-items-cd5b6222-87a8-4a88-a42c-3cf401078d4c': typeof ManageAdminItemsCd5b622287a84a88A42c3cf401078d4cRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/privacy': typeof PrivacyRoute
   '/social-media': typeof SocialMediaRoute
@@ -258,7 +274,9 @@ export interface FileRoutesByTo {
   '/harinama': typeof HarinamaRoute
   '/house-programmes': typeof HouseProgrammesRoute
   '/iskconkurnool-os-panel': typeof IskconkurnoolOsPanelRoute
+  '/iskconkurnool-os-panel-{$uid}': typeof IskconkurnoolOsPanelChar123uidChar125Route
   '/manage-admin-items': typeof ManageAdminItemsRoute
+  '/manage-admin-items-cd5b6222-87a8-4a88-a42c-3cf401078d4c': typeof ManageAdminItemsCd5b622287a84a88A42c3cf401078d4cRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/privacy': typeof PrivacyRoute
   '/social-media': typeof SocialMediaRoute
@@ -293,7 +311,9 @@ export interface FileRoutesById {
   '/harinama': typeof HarinamaRoute
   '/house-programmes': typeof HouseProgrammesRoute
   '/iskconkurnool-os-panel': typeof IskconkurnoolOsPanelRoute
+  '/iskconkurnool-os-panel-{$uid}': typeof IskconkurnoolOsPanelChar123uidChar125Route
   '/manage-admin-items': typeof ManageAdminItemsRoute
+  '/manage-admin-items-cd5b6222-87a8-4a88-a42c-3cf401078d4c': typeof ManageAdminItemsCd5b622287a84a88A42c3cf401078d4cRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/privacy': typeof PrivacyRoute
   '/social-media': typeof SocialMediaRoute
@@ -330,7 +350,9 @@ export interface FileRouteTypes {
     | '/harinama'
     | '/house-programmes'
     | '/iskconkurnool-os-panel'
+    | '/iskconkurnool-os-panel-{$uid}'
     | '/manage-admin-items'
+    | '/manage-admin-items-cd5b6222-87a8-4a88-a42c-3cf401078d4c'
     | '/prahlada-badi'
     | '/privacy'
     | '/social-media'
@@ -364,7 +386,9 @@ export interface FileRouteTypes {
     | '/harinama'
     | '/house-programmes'
     | '/iskconkurnool-os-panel'
+    | '/iskconkurnool-os-panel-{$uid}'
     | '/manage-admin-items'
+    | '/manage-admin-items-cd5b6222-87a8-4a88-a42c-3cf401078d4c'
     | '/prahlada-badi'
     | '/privacy'
     | '/social-media'
@@ -398,7 +422,9 @@ export interface FileRouteTypes {
     | '/harinama'
     | '/house-programmes'
     | '/iskconkurnool-os-panel'
+    | '/iskconkurnool-os-panel-{$uid}'
     | '/manage-admin-items'
+    | '/manage-admin-items-cd5b6222-87a8-4a88-a42c-3cf401078d4c'
     | '/prahlada-badi'
     | '/privacy'
     | '/social-media'
@@ -434,7 +460,9 @@ export interface RootRouteChildren {
   HarinamaRoute: typeof HarinamaRoute
   HouseProgrammesRoute: typeof HouseProgrammesRoute
   IskconkurnoolOsPanelRoute: typeof IskconkurnoolOsPanelRoute
+  IskconkurnoolOsPanelChar123uidChar125Route: typeof IskconkurnoolOsPanelChar123uidChar125Route
   ManageAdminItemsRoute: typeof ManageAdminItemsRoute
+  ManageAdminItemsCd5b622287a84a88A42c3cf401078d4cRoute: typeof ManageAdminItemsCd5b622287a84a88A42c3cf401078d4cRoute
   PrahladaBadiRoute: typeof PrahladaBadiRoute
   PrivacyRoute: typeof PrivacyRoute
   SocialMediaRoute: typeof SocialMediaRoute
@@ -501,11 +529,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrahladaBadiRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/manage-admin-items-cd5b6222-87a8-4a88-a42c-3cf401078d4c': {
+      id: '/manage-admin-items-cd5b6222-87a8-4a88-a42c-3cf401078d4c'
+      path: '/manage-admin-items-cd5b6222-87a8-4a88-a42c-3cf401078d4c'
+      fullPath: '/manage-admin-items-cd5b6222-87a8-4a88-a42c-3cf401078d4c'
+      preLoaderRoute: typeof ManageAdminItemsCd5b622287a84a88A42c3cf401078d4cRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/manage-admin-items': {
       id: '/manage-admin-items'
       path: '/manage-admin-items'
       fullPath: '/manage-admin-items'
       preLoaderRoute: typeof ManageAdminItemsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/iskconkurnool-os-panel-{$uid}': {
+      id: '/iskconkurnool-os-panel-{$uid}'
+      path: '/iskconkurnool-os-panel-{$uid}'
+      fullPath: '/iskconkurnool-os-panel-{$uid}'
+      preLoaderRoute: typeof IskconkurnoolOsPanelChar123uidChar125RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/iskconkurnool-os-panel': {
@@ -729,7 +771,11 @@ const rootRouteChildren: RootRouteChildren = {
   HarinamaRoute: HarinamaRoute,
   HouseProgrammesRoute: HouseProgrammesRoute,
   IskconkurnoolOsPanelRoute: IskconkurnoolOsPanelRoute,
+  IskconkurnoolOsPanelChar123uidChar125Route:
+    IskconkurnoolOsPanelChar123uidChar125Route,
   ManageAdminItemsRoute: ManageAdminItemsRoute,
+  ManageAdminItemsCd5b622287a84a88A42c3cf401078d4cRoute:
+    ManageAdminItemsCd5b622287a84a88A42c3cf401078d4cRoute,
   PrahladaBadiRoute: PrahladaBadiRoute,
   PrivacyRoute: PrivacyRoute,
   SocialMediaRoute: SocialMediaRoute,
