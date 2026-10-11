@@ -39,12 +39,14 @@ function emptyDraft(): Partial<Seva> {
     thumbnail: "",
     slug: "",
     festivalId: undefined,
-    festivalIds: []
+    festivalIds: [],
+    featuredOnHome: true,
+    homeOrder: 0
   };
 }
 
 export default function SevasManager() {
-  const { sevas, setSevas, festivals, lifePatron } = useAdmin();
+  const { sevas, setSevas, festivals, lifePatron, homeSevasConfig, setHomeSevasConfig } = useAdmin();
   const [draft, setDraft] = useState<Partial<Seva>>(emptyDraft());
   const [pricingMode, setPricingMode] = useState<"single" | "multiple">("single");
   const [singleAmount, setSingleAmount] = useState<number>(516);
@@ -59,8 +61,25 @@ export default function SevasManager() {
   const [editCatInput, setEditCatInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive" | "home">("all");
   const [viewMode, setViewMode] = useState<"grid" | "table">("table");
+  const [isHomeSettingsOpen, setIsHomeSettingsOpen] = useState(false);
+  const [homeDraft, setHomeDraft] = useState(homeSevasConfig);
+
+  useEffect(() => {
+    setHomeDraft(homeSevasConfig);
+  }, [homeSevasConfig]);
+
+  const saveHomeConfig = () => {
+    setHomeSevasConfig(homeDraft);
+    toast.success("✨ Homepage Sevas Section Settings updated!");
+  };
+
+  const toggleHomeShowcase = (s: Seva) => {
+    const nextVal = s.featuredOnHome === false;
+    setSevas(sevas.map((x) => (x.id === s.id ? { ...x, featuredOnHome: nextVal } : x)));
+    toast.success(nextVal ? `🌟 "${s.title}" will now display on Homepage` : `"${s.title}" removed from Homepage showcase`);
+  };
 
   // Master Categories State (persisted in localStorage)
   const [customCategories, setCustomCategories] = useState<string[]>(() => {
@@ -335,7 +354,9 @@ export default function SevasManager() {
         slug: generatedSlug, 
         prices: cleanPrices,
         festivalId: festIds.length > 0 ? festIds[0] : undefined,
-        festivalIds: festIds
+        festivalIds: festIds,
+        featuredOnHome: draft.featuredOnHome !== false,
+        homeOrder: typeof draft.homeOrder === "number" ? draft.homeOrder : (s.homeOrder ?? s.order ?? 0),
       } as Seva : s));
       toast.success("✨ Seva updated successfully!");
     } else {
@@ -352,7 +373,9 @@ export default function SevasManager() {
         active: draft.active !== false,
         slug: generatedSlug,
         festivalId: festIds.length > 0 ? festIds[0] : undefined,
-        festivalIds: festIds
+        festivalIds: festIds,
+        featuredOnHome: draft.featuredOnHome !== false,
+        homeOrder: typeof draft.homeOrder === "number" ? draft.homeOrder : (maxOrder + 1),
       };
       setSevas([...sevas, item]);
       toast.success("✨ New seva added successfully!");
@@ -373,6 +396,8 @@ export default function SevasManager() {
       category: s.category || cats.join(", "), 
       categories: cats, 
       allowCustomAmount: s.allowCustomAmount !== false,
+      featuredOnHome: s.featuredOnHome !== false,
+      homeOrder: typeof s.homeOrder === "number" ? s.homeOrder : (s.homeOrder ?? s.order ?? 0),
       prices: (s.prices && s.prices.length > 0) ? s.prices.map((p) => ({ ...p })) : [{ label: "", amount: 516 }],
       festivalId: s.festivalId || (festIds.length > 0 ? festIds[0] : undefined),
       festivalIds: festIds
@@ -406,6 +431,7 @@ export default function SevasManager() {
 
     if (statusFilter === "active" && s.active === false) return false;
     if (statusFilter === "inactive" && s.active !== false) return false;
+    if (statusFilter === "home" && s.featuredOnHome === false) return false;
 
     if (!searchTerm.trim()) return true;
     const q = searchTerm.toLowerCase();
@@ -439,6 +465,7 @@ export default function SevasManager() {
   const totalCount = sevas.length;
   const activeCount = sevas.filter((s) => s.active !== false).length;
   const inactiveCount = sevas.filter((s) => s.active === false).length;
+  const homeCount = sevas.filter((s) => s.featuredOnHome !== false && s.active !== false).length;
 
   return (
     <div className="space-y-6 font-sans">
@@ -487,6 +514,19 @@ export default function SevasManager() {
 
             <button
               type="button"
+              onClick={() => setIsHomeSettingsOpen(!isHomeSettingsOpen)}
+              className={`inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl font-bold text-xs sm:text-sm border shadow-2xs hover:scale-105 active:scale-95 transition-all cursor-pointer font-sans ${
+                isHomeSettingsOpen 
+                  ? "bg-amber-600 text-white border-amber-600 shadow-md" 
+                  : "bg-white hover:bg-amber-50 text-amber-950 border-amber-300"
+              }`}
+            >
+              <Sparkles className="h-4 w-4 text-amber-500" />
+              <span>Home Section ({homeCount})</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setIsCategoryModalOpen(true)}
               className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-white hover:bg-amber-50 text-amber-950 font-bold text-xs sm:text-sm border border-amber-300 shadow-2xs hover:scale-105 active:scale-95 transition-all cursor-pointer font-sans"
             >
@@ -512,6 +552,165 @@ export default function SevasManager() {
           </div>
         </div>
       </div>
+
+      {/* Home Page Showcase Settings Panel */}
+      {isHomeSettingsOpen && (
+        <div className="bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-amber-50/80 p-5 sm:p-7 rounded-3xl border-2 border-amber-300 shadow-md space-y-6 animate-in fade-in duration-200">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-amber-200/80">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="p-2 rounded-xl bg-amber-500 text-white shadow-xs">
+                  <Sparkles className="h-5 w-5" />
+                </span>
+                <h3 className="font-display font-extrabold text-lg sm:text-xl text-slate-900">
+                  Homepage Sevas Section Customizer
+                </h3>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                Configure how the Sevas scrolling carousel appears on the home page directly after Daily Darshan &amp; Aarti Timings.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2.5 cursor-pointer bg-white px-3.5 py-2 rounded-xl border border-amber-300 shadow-2xs">
+                <span className="text-xs font-bold text-slate-800">Section Enabled</span>
+                <input
+                  type="checkbox"
+                  checked={homeDraft.enabled !== false}
+                  onChange={(e) => setHomeDraft({ ...homeDraft, enabled: e.target.checked })}
+                  className="rounded text-amber-600 focus:ring-amber-500 h-4 w-4"
+                />
+              </label>
+
+              <button
+                type="button"
+                onClick={saveHomeConfig}
+                className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs sm:text-sm shadow-md transition-all cursor-pointer hover:scale-105 active:scale-95"
+              >
+                <Check className="h-4 w-4" /> Save Settings
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Section Badge */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Section Badge Text
+              </label>
+              <input
+                value={homeDraft.badge || ""}
+                onChange={(e) => setHomeDraft({ ...homeDraft, badge: e.target.value })}
+                placeholder="Sacred Offerings & Sevas"
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-amber-500/20 focus:outline-none"
+              />
+            </div>
+
+            {/* Display Mode */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Display Mode
+              </label>
+              <select
+                value={homeDraft.displayMode || "selected"}
+                onChange={(e) => setHomeDraft({ ...homeDraft, displayMode: e.target.value as any })}
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-amber-500/20 focus:outline-none font-bold"
+              >
+                <option value="selected">Show Selected Sevas Only ({homeCount} selected)</option>
+                <option value="all">Show All Active Sevas ({activeCount} active)</option>
+              </select>
+            </div>
+
+            {/* Section Title */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Main Heading / Title
+              </label>
+              <input
+                value={homeDraft.title || ""}
+                onChange={(e) => setHomeDraft({ ...homeDraft, title: e.target.value })}
+                placeholder="Offer Your Devotion Through Seva"
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-amber-500/20 focus:outline-none"
+              />
+            </div>
+
+            {/* Button Link */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                "View All" Button Text &amp; URL
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  value={homeDraft.viewAllText || ""}
+                  onChange={(e) => setHomeDraft({ ...homeDraft, viewAllText: e.target.value })}
+                  placeholder="Explore All Sevas"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-amber-500/20 focus:outline-none"
+                />
+                <input
+                  value={homeDraft.viewAllLink || ""}
+                  onChange={(e) => setHomeDraft({ ...homeDraft, viewAllLink: e.target.value })}
+                  placeholder="/donate"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-amber-500/20 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Section Subtitle */}
+            <div className="md:col-span-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Subtitle / Description
+              </label>
+              <textarea
+                rows={2}
+                value={homeDraft.subtitle || ""}
+                onChange={(e) => setHomeDraft({ ...homeDraft, subtitle: e.target.value })}
+                placeholder="Participate in divine service at Sri Sri Puri Jagannath Mandir..."
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-amber-500/20 focus:outline-none resize-none"
+              />
+            </div>
+          </div>
+
+          {/* Quick Showcase Selector Bar */}
+          <div className="bg-white p-4 rounded-2xl border border-amber-200 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-amber-600" />
+                Currently Showcased on Homepage ({homeCount} Sevas):
+              </span>
+              <span className="text-[11px] text-muted-foreground">
+                Click any seva below to remove, or toggle directly from the list below
+              </span>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {sevas.filter((s) => s.featuredOnHome !== false && s.active !== false).length === 0 ? (
+                <div className="text-xs text-amber-800 italic py-1">
+                  No sevas currently marked for home. (The system will display top active sevas as fallback).
+                </div>
+              ) : (
+                sevas
+                  .filter((s) => s.featuredOnHome !== false && s.active !== false)
+                  .map((s) => (
+                    <span
+                      key={s.id}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-100/80 text-amber-950 border border-amber-300 text-xs font-bold shadow-2xs"
+                    >
+                      <span>{s.title}</span>
+                      <button
+                        type="button"
+                        onClick={() => toggleHomeShowcase(s)}
+                        className="hover:bg-amber-200 p-0.5 rounded-full text-amber-700 transition cursor-pointer"
+                        title="Remove from Homepage"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </span>
+                  ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Smart Search, Status & View Mode Filter Bar */}
       <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
@@ -548,6 +747,17 @@ export default function SevasManager() {
                 }`}
               >
                 All ({sorted.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusFilter("home")}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1 ${
+                  statusFilter === "home" ? "bg-amber-500 text-white shadow-2xs" : "text-amber-800 hover:text-amber-950"
+                }`}
+                title="Filter Sevas shown on Homepage"
+              >
+                <Sparkles className="h-3 w-3" />
+                <span>On Home ({homeCount})</span>
               </button>
               <button
                 type="button"
@@ -699,6 +909,21 @@ export default function SevasManager() {
                         <span className={`h-1.5 w-1.5 rounded-full ${s.active !== false ? "bg-white animate-pulse" : "bg-slate-400"}`} />
                         <span>{s.active !== false ? "Active" : "Hidden"}</span>
                       </button>
+
+                      {/* Home Showcase Toggle Pill */}
+                      <button
+                        type="button"
+                        onClick={() => toggleHomeShowcase(s)}
+                        className={`absolute top-3 right-24 px-2.5 py-1 rounded-full text-[10px] font-extrabold shadow-sm transition-transform active:scale-95 cursor-pointer flex items-center gap-1 ${
+                          s.featuredOnHome !== false
+                            ? "bg-amber-400 text-amber-950 font-black border border-amber-300 shadow-xs"
+                            : "bg-black/60 text-slate-300 backdrop-blur-md border border-white/20"
+                        }`}
+                        title={s.featuredOnHome !== false ? "Displayed on Home · Click to remove" : "Click to showcase on Homepage"}
+                      >
+                        <Sparkles className="h-3 w-3 text-amber-300" />
+                        <span>{s.featuredOnHome !== false ? "On Home" : "Off Home"}</span>
+                      </button>
                     </div>
 
                     {/* Card Body */}
@@ -823,6 +1048,7 @@ export default function SevasManager() {
                   <th className="py-3.5 px-4">Seva Title</th>
                   <th className="py-3.5 px-4">Categories</th>
                   <th className="py-3.5 px-4">Offering Amount</th>
+                  <th className="py-3.5 px-4 text-center">Home Page</th>
                   <th className="py-3.5 px-4 text-center">Status</th>
                   <th className="py-3.5 px-4 text-center">Reorder</th>
                   <th className="py-3.5 px-4 text-right">Actions</th>
@@ -888,6 +1114,21 @@ export default function SevasManager() {
                             </span>
                           )}
                         </div>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <button
+                          type="button"
+                          onClick={() => toggleHomeShowcase(s)}
+                          className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold transition cursor-pointer inline-flex items-center gap-1 ${
+                            s.featuredOnHome !== false 
+                              ? "bg-amber-100 text-amber-900 border border-amber-400 shadow-2xs" 
+                              : "bg-slate-100 text-slate-400 border border-slate-200"
+                          }`}
+                          title={s.featuredOnHome !== false ? "Showcased on Home · Click to remove" : "Hidden from Home · Click to showcase"}
+                        >
+                          <Sparkles className={`h-3 w-3 ${s.featuredOnHome !== false ? "text-amber-600" : "text-slate-400"}`} />
+                          <span>{s.featuredOnHome !== false ? "On Home" : "Off"}</span>
+                        </button>
                       </td>
                       <td className="py-3 px-4 text-center">
                         <button
@@ -1274,6 +1515,41 @@ export default function SevasManager() {
                     />
                     <span>{draft.active !== false ? "Active (Live)" : "Inactive (Hidden)"}</span>
                   </label>
+                </div>
+
+                {/* Home Showcase Toggle & Order */}
+                <div className="bg-amber-50/70 p-4 rounded-2xl border border-amber-300/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <span className="block text-xs font-bold text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-amber-600" />
+                      Home Page Showcase
+                    </span>
+                    <span className="text-[11px] text-amber-800">
+                      Display this seva in the modern scrolling section on the homepage
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-2 cursor-pointer font-bold text-xs bg-white px-3 py-1.5 rounded-xl border border-amber-300">
+                      <input
+                        type="checkbox"
+                        checked={draft.featuredOnHome !== false}
+                        onChange={(e) => setDraft({ ...draft, featuredOnHome: e.target.checked })}
+                        className="rounded text-amber-600 focus:ring-amber-500"
+                      />
+                      <span>Show on Home</span>
+                    </label>
+                    <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-amber-300">
+                      <span className="text-[10px] uppercase font-bold text-slate-500">Order:</span>
+                      <input
+                        type="number"
+                        min="0"
+                        className="w-12 text-center text-xs font-bold border-none outline-none focus:ring-0 p-0"
+                        value={draft.homeOrder ?? 0}
+                        onChange={(e) => setDraft({ ...draft, homeOrder: parseInt(e.target.value) || 0 })}
+                        title="Display order on Home page (lower numbers show first)"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

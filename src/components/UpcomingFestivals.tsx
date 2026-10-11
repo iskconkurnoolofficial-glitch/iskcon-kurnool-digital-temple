@@ -141,7 +141,7 @@ function FestivalCard({ f }: { f: Festival }) {
             </span>
             {minSevaAmount && (
               <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                Sevas from <strong className="text-amber-800 dark:text-amber-400">₹{minSevaAmount}</strong>
+                Sevas from <strong className="text-amber-800 dark:text-amber-400 font-cinzel font-black" style={{ fontFamily: "'Cinzel', Georgia, serif" }}>₹{minSevaAmount}</strong>
               </span>
             )}
           </div>
@@ -301,25 +301,25 @@ export default function UpcomingFestivals() {
 
           {/* Controls: Carousel Arrows & Saffron View All Link */}
           <div className="flex items-center gap-3 shrink-0 self-start md:self-end">
-            <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 p-1 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs">
+            <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs">
               <button
                 type="button"
                 onClick={() => scrollBy("left")}
                 disabled={!canScrollLeft}
-                className="p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-amber-50 dark:hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                className="p-2 sm:p-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-amber-50 dark:hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
                 title="Previous festival"
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-6 w-6 sm:h-7 sm:w-7 stroke-[2.5]" />
               </button>
 
               <button
                 type="button"
                 onClick={() => scrollBy("right")}
                 disabled={!canScrollRight}
-                className="p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-amber-50 dark:hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                className="p-2 sm:p-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-amber-50 dark:hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
                 title="Next festival"
               >
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-6 w-6 sm:h-7 sm:w-7 stroke-[2.5]" />
               </button>
             </div>
 

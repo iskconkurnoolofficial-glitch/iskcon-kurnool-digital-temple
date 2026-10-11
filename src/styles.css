@@ -167,6 +167,10 @@
   .font-display {
     font-family: var(--font-display);
   }
+
+  .font-cinzel {
+    font-family: var(--font-cinzel);
+  }
 }
 
 @layer utilities {

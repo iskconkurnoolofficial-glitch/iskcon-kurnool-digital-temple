@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, useCallback, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { finalizeDonationStatus } from "@/lib/donation-status.functions";
 import { toast } from "sonner";
@@ -54,6 +54,28 @@ export type Seva = {
   festivalId?: string;
   festivalIds?: string[];
   allowCustomAmount?: boolean;
+  featuredOnHome?: boolean;
+  homeOrder?: number;
+};
+
+export type HomeSevasConfig = {
+  enabled: boolean;
+  badge: string;
+  title: string;
+  subtitle: string;
+  viewAllText: string;
+  viewAllLink: string;
+  displayMode: "selected" | "all";
+};
+
+export const defaultHomeSevasConfig: HomeSevasConfig = {
+  enabled: true,
+  badge: "Sacred Offerings & Sevas",
+  title: "Sri Sri Puri Jagannath Sevas",
+  subtitle: "Participate in divine service and receive transcendental blessings at Sri Sri Puri Jagannath Mandir.",
+  viewAllText: "Explore All Sevas",
+  viewAllLink: "/donate",
+  displayMode: "selected",
 };
 
 export function getSevaFestivalIds(s?: Partial<Seva> | null): string[] {
@@ -76,6 +98,77 @@ export function getSevaCategories(s?: Partial<Seva> | null): string[] {
     return s.category.split(",").map((c) => c.trim()).filter(Boolean);
   }
   return ["Regular Sevas"];
+}
+
+export function getSevaAutoDescription(s?: Partial<Seva> | null): string {
+  if (!s) return "Offer your sacred devotion at Sri Sri Puri Jagannath Mandir.";
+  if (s.description && s.description.trim()) {
+    return s.description.trim();
+  }
+
+  const title = (s.title || "").toLowerCase();
+
+  // Cows / Goshala / Go-Seva
+  if (title.includes("goshala") || title.includes("cow") || title.includes("go-seva") || title.includes("gau") || title.includes("grass") || title.includes("fodder")) {
+    return "Provide nourishing green fodder, healthcare, and loving shelter for sacred Gomata at our goshala.";
+  }
+
+  // Pushpalankara / Flowers / Garlands
+  if (title.includes("pushpa") || title.includes("flower") || title.includes("garland") || title.includes("alankara") || title.includes("ornament")) {
+    return "Daily adornment of the Lord with fresh fragrant flowers and ornate garlands of love.";
+  }
+
+  // Annadana / Prasadam / Food distribution
+  if (title.includes("annadana") || title.includes("prasada") || title.includes("food") || title.includes("feast") || title.includes("bhandara") || title.includes("khichdi")) {
+    return "Sponsor pure sanctified vegetarian meals distributed to hundreds of visiting pilgrims and devotees.";
+  }
+
+  // Rajbhoga / Bhoga / Deity Food Offering
+  if (title.includes("rajbhoga") || title.includes("bhoga") || title.includes("naivedya") || title.includes("sweets") || title.includes("chappan")) {
+    return "Offer sumptuous royal feasts and delectable bhoga prepared with devotion for the Lord.";
+  }
+
+  // Aarti / Darshan / Mangala / Deepa / Lamps
+  if (title.includes("aarti") || title.includes("arati") || title.includes("darshan") || title.includes("deepa") || title.includes("lamp") || title.includes("diya") || title.includes("mangala")) {
+    return "Sponsor sacred ghee lamps and auspicious arati ceremonies to invoke divine blessings for your family.";
+  }
+
+  // Nitya / Daily Deity Seva
+  if (title.includes("nitya") || title.includes("deity") || title.includes("vigraha") || title.includes("archana") || title.includes("puja") || title.includes("pooja")) {
+    return "Support the sacred daily rituals, opulent shringar, and continuous deity worship at the temple.";
+  }
+
+  // Snana / Abhishek / Abhishekam
+  if (title.includes("abhishek") || title.includes("snana") || title.includes("bath") || title.includes("panchamrita")) {
+    return "Participate in the auspicious ceremonial bathing of the deities with sacred panchamrita and fruit juices.";
+  }
+
+  // Gita / Vidyadana / Education / Books / Shastra
+  if (title.includes("gita") || title.includes("book") || title.includes("vidya") || title.includes("shastra") || title.includes("education") || title.includes("course") || title.includes("class")) {
+    return "Promote Vedic wisdom, Bhagavad Gita distribution, and value-based spiritual education for youth.";
+  }
+
+  // Youth / Prahlada Badi / Children / Students
+  if (title.includes("youth") || title.includes("children") || title.includes("prahlada") || title.includes("badi") || title.includes("student")) {
+    return "Empower young minds and children with spiritual values, character building, and cultural heritage.";
+  }
+
+  // Harinama / Sankirtan / Kirtan / Chanting
+  if (title.includes("harinama") || title.includes("kirtan") || title.includes("sankirtan") || title.includes("yatra") || title.includes("padayatra")) {
+    return "Support daily congregational chanting of the Holy Names and spreading transcendental bliss.";
+  }
+
+  // Sunday feast / weekly program
+  if (title.includes("sunday") || title.includes("feast") || title.includes("satsang") || title.includes("festival")) {
+    return "Sponsor the grand Sunday spiritual gathering featuring sweet kirtan, Vedic lecture, and full prasadam feast.";
+  }
+
+  // Construction / Temple Maintenance / Mandir
+  if (title.includes("construction") || title.includes("building") || title.includes("brick") || title.includes("maintenance") || title.includes("mandir")) {
+    return "Contribute towards the development, beautification, and upkeep of Sri Sri Puri Jagannath Mandir.";
+  }
+
+  return `Offer your heartfelt devotion through ${s.title || "this sacred seva"} and receive the divine blessings of Sri Sri Puri Jagannath.`;
 }
 
 export type TeamMember = {
@@ -3409,6 +3502,8 @@ type AdminState = {
   setFestivals: (f: Festival[]) => void;
   sevas: Seva[];
   setSevas: (s: Seva[]) => void;
+  homeSevasConfig: HomeSevasConfig;
+  setHomeSevasConfig: (c: HomeSevasConfig) => void;
   youth: YouthData;
   setYouth: (y: YouthData) => void;
   harinama: HarinamaData;
@@ -3504,6 +3599,7 @@ type AdminState = {
   lockedAdminSections: string[];
   toggleLockAdminSection: (sectionId: string) => void;
   isSectionLocked: (sectionId: string) => boolean;
+  refreshLockedSections: () => Promise<void>;
 
   terms: TermsData;
   setTerms: (t: TermsData) => void;
@@ -3600,6 +3696,7 @@ const KEYS = {
   lifePatron: "lifePatron",
   teamMembers: "team_members",
   lockedAdminSections: "lockedAdminSections",
+  homeSevasConfig: "homeSevasConfig",
 } as const;
 
 const Ctx = createContext<AdminState | null>(null);
@@ -3644,7 +3741,9 @@ export const defaultSevas: Seva[] = [
       { label: "One Month Pushpalankara", amount: 15000 },
     ],
     order: 2,
-    active: true
+    active: true,
+    featuredOnHome: true,
+    homeOrder: 1,
   },
   {
     id: "s_default_goshala",
@@ -3658,7 +3757,9 @@ export const defaultSevas: Seva[] = [
       { label: "Adopt a Cow (Annual Support)", amount: 15000 }
     ],
     order: 3,
-    active: true
+    active: true,
+    featuredOnHome: true,
+    homeOrder: 2,
   }
 ];
 
@@ -3740,15 +3841,88 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [receiptSettings, setReceiptSettingsState] = useState<ReceiptSettings>(() => getCached(KEYS.receiptSettings, defaultReceiptSettings));
   const [lifePatron, setLifePatronState] = useState<LifePatronData>(() => getCached(KEYS.lifePatron, defaultLifePatron));
   const [lockedAdminSections, setLockedAdminSectionsState] = useState<string[]>(() => getCached(KEYS.lockedAdminSections, []));
+  const [homeSevasConfig, setHomeSevasConfigState] = useState<HomeSevasConfig>(() => getCached(KEYS.homeSevasConfig, defaultHomeSevasConfig));
 
   const toggleLockAdminSection = (sectionId: string) => {
     setLockedAdminSectionsState((prev) => {
       const isLocked = prev.includes(sectionId);
       const updated = isLocked ? prev.filter((id) => id !== sectionId) : [...prev, sectionId];
       persist(KEYS.lockedAdminSections, updated);
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("iskcon_admin_lock_change", { detail: updated }));
+        try {
+          const bc = new BroadcastChannel("iskcon_admin_sync");
+          bc.postMessage({ type: "LOCK_CHANGE", updated });
+          bc.close();
+        } catch {}
+      }
+
       return updated;
     });
   };
+
+  const refreshLockedSections = useCallback(async () => {
+    if (typeof window === "undefined") return;
+    const cached = getCached<string[]>(KEYS.lockedAdminSections, []);
+    setLockedAdminSectionsState(cached);
+
+    try {
+      const { data } = await supabase
+        .from("site_data")
+        .select("value")
+        .eq("key", KEYS.lockedAdminSections)
+        .maybeSingle();
+      if (data && Array.isArray(data.value)) {
+        setCache(KEYS.lockedAdminSections, data.value);
+        setLockedAdminSectionsState(data.value);
+      }
+    } catch {}
+  }, []);
+
+  // Multi-tab and immediate inter-process synchronization
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel("iskcon_admin_sync");
+      bc.onmessage = (event) => {
+        if (event.data?.type === "LOCK_CHANGE" && Array.isArray(event.data.updated)) {
+          setLockedAdminSectionsState(event.data.updated);
+        }
+      };
+    } catch {}
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "iskcon_cache_" + KEYS.lockedAdminSections && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) {
+            setLockedAdminSectionsState(parsed);
+          }
+        } catch {}
+      }
+    };
+
+    const handleCustomEvent = (e: Event) => {
+      const custom = e as CustomEvent;
+      if (Array.isArray(custom.detail)) {
+        setLockedAdminSectionsState(custom.detail);
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("iskcon_admin_lock_change", handleCustomEvent);
+
+    return () => {
+      if (bc) {
+        try { bc.close(); } catch {}
+      }
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("iskcon_admin_lock_change", handleCustomEvent);
+    };
+  }, []);
 
   const isSectionLocked = (sectionId: string): boolean => {
     return lockedAdminSections.includes(sectionId);
@@ -4013,7 +4187,9 @@ export function AdminProvider({ children }: { children: ReactNode }) {
           .filter((s: any) => s && s.id !== "s_default_sunday_feast" && s.id !== "s_sunday_feast_auto" && s.id !== "s_default_youth_feast" && s.id !== "s_youth_feast_auto" && s.slug !== "youth-feast" && s.slug !== "youth-feast-seva")
           .map((s: any) => ({
             ...s,
-            slug: s.slug || s.title?.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-") || s.id
+            slug: s.slug || s.title?.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-") || s.id,
+            featuredOnHome: s.featuredOnHome !== false,
+            homeOrder: typeof s.homeOrder === "number" ? s.homeOrder : (s.order ?? 0),
           })) : [];
         
         // If saved list is missing Pushpalankara, merge defaults
@@ -4084,7 +4260,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       case KEYS.privacy: setPrivacyState({ ...defaultPrivacy, ...value, sections: Array.isArray(value?.sections) ? value.sections : defaultPrivacy.sections }); break;
       case KEYS.receiptSettings: setReceiptSettingsState({ ...defaultReceiptSettings, ...value }); break;
       case KEYS.lifePatron: setLifePatronState({ ...defaultLifePatron, ...value }); break;
-
+      case KEYS.homeSevasConfig: setHomeSevasConfigState({ ...defaultHomeSevasConfig, ...value }); break;
+      case KEYS.lockedAdminSections: setLockedAdminSectionsState(Array.isArray(value) ? value : []); break;
     }
   }
 
@@ -4608,6 +4785,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const setHeroBanners = (v: HeroBannersData) => { setHeroBannersState(v); persist(KEYS.heroBanners, v); };
   const setGoshala = (v: GoshalaData) => { setGoshalaState(v); persist(KEYS.goshala, v); };
   const setReceiptSettings = (v: ReceiptSettings) => { setReceiptSettingsState(v); persist(KEYS.receiptSettings, v); };
+  const setHomeSevasConfig = (v: HomeSevasConfig) => { setHomeSevasConfigState(v); persist(KEYS.homeSevasConfig, v); };
   // Contact messages live in their own table: anyone can submit, only admins read/update/delete.
   const setContacts = async (v: ContactEntry[]) => {
     const prev = contacts;
@@ -4902,7 +5080,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         privacy, setPrivacy,
         receiptSettings, setReceiptSettings,
         lifePatron, setLifePatron,
-        lockedAdminSections, toggleLockAdminSection, isSectionLocked,
+        homeSevasConfig, setHomeSevasConfig,
+        lockedAdminSections, toggleLockAdminSection, isSectionLocked, refreshLockedSections,
         changeSuperAdminPassword, currentUser,
         authed, login, logout, ready,
       }}

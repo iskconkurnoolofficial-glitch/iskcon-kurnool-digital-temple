@@ -96,7 +96,7 @@ function FestivalsPage() {
               {list.map((f) => (
                 <div
                   key={f.id}
-                  className="group relative flex flex-col md:flex-row gap-6 md:gap-8 items-stretch bg-card hover:bg-card/90 border border-border/60 rounded-3xl overflow-hidden p-5 sm:p-6 shadow-sm hover:shadow-gold transition-all duration-300 transform hover:-translate-y-0.5"
+                  className="group relative flex flex-col md:flex-row gap-6 md:gap-8 items-stretch bg-gradient-to-br from-white via-[#fffdf9] to-[#fff8eb] hover:to-[#fff4dc] border-2 border-amber-200/90 hover:border-amber-400 rounded-3xl overflow-hidden p-5 sm:p-6 shadow-[0_8px_30px_rgba(217,119,6,0.08)] hover:shadow-[0_20px_45px_rgba(217,119,6,0.18)] transition-all duration-300 transform hover:-translate-y-0.5"
                 >
                   {/* Date Badge on Corner */}
                   <div className="absolute top-0 right-0 bg-accent text-white px-4 py-2 rounded-bl-2xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm z-20">
@@ -105,62 +105,68 @@ function FestivalsPage() {
                   </div>
 
                   {/* Left Column: Image */}
-                  <div className="w-full md:w-[320px] lg:w-[380px] aspect-[16/10] md:aspect-auto shrink-0 relative flex items-center justify-center bg-slate-50/50 rounded-2xl overflow-hidden">
-                    {f.thumbnail ? (
-                      <img
-                        src={f.thumbnail}
-                        alt={f.title}
-                        loading="lazy"
-                        className="max-w-full max-h-full rounded-2xl object-cover w-full h-full"
-                      />
-                    ) : (
-                      <div className="w-full h-full grid place-items-center text-primary/45 bg-gradient-hero">
-                        <Sparkles className="h-12 w-12 text-white/80" />
-                      </div>
-                    )}
+                  <div className="w-full md:w-[340px] lg:w-[400px] min-h-[240px] sm:min-h-[280px] md:min-h-[300px] shrink-0 relative flex items-center justify-center bg-slate-50/50 rounded-2xl overflow-hidden">
+                    <img
+                      src={f.thumbnail || "https://images.unsplash.com/photo-1609137982420-b1885df33a7e?auto=format&fit=crop&w=800&q=80"}
+                      alt={f.title}
+                      loading="lazy"
+                      className="max-w-full max-h-full rounded-2xl object-cover w-full h-full min-h-[240px] sm:min-h-[280px] md:min-h-[300px]"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src =
+                          "https://images.unsplash.com/photo-1609137982420-b1885df33a7e?auto=format&fit=crop&w=800&q=80";
+                      }}
+                    />
                   </div>
 
                   {/* Right Column: Details */}
                   <div className="flex-1 flex flex-col justify-between py-1">
                     <div>
-                      {/* Title */}
-                      <h3 className="font-display text-2xl md:text-3xl font-extrabold text-primary mb-2.5 leading-tight tracking-tight group-hover:text-accent transition-colors duration-200">
-                        {f.title}
-                      </h3>
+                      {/* Modern Bold Distinctive Title */}
+                      <div className="relative mb-2 sm:mb-3">
+                        <h3 className="font-sans text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-slate-900 group-hover:text-amber-700 tracking-tight leading-tight transition-colors">
+                          {f.title}
+                        </h3>
+                      </div>
 
                       {/* Location display if configured */}
                       {f.location && (
-                        <div className="text-xs text-muted-foreground font-semibold flex items-center gap-1 mb-3">
-                          <MapPin className="h-3.5 w-3.5 text-primary" />
+                        <div className="text-xs sm:text-sm text-muted-foreground font-semibold flex items-center gap-1.5 mb-3 sm:mb-4">
+                          <MapPin className="h-4 w-4 text-primary" />
                           <span>{f.location}</span>
                         </div>
                       )}
 
-                      {/* Description */}
+                      {/* Description - Modern Sleek Micro-Surface */}
                       {f.shortDescription ? (
-                        <p className="text-muted-foreground text-sm leading-relaxed mb-6 font-sans">
-                          {f.shortDescription}
-                        </p>
+                        <div className="mb-5 sm:mb-6 p-3 sm:p-3.5 rounded-2xl bg-slate-50/90 group-hover:bg-amber-50/50 border border-slate-200/70 group-hover:border-amber-200/80 transition-all flex items-start gap-2.5">
+                          <div className="w-2 h-2 rounded-full bg-amber-500 shrink-0 mt-2" />
+                          <p className="text-slate-700 text-sm sm:text-base leading-relaxed font-sans font-normal">
+                            {f.shortDescription}
+                          </p>
+                        </div>
                       ) : (
                         f.description && (
-                          <div
-                            className="text-muted-foreground text-xs leading-relaxed mb-6 line-clamp-3 font-sans"
-                            dangerouslySetInnerHTML={{
-                              __html: f.description.replace(/<[^>]*>/g, "").substring(0, 200) + "...",
-                            }}
-                          />
+                          <div className="mb-5 sm:mb-6 p-3 sm:p-3.5 rounded-2xl bg-slate-50/90 group-hover:bg-amber-50/50 border border-slate-200/70 group-hover:border-amber-200/80 transition-all flex items-start gap-2.5">
+                            <div className="w-2 h-2 rounded-full bg-amber-500 shrink-0 mt-2" />
+                            <div
+                              className="text-slate-700 text-xs sm:text-sm md:text-base leading-relaxed line-clamp-3 font-sans font-normal"
+                              dangerouslySetInnerHTML={{
+                                __html: f.description.replace(/<[^>]*>/g, "").substring(0, 200) + "...",
+                              }}
+                            />
+                          </div>
                         )
                       )}
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="mt-auto pt-2 flex flex-wrap items-center gap-3">
+                    {/* Action Buttons with Interactive Styling */}
+                    <div className="mt-auto pt-2 flex flex-wrap items-center gap-2.5 sm:gap-3.5">
                       <Link
                         to="/festival/$slug"
                         params={{ slug: f.slug }}
-                        className="inline-flex items-center justify-center gap-1.5 px-6 py-2.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 font-bold text-xs shadow-2xs hover:shadow-sm active:scale-98 transition-all duration-200 cursor-pointer"
+                        className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full border-2 border-amber-300/80 bg-white hover:bg-amber-50/60 hover:border-amber-400 text-slate-800 font-extrabold text-xs sm:text-sm shadow-xs hover:shadow-md active:scale-95 transition-all duration-200 cursor-pointer"
                       >
-                        <Info className="h-4 w-4 text-slate-400" />
+                        <Info className="h-4 w-4 sm:h-4.5 sm:w-4.5 text-slate-600" />
                         <span>View Details</span>
                       </Link>
 
@@ -168,9 +174,10 @@ function FestivalsPage() {
                         to="/festival/$slug"
                         params={{ slug: f.slug }}
                         hash="sevas-section"
-                        className="inline-flex items-center justify-center gap-1.5 px-6 py-2.5 rounded-full bg-accent text-white font-bold text-xs shadow-xs hover:shadow-md hover:scale-102 active:scale-98 transition-all duration-200 cursor-pointer"
+                        className="relative overflow-hidden group/btn inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-orange-600 hover:via-amber-500 hover:to-orange-600 text-white font-black text-xs sm:text-sm shadow-[0_4px_16px_rgba(234,88,12,0.35),inset_0_1px_1.5px_rgba(255,255,255,0.45)] hover:shadow-[0_6px_22px_rgba(234,88,12,0.5)] ring-1 ring-amber-300/40 hover:scale-103 active:scale-95 transition-all duration-300 cursor-pointer"
                       >
-                        <Heart className="h-4 w-4" />
+                        <span className="absolute inset-0 -translate-x-full group-hover/btn:translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 ease-in-out pointer-events-none" />
+                        <Heart className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
                         <span>Donate Now</span>
                       </Link>
                     </div>

@@ -260,10 +260,10 @@ export default function Navbar() {
     <>
       <header 
         ref={headerRef}
-        className={`fixed top-0 inset-x-0 z-50 border-b transition-all duration-300 ${
+        className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
           scrolled 
-            ? "bg-white/90 backdrop-blur-md shadow-[0_4px_25px_rgba(91,44,155,0.06)] border-border/80" 
-            : "bg-white/95 border-transparent"
+            ? "bg-white/95 backdrop-blur-md shadow-[0_4px_25px_rgba(91,44,155,0.08)]" 
+            : "bg-white/98 shadow-xs"
         }`}
       >
         <LiveClassBanner />
@@ -538,7 +538,13 @@ export default function Navbar() {
         </div>
       </div>
 
-      </header>
+      {/* Saffron Orange Bottom Accent Line */}
+      <div 
+        className="w-full h-1 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 shadow-[0_2px_10px_rgba(249,115,22,0.45)]" 
+        aria-hidden="true" 
+      />
+
+    </header>
 
       {/* Mobile Sidebar Navigation Drawer rendered directly to document.body via Portal */}
       {mounted && typeof document !== "undefined" && createPortal(

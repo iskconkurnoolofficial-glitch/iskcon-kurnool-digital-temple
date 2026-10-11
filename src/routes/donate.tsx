@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { createFileRoute, Link, useNavigate, Outlet } from "@tanstack/react-router";
 import SiteLayout, { PageHero } from "@/components/SiteLayout";
-import { useAdmin, Seva, calculatePlatformFee, getSevaCategories } from "@/context/AdminContext";
+import { useAdmin, Seva, calculatePlatformFee, getSevaCategories, getSevaAutoDescription } from "@/context/AdminContext";
 import OfficialReceiptModal, { ReceiptData } from "@/components/OfficialReceiptModal";
 import UpiPaymentModal from "@/components/UpiPaymentModal";
 import LifePatronOnboardingModal, { OnboardingData } from "@/components/LifePatronOnboardingModal";
@@ -29,7 +29,8 @@ import {
   QrCode,
   Smartphone,
   CreditCard,
-  Languages
+  Languages,
+  Share2
 } from "lucide-react";
 import { toast } from "sonner";
 import { sendTelegramDonationNotification } from "@/lib/telegram-notification";
@@ -2190,6 +2191,21 @@ function SevaCardItem({
 }) {
   const firstPrice = seva.prices?.[0]?.amount;
 
+  const handleShare = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const sevaSlug = seva.slug || seva.id;
+    const url = `${window.location.origin}/donate/${sevaSlug}`;
+    const desc = getSevaAutoDescription(seva);
+    const text = `🪷 ${seva.title} — ISKCON Kurnool\n${desc}\nOffer seva: ${url}`;
+    if (typeof navigator !== "undefined" && navigator.share) {
+      navigator.share({ title: seva.title, text, url }).catch(() => {});
+    } else if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(url);
+      toast.success("Seva link copied to clipboard!");
+    }
+  };
+
   return (
     <div className="group relative p-[2px] rounded-2xl sm:rounded-3xl bg-gradient-to-br from-amber-400 via-orange-400 to-amber-500 hover:from-amber-300 hover:via-orange-500 hover:to-rose-500 shadow-md hover:shadow-xl hover:shadow-orange-500/20 transition-all duration-500 hover:-translate-y-1 font-sans flex flex-col h-full">
       <div className="bg-white rounded-[14px] sm:rounded-[22px] overflow-hidden flex flex-col flex-1 justify-between">
@@ -2209,6 +2225,17 @@ function SevaCardItem({
                 <HandHeart className="h-10 w-10 sm:h-14 sm:w-14" />
               </div>
             )}
+
+            {/* Floating Share Button */}
+            <button
+              type="button"
+              onClick={handleShare}
+              className="absolute top-2.5 right-2.5 p-2 rounded-full bg-slate-950/45 hover:bg-slate-950/80 text-white hover:text-amber-300 backdrop-blur-md border border-white/30 shadow-md active:scale-90 hover:scale-110 transition-all duration-200 cursor-pointer z-10"
+              title="Share Seva"
+              aria-label={`Share ${seva.title}`}
+            >
+              <Share2 className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
 
@@ -2217,19 +2244,31 @@ function SevaCardItem({
           
           {/* Category Badges + Title and Short Description */}
           <div className="space-y-1.5 sm:space-y-2">
-            <div className="flex flex-wrap items-center gap-1">
-              {getSevaCategories(seva).map((cat) => (
-                <span key={cat} className="text-[9px] sm:text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100/90 text-amber-900 border border-amber-300/80 uppercase tracking-wider font-sans">
-                  {cat}
-                </span>
-              ))}
+            <div className="flex items-center justify-between gap-1">
+              <div className="flex flex-wrap items-center gap-1">
+                {getSevaCategories(seva).map((cat) => (
+                  <span key={cat} className="text-[9px] sm:text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100/90 text-amber-900 border border-amber-300/80 uppercase tracking-wider font-sans">
+                    {cat}
+                  </span>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleShare}
+                className="p-1.5 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 hover:text-amber-950 border border-amber-300/60 transition-all hover:scale-110 active:scale-90 cursor-pointer shrink-0"
+                title="Share Seva"
+                aria-label={`Share ${seva.title}`}
+              >
+                <Share2 className="h-3.5 w-3.5" />
+              </button>
             </div>
 
             <h3 className="font-display font-extrabold text-base sm:text-xl text-primary line-clamp-1 leading-snug group-hover:text-amber-600 transition-colors">
               {seva.title}
             </h3>
             <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed min-h-[32px] sm:min-h-[34px] font-sans">
-              {seva.description || "Support ISKCON Kurnool temple activities and daily deity worship with your generous contribution."}
+              {getSevaAutoDescription(seva)}
             </p>
           </div>
 

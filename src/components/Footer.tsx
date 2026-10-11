@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { 
   Instagram, 
@@ -19,10 +20,12 @@ import { useAdmin } from "@/context/AdminContext";
 import { safeUrl } from "@/lib/utils";
 import { getOptimizedCloudinaryUrl } from "@/utils/cloudinary";
 import InstallAppButton from "@/components/InstallAppButton";
+import DeveloperCreditModal from "@/components/DeveloperCreditModal";
 
 export default function Footer() {
   const { settings } = useAdmin();
   const currentYear = new Date().getFullYear();
+  const [isDevModalOpen, setIsDevModalOpen] = useState(false);
 
   const discoverLinks = [
     { label: "Home", href: "/" },
@@ -267,13 +270,29 @@ export default function Footer() {
             <div>
               {settings.footer || `© ${currentYear} ISKCON Kurnool — Sri Sri Puri Jagannath Temple. All Rights Reserved.`}
             </div>
-            <div className="text-xs sm:text-sm text-slate-300 font-medium flex items-center justify-center md:justify-start gap-1.5 pt-1">
-              <span className="animate-text-shimmer font-bold">Designed &amp; Developed with</span>
-              <Heart className="h-4 w-4 fill-rose-500 text-rose-500 animate-pulse scale-110 shrink-0 inline-block" />
-              <span className="animate-text-shimmer font-bold">by</span>
-              <span className="animate-text-shimmer font-black text-sm sm:text-base tracking-wide drop-shadow-md">
-                Devesh
-              </span>
+            <div className="pt-2 flex items-center justify-center md:justify-start">
+              <button
+                type="button"
+                onClick={() => setIsDevModalOpen(true)}
+                className="group relative overflow-hidden inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500/10 via-fuchsia-500/10 to-amber-500/15 hover:from-amber-500/20 hover:via-fuchsia-500/20 hover:to-amber-500/25 border border-amber-300/30 hover:border-amber-300/70 text-slate-200 transition-all duration-300 shadow-[0_2px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_4px_20px_rgba(245,158,11,0.3)] hover:scale-104 active:scale-95 cursor-pointer backdrop-blur-md"
+                title="View Developer Profile (Kamisetty Devesh Kumar)"
+                aria-label="View Developer Profile: Kamisetty Devesh Kumar"
+              >
+                {/* Micro Shimmer Reflection */}
+                <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ease-in-out pointer-events-none" />
+
+                <span className="text-xs sm:text-[13px] font-semibold text-slate-300 group-hover:text-amber-200 transition-colors">
+                  Designed &amp; Developed with
+                </span>
+                <Heart className="h-3.5 w-3.5 fill-rose-500 text-rose-500 group-hover:scale-125 transition-transform duration-300 shrink-0 inline-block animate-pulse" />
+                <span className="text-xs sm:text-[13px] font-semibold text-slate-300 group-hover:text-amber-200 transition-colors">
+                  by
+                </span>
+                <span className="font-black text-xs sm:text-sm tracking-wide bg-gradient-to-r from-amber-200 via-yellow-200 to-amber-400 bg-clip-text text-transparent group-hover:drop-shadow-[0_0_8px_rgba(245,158,11,0.8)]">
+                  Devesh
+                </span>
+                <Sparkles className="h-3 w-3 text-amber-300 opacity-60 group-hover:opacity-100 group-hover:rotate-12 transition-all duration-300 shrink-0" />
+              </button>
             </div>
           </div>
 
@@ -295,6 +314,12 @@ export default function Footer() {
         </div>
 
       </div>
+
+      {/* Developer Credit Info Modal */}
+      <DeveloperCreditModal 
+        isOpen={isDevModalOpen} 
+        onClose={() => setIsDevModalOpen(false)} 
+      />
     </footer>
   );
 }

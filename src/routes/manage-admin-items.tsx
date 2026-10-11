@@ -256,7 +256,7 @@ function ManageAdminItemsPage() {
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link
-              to="/admin"
+              to="/iskconkurnool-os-panel"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs transition border border-slate-700"
             >
               <ArrowLeft className="h-3.5 w-3.5" /> Back to Admin Panel

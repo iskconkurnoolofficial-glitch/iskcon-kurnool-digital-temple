@@ -123,7 +123,7 @@ export function usePwaInstall(options?: { autoPromptNewUser?: boolean }) {
     if (autoPromptNewUser && !isStandalone) {
       const popupShown = localStorage.getItem("iskcon_pwa_popup_shown") === "true";
       const appInstalled = localStorage.getItem("iskcon_app_installed") === "true";
-      const isAdminRoute = window.location.pathname.startsWith("/admin");
+      const isAdminRoute = window.location.pathname.startsWith("/iskconkurnool-os-panel");
 
       if (!popupShown && !appInstalled && !isAdminRoute) {
         const timer = setTimeout(() => {

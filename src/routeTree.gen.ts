@@ -17,6 +17,7 @@ import { Route as SocialMediaRouteImport } from './routes/social-media'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PrahladaBadiRouteImport } from './routes/prahlada-badi'
 import { Route as ManageAdminItemsRouteImport } from './routes/manage-admin-items'
+import { Route as IskconkurnoolOsPanelRouteImport } from './routes/iskconkurnool-os-panel'
 import { Route as HouseProgrammesRouteImport } from './routes/house-programmes'
 import { Route as HarinamaRouteImport } from './routes/harinama'
 import { Route as GoshalaRouteImport } from './routes/goshala'
@@ -29,7 +30,6 @@ import { Route as DailyDarshanRouteImport } from './routes/daily-darshan'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as BhaktiStepsRouteImport } from './routes/bhakti-steps'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TempleIndexRouteImport } from './routes/temple.index'
 import { Route as DonateIndexRouteImport } from './routes/donate.index'
@@ -81,6 +81,11 @@ const PrahladaBadiRoute = PrahladaBadiRouteImport.update({
 const ManageAdminItemsRoute = ManageAdminItemsRouteImport.update({
   id: '/manage-admin-items',
   path: '/manage-admin-items',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IskconkurnoolOsPanelRoute = IskconkurnoolOsPanelRouteImport.update({
+  id: '/iskconkurnool-os-panel',
+  path: '/iskconkurnool-os-panel',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HouseProgrammesRoute = HouseProgrammesRouteImport.update({
@@ -141,11 +146,6 @@ const ConnectRoute = ConnectRouteImport.update({
 const BhaktiStepsRoute = BhaktiStepsRouteImport.update({
   id: '/bhakti-steps',
   path: '/bhakti-steps',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -211,7 +211,6 @@ const AboutFounderRoute = AboutFounderRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
   '/bhakti-steps': typeof BhaktiStepsRoute
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
@@ -224,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/goshala': typeof GoshalaRoute
   '/harinama': typeof HarinamaRoute
   '/house-programmes': typeof HouseProgrammesRoute
+  '/iskconkurnool-os-panel': typeof IskconkurnoolOsPanelRoute
   '/manage-admin-items': typeof ManageAdminItemsRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/privacy': typeof PrivacyRoute
@@ -246,7 +246,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
   '/bhakti-steps': typeof BhaktiStepsRoute
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
@@ -258,6 +257,7 @@ export interface FileRoutesByTo {
   '/goshala': typeof GoshalaRoute
   '/harinama': typeof HarinamaRoute
   '/house-programmes': typeof HouseProgrammesRoute
+  '/iskconkurnool-os-panel': typeof IskconkurnoolOsPanelRoute
   '/manage-admin-items': typeof ManageAdminItemsRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/privacy': typeof PrivacyRoute
@@ -280,7 +280,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
   '/bhakti-steps': typeof BhaktiStepsRoute
   '/connect': typeof ConnectRoute
   '/courses': typeof CoursesRoute
@@ -293,6 +292,7 @@ export interface FileRoutesById {
   '/goshala': typeof GoshalaRoute
   '/harinama': typeof HarinamaRoute
   '/house-programmes': typeof HouseProgrammesRoute
+  '/iskconkurnool-os-panel': typeof IskconkurnoolOsPanelRoute
   '/manage-admin-items': typeof ManageAdminItemsRoute
   '/prahlada-badi': typeof PrahladaBadiRoute
   '/privacy': typeof PrivacyRoute
@@ -317,7 +317,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/admin'
     | '/bhakti-steps'
     | '/connect'
     | '/courses'
@@ -330,6 +329,7 @@ export interface FileRouteTypes {
     | '/goshala'
     | '/harinama'
     | '/house-programmes'
+    | '/iskconkurnool-os-panel'
     | '/manage-admin-items'
     | '/prahlada-badi'
     | '/privacy'
@@ -352,7 +352,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/admin'
     | '/bhakti-steps'
     | '/connect'
     | '/courses'
@@ -364,6 +363,7 @@ export interface FileRouteTypes {
     | '/goshala'
     | '/harinama'
     | '/house-programmes'
+    | '/iskconkurnool-os-panel'
     | '/manage-admin-items'
     | '/prahlada-badi'
     | '/privacy'
@@ -385,7 +385,6 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/admin'
     | '/bhakti-steps'
     | '/connect'
     | '/courses'
@@ -398,6 +397,7 @@ export interface FileRouteTypes {
     | '/goshala'
     | '/harinama'
     | '/house-programmes'
+    | '/iskconkurnool-os-panel'
     | '/manage-admin-items'
     | '/prahlada-badi'
     | '/privacy'
@@ -421,7 +421,6 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRoute
   BhaktiStepsRoute: typeof BhaktiStepsRoute
   ConnectRoute: typeof ConnectRoute
   CoursesRoute: typeof CoursesRoute
@@ -434,6 +433,7 @@ export interface RootRouteChildren {
   GoshalaRoute: typeof GoshalaRoute
   HarinamaRoute: typeof HarinamaRoute
   HouseProgrammesRoute: typeof HouseProgrammesRoute
+  IskconkurnoolOsPanelRoute: typeof IskconkurnoolOsPanelRoute
   ManageAdminItemsRoute: typeof ManageAdminItemsRoute
   PrahladaBadiRoute: typeof PrahladaBadiRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -506,6 +506,13 @@ declare module '@tanstack/react-router' {
       path: '/manage-admin-items'
       fullPath: '/manage-admin-items'
       preLoaderRoute: typeof ManageAdminItemsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/iskconkurnool-os-panel': {
+      id: '/iskconkurnool-os-panel'
+      path: '/iskconkurnool-os-panel'
+      fullPath: '/iskconkurnool-os-panel'
+      preLoaderRoute: typeof IskconkurnoolOsPanelRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/house-programmes': {
@@ -590,13 +597,6 @@ declare module '@tanstack/react-router' {
       path: '/bhakti-steps'
       fullPath: '/bhakti-steps'
       preLoaderRoute: typeof BhaktiStepsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -716,7 +716,6 @@ const TempleRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRoute,
   BhaktiStepsRoute: BhaktiStepsRoute,
   ConnectRoute: ConnectRoute,
   CoursesRoute: CoursesRoute,
@@ -729,6 +728,7 @@ const rootRouteChildren: RootRouteChildren = {
   GoshalaRoute: GoshalaRoute,
   HarinamaRoute: HarinamaRoute,
   HouseProgrammesRoute: HouseProgrammesRoute,
+  IskconkurnoolOsPanelRoute: IskconkurnoolOsPanelRoute,
   ManageAdminItemsRoute: ManageAdminItemsRoute,
   PrahladaBadiRoute: PrahladaBadiRoute,
   PrivacyRoute: PrivacyRoute,

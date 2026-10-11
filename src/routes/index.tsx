@@ -3,6 +3,7 @@ import SiteLayout from "@/components/SiteLayout";
 import HeroCarousel from "@/components/HeroCarousel";
 import WelcomeSection from "@/components/WelcomeSection";
 import DailyDarshanSection from "@/components/DailyDarshanSection";
+import HomeSevasSection from "@/components/HomeSevasSection";
 import LiveProgrammeSection from "@/components/LiveProgrammeSection";
 import UpcomingFestivals from "@/components/UpcomingFestivals";
 import SundayProgramSection from "@/components/SundayProgramSection";
@@ -33,6 +34,7 @@ function Home() {
       <WelcomeSection />
       <LiveProgrammeSection />
       <DailyDarshanSection />
+      <HomeSevasSection />
       <UpcomingFestivals />
       <SundayProgramSection />
       <HomeGallery />

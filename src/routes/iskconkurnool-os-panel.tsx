@@ -34,7 +34,7 @@ import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio,
 
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/admin")({
+export const Route = createFileRoute("/iskconkurnool-os-panel")({
   head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
@@ -42,7 +42,12 @@ export const Route = createFileRoute("/admin")({
 type Tab = "welcome" | "dailyDarshan" | "liveProgrammes" | "carousel" | "festivals" | "sevas" | "bhaktiSteps" | "lifePatron" | "youth" | "youthYatra" | "houseProgrammes" | "harinama" | "ekadashi" | "gita" | "sunday" | "classes" | "gallery" | "settings" | "upiSettings" | "receiptSettings" | "terms" | "privacy" | "heroBanners" | "goshala" | "contacts" | "instagram" | "prahladaBadi" | "templeSchedule" | "paymentPages";
 
 function AdminPage() {
-  const { authed, login, logout, settings, contacts, setContacts, paymentRecords, houseProgrammes, markAllHouseProgrammeRequestsRead, markAllPaymentRecordsRead, youthYatra, markAllYatraRegistrationsRead, bhaktiSteps, markAllBhaktiStepsRegistrationsRead, currentUser, changeSuperAdminPassword, isSectionLocked } = useAdmin();
+  const { 
+    authed, login, logout, settings, contacts, setContacts, paymentRecords, 
+    houseProgrammes, markAllHouseProgrammeRequestsRead, markAllPaymentRecordsRead, 
+    youthYatra, markAllYatraRegistrationsRead, bhaktiSteps, markAllBhaktiStepsRegistrationsRead, 
+    currentUser, changeSuperAdminPassword, isSectionLocked, lockedAdminSections, refreshLockedSections 
+  } = useAdmin();
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -55,6 +60,25 @@ function AdminPage() {
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
+  // Instant sync: automatically refresh permissions when entering, focusing, or switching tabs
+  useEffect(() => {
+    refreshLockedSections();
+
+    const onSync = () => {
+      refreshLockedSections();
+    };
+
+    window.addEventListener("focus", onSync);
+    document.addEventListener("visibilitychange", onSync);
+    window.addEventListener("iskcon_admin_lock_change", onSync);
+
+    return () => {
+      window.removeEventListener("focus", onSync);
+      document.removeEventListener("visibilitychange", onSync);
+      window.removeEventListener("iskcon_admin_lock_change", onSync);
+    };
+  }, [refreshLockedSections]);
+
   const selectTab = (targetTab: Tab) => {
     if (targetTab !== "welcome" && isSectionLocked(targetTab)) {
       const secLabel = tabs.find((t) => t.id === targetTab)?.label || targetTab;
@@ -64,12 +88,14 @@ function AdminPage() {
     setTab(targetTab);
   };
 
+  // If currently active section becomes locked in manage-admin-items, immediately protect and return to welcome
   useEffect(() => {
     if (tab !== "welcome" && isSectionLocked(tab)) {
-      toast.error(`🔒 Section is currently LOCKED.`);
+      const secLabel = tabs.find((t) => t.id === tab)?.label || tab;
+      toast.error(`🔒 "${secLabel}" section is currently LOCKED.`);
       setTab("welcome");
     }
-  }, [tab, isSectionLocked]);
+  }, [tab, lockedAdminSections, isSectionLocked]);
 
   useEffect(() => {
     setHydrated(true);
