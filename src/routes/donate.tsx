@@ -613,6 +613,7 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
           donorEmail: curEmail,
           donorGotra: curGotra,
           amount: totalPayable,
+          sevaName: seva.title,
           purpose: curPurpose || `${seva.title}${label ? ` (${label})` : ""}`,
           paymentMethod: "Razorpay Gateway",
         });
@@ -743,8 +744,10 @@ export default function Page({ initialSlug }: { initialSlug?: string }) {
       donorEmail: upiModalData.donorEmail,
       donorGotra: upiModalData.donorGotra,
       amount: paidAmt,
+      sevaName: upiModalData.sevaTitle,
       purpose: upiModalData.sevaTitle,
       paymentMethod: "UPI QR Payment",
+      screenshotUrl: screenshotUrl || undefined,
     });
 
     const isLpm = (checkoutSeva?.slug === "life-patron" ||

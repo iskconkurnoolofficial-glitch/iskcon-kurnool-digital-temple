@@ -6,7 +6,8 @@ import {
   EkadashiCalendarItem,
   EkadashiScheduleItem,
   defaultEkadashiCalendar,
-  defaultEkadashiTempleSchedule
+  defaultEkadashiTempleSchedule,
+  formatEkadashiDate,
 } from "@/context/AdminContext";
 import {
   Plus,
@@ -14,6 +15,7 @@ import {
   Moon,
   Eye,
   Sparkles,
+  MapPin,
   AlertCircle,
   Leaf,
   Utensils,
@@ -107,7 +109,7 @@ export default function EkadashiManager() {
     const tomorrowStr = tomorrow.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 
     const newItem: EkadashiCalendarItem = {
-      id: "ek_" + Date.now(),
+      id: "ekadashi_" + Date.now(),
       name: "",
       date: todayStr,
       day: getDayName(todayStr),
@@ -119,6 +121,8 @@ export default function EkadashiManager() {
       paranaStartTime: "06:15 AM",
       paranaEndTime: "10:15 AM",
       fastingType: "Phalahari Fast (Fruits & Milk)",
+      fastingRules: "Observe Ekadashi fasting according to Vaishnava guidelines.",
+      location: "Kurnool, Andhra Pradesh",
       description: "Fasting on this sacred Ekadashi cleanses all sinful reactions and awakens spontaneous devotional love for Lord Sri Krishna.",
       specialInstructions: "Do not pluck Tulsi leaves on Ekadashi or Dwadashi. Pick Tulsi the previous day. Break fast during the Parana window.",
       isPublished: true,
@@ -130,7 +134,11 @@ export default function EkadashiManager() {
   };
 
   const openEditCalendarModal = (item: EkadashiCalendarItem) => {
-    setEditingCalendarItem({ ...item });
+    setEditingCalendarItem({
+      ...item,
+      fastingRules: item.fastingRules || "Observe Ekadashi fasting according to Vaishnava guidelines.",
+      location: item.location || "Kurnool, Andhra Pradesh",
+    });
     setIsCalendarModalOpen(true);
   };
 
@@ -160,15 +168,37 @@ export default function EkadashiManager() {
     // Sort by date ascending
     updatedCalendar.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-    update({ calendar: updatedCalendar });
+    const patch: Partial<EkadashiData> = { calendar: updatedCalendar };
+    if (editingCalendarItem.isFeatured || !ekadashi.featuredEkadashiId) {
+      patch.featuredEkadashiId = editingCalendarItem.id;
+    }
+
+    update(patch);
     setIsCalendarModalOpen(false);
     setEditingCalendarItem(null);
+  };
+
+  const setAsActiveUpcoming = (id: string, name: string) => {
+    update({ featuredEkadashiId: id });
+    toast.success(`"${name}" is now set as the active Upcoming Ekadashi on the website!`);
+  };
+
+  const copyWhatsAppMessage = (item: EkadashiCalendarItem) => {
+    const formattedDate = formatEkadashiDate(item.date, item.day);
+    const formattedParana = formatEkadashiDate(item.paranaDate);
+    const text = `🕉️ *Upcoming Ekadashi*\n\n*${item.name}*\n\n📅 Date: ${formattedDate}\n🪷 Fasting: ${item.fastingRules || "Observe Ekadashi fasting according to Vaishnava guidelines."}\n🌅 Parana Date: ${formattedParana}\n⏰ Parana Time: ${item.paranaStartTime} – ${item.paranaEndTime}\n📍 Location: ${item.location || "Kurnool, Andhra Pradesh"}\n\n🌿 Note: Do not pluck Tulsi leaves on Ekadashi or Dwadashi.\n\nView details: ${window.location.origin}/ekadashi\n\nHare Krishna! 🙏`;
+    navigator.clipboard.writeText(text);
+    toast.success("Copied Ekadashi announcement for WhatsApp!");
   };
 
   const deleteCalendarItem = (id: string, name: string) => {
     if (!confirm(`Are you sure you want to delete "${name}" from the Ekadashi calendar?`)) return;
     const filtered = (ekadashi.calendar || []).filter((x) => x.id !== id);
-    update({ calendar: filtered });
+    const patch: Partial<EkadashiData> = { calendar: filtered };
+    if (ekadashi.featuredEkadashiId === id) {
+      patch.featuredEkadashiId = "";
+    }
+    update(patch);
     toast.success(`Deleted ${name}`);
   };
 
@@ -177,19 +207,24 @@ export default function EkadashiManager() {
     update({ calendar: updated });
   };
 
-  const restoreDefaultCalendar = () => {
-    if (confirm("Restore all 20+ standard Vaishnava 2026 Ekadashis? Any custom changes to dates/timings will be reset to default.")) {
-      update({ calendar: defaultEkadashiCalendar });
-      toast.success("Restored full 2026 Vaishnava Ekadashi Calendar!");
+  const clearAllEkadashis = () => {
+    if (confirm("Are you sure you want to remove all existing Ekadashi data? This will clear all entries from the calendar.")) {
+      update({ calendar: [], featuredEkadashiId: "" });
+      toast.success("Removed all existing Ekadashi data!");
     }
   };
 
+  const restoreDefaultCalendar = () => {
+    update({ calendar: [], featuredEkadashiId: "" });
+    toast.success("Ekadashi calendar reset to empty.");
+  };
+
   // --- TEMPLE SCHEDULE HANDLERS ---
-  const currentSchedule = ekadashi.templeSchedule || defaultEkadashiTempleSchedule;
+  const currentSchedule = ekadashi.templeSchedule || [];
 
   const openAddScheduleModal = () => {
     const newItem: EkadashiScheduleItem = {
-      id: "ek_sch_" + Date.now(),
+      id: "schedule_" + Date.now(),
       time: "06:00 PM – 07:00 PM",
       title: "",
       description: "",
@@ -255,11 +290,16 @@ export default function EkadashiManager() {
     update({ templeSchedule: updated });
   };
 
-  const restoreDefaultSchedule = () => {
-    if (confirm("Reset Ekadashi Temple Schedule to standard ISKCON temple timings?")) {
-      update({ templeSchedule: defaultEkadashiTempleSchedule });
-      toast.success("Restored standard Ekadashi Temple Schedule!");
+  const clearAllSchedule = () => {
+    if (confirm("Are you sure you want to remove all existing items from the Ekadashi Temple Schedule?")) {
+      update({ templeSchedule: [] });
+      toast.success("Removed all Ekadashi Temple Schedule items!");
     }
+  };
+
+  const restoreDefaultSchedule = () => {
+    update({ templeSchedule: [] });
+    toast.success("Ekadashi Temple Schedule reset to empty.");
   };
 
   // Find currently detected Next Ekadashi
@@ -271,7 +311,13 @@ export default function EkadashiManager() {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [ekadashi.calendar, todayIso]);
 
-  const nextEkadashi = upcomingEkadashis[0] || (ekadashi.calendar || []).find((it) => it.isPublished);
+  const nextEkadashi = useMemo(() => {
+    if (ekadashi.featuredEkadashiId) {
+      const feat = (ekadashi.calendar || []).find((it) => it.id === ekadashi.featuredEkadashiId && it.isPublished);
+      if (feat) return feat;
+    }
+    return upcomingEkadashis[0] || (ekadashi.calendar || []).find((it) => it.isPublished);
+  }, [ekadashi.featuredEkadashiId, ekadashi.calendar, upcomingEkadashis]);
 
   // Filtered calendar list
   const filteredCalendar = useMemo(() => {
@@ -305,17 +351,24 @@ export default function EkadashiManager() {
                 </span>
               </div>
               <p className="text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed">
-                Configure every Ekadashi in the calendar, Kurnool Parana breaking windows, temple day schedule, fasting types, and spiritual guidelines. All changes automatically update the public website in real time.
+                Configure every Ekadashi in the calendar, Kurnool Parana breaking windows, temple day schedule, fasting guidelines, and location. For every Ekadashi, admin uploads and updates the content in real time.
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={openAddCalendarModal}
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs sm:text-sm shadow-gold transition-all cursor-pointer"
+            >
+              <Plus className="h-4 w-4" /> Upload New Ekadashi
+            </button>
             <a
               href="/ekadashi"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs sm:text-sm border border-slate-200 shadow-xs transition-all cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs sm:text-sm border border-slate-200 shadow-xs transition-all cursor-pointer"
             >
               <Eye className="h-4 w-4 text-amber-600" /> View Public Page
             </a>
@@ -323,44 +376,149 @@ export default function EkadashiManager() {
         </div>
       </div>
 
-      {/* Live "Next Ekadashi & Parana Timing" Indicator Card */}
-      {nextEkadashi && (
-        <div className="bg-gradient-to-br from-amber-50 via-orange-50/50 to-white rounded-3xl p-5 sm:p-6 border border-amber-300/70 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5">
-          <div className="flex items-start gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center font-bold text-xl shadow-gold shrink-0">
-              <Sunrise className="h-6 w-6" />
+      {/* Live "Upcoming Ekadashi" Public Showcase & Uploader Card */}
+      {nextEkadashi ? (
+        <div className="bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-white rounded-3xl p-6 sm:p-7 border-2 border-amber-400/60 shadow-md space-y-5">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 border-b border-amber-200/60 pb-5">
+            <div className="flex items-start gap-4">
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center font-bold text-xl shadow-gold shrink-0">
+                <Sparkles className="h-7 w-7 text-amber-100" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full bg-amber-600 text-white shadow-xs">
+                    Upcoming Ekadashi (Active Public Display)
+                  </span>
+                  {nextEkadashi.date === todayIso ? (
+                    <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-300 flex items-center gap-1.5 shadow-xs">
+                      <span className="h-2 w-2 rounded-full bg-red-600 animate-ping shrink-0" />
+                      🔴 Active Today (Temple Schedule & Visit Live)
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200">
+                      ⏳ Countdown Active
+                    </span>
+                  )}
+                  {ekadashi.featuredEkadashiId === nextEkadashi.id && (
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md bg-purple-100 text-purple-900 border border-purple-200">
+                      ★ Pinned by Admin
+                    </span>
+                  )}
+                  <span className="text-xs text-slate-500 font-medium">
+                    {nextEkadashi.paksha} • {nextEkadashi.vaishnavaMonth || "Vaishnava Month"}
+                  </span>
+                </div>
+                <h3 className="font-display text-2xl sm:text-3xl font-black text-slate-900 mt-1">
+                  {nextEkadashi.name}
+                </h3>
+              </div>
             </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-200 text-amber-900">
-                  Currently Live as "Next Ekadashi"
-                </span>
-                <span className="text-xs text-slate-500 font-medium">{nextEkadashi.paksha}</span>
-              </div>
-              <h3 className="font-display text-lg font-bold text-slate-900 mt-0.5">
-                {nextEkadashi.name} — {nextEkadashi.date} ({nextEkadashi.day})
-              </h3>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-xs text-slate-700">
-                <span className="inline-flex items-center gap-1 font-semibold text-amber-900">
-                  <Clock className="h-3.5 w-3.5 text-amber-600" /> Parana Window: {nextEkadashi.paranaStartTime} – {nextEkadashi.paranaEndTime}
-                </span>
-                <span className="text-slate-400">•</span>
-                <span className="inline-flex items-center gap-1 text-slate-600">
-                  <Calendar className="h-3.5 w-3.5 text-slate-400" /> On Dwadashi: {nextEkadashi.paranaDate}
-                </span>
-                <span className="text-slate-400">•</span>
-                <span className="inline-flex items-center gap-1 text-slate-600">
-                  <Utensils className="h-3.5 w-3.5 text-slate-400" /> {nextEkadashi.fastingType}
-                </span>
-              </div>
+
+            <div className="flex flex-wrap items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => openEditCalendarModal(nextEkadashi)}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs sm:text-sm font-bold shadow-xs transition-all cursor-pointer"
+              >
+                <Edit3 className="h-4 w-4" /> Edit Upcoming Content
+              </button>
+
+              <button
+                type="button"
+                onClick={() => copyWhatsAppMessage(nextEkadashi)}
+                className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs sm:text-sm border border-emerald-200 shadow-xs transition-all cursor-pointer"
+                title="Copy announcement for WhatsApp broadcasting"
+              >
+                <Share2 className="h-4 w-4 text-emerald-600" /> Copy WhatsApp Post
+              </button>
+
+              <button
+                type="button"
+                onClick={clearAllEkadashis}
+                className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 font-bold text-xs sm:text-sm border border-red-200 shadow-xs transition-all cursor-pointer"
+                title="Remove all existing Ekadashi data"
+              >
+                <Trash2 className="h-4 w-4 text-red-600" /> Remove All Ekadashis
+              </button>
             </div>
           </div>
+
+          {/* Real-time Display of the 5 Exact Specified Devotional Fields */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1 text-xs sm:text-sm">
+            <div className="p-4 bg-white rounded-2xl border border-amber-200/80 shadow-2xs">
+              <span className="text-[11px] font-extrabold text-amber-800 uppercase tracking-wide block">
+                📅 Date
+              </span>
+              <span className="font-bold text-slate-900 text-sm sm:text-base block mt-1">
+                {formatEkadashiDate(nextEkadashi.date, nextEkadashi.day)}
+              </span>
+            </div>
+
+            <div className="p-4 bg-white rounded-2xl border border-amber-200/80 shadow-2xs">
+              <span className="text-[11px] font-extrabold text-amber-800 uppercase tracking-wide block">
+                🪷 Fasting
+              </span>
+              <span className="font-medium text-slate-800 text-xs sm:text-sm block mt-1 leading-snug">
+                {nextEkadashi.fastingRules || "Observe Ekadashi fasting according to Vaishnava guidelines."}
+              </span>
+            </div>
+
+            <div className="p-4 bg-white rounded-2xl border border-amber-200/80 shadow-2xs">
+              <span className="text-[11px] font-extrabold text-amber-800 uppercase tracking-wide block">
+                🌅 Parana Date
+              </span>
+              <span className="font-bold text-slate-900 text-sm sm:text-base block mt-1">
+                {formatEkadashiDate(nextEkadashi.paranaDate)}
+              </span>
+            </div>
+
+            <div className="p-4 bg-white rounded-2xl border border-amber-200/80 shadow-2xs">
+              <span className="text-[11px] font-extrabold text-amber-800 uppercase tracking-wide block">
+                ⏰ Parana Time
+              </span>
+              <span className="font-black text-amber-900 text-sm sm:text-base block mt-1 font-mono">
+                {nextEkadashi.paranaStartTime} – {nextEkadashi.paranaEndTime}
+              </span>
+            </div>
+
+            <div className="p-4 bg-white rounded-2xl border border-amber-200/80 shadow-2xs">
+              <span className="text-[11px] font-extrabold text-amber-800 uppercase tracking-wide block">
+                📍 Location
+              </span>
+              <span className="font-semibold text-slate-900 text-sm block mt-1">
+                {nextEkadashi.location || "Kurnool, Andhra Pradesh"}
+              </span>
+            </div>
+
+            <div className="p-4 bg-white rounded-2xl border border-amber-200/80 shadow-2xs flex items-center justify-between">
+              <div>
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block">
+                  Public Status
+                </span>
+                <span className="font-bold text-emerald-600 block mt-1">
+                  ● Displaying on /ekadashi
+                </span>
+              </div>
+              <a
+                href="/ekadashi"
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-amber-700 hover:text-amber-900 font-bold underline cursor-pointer"
+              >
+                Preview →
+              </a>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-amber-50 rounded-3xl p-6 border-2 border-dashed border-amber-300 text-center space-y-3">
+          <p className="font-bold text-slate-800">No Ekadashi is currently published</p>
           <button
             type="button"
-            onClick={() => openEditCalendarModal(nextEkadashi)}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer shrink-0"
+            onClick={openAddCalendarModal}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-600 text-white font-bold text-xs sm:text-sm cursor-pointer"
           >
-            <Edit3 className="h-3.5 w-3.5" /> Edit Next Ekadashi
+            <Plus className="h-4 w-4" /> Upload Upcoming Ekadashi Content
           </button>
         </div>
       )}
@@ -453,14 +611,14 @@ export default function EkadashiManager() {
               </select>
             </div>
 
-            <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+            <div className="flex items-center gap-2 w-full md:w-auto justify-end flex-wrap">
               <button
                 type="button"
-                onClick={restoreDefaultCalendar}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 text-xs font-bold transition-all cursor-pointer"
-                title="Reset/Populate default 20+ Vaishnava Ekadashis"
+                onClick={clearAllEkadashis}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-red-700 hover:text-red-900 bg-red-50 hover:bg-red-100 border border-red-200 text-xs font-bold transition-all cursor-pointer"
+                title="Remove all existing Ekadashi entries"
               >
-                <RotateCcw className="h-3.5 w-3.5" /> Reset Default List
+                <Trash2 className="h-3.5 w-3.5" /> Remove All Ekadashis
               </button>
 
               <button
@@ -504,8 +662,13 @@ export default function EkadashiManager() {
                               <Moon className="h-4 w-4" />
                             </div>
                             <div>
-                              <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                              <div className="font-bold text-slate-900 flex items-center gap-1.5 flex-wrap">
                                 {item.name}
+                                {ekadashi.featuredEkadashiId === item.id && (
+                                  <span className="bg-amber-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded shadow-xs uppercase tracking-wide">
+                                    Upcoming
+                                  </span>
+                                )}
                                 {item.isFeatured && (
                                   <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.2 rounded">
                                     ★ Featured
@@ -560,6 +723,28 @@ export default function EkadashiManager() {
 
                         <td className="py-4 px-5 text-right">
                           <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setAsActiveUpcoming(item.id, item.name)}
+                              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                                ekadashi.featuredEkadashiId === item.id
+                                  ? "text-amber-700 bg-amber-100"
+                                  : "text-slate-400 hover:text-amber-600 hover:bg-amber-50"
+                              }`}
+                              title={ekadashi.featuredEkadashiId === item.id ? "Currently Live as Upcoming Ekadashi" : "Set as Upcoming Ekadashi on website"}
+                            >
+                              <Sparkles className="h-4 w-4" />
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => copyWhatsAppMessage(item)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
+                              title="Copy WhatsApp Post"
+                            >
+                              <Share2 className="h-4 w-4" />
+                            </button>
+
                             <button
                               type="button"
                               onClick={() => openEditCalendarModal(item)}
@@ -652,7 +837,7 @@ export default function EkadashiManager() {
 
           {/* Schedule Items List */}
           <div className="bg-white rounded-3xl shadow-elegant p-6 border border-slate-200/80 space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-3">
               <div>
                 <h3 className="font-display text-lg font-bold text-slate-900">
                   Temple Programmes & Darshan Timetable ({currentSchedule.length})
@@ -661,16 +846,35 @@ export default function EkadashiManager() {
                   Add, edit, or reorder programmes for the sacred Ekadashi festival day.
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={openAddScheduleModal}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs sm:text-sm shadow-xs transition-all cursor-pointer"
-              >
-                <Plus className="h-4 w-4" /> Add Programme
-              </button>
+              <div className="flex items-center gap-2">
+                {currentSchedule.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearAllSchedule}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 font-bold text-xs border border-red-200 transition-all cursor-pointer"
+                    title="Remove all schedule items"
+                  >
+                    <Trash2 className="h-4 w-4 text-red-600" /> Remove All Schedule
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={openAddScheduleModal}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs sm:text-sm shadow-xs transition-all cursor-pointer"
+                >
+                  <Plus className="h-4 w-4" /> Add Programme
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-3">
+            {currentSchedule.length === 0 ? (
+              <div className="py-12 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-2xl p-6">
+                <Clock className="h-10 w-10 mx-auto text-slate-300 mb-2" />
+                <p className="font-bold text-slate-700 text-sm">No Temple Schedule items created yet.</p>
+                <p className="text-xs text-slate-500 mt-1">Click "Add Programme" above to publish your first timetable item.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
               {currentSchedule.map((item, idx) => (
                 <div
                   key={item.id}
@@ -756,7 +960,8 @@ export default function EkadashiManager() {
                   </div>
                 </div>
               ))}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1125,30 +1330,100 @@ export default function EkadashiManager() {
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>Fast Date (YYYY-MM-DD) *</label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-bold font-sans uppercase tracking-wider text-slate-700">
+                      Fast Date (YYYY-MM-DD) *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const todayStr = new Date().toISOString().split("T")[0];
+                        const tomorrow = new Date();
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        const tomStr = tomorrow.toISOString().split("T")[0];
+                        setEditingCalendarItem({
+                          ...editingCalendarItem,
+                          date: todayStr,
+                          day: getDayName(todayStr),
+                          paranaDate: tomStr,
+                        });
+                        toast.info("Date set to Today (activates real-time Temple Schedule on website)!");
+                      }}
+                      className="text-[11px] font-bold text-amber-700 hover:text-amber-900 underline cursor-pointer"
+                    >
+                      Set Today (Real-time Mode)
+                    </button>
+                  </div>
                   <input
                     type="date"
                     className={inputClass}
                     value={editingCalendarItem.date}
                     onChange={(e) => {
                       const newDate = e.target.value;
+                      let autoParana = editingCalendarItem.paranaDate;
+                      if (newDate) {
+                        try {
+                          const d = new Date(newDate + "T00:00:00");
+                          d.setDate(d.getDate() + 1);
+                          autoParana = d.toISOString().split("T")[0];
+                        } catch {
+                          // ignore
+                        }
+                      }
                       setEditingCalendarItem({
                         ...editingCalendarItem,
                         date: newDate,
                         day: getDayName(newDate),
+                        paranaDate: autoParana,
                       });
                     }}
                   />
+                  {editingCalendarItem.date && (
+                    <span className="block text-[11px] font-bold text-amber-700 mt-1">
+                      📅 Preview: {formatEkadashiDate(editingCalendarItem.date, editingCalendarItem.day)}
+                    </span>
+                  )}
                 </div>
               </div>
 
-              {/* Row 2: Day of Week & Paksha */}
+              {/* Row 2: Fasting Guidelines (Core user specification) */}
+              <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-300/60 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-amber-900">
+                    🪷 Fasting Guidelines (Public Display) *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditingCalendarItem({
+                        ...editingCalendarItem,
+                        fastingRules: "Observe Ekadashi fasting according to Vaishnava guidelines.",
+                      })
+                    }
+                    className="text-[11px] text-amber-800 hover:text-amber-950 font-bold underline cursor-pointer"
+                  >
+                    Set Vaishnava Default
+                  </button>
+                </div>
+                <textarea
+                  rows={2}
+                  className={inputClass}
+                  placeholder="Observe Ekadashi fasting according to Vaishnava guidelines."
+                  value={editingCalendarItem.fastingRules ?? "Observe Ekadashi fasting according to Vaishnava guidelines."}
+                  onChange={(e) => setEditingCalendarItem({ ...editingCalendarItem, fastingRules: e.target.value })}
+                />
+                <p className="text-[11px] text-slate-500 italic">
+                  Shown as: 🪷 Fasting: [Your text] on the public Ekadashi page.
+                </p>
+              </div>
+
+              {/* Row 3: Day of Week, Paksha & Vaishnava Month */}
               <div className="grid sm:grid-cols-3 gap-4">
                 <div>
                   <label className={labelClass}>Day of Week</label>
                   <input
                     className={inputClass}
-                    placeholder="e.g. Friday"
+                    placeholder="e.g. Sunday"
                     value={editingCalendarItem.day}
                     onChange={(e) => setEditingCalendarItem({ ...editingCalendarItem, day: e.target.value })}
                   />
@@ -1175,28 +1450,6 @@ export default function EkadashiManager() {
                 </div>
               </div>
 
-              {/* Row 3: Tithi Start & End */}
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label className={labelClass}>Tithi Start Time</label>
-                  <input
-                    className={inputClass}
-                    placeholder="e.g. 05:14 AM, 14 Mar 2026"
-                    value={editingCalendarItem.tithiStart}
-                    onChange={(e) => setEditingCalendarItem({ ...editingCalendarItem, tithiStart: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Tithi End Time</label>
-                  <input
-                    className={inputClass}
-                    placeholder="e.g. 03:42 AM, 15 Mar 2026"
-                    value={editingCalendarItem.tithiEnd}
-                    onChange={(e) => setEditingCalendarItem({ ...editingCalendarItem, tithiEnd: e.target.value })}
-                  />
-                </div>
-              </div>
-
               {/* Row 4: Dwadashi Parana Timings (Crucial) */}
               <div className="p-4 bg-amber-50/80 rounded-2xl border border-amber-200 space-y-3">
                 <div className="flex items-center gap-2">
@@ -1207,16 +1460,39 @@ export default function EkadashiManager() {
                 </div>
                 <div className="grid sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-[11px] font-bold text-amber-900 mb-1">Parana Date (Dwadashi)</label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-[11px] font-bold text-amber-900">Parana Date *</label>
+                      {editingCalendarItem.date && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const d = new Date(editingCalendarItem.date + "T00:00:00");
+                            d.setDate(d.getDate() + 1);
+                            setEditingCalendarItem({
+                              ...editingCalendarItem,
+                              paranaDate: d.toISOString().split("T")[0],
+                            });
+                          }}
+                          className="text-[10px] text-amber-800 font-bold underline cursor-pointer"
+                        >
+                          Auto Next Day
+                        </button>
+                      )}
+                    </div>
                     <input
                       className={inputClass}
-                      placeholder="e.g. 16 Mar 2026"
+                      placeholder="e.g. 2026-03-16 or 16 Mar 2026"
                       value={editingCalendarItem.paranaDate}
                       onChange={(e) => setEditingCalendarItem({ ...editingCalendarItem, paranaDate: e.target.value })}
                     />
+                    {editingCalendarItem.paranaDate && (
+                      <span className="block text-[10px] font-bold text-amber-800 mt-1">
+                        🌅 Preview: {formatEkadashiDate(editingCalendarItem.paranaDate)}
+                      </span>
+                    )}
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-amber-900 mb-1">Parana Start Time</label>
+                    <label className="block text-[11px] font-bold text-amber-900 mb-1">Parana Start Time *</label>
                     <input
                       className={inputClass}
                       placeholder="e.g. 06:28 AM"
@@ -1225,7 +1501,7 @@ export default function EkadashiManager() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-amber-900 mb-1">Parana End Time</label>
+                    <label className="block text-[11px] font-bold text-amber-900 mb-1">Parana End Time *</label>
                     <input
                       className={inputClass}
                       placeholder="e.g. 10:18 AM"
@@ -1236,15 +1512,48 @@ export default function EkadashiManager() {
                 </div>
               </div>
 
-              {/* Fasting Category */}
-              <div>
-                <label className={labelClass}>Fasting Type / Notes</label>
-                <input
-                  className={inputClass}
-                  placeholder="e.g. Phalahari Fast (Fruits & Milk) or Strict Nirjala Fast"
-                  value={editingCalendarItem.fastingType}
-                  onChange={(e) => setEditingCalendarItem({ ...editingCalendarItem, fastingType: e.target.value })}
-                />
+              {/* Row 5: Location & Fasting Category */}
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>📍 Location (Public Display) *</label>
+                  <input
+                    className={inputClass}
+                    placeholder="e.g. Kurnool, Andhra Pradesh"
+                    value={editingCalendarItem.location ?? "Kurnool, Andhra Pradesh"}
+                    onChange={(e) => setEditingCalendarItem({ ...editingCalendarItem, location: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Fasting Category / Tag</label>
+                  <input
+                    className={inputClass}
+                    placeholder="e.g. Phalahari Fast (Fruits & Milk) or Strict Nirjala Fast"
+                    value={editingCalendarItem.fastingType}
+                    onChange={(e) => setEditingCalendarItem({ ...editingCalendarItem, fastingType: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {/* Row 6: Tithi Start & End */}
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Tithi Start Time (Optional)</label>
+                  <input
+                    className={inputClass}
+                    placeholder="e.g. 05:14 AM, 14 Mar 2026"
+                    value={editingCalendarItem.tithiStart}
+                    onChange={(e) => setEditingCalendarItem({ ...editingCalendarItem, tithiStart: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Tithi End Time (Optional)</label>
+                  <input
+                    className={inputClass}
+                    placeholder="e.g. 03:42 AM, 15 Mar 2026"
+                    value={editingCalendarItem.tithiEnd}
+                    onChange={(e) => setEditingCalendarItem({ ...editingCalendarItem, tithiEnd: e.target.value })}
+                  />
+                </div>
               </div>
 
               {/* Description & Mahatmya */}
@@ -1273,7 +1582,7 @@ export default function EkadashiManager() {
               {/* Image & Switches */}
               <div className="grid sm:grid-cols-2 gap-4 items-center pt-2">
                 <UploadBox
-                  label="Deity Image (Optional)"
+                  label="Deity Image / Flyer Banner (Optional)"
                   url={editingCalendarItem.image || ""}
                   onPick={pickItemImage}
                   aspect="aspect-video"
@@ -1298,7 +1607,7 @@ export default function EkadashiManager() {
                       onChange={(e) => setEditingCalendarItem({ ...editingCalendarItem, isFeatured: e.target.checked })}
                       className="h-4 w-4 rounded text-amber-600 focus:ring-amber-500 border-slate-300"
                     />
-                    <span className="text-xs font-bold text-slate-800">Mark as Featured / Maha-Ekadashi</span>
+                    <span className="text-xs font-bold text-amber-900">Set as Active "Upcoming Ekadashi" on Website</span>
                   </label>
                 </div>
               </div>

@@ -17,8 +17,11 @@ import {
   ArrowLeft,
   CheckCircle2,
   Clock,
-  Sparkles
+  Sparkles,
+  Send
 } from "lucide-react";
+import { toast } from "sonner";
+import { sendTelegramContactNotification } from "@/lib/telegram-notification";
 
 type FilterTab = "all" | "unread";
 
@@ -29,6 +32,28 @@ export default function ContactsManager() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showResetWarning, setShowResetWarning] = useState(false);
   const [mobileViewDetail, setMobileViewDetail] = useState(false);
+  const [testingTelegram, setTestingTelegram] = useState(false);
+
+  const handleTestTelegram = async () => {
+    setTestingTelegram(true);
+    try {
+      const ok = await sendTelegramContactNotification({
+        name: "Admin Integration Test",
+        email: "admin@iskconkurnool.in",
+        phone: "+91 95053 77520",
+        message: "Hare Krishna! This is an admin test notification. Contact message Telegram integration is active and operating normally.",
+      });
+      if (ok) {
+        toast.success("Telegram test alert sent successfully to group!");
+      } else {
+        toast.error("Failed to send test alert. Please check Telegram bot credentials.");
+      }
+    } catch {
+      toast.error("Error sending test alert to Telegram.");
+    } finally {
+      setTestingTelegram(false);
+    }
+  };
 
   // Filter messages based on search & tab
   const list = (contacts || [])
@@ -167,6 +192,34 @@ export default function ContactsManager() {
           className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-xs transition cursor-pointer disabled:opacity-50 shrink-0"
         >
           <FileSpreadsheet className="h-3.5 w-3.5" /> Export Excel
+        </button>
+      </div>
+
+      {/* 2.5 TELEGRAM INSTANT ALERTS STATUS & TEST TRIGGER */}
+      <div className="bg-gradient-to-r from-sky-50/90 via-indigo-50/60 to-blue-50/80 border border-sky-200/80 rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-slate-800 text-xs shadow-xs">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-xl bg-sky-500/10 border border-sky-300 text-sky-600 flex items-center justify-center shrink-0">
+            <Send className="h-4 w-4" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-slate-900 text-xs sm:text-sm">Telegram Instant Alerts</span>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Active
+              </span>
+            </div>
+            <p className="text-slate-600 text-[11px] sm:text-xs mt-0.5">
+              Every contact message submission is dispatched directly to Telegram group ID <code className="font-mono bg-white px-1.5 py-0.5 rounded text-sky-900 border border-sky-200">-5588999573</code>.
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={handleTestTelegram}
+          disabled={testingTelegram}
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-bold text-xs shadow-xs transition cursor-pointer disabled:opacity-60 shrink-0"
+        >
+          <Send className="h-3.5 w-3.5" />
+          {testingTelegram ? "Sending..." : "Send Test Alert"}
         </button>
       </div>
 

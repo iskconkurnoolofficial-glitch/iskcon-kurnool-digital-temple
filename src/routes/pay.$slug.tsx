@@ -276,6 +276,7 @@ function PaymentPageRoute() {
           donorEmail: donorEmailVal,
           donorGotra: donorGotraVal,
           amount: totalPayableAmount,
+          sevaName: page.title,
           purpose: page.title,
           paymentMethod: "Razorpay Gateway",
         });
@@ -333,8 +334,10 @@ function PaymentPageRoute() {
       donorEmail: upiModalData.donorEmail,
       donorGotra: upiModalData.donorGotra,
       amount: paidAmt,
+      sevaName: upiModalData.sevaTitle,
       purpose: upiModalData.sevaTitle,
       paymentMethod: "UPI QR Payment",
+      screenshotUrl: screenshotUrl || undefined,
     });
 
     setDevotionalSuccessData({

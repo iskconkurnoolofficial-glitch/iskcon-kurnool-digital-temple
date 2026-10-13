@@ -1180,7 +1180,7 @@ function WelcomeDashboard({
         <div className="absolute -left-12 -bottom-12 w-32 h-32 bg-primary/5 rounded-full blur-2xl pointer-events-none"></div>
         
         <h2 className="font-display text-xl sm:text-3xl font-bold text-primary relative z-10">
-          Hare Krishna! Welcome to Admin Panel
+          Hare Krishna! Welcome to ISKCON Kurnool OS Panel
         </h2>
         <p className="text-muted-foreground text-xs sm:text-sm max-w-md mx-auto relative z-10 leading-relaxed">
           Manage carousel banners, sevas, class schedules, community modules, and temple settings in real-time.

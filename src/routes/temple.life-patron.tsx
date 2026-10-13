@@ -300,6 +300,7 @@ Thank you for becoming a valued Life Patron of ISKCON Kurnool!
           donorEmail: patronEmail,
           donorGotra: patronGotra,
           amount: amountInINR,
+          sevaName: `Life Patron Membership (${selectedTier})`,
           purpose: `Life Patron Membership (${selectedTier})`,
           paymentMethod: "Razorpay Gateway",
         });

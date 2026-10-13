@@ -28,11 +28,12 @@ import {
   ChevronDown,
   Building,
   Music,
-  Utensils
+  Utensils,
+  MapPin,
 } from "lucide-react";
 import SiteLayout, { PageHero } from "@/components/SiteLayout";
 import vishnuAsset from "@/assets/vishnu-ekadashi.png.asset.json";
-import { useAdmin, EkadashiCalendarItem, EkadashiScheduleItem, defaultEkadashiTempleSchedule } from "@/context/AdminContext";
+import { useAdmin, EkadashiCalendarItem, EkadashiScheduleItem, defaultEkadashiTempleSchedule, formatEkadashiDate } from "@/context/AdminContext";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/ekadashi")({
@@ -55,8 +56,9 @@ export const Route = createFileRoute("/ekadashi")({
 });
 
 export default function EkadashiPage() {
-  const { ekadashi: e } = useAdmin();
+  const { ekadashi: e, settings, sunday } = useAdmin();
   const imageSrc = e.image || vishnuAsset.url;
+  const googleMapUrl = settings?.googleMapUrl || sunday?.directionsUrl || "https://maps.app.goo.gl/yJpP11F8Q8ZqT76W9";
 
   // Selected Ekadashi for Mahatmya story modal
   const [selectedEkadashi, setSelectedEkadashi] = useState<EkadashiCalendarItem | null>(null);
@@ -106,11 +108,17 @@ export default function EkadashiPage() {
     return publishedCalendar.filter((item) => item.date < todayIso);
   }, [publishedCalendar, todayIso]);
 
-  const nextEkadashi = upcomingList[0] || publishedCalendar[0];
+  const nextEkadashi = useMemo(() => {
+    if (e.featuredEkadashiId) {
+      const featured = (e.calendar || []).find((item) => item.id === e.featuredEkadashiId && item.isPublished);
+      if (featured) return featured;
+    }
+    return upcomingList[0] || publishedCalendar[0];
+  }, [e.featuredEkadashiId, e.calendar, upcomingList, publishedCalendar]);
 
   // Temple schedule items
   const templeScheduleItems = useMemo(() => {
-    const list = e.templeSchedule && e.templeSchedule.length > 0 ? e.templeSchedule : defaultEkadashiTempleSchedule;
+    const list = Array.isArray(e.templeSchedule) ? e.templeSchedule : [];
     return [...list].sort((a, b) => (a.order || 0) - (b.order || 0));
   }, [e.templeSchedule]);
 
@@ -119,8 +127,33 @@ export default function EkadashiPage() {
     return templeScheduleItems.filter((it) => it.period === schedulePeriod);
   }, [templeScheduleItems, schedulePeriod]);
 
+  // Preview toggle to test real-time mode vs upcoming countdown mode
+  const [previewRealTime, setPreviewRealTime] = useState(false);
+
   // Countdown timer state for Next Ekadashi
   const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
+
+  // Check if real time of Ekadashi has arrived
+  const isRealTimeArrived = useMemo(() => {
+    if (previewRealTime) return true;
+    if (!nextEkadashi?.date) return false;
+
+    const nowLocal = new Date();
+    const todayStr = `${nowLocal.getFullYear()}-${String(nowLocal.getMonth() + 1).padStart(2, "0")}-${String(nowLocal.getDate()).padStart(2, "0")}`;
+
+    // 1. If today's calendar date is the Ekadashi date
+    if (todayStr === nextEkadashi.date) return true;
+
+    // 2. Or if current time is within Ekadashi start (00:00 AM on Ekadashi date)
+    const startTime = new Date(nextEkadashi.date + "T00:00:00").getTime();
+    if (isNaN(startTime)) return false;
+
+    // Active for 36 hours (covers Ekadashi day and Dwadashi Parana morning window)
+    const endTime = startTime + (36 * 60 * 60 * 1000);
+    const nowTime = nowLocal.getTime();
+
+    return nowTime >= startTime && nowTime <= endTime;
+  }, [nextEkadashi, previewRealTime]);
 
   useEffect(() => {
     if (!nextEkadashi?.date) return;
@@ -163,7 +196,9 @@ export default function EkadashiPage() {
 
   // Share Ekadashi details
   const shareEkadashi = (item: EkadashiCalendarItem) => {
-    const text = `🕉️ ${item.name} (${item.date}, ${item.day})\n🌅 Kurnool Dwadashi Parana: ${item.paranaDate} between ${item.paranaStartTime} – ${item.paranaEndTime}\n🌿 Note: Do not pluck Tulsi on Ekadashi or Dwadashi.\n\nView complete guidelines at ISKCON Kurnool: ${window.location.href}`;
+    const formattedDate = formatEkadashiDate(item.date, item.day);
+    const formattedParana = formatEkadashiDate(item.paranaDate);
+    const text = `🕉️ *Upcoming Ekadashi*\n\n*${item.name}*\n\n📅 Date: ${formattedDate}\n🪷 Fasting: ${item.fastingRules || "Observe Ekadashi fasting according to Vaishnava guidelines."}\n🌅 Parana Date: ${formattedParana}\n⏰ Parana Time: ${item.paranaStartTime} – ${item.paranaEndTime}\n📍 Location: ${item.location || "Kurnool, Andhra Pradesh"}\n\n🌿 Note: Do not pluck Tulsi leaves on Ekadashi or Dwadashi.\n\nView complete guidelines at ISKCON Kurnool: ${window.location.href}`;
     if (navigator.share) {
       navigator.share({ title: item.name, text, url: window.location.href }).catch(() => {});
     } else {
@@ -194,77 +229,142 @@ export default function EkadashiPage() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 md:py-16 space-y-12 md:space-y-16">
         {/* ========================================================================= */}
-        {/* 1. NEXT EKADASHI & PARANA TIMING HERO SHOWCASE                            */}
+        {/* 1. UPCOMING EKADASHI HERO SHOWCASE                                        */}
         {/* ========================================================================= */}
-        {nextEkadashi && (
-          <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-900 via-amber-950 to-orange-950 text-white p-6 sm:p-10 md:p-12 shadow-2xl border border-amber-500/30">
+        {nextEkadashi ? (
+          <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-950 via-[#240f03] to-[#140501] text-white p-6 sm:p-10 md:p-12 shadow-2xl border-2 border-amber-500/40">
             {/* Background Decorative Auras */}
-            <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-amber-500/15 blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-orange-600/15 blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-amber-500/20 blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 rounded-full bg-orange-600/20 blur-3xl pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:24px_24px] opacity-10 pointer-events-none" />
 
-            <div className="relative z-10 grid lg:grid-cols-12 gap-8 items-center">
+            <div className="relative z-10 grid lg:grid-cols-12 gap-8 lg:gap-10 items-center">
               {/* Left Column: Ekadashi Info */}
-              <div className="lg:col-span-7 space-y-5">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold uppercase tracking-wider">
-                  <Sparkles className="h-3.5 w-3.5 animate-pulse text-amber-400" />
-                  Upcoming Holy Vrata
-                </div>
-
+              <div className="lg:col-span-7 space-y-6">
                 <div>
-                  <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-amber-100 tracking-tight leading-tight">
+                  {isRealTimeArrived ? (
+                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/25 border border-emerald-400/60 text-emerald-200 text-xs font-black uppercase tracking-widest shadow-xs">
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
+                      </span>
+                      Ekadashi Vratam Active Today
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/20 border border-amber-400/50 text-amber-300 text-xs font-extrabold uppercase tracking-widest shadow-xs">
+                      <Sparkles className="h-3.5 w-3.5 animate-pulse text-amber-400" />
+                      Upcoming Ekadashi
+                    </div>
+                  )}
+
+                  <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-black text-amber-100 tracking-tight leading-tight mt-3">
                     {nextEkadashi.name}
                   </h2>
-                  <p className="text-amber-200/90 text-sm sm:text-base font-medium mt-1">
-                    {nextEkadashi.paksha} • {nextEkadashi.vaishnavaMonth || "Vaishnava Month"}
+                  <p className="text-amber-200/80 text-sm sm:text-base font-medium mt-1">
+                    {nextEkadashi.paksha || "Sacred Paksha"} • {nextEkadashi.vaishnavaMonth || "Vaishnava Month"}
                   </p>
                 </div>
 
-                {/* Fast Date & Tithi Info */}
-                <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 pt-1">
-                  <div className="p-3.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10">
-                    <span className="text-[11px] text-amber-300/80 font-bold uppercase tracking-wider block">Fasting Day</span>
-                    <span className="text-base sm:text-lg font-bold text-white block mt-0.5">
-                      {nextEkadashi.date}
-                    </span>
-                    <span className="text-xs text-amber-200/80 font-medium">({nextEkadashi.day})</span>
+                {/* THE 5 CORE SPECIFIED DEVOTIONAL FIELDS */}
+                <div className="p-5 sm:p-6 rounded-2xl bg-black/45 backdrop-blur-md border border-amber-400/30 shadow-xl space-y-4 text-slate-100">
+                  {/* 1. Date */}
+                  <div className="flex items-start gap-3.5">
+                    <span className="text-xl sm:text-2xl shrink-0 select-none">📅</span>
+                    <div>
+                      <span className="font-bold text-amber-300 text-xs sm:text-sm uppercase tracking-wide block">
+                        Date:
+                      </span>
+                      <span className="text-base sm:text-lg font-bold text-white tracking-wide">
+                        {formatEkadashiDate(nextEkadashi.date, nextEkadashi.day)}
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10">
-                    <span className="text-[11px] text-amber-300/80 font-bold uppercase tracking-wider block">Fasting Type</span>
-                    <span className="text-sm sm:text-base font-bold text-white block mt-0.5">
-                      {nextEkadashi.fastingType}
-                    </span>
-                    <span className="text-xs text-amber-200/80 font-medium">Satvik Observance</span>
-                  </div>
-                </div>
+                  <div className="h-px bg-white/10" />
 
-                {/* HIGHLIGHTED PARANA BREAKING TIMING WINDOW */}
-                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/25 to-orange-500/20 border-2 border-amber-400/60 backdrop-blur-md shadow-lg space-y-1.5">
-                  <div className="flex items-center gap-2 text-amber-300 text-xs font-extrabold uppercase tracking-wider">
-                    <Sunrise className="h-4 w-4 text-amber-400" />
-                    Dwadashi Parana (Fast Breaking) Window
+                  {/* 2. Fasting */}
+                  <div className="flex items-start gap-3.5">
+                    <span className="text-xl sm:text-2xl shrink-0 select-none">🪷</span>
+                    <div>
+                      <span className="font-bold text-amber-300 text-xs sm:text-sm uppercase tracking-wide block">
+                        Fasting:
+                      </span>
+                      <span className="text-sm sm:text-base font-medium text-amber-100/95 leading-relaxed">
+                        {nextEkadashi.fastingRules || "Observe Ekadashi fasting according to Vaishnava guidelines."}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex flex-wrap items-baseline gap-2">
-                    <span className="text-2xl sm:text-3xl font-display font-bold text-white">
-                      {nextEkadashi.paranaStartTime} – {nextEkadashi.paranaEndTime}
-                    </span>
-                    <span className="text-xs sm:text-sm font-semibold text-amber-200">
-                      on {nextEkadashi.paranaDate}
-                    </span>
+
+                  <div className="h-px bg-white/10" />
+
+                  {/* 3. Parana Date */}
+                  <div className="flex items-start gap-3.5">
+                    <span className="text-xl sm:text-2xl shrink-0 select-none">🌅</span>
+                    <div>
+                      <span className="font-bold text-amber-300 text-xs sm:text-sm uppercase tracking-wide block">
+                        Parana Date:
+                      </span>
+                      <span className="text-base sm:text-lg font-bold text-white tracking-wide">
+                        {formatEkadashiDate(nextEkadashi.paranaDate)}
+                      </span>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-amber-200/80 italic pt-0.5">
-                    * Exact calculated Parana timing for Kurnool region. Fast must be broken within this window.
-                  </p>
+
+                  <div className="h-px bg-white/10" />
+
+                  {/* 4. Parana Time */}
+                  <div className="flex items-start gap-3.5">
+                    <span className="text-xl sm:text-2xl shrink-0 select-none">⏰</span>
+                    <div>
+                      <span className="font-bold text-amber-300 text-xs sm:text-sm uppercase tracking-wide block">
+                        Parana Time:
+                      </span>
+                      <div className="flex items-baseline gap-2 flex-wrap">
+                        <span className="text-xl sm:text-2xl font-black text-amber-300 font-mono tracking-tight">
+                          {nextEkadashi.paranaStartTime} – {nextEkadashi.paranaEndTime}
+                        </span>
+                        <span className="text-xs text-amber-200/80 font-medium">
+                          (Break fast on Dwadashi morning)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-white/10" />
+
+                  {/* 5. Location */}
+                  <div className="flex items-start gap-3.5">
+                    <span className="text-xl sm:text-2xl shrink-0 select-none">📍</span>
+                    <div>
+                      <span className="font-bold text-amber-300 text-xs sm:text-sm uppercase tracking-wide block">
+                        Location:
+                      </span>
+                      <span className="text-sm sm:text-base font-semibold text-white">
+                        {nextEkadashi.location || "Kurnool, Andhra Pradesh"}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-wrap items-center gap-3 pt-2">
+                <div className="flex flex-wrap items-center gap-3 pt-1">
+                  {isRealTimeArrived && (
+                    <a
+                      href={googleMapUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-amber-950 font-black text-xs sm:text-sm shadow-gold transition-all cursor-pointer border border-amber-300 uppercase tracking-wider"
+                    >
+                      <MapPin className="h-4 w-4 animate-bounce" /> VISIT TEMPLE
+                    </a>
+                  )}
+
                   <button
                     type="button"
                     onClick={() => setSelectedEkadashi(nextEkadashi)}
                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-amber-950 font-bold text-xs sm:text-sm shadow-gold transition-all cursor-pointer"
                   >
-                    <BookOpen className="h-4 w-4" /> Read Mahatmya
+                    <BookOpen className="h-4 w-4" /> Read Mahatmya Katha
                   </button>
 
                   <a
@@ -279,73 +379,201 @@ export default function EkadashiPage() {
                   <button
                     type="button"
                     onClick={() => shareEkadashi(nextEkadashi)}
-                    className="inline-flex items-center gap-2 p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600/80 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm border border-emerald-400/40 transition-all cursor-pointer"
                     title="Share Ekadashi Timings"
                   >
-                    <Share2 className="h-4 w-4" />
+                    <Share2 className="h-4 w-4" /> Share on WhatsApp
                   </button>
                 </div>
               </div>
 
-              {/* Right Column: Live Countdown & Sacred Visual */}
+              {/* Right Column: Live Countdown OR Temple Schedule when Real Time Arrives */}
               <div className="lg:col-span-5 flex flex-col items-center justify-center text-center space-y-5">
-                <div className="w-full bg-black/40 backdrop-blur-lg rounded-3xl p-6 border border-white/10 shadow-2xl space-y-4">
-                  <span className="text-xs font-bold uppercase tracking-widest text-amber-300 flex items-center justify-center gap-1.5">
-                    <Clock className="h-4 w-4 text-amber-400" /> Countdown to Fasting Day
-                  </span>
-
-                  {timeLeft ? (
-                    <div className="grid grid-cols-4 gap-2 text-center">
-                      <div className="p-3 bg-white/10 rounded-2xl border border-white/10">
-                        <span className="block text-2xl sm:text-3xl font-display font-extrabold text-white">
-                          {timeLeft.days}
-                        </span>
-                        <span className="block text-[10px] sm:text-xs text-amber-300 font-semibold uppercase tracking-wider">
-                          Days
-                        </span>
-                      </div>
-                      <div className="p-3 bg-white/10 rounded-2xl border border-white/10">
-                        <span className="block text-2xl sm:text-3xl font-display font-extrabold text-white">
-                          {timeLeft.hours}
-                        </span>
-                        <span className="block text-[10px] sm:text-xs text-amber-300 font-semibold uppercase tracking-wider">
-                          Hours
-                        </span>
-                      </div>
-                      <div className="p-3 bg-white/10 rounded-2xl border border-white/10">
-                        <span className="block text-2xl sm:text-3xl font-display font-extrabold text-white">
-                          {timeLeft.minutes}
-                        </span>
-                        <span className="block text-[10px] sm:text-xs text-amber-300 font-semibold uppercase tracking-wider">
-                          Mins
-                        </span>
-                      </div>
-                      <div className="p-3 bg-white/10 rounded-2xl border border-white/10">
-                        <span className="block text-2xl sm:text-3xl font-display font-extrabold text-amber-400 animate-pulse">
-                          {timeLeft.seconds}
-                        </span>
-                        <span className="block text-[10px] sm:text-xs text-amber-300 font-semibold uppercase tracking-wider">
-                          Secs
-                        </span>
-                      </div>
+                {/* Deity Image if uploaded */}
+                {nextEkadashi.image && (
+                  <div className="w-full max-w-sm rounded-2xl overflow-hidden border-2 border-amber-400/50 shadow-2xl relative group">
+                    <img
+                      src={nextEkadashi.image}
+                      alt={nextEkadashi.name}
+                      className="w-full h-48 sm:h-56 object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-4">
+                      <span className="text-xs font-bold text-amber-300">
+                        Sri Sri Puri Jagannath Temple, Kurnool
+                      </span>
                     </div>
-                  ) : (
-                    <div className="py-4 text-amber-200 text-sm">Calculating divine timing...</div>
-                  )}
-
-                  <div className="text-xs text-amber-200/80 border-t border-white/10 pt-3">
-                    Tithi Starts: <span className="font-semibold text-white">{nextEkadashi.tithiStart}</span>
-                    <br />
-                    Tithi Ends: <span className="font-semibold text-white">{nextEkadashi.tithiEnd}</span>
                   </div>
-                </div>
+                )}
+
+                {isRealTimeArrived ? (
+                  /* ========================================================= */
+                  /* REAL TIME OF EKADASHI ARRIVED:                             */
+                  /* COUNTDOWN REMOVED -> TEMPLE SCHEDULE + VISIT TEMPLE BUTTON */
+                  /* ========================================================= */
+                  <div className="w-full bg-black/60 backdrop-blur-xl rounded-3xl p-6 sm:p-7 border-2 border-amber-400/60 shadow-2xl space-y-5 text-left">
+                    <div className="flex items-center justify-between gap-3 border-b border-white/15 pb-4">
+                      <div>
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-500/25 text-red-200 border border-red-400/50 text-[10px] font-black uppercase tracking-wider mb-1">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                          </span>
+                          Live Today at Temple
+                        </div>
+                        <h3 className="font-display font-black text-xl sm:text-2xl text-amber-100 tracking-tight flex items-center gap-2">
+                          <Building className="h-5 w-5 text-amber-400" /> Temple Schedule
+                        </h3>
+                      </div>
+
+                      <span className="text-[11px] text-amber-200 font-bold bg-amber-500/20 border border-amber-400/30 px-3 py-1 rounded-xl">
+                        Open for Darshan
+                      </span>
+                    </div>
+
+                    {/* Temple Schedule Items */}
+                    {templeScheduleItems.length > 0 ? (
+                      <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-amber-500/40">
+                        {templeScheduleItems.map((item) => (
+                          <div
+                            key={item.id}
+                            className={`p-3.5 rounded-2xl border transition-all flex items-start justify-between gap-3 ${
+                              item.highlight
+                                ? "bg-amber-500/25 border-amber-400/60 text-white shadow-xs"
+                                : "bg-white/5 border-white/10 text-slate-200"
+                            }`}
+                          >
+                            <div className="space-y-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-bold text-xs sm:text-sm text-white">
+                                  {item.title}
+                                </span>
+                                {item.highlight && (
+                                  <span className="bg-amber-400 text-amber-950 text-[9px] font-black px-1.5 py-0.2 rounded uppercase">
+                                    Special
+                                  </span>
+                                )}
+                              </div>
+                              {item.description && (
+                                <p className="text-[11px] text-amber-100/75 leading-relaxed line-clamp-2">
+                                  {item.description}
+                                </p>
+                              )}
+                            </div>
+
+                            <div className="text-right shrink-0">
+                              <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-mono font-bold text-amber-300 bg-black/50 px-2.5 py-1 rounded-xl border border-white/10">
+                                <Clock className="h-3 w-3 text-amber-400" /> {item.time}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/10 text-center space-y-1.5 text-amber-100">
+                        <Building className="h-6 w-6 mx-auto text-amber-400/80 mb-1" />
+                        <p className="font-bold text-sm text-white">Temple Open for All-Day Darshan</p>
+                        <p className="text-xs text-amber-200/80">Devotees are cordially invited for Deity darshan, kirtan, and blessings.</p>
+                      </div>
+                    )}
+
+                    {/* Prominent VISIT TEMPLE Button */}
+                    <div className="space-y-2.5 pt-2">
+                      <a
+                        href={googleMapUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-amber-950 font-black text-sm sm:text-base shadow-gold hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 uppercase tracking-widest cursor-pointer border-2 border-amber-300 text-center"
+                      >
+                        <MapPin className="h-5 w-5 text-amber-950 animate-bounce shrink-0" />
+                        VISIT TEMPLE
+                        <ExternalLink className="h-4 w-4 text-amber-950/80 shrink-0" />
+                      </a>
+
+                      <p className="text-[11px] text-center text-amber-200/80 font-medium">
+                        Sri Sri Puri Jagannath Temple, Kurnool • Get directions & darshan timings
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  /* ========================================================= */
+                  /* COUNTDOWN ACTIVE (BEFORE REAL TIME ARRIVES)               */
+                  /* ========================================================= */
+                  <div className="w-full bg-black/50 backdrop-blur-lg rounded-3xl p-6 border border-white/10 shadow-2xl space-y-4">
+                    <span className="text-xs font-extrabold uppercase tracking-widest text-amber-300 flex items-center justify-center gap-2">
+                      <Clock className="h-4 w-4 text-amber-400" /> Countdown to Fasting Day
+                    </span>
+
+                    {timeLeft ? (
+                      <div className="grid grid-cols-4 gap-2 text-center">
+                        <div className="p-3 bg-white/10 rounded-2xl border border-white/10">
+                          <span className="block text-2xl sm:text-3xl font-display font-extrabold text-white">
+                            {timeLeft.days}
+                          </span>
+                          <span className="block text-[10px] sm:text-xs text-amber-300 font-semibold uppercase tracking-wider">
+                            Days
+                          </span>
+                        </div>
+                        <div className="p-3 bg-white/10 rounded-2xl border border-white/10">
+                          <span className="block text-2xl sm:text-3xl font-display font-extrabold text-white">
+                            {timeLeft.hours}
+                          </span>
+                          <span className="block text-[10px] sm:text-xs text-amber-300 font-semibold uppercase tracking-wider">
+                            Hours
+                          </span>
+                        </div>
+                        <div className="p-3 bg-white/10 rounded-2xl border border-white/10">
+                          <span className="block text-2xl sm:text-3xl font-display font-extrabold text-white">
+                            {timeLeft.minutes}
+                          </span>
+                          <span className="block text-[10px] sm:text-xs text-amber-300 font-semibold uppercase tracking-wider">
+                            Mins
+                          </span>
+                        </div>
+                        <div className="p-3 bg-white/10 rounded-2xl border border-white/10">
+                          <span className="block text-2xl sm:text-3xl font-display font-extrabold text-amber-400 animate-pulse">
+                            {timeLeft.seconds}
+                          </span>
+                          <span className="block text-[10px] sm:text-xs text-amber-300 font-semibold uppercase tracking-wider">
+                            Secs
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="py-4 text-amber-200 text-sm">Calculating auspicious timings...</div>
+                    )}
+
+                    <div className="text-xs text-amber-200/80 border-t border-white/10 pt-3">
+                      Tithi Starts: <span className="font-semibold text-white">{nextEkadashi.tithiStart}</span>
+                      <br />
+                      Tithi Ends: <span className="font-semibold text-white">{nextEkadashi.tithiEnd}</span>
+                    </div>
+                  </div>
+                )}
 
                 <div className="text-center italic text-xs sm:text-sm text-amber-200/90 max-w-sm">
                   “Fasting on Ekadashi purifies the heart and cleanses millions of lifetimes of karma.”
                 </div>
+
+                {/* Dev / Admin Test Preview Switch */}
+                <div className="pt-2 border-t border-white/10 w-full flex items-center justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewRealTime((p) => !p)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-white/10 hover:bg-white/20 text-amber-200 border border-white/20 transition-all cursor-pointer"
+                    title="Toggle between upcoming countdown view and real-time arrived view"
+                  >
+                    <Clock className="h-3 w-3 text-amber-400" />
+                    <span>Test Preview: Switch to {isRealTimeArrived ? "Countdown View" : "Real-time Temple Schedule View"}</span>
+                  </button>
+                </div>
               </div>
             </div>
           </section>
+        ) : (
+          <div className="p-8 rounded-3xl bg-amber-500/10 border border-amber-500/30 text-center text-amber-900 dark:text-amber-200">
+            <h3 className="font-bold text-lg">No Upcoming Ekadashi published yet</h3>
+            <p className="text-sm mt-1">Please visit the Admin Panel to upload and publish the next Ekadashi.</p>
+          </div>
         )}
 
         {/* ========================================================================= */}
@@ -554,7 +782,14 @@ export default function EkadashiPage() {
 
           {/* Schedule Grid */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {filteredScheduleItems.map((item) => (
+            {filteredScheduleItems.length === 0 ? (
+              <div className="col-span-full py-12 text-center text-muted-foreground bg-card rounded-3xl border border-border p-8">
+                <Clock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                <p className="font-semibold text-sm">No special Ekadashi schedule announced yet.</p>
+                <p className="text-xs text-muted-foreground mt-1">Please check back soon or visit the temple directly for regular daily darshan and arati timings.</p>
+              </div>
+            ) : (
+              filteredScheduleItems.map((item) => (
               <div
                 key={item.id}
                 className={`p-5 rounded-2xl border transition-all duration-200 space-y-3 flex flex-col justify-between ${
@@ -605,7 +840,8 @@ export default function EkadashiPage() {
                   <span className="text-amber-600 font-semibold">Temple Hall</span>
                 </div>
               </div>
-            ))}
+            ))
+            )}
           </div>
         </section>
 

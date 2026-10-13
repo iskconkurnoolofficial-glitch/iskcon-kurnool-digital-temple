@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState, useCallback, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { finalizeDonationStatus } from "@/lib/donation-status.functions";
+import { sendTelegramContactNotification } from "@/lib/telegram-notification";
 import { toast } from "sonner";
 
 export type Slide = {
@@ -1625,6 +1626,10 @@ export type EkadashiCalendarItem = {
   paranaEndTime: string;
   /** Fasting category e.g. "Nirjala (Waterless) Fast", "Phalahari (Fruits & Milk)", "Sajala Fast", "Complete Fast" */
   fastingType: string;
+  /** Fasting guidelines e.g. "Observe Ekadashi fasting according to Vaishnava guidelines." */
+  fastingRules?: string;
+  /** Observance Location e.g. "Kurnool, Andhra Pradesh" */
+  location?: string;
   /** Spiritual Significance, Glories & Purana dialogues */
   description: string;
   /** Sacred Deity / Ekadashi Image Banner */
@@ -1649,88 +1654,20 @@ export type EkadashiScheduleItem = {
   order: number;
 };
 
-export const defaultEkadashiTempleSchedule: EkadashiScheduleItem[] = [
-  {
-    id: "ek_sch_1",
-    time: "04:30 AM – 05:00 AM",
-    title: "Subha Mangala Harati & Tulsi Puja",
-    description: "Start the auspicious Ekadashi day with Mangala Harati, Nrsimha prayers, and Sri Tulsi Parikrama.",
-    period: "Morning",
-    iconName: "sunrise",
-    highlight: true,
-    order: 1,
-  },
-  {
-    id: "ek_sch_2",
-    time: "05:15 AM – 07:15 AM",
-    title: "Akhanda Harinama Japa Meditation",
-    description: "Devotees gather for congregational chanting of the holy Hare Krishna Maha Mantra in the sanctum.",
-    period: "Morning",
-    iconName: "music",
-    highlight: false,
-    order: 2,
-  },
-  {
-    id: "ek_sch_3",
-    time: "07:30 AM – 08:15 AM",
-    title: "Deity Sringara Darshan & Srila Prabhupada Guru Puja",
-    description: "Grand morning darshan of Sri Sri Jagannath Baladev Subhadra in royal Ekadashi attire.",
-    period: "Morning",
-    iconName: "sun",
-    highlight: true,
-    order: 3,
-  },
-  {
-    id: "ek_sch_4",
-    time: "08:15 AM – 09:30 AM",
-    title: "Special Srimad Bhagavatam & Ekadashi Katha",
-    description: "Transcendental discourse narrating the scriptural glories (Mahatmya) of the day's Ekadashi vrata.",
-    period: "Morning",
-    iconName: "book",
-    highlight: false,
-    order: 4,
-  },
-  {
-    id: "ek_sch_5",
-    time: "12:00 PM – 12:30 PM",
-    title: "Rajbhoga Harati & Phalahari Bhoga Offering",
-    description: "Offering 56 pure satvik non-grain delicacies to Their Lordships followed by afternoon darshan.",
-    period: "Afternoon",
-    iconName: "utensils",
-    highlight: false,
-    order: 5,
-  },
-  {
-    id: "ek_sch_6",
-    time: "06:30 PM – 07:15 PM",
-    title: "Sandhya Harati & Gauranga Kirtan",
-    description: "Soulful evening worship and ecstatic kirtan with mridangas and karatalas filling the temple.",
-    period: "Evening",
-    iconName: "sunset",
-    highlight: true,
-    order: 6,
-  },
-  {
-    id: "ek_sch_7",
-    time: "07:15 PM – 08:30 PM",
-    title: "Bhagavad Gita Discourse & Bhajan Sandhya",
-    description: "Deep spiritual insights from the Gita and melodious Vaishnava bhajans glorifying Sri Hari.",
-    period: "Evening",
-    iconName: "book",
-    highlight: false,
-    order: 7,
-  },
-  {
-    id: "ek_sch_8",
-    time: "08:30 PM – 09:00 PM",
-    title: "Shayana Harati & Ekadashi Phalahari Prasadam",
-    description: "Concluding night darshan and distribution of delicious, sanctified Ekadashi phalahari prasadam.",
-    period: "Night",
-    iconName: "moon",
-    highlight: true,
-    order: 8,
-  },
-];
+export const defaultEkadashiTempleSchedule: EkadashiScheduleItem[] = [];
+
+export function filterLegacyEkadashiSchedule(items?: any[] | null): EkadashiScheduleItem[] {
+  if (!Array.isArray(items)) return [];
+  return items.filter((item) => {
+    if (!item || typeof item !== "object") return false;
+    const id = String(item.id || "");
+    // Filter out mock schedule items ek_sch_1 through ek_sch_8
+    if (id.startsWith("ek_sch_") && /^\d+$/.test(id.replace("ek_sch_", ""))) {
+      return false;
+    }
+    return true;
+  });
+}
 
 export type EkadashiData = {
   badge: string;
@@ -1759,390 +1696,64 @@ export type EkadashiData = {
   templeScheduleNotice: string;
   templeSchedule: EkadashiScheduleItem[];
   calendar: EkadashiCalendarItem[];
+  /** Optional pinned Upcoming Ekadashi ID */
+  featuredEkadashiId?: string;
 };
 
-export const defaultEkadashiCalendar: EkadashiCalendarItem[] = [
-  {
-    id: "ek_papamochani_2026",
-    name: "Papamochani Ekadashi",
-    date: "2026-03-15",
-    day: "Sunday",
-    paksha: "Krishna Paksha",
-    vaishnavaMonth: "Govinda (Chaitra)",
-    tithiStart: "05:14 AM, 14 Mar 2026",
-    tithiEnd: "03:42 AM, 15 Mar 2026",
-    paranaDate: "16 Mar 2026",
-    paranaStartTime: "06:28 AM",
-    paranaEndTime: "10:18 AM",
-    fastingType: "Phalahari Fast (Fruits & Milk)",
-    description: "Papamochani Ekadashi dissolves all past sinful reactions and purifies the devotee's consciousness, awarding spiritual liberation and unalloyed devotion to Lord Sri Hari.",
-    specialInstructions: "Do not pluck Tulsi leaves on Ekadashi or Dwadashi. Pick Tulsi the previous day. Break fast on Dwadashi within the Parana window.",
-    isPublished: true,
-    isFeatured: false,
-    order: 1
-  },
-  {
-    id: "ek_kamada_2026",
-    name: "Kamada Ekadashi",
-    date: "2026-03-29",
-    day: "Sunday",
-    paksha: "Gaura Paksha",
-    vaishnavaMonth: "Vishnu (Chaitra)",
-    tithiStart: "07:30 PM, 28 Mar 2026",
-    tithiEnd: "06:15 PM, 29 Mar 2026",
-    paranaDate: "30 Mar 2026",
-    paranaStartTime: "06:18 AM",
-    paranaEndTime: "10:12 AM",
-    fastingType: "Phalahari Fast",
-    description: "The fulfiller of all pure spiritual desires. In the Brahmavairvarta Purana, Lord Krishna explains to Maharaja Yudhishthira how this fast removes all curses.",
-    specialInstructions: "Offer fragrant flowers, tulsi manjaris picked on the previous day, and engage in continuous Nama Japa.",
-    isPublished: true,
-    isFeatured: false,
-    order: 2
-  },
-  {
-    id: "ek_varuthini_2026",
-    name: "Varuthini Ekadashi",
-    date: "2026-04-13",
-    day: "Monday",
-    paksha: "Krishna Paksha",
-    vaishnavaMonth: "Madhusudana (Vaisakha)",
-    tithiStart: "01:25 AM, 13 Apr 2026",
-    tithiEnd: "11:45 PM, 13 Apr 2026",
-    paranaDate: "14 Apr 2026",
-    paranaStartTime: "06:05 AM",
-    paranaEndTime: "08:45 AM",
-    fastingType: "Phalahari Fast",
-    description: "Varuthini means 'protected by spiritual armor'. Observance protects the soul in this world and the next, turning fortune towards Krishna prema.",
-    specialInstructions: "Break fast within the morning Dwadashi tithi with charanamrita or fruits.",
-    isPublished: true,
-    isFeatured: false,
-    order: 3
-  },
-  {
-    id: "ek_mohini_2026",
-    name: "Mohini Ekadashi",
-    date: "2026-04-27",
-    day: "Monday",
-    paksha: "Gaura Paksha",
-    vaishnavaMonth: "Madhusudana (Vaisakha)",
-    tithiStart: "08:10 AM, 27 Apr 2026",
-    tithiEnd: "06:50 AM, 28 Apr 2026",
-    paranaDate: "28 Apr 2026",
-    paranaStartTime: "06:45 AM",
-    paranaEndTime: "10:05 AM",
-    fastingType: "Phalahari Fast",
-    description: "Celebrates Lord Vishnu assuming the captivating Mohini Murti. Removes illusions of Maya and grants supreme peace of mind.",
-    specialInstructions: "Special worship of Sri Sri Radha Krishna with sandal paste (Chandan Yatra).",
-    isPublished: true,
-    isFeatured: false,
-    order: 4
-  },
-  {
-    id: "ek_apara_2026",
-    name: "Apara Ekadashi",
-    date: "2026-05-13",
-    day: "Wednesday",
-    paksha: "Krishna Paksha",
-    vaishnavaMonth: "Trivikrama (Jyeshtha)",
-    tithiStart: "10:30 PM, 12 May 2026",
-    tithiEnd: "08:45 PM, 13 May 2026",
-    paranaDate: "14 May 2026",
-    paranaStartTime: "05:48 AM",
-    paranaEndTime: "09:55 AM",
-    fastingType: "Phalahari Fast",
-    description: "Apara means 'limitless'. The spiritual merit earned on this sacred day is boundless, erasing even the heaviest karma.",
-    specialInstructions: "Chant at least 25 or 32 rounds of the Hare Krishna Maha Mantra.",
-    isPublished: true,
-    isFeatured: false,
-    order: 5
-  },
-  {
-    id: "ek_nirjala_2026",
-    name: "Pandava Nirjala Ekadashi (Bhima Ekadashi)",
-    date: "2026-05-26",
-    day: "Tuesday",
-    paksha: "Gaura Paksha",
-    vaishnavaMonth: "Trivikrama (Jyeshtha)",
-    tithiStart: "04:15 PM, 25 May 2026",
-    tithiEnd: "02:10 PM, 26 May 2026",
-    paranaDate: "27 May 2026",
-    paranaStartTime: "05:45 AM",
-    paranaEndTime: "10:00 AM",
-    fastingType: "Strict Nirjala (Total Fast without Water)",
-    description: "The crown jewel of all Ekadashis. Established by Srila Vyasadeva for Bhimasena. Fasting completely without even a single drop of water on this day bestows the spiritual benefit of all 24 Ekadashis of the year.",
-    specialInstructions: "Strict fast from sunrise to next day sunrise without water. If physically unable, one may take water or fruit juice. Parana is broken by drinking sacred charanamrita or water first, followed by prasadam.",
-    isPublished: true,
-    isFeatured: true,
-    order: 6
-  },
-  {
-    id: "ek_yogini_2026",
-    name: "Yogini Ekadashi",
-    date: "2026-06-11",
-    day: "Thursday",
-    paksha: "Krishna Paksha",
-    vaishnavaMonth: "Vamana (Ashadha)",
-    tithiStart: "08:15 AM, 11 Jun 2026",
-    tithiEnd: "06:30 AM, 12 Jun 2026",
-    paranaDate: "12 Jun 2026",
-    paranaStartTime: "06:30 AM",
-    paranaEndTime: "09:58 AM",
-    fastingType: "Phalahari Fast",
-    description: "Purifies from bodily afflictions, cleanses the subtle heart, and connects the practitioner with the supreme yoga of Krishna bhakti.",
-    specialInstructions: "Honor pure fruit offerings and perform Harinama Sankirtana.",
-    isPublished: true,
-    isFeatured: false,
-    order: 7
-  },
-  {
-    id: "ek_shayani_2026",
-    name: "Devashayani Ekadashi (Chaturmasya Begins)",
-    date: "2026-06-25",
-    day: "Thursday",
-    paksha: "Gaura Paksha",
-    vaishnavaMonth: "Vamana (Ashadha)",
-    tithiStart: "02:40 PM, 24 Jun 2026",
-    tithiEnd: "12:15 PM, 25 Jun 2026",
-    paranaDate: "26 Jun 2026",
-    paranaStartTime: "05:48 AM",
-    paranaEndTime: "09:52 AM",
-    fastingType: "Phalahari Fast",
-    description: "Lord Sri Hari enters His yogic sleep (Yoga Nidra) on the milk ocean upon Ananta Shesha. Marks the auspicious inauguration of the 4-month Chaturmasya period.",
-    specialInstructions: "Devotees take vows of increased sadhana, extra japa rounds, and scripture reading for the four months of Chaturmasya.",
-    isPublished: true,
-    isFeatured: true,
-    order: 8
-  },
-  {
-    id: "ek_kamika_2026",
-    name: "Kamika Ekadashi",
-    date: "2026-07-10",
-    day: "Friday",
-    paksha: "Krishna Paksha",
-    vaishnavaMonth: "Sridhara (Shravana)",
-    tithiStart: "07:15 PM, 09 Jul 2026",
-    tithiEnd: "05:40 PM, 10 Jul 2026",
-    paranaDate: "11 Jul 2026",
-    paranaStartTime: "05:54 AM",
-    paranaEndTime: "10:04 AM",
-    fastingType: "Phalahari Fast",
-    description: "Observance of Kamika Ekadashi yields greater spiritual merit than visiting all holy tirthas. Lord Krishna states that offering Tulsi on this day pleases Him immensely.",
-    specialInstructions: "Offer ghee lamps and Tulsi picked on Dashami to Sri Krishna.",
-    isPublished: true,
-    isFeatured: false,
-    order: 9
-  },
-  {
-    id: "ek_pavitra_2026",
-    name: "Pavitropana (Pavitra) Ekadashi",
-    date: "2026-07-24",
-    day: "Friday",
-    paksha: "Gaura Paksha",
-    vaishnavaMonth: "Sridhara (Shravana)",
-    tithiStart: "11:20 PM, 23 Jul 2026",
-    tithiEnd: "09:45 PM, 24 Jul 2026",
-    paranaDate: "25 Jul 2026",
-    paranaStartTime: "05:58 AM",
-    paranaEndTime: "10:07 AM",
-    fastingType: "Phalahari Fast",
-    description: "Bestows auspicious children, peace in family life, and removes distress. Devotees offer silk threads and sacred garlands (Pavitra) to the Deities.",
-    specialInstructions: "Jhulan Yatra festival prayers and offerings to Sri Sri Radha Govinda.",
-    isPublished: true,
-    isFeatured: false,
-    order: 10
-  },
-  {
-    id: "ek_annada_2026",
-    name: "Annada (Aja) Ekadashi",
-    date: "2026-08-09",
-    day: "Sunday",
-    paksha: "Krishna Paksha",
-    vaishnavaMonth: "Hrishikesha (Bhadrapada)",
-    tithiStart: "08:50 AM, 08 Aug 2026",
-    tithiEnd: "06:45 AM, 09 Aug 2026",
-    paranaDate: "10 Aug 2026",
-    paranaStartTime: "06:03 AM",
-    paranaEndTime: "10:08 AM",
-    fastingType: "Phalahari Fast",
-    description: "King Harishchandra regained his lost kingdom and truthfulness by the mercy of this holy fast as instructed by sage Gautama.",
-    specialInstructions: "Meditate on the transcendental truth and practice humility.",
-    isPublished: true,
-    isFeatured: false,
-    order: 11
-  },
-  {
-    id: "ek_parsva_2026",
-    name: "Parsva Ekadashi (Vamana / Parivartini)",
-    date: "2026-08-23",
-    day: "Sunday",
-    paksha: "Gaura Paksha",
-    vaishnavaMonth: "Hrishikesha (Bhadrapada)",
-    tithiStart: "05:35 AM, 23 Aug 2026",
-    tithiEnd: "04:10 AM, 24 Aug 2026",
-    paranaDate: "24 Aug 2026",
-    paranaStartTime: "06:07 AM",
-    paranaEndTime: "10:09 AM",
-    fastingType: "Phalahari Fast",
-    description: "Lord Vishnu turns from His left side to His right side while resting on Ananta Shesha. Commemorates the divine appearance of Lord Vamanadeva.",
-    specialInstructions: "Offer yogurt, non-grain bhoga, and yellow flowers to Lord Vamanadeva.",
-    isPublished: true,
-    isFeatured: true,
-    order: 12
-  },
-  {
-    id: "ek_indira_2026",
-    name: "Indira Ekadashi",
-    date: "2026-09-07",
-    day: "Monday",
-    paksha: "Krishna Paksha",
-    vaishnavaMonth: "Padmanabha (Ashvina)",
-    tithiStart: "10:15 PM, 06 Sep 2026",
-    tithiEnd: "08:40 PM, 07 Sep 2026",
-    paranaDate: "08 Sep 2026",
-    paranaStartTime: "06:10 AM",
-    paranaEndTime: "10:08 AM",
-    fastingType: "Phalahari Fast",
-    description: "Occurring during Pitru Paksha, this sacred fast delivers ancestors and forefathers from lower planetary realms to the spiritual abode of Vaikuntha.",
-    specialInstructions: "Offer heartfelt prayers for the spiritual deliverance of all departed ancestors to Lord Damodara.",
-    isPublished: true,
-    isFeatured: false,
-    order: 13
-  },
-  {
-    id: "ek_pasankusa_2026",
-    name: "Pasankusa Ekadashi",
-    date: "2026-09-22",
-    day: "Tuesday",
-    paksha: "Gaura Paksha",
-    vaishnavaMonth: "Padmanabha (Ashvina)",
-    tithiStart: "09:20 AM, 21 Sep 2026",
-    tithiEnd: "07:45 AM, 22 Sep 2026",
-    paranaDate: "23 Sep 2026",
-    paranaStartTime: "06:12 AM",
-    paranaEndTime: "09:40 AM",
-    fastingType: "Phalahari Fast",
-    description: "Pasankusa acts as an elephant goad (ankusha) that tames and controls the wild elephant of material desires, awakening pure love of God.",
-    specialInstructions: "Perform heartfelt japa and read Bhagavad Gita Chapter 9.",
-    isPublished: true,
-    isFeatured: false,
-    order: 14
-  },
-  {
-    id: "ek_rama_2026",
-    name: "Rama Ekadashi",
-    date: "2026-10-06",
-    day: "Tuesday",
-    paksha: "Krishna Paksha",
-    vaishnavaMonth: "Damodara (Kartika)",
-    tithiStart: "02:30 PM, 05 Oct 2026",
-    tithiEnd: "12:45 PM, 06 Oct 2026",
-    paranaDate: "07 Oct 2026",
-    paranaStartTime: "06:14 AM",
-    paranaEndTime: "10:07 AM",
-    fastingType: "Phalahari Fast",
-    description: "Named after Rama (Goddess Lakshmi), this sacred Kartik Ekadashi unlocks boundless spiritual fortune and unalloyed devotion to Lord Yashoda-Damodara.",
-    specialInstructions: "Kartika Damodara deepa (ghee lamp) offering in the evening while singing Sri Damodarashtakam.",
-    isPublished: true,
-    isFeatured: false,
-    order: 15
-  },
-  {
-    id: "ek_utthana_2026",
-    name: "Utthana (Prabodhini) Ekadashi",
-    date: "2026-10-21",
-    day: "Wednesday",
-    paksha: "Gaura Paksha",
-    vaishnavaMonth: "Damodara (Kartika)",
-    tithiStart: "06:45 PM, 20 Oct 2026",
-    tithiEnd: "04:50 PM, 21 Oct 2026",
-    paranaDate: "22 Oct 2026",
-    paranaStartTime: "06:17 AM",
-    paranaEndTime: "10:08 AM",
-    fastingType: "Phalahari Fast / Bhishma Panchaka Fast",
-    description: "Lord Sri Hari awakens from His 4-month cosmic slumber. Marks the grand culmination of Chaturmasya and the start of the auspicious 5-day Bhishma Panchaka vrata.",
-    specialInstructions: "Tulsi Vivaha (marriage ceremony of Tulsi Maharani and Sri Shaligram) is joyfully performed. Devotees fast and offer lamps.",
-    isPublished: true,
-    isFeatured: true,
-    order: 16
-  },
-  {
-    id: "ek_utpanna_2026",
-    name: "Utpanna Ekadashi",
-    date: "2026-11-05",
-    day: "Thursday",
-    paksha: "Krishna Paksha",
-    vaishnavaMonth: "Keshava (Margashirsha)",
-    tithiStart: "05:15 AM, 05 Nov 2026",
-    tithiEnd: "03:40 AM, 06 Nov 2026",
-    paranaDate: "06 Nov 2026",
-    paranaStartTime: "06:23 AM",
-    paranaEndTime: "10:11 AM",
-    fastingType: "Phalahari Fast",
-    description: "The very birth and origin of Ekadashi Devi! She appeared from the body of Lord Vishnu to slay the demon Mura. Lord Vishnu granted her the boon that anyone who fasts on her day will be freed from all sins.",
-    specialInstructions: "Listen to the transcendental origin story of Ekadashi Devi and chant with devotion.",
-    isPublished: true,
-    isFeatured: false,
-    order: 17
-  },
-  {
-    id: "ek_mokshada_2026",
-    name: "Mokshada Ekadashi (Gita Jayanti / Vaikuntha Ekadashi)",
-    date: "2026-11-20",
-    day: "Friday",
-    paksha: "Gaura Paksha",
-    vaishnavaMonth: "Keshava (Margashirsha)",
-    tithiStart: "04:20 PM, 19 Nov 2026",
-    tithiEnd: "02:30 PM, 20 Nov 2026",
-    paranaDate: "21 Nov 2026",
-    paranaStartTime: "06:29 AM",
-    paranaEndTime: "10:16 AM",
-    fastingType: "Phalahari Fast / Nirjala",
-    description: "The glorious day Lord Sri Krishna spoke the Bhagavad Gita to Arjuna on the holy battlefield of Kurukshetra. The gates of Vaikuntha are wide open to receive devotional prayers.",
-    specialInstructions: "Recitation of all 18 Chapters of the Bhagavad Gita and Vaikuntha Dwara darshan at the temple.",
-    isPublished: true,
-    isFeatured: true,
-    order: 18
-  },
-  {
-    id: "ek_saphala_2026",
-    name: "Saphala Ekadashi",
-    date: "2026-12-04",
-    day: "Friday",
-    paksha: "Krishna Paksha",
-    vaishnavaMonth: "Narayana (Pausha)",
-    tithiStart: "07:30 PM, 03 Dec 2026",
-    tithiEnd: "05:40 PM, 04 Dec 2026",
-    paranaDate: "05 Dec 2026",
-    paranaStartTime: "06:36 AM",
-    paranaEndTime: "10:22 AM",
-    fastingType: "Phalahari Fast",
-    description: "Saphala means 'fruitful & successful'. It turns every endeavor of devotional service fruitful, transforming lives in accordance with Krishna's divine will.",
-    specialInstructions: "Offer seasonal fruits, nuts, and keep night vigil (Jagaran) in kirtan.",
-    isPublished: true,
-    isFeatured: false,
-    order: 19
-  },
-  {
-    id: "ek_putrada_2026",
-    name: "Putrada Ekadashi (Pausha)",
-    date: "2026-12-20",
-    day: "Sunday",
-    paksha: "Gaura Paksha",
-    vaishnavaMonth: "Narayana (Pausha)",
-    tithiStart: "12:15 PM, 19 Dec 2026",
-    tithiEnd: "10:10 AM, 20 Dec 2026",
-    paranaDate: "21 Dec 2026",
-    paranaStartTime: "06:44 AM",
-    paranaEndTime: "10:29 AM",
-    fastingType: "Phalahari Fast",
-    description: "Grants noble progeny, removes family hardships, and bestows the supreme blessing of pure love for Lord Narayana.",
-    specialInstructions: "Family prayers and archana to Sri Sri Jagannath Baladev Subhadra.",
-    isPublished: true,
-    isFeatured: false,
-    order: 20
+/** Format any date string into Vaishnava [Day, DD Month YYYY] standard */
+export function formatEkadashiDate(dateStr?: string, fallbackDay?: string): string {
+  if (!dateStr) return "";
+  const trimmed = dateStr.trim();
+  // If already formatted like "Sunday, 15 March 2026"
+  if (trimmed.includes(",") && /\d{4}/.test(trimmed)) {
+    return trimmed;
   }
-];
+  try {
+    const d = new Date(trimmed.includes("T") ? trimmed : `${trimmed}T00:00:00`);
+    if (isNaN(d.getTime())) return trimmed;
+    const day = fallbackDay || d.toLocaleDateString("en-US", { weekday: "long" });
+    const formatted = d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+    return `${day}, ${formatted}`;
+  } catch {
+    return trimmed;
+  }
+}
+
+export const defaultEkadashiCalendar: EkadashiCalendarItem[] = [];
+
+export function filterLegacyEkadashi(items?: any[] | null): EkadashiCalendarItem[] {
+  if (!Array.isArray(items)) return [];
+  return items.filter((item) => {
+    if (!item || typeof item !== "object") return false;
+    const id = String(item.id || "");
+    if (
+      id.includes("_2026") ||
+      id.startsWith("ek_papamochani") ||
+      id.startsWith("ek_kamada") ||
+      id.startsWith("ek_varuthini") ||
+      id.startsWith("ek_mohini") ||
+      id.startsWith("ek_apara") ||
+      id.startsWith("ek_pandava") ||
+      id.startsWith("ek_yogini") ||
+      id.startsWith("ek_sayana") ||
+      id.startsWith("ek_kamika") ||
+      id.startsWith("ek_shravana") ||
+      id.startsWith("ek_annada") ||
+      id.startsWith("ek_parivartini") ||
+      id.startsWith("ek_indira") ||
+      id.startsWith("ek_pashankusha") ||
+      id.startsWith("ek_rama") ||
+      id.startsWith("ek_utthana") ||
+      id.startsWith("ek_utpanna") ||
+      id.startsWith("ek_mokshada") ||
+      id.startsWith("ek_saphala") ||
+      id.startsWith("ek_putrada")
+    ) {
+      return false;
+    }
+    return true;
+  });
+}
 
 export const defaultEkadashi: EkadashiData = {
   badge: "Sacred Observance",
@@ -2192,8 +1803,9 @@ export const defaultEkadashi: EkadashiData = {
   templeScheduleTitle: "Special Ekadashi Temple Schedule",
   templeScheduleSubtitle: "Join us at Sri Sri Puri Jagannath Temple, ISKCON Kurnool for all-day kirtan, discourses, and phalahari prasadam.",
   templeScheduleNotice: "Devotees are cordially invited to participate in the transcendental Mangala Harati, Akhanda Japa, and Evening Bhajan Sandhya.",
-  templeSchedule: defaultEkadashiTempleSchedule,
-  calendar: defaultEkadashiCalendar,
+  templeSchedule: [],
+  calendar: [],
+  featuredEkadashiId: "",
 };
 
 export type GitaWhyCard = {
@@ -3788,6 +3400,14 @@ function getCached<T>(key: string, fallback: T): T {
       if (key === KEYS.liveProgrammes && parsed?.programmes) {
         parsed.programmes = parsed.programmes.filter((p: any) => p.id !== "live_sandhya_arati" && p.id !== "live_sb_class" && p.id !== "live_sunday_feast");
       }
+      if (key === KEYS.ekadashi && parsed) {
+        if (Array.isArray(parsed.calendar)) {
+          parsed.calendar = filterLegacyEkadashi(parsed.calendar);
+        }
+        if (Array.isArray(parsed.templeSchedule)) {
+          parsed.templeSchedule = filterLegacyEkadashiSchedule(parsed.templeSchedule);
+        }
+      }
       return parsed;
     }
   } catch {}
@@ -3820,11 +3440,14 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [harinama, setHarinamaState] = useState<HarinamaData>(() => getCached(KEYS.harinama, defaultHarinama));
   const [ekadashi, setEkadashiState] = useState<EkadashiData>(() => {
     const cached = getCached<Partial<EkadashiData>>(KEYS.ekadashi, defaultEkadashi);
+    const cleanCalendar = filterLegacyEkadashi(cached?.calendar);
+    const cleanSchedule = filterLegacyEkadashiSchedule(cached?.templeSchedule);
     return {
       ...defaultEkadashi,
       ...cached,
-      templeSchedule: Array.isArray(cached?.templeSchedule) && cached.templeSchedule.length > 0 ? cached.templeSchedule : defaultEkadashi.templeSchedule,
-      calendar: Array.isArray(cached?.calendar) && cached.calendar.length > 0 ? cached.calendar : defaultEkadashi.calendar,
+      templeSchedule: cleanSchedule,
+      calendar: cleanCalendar,
+      featuredEkadashiId: cleanCalendar.some((x) => x.id === cached?.featuredEkadashiId) ? (cached?.featuredEkadashiId || "") : (cleanCalendar[0]?.id || ""),
     };
   });
   const [gitaCourse, setGitaCourseState] = useState<GitaCourseData>(() => getCached(KEYS.gitaCourse, defaultGitaCourse));
@@ -4147,6 +3770,36 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       .on("postgres_changes", { event: "*", schema: "public", table: "donation_enquiries" }, () => loadDonations())
       .subscribe();
 
+    // Auto-cleanup legacy mock ekadashi data & schedule from local cache and sync to Supabase
+    try {
+      const rawEk = localStorage.getItem("iskcon_cache_" + KEYS.ekadashi);
+      if (rawEk) {
+        const parsedEk = JSON.parse(rawEk);
+        let changed = false;
+        if (Array.isArray(parsedEk?.calendar)) {
+          const cleanedEk = filterLegacyEkadashi(parsedEk.calendar);
+          if (cleanedEk.length !== parsedEk.calendar.length) {
+            parsedEk.calendar = cleanedEk;
+            if (!cleanedEk.some((x: any) => x.id === parsedEk.featuredEkadashiId)) {
+              parsedEk.featuredEkadashiId = cleanedEk[0]?.id || "";
+            }
+            changed = true;
+          }
+        }
+        if (Array.isArray(parsedEk?.templeSchedule)) {
+          const cleanedSch = filterLegacyEkadashiSchedule(parsedEk.templeSchedule);
+          if (cleanedSch.length !== parsedEk.templeSchedule.length) {
+            parsedEk.templeSchedule = cleanedSch;
+            changed = true;
+          }
+        }
+        if (changed) {
+          localStorage.setItem("iskcon_cache_" + KEYS.ekadashi, JSON.stringify(parsedEk));
+          supabase.from("site_data").upsert({ key: KEYS.ekadashi, value: parsedEk, updated_at: new Date().toISOString() }, { onConflict: "key" });
+        }
+      }
+    } catch {}
+
     return () => {
       mounted = false;
       supabase.removeChannel(channel);
@@ -4278,14 +3931,18 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       }
       case KEYS.youth: setYouthState({ ...defaultYouth, ...value }); break;
       case KEYS.harinama: setHarinamaState({ ...defaultHarinama, ...value }); break;
-      case KEYS.ekadashi:
+      case KEYS.ekadashi: {
+        const cleanCalendar = filterLegacyEkadashi(value?.calendar);
+        const cleanSchedule = filterLegacyEkadashiSchedule(value?.templeSchedule);
         setEkadashiState({
           ...defaultEkadashi,
           ...value,
-          templeSchedule: Array.isArray(value?.templeSchedule) && value.templeSchedule.length > 0 ? value.templeSchedule : defaultEkadashi.templeSchedule,
-          calendar: Array.isArray(value?.calendar) && value.calendar.length > 0 ? value.calendar : defaultEkadashi.calendar,
+          templeSchedule: cleanSchedule,
+          calendar: cleanCalendar,
+          featuredEkadashiId: cleanCalendar.some((x) => x.id === value?.featuredEkadashiId) ? value.featuredEkadashiId : (cleanCalendar[0]?.id || ""),
         });
         break;
+      }
       case KEYS.gitaCourse: setGitaCourseState({ ...defaultGitaCourse, ...value }); break;
       case KEYS.sunday: setSundayState({ ...defaultSunday, ...value }); break;
       case KEYS.prahladaBadi: setPrahladaBadiState({ ...defaultPrahladaBadi, ...value }); break;
@@ -4896,6 +4553,16 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       console.error("[contact_messages] insert failed", error);
       throw error;
     }
+
+    // Instantly dispatch Telegram notification to temple team
+    sendTelegramContactNotification({
+      name: m.name,
+      email: m.email,
+      phone: m.phone,
+      message: m.message,
+    }).catch((err) => {
+      console.warn("[addContactMessage] Telegram notification dispatch error:", err);
+    });
   };
 
   // Donation enquiries: anyone can submit, only admins read/update/delete.

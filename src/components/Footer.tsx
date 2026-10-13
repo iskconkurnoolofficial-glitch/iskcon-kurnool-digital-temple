@@ -40,6 +40,7 @@ export default function Footer() {
   const templeLinks = [
     { label: "Daily Darshan", href: "/daily-darshan" },
     { label: "Temple Timings", href: "/temple" },
+    { label: "Ekadashi Vratam", href: "/ekadashi" },
     { label: "Sunday Satsang Feast", href: "/temple/sunday" },
     { label: "Upcoming Festivals", href: "/festivals" },
     { label: "Sri Jagannath Sevas", href: "/donate" },
