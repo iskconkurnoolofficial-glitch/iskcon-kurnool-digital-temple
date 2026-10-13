@@ -36,9 +36,11 @@ import {
   Eye,
   X,
   AlertCircle,
-  Lock
+  Lock,
+  Send
 } from "lucide-react";
 import { toast } from "sonner";
+import { sendTelegramHouseProgrammeNotification } from "@/lib/telegram-notification";
 
 type SubTab = "requests" | "settings" | "activities" | "gallery";
 
@@ -187,6 +189,63 @@ function RequestsTab({
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedRequest, setSelectedRequest] = useState<HouseProgrammeRequest | null>(null);
+  const [testingTelegram, setTestingTelegram] = useState(false);
+  const [sendingTelegramId, setSendingTelegramId] = useState<string | null>(null);
+
+  const handleTestTelegram = async () => {
+    setTestingTelegram(true);
+    try {
+      const ok = await sendTelegramHouseProgrammeNotification({
+        name: "Admin Integration Test",
+        phone: "+91 95053 77520",
+        locationArea: "Devotee Colony, Kurnool",
+        preferredDate: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+        preferredTime: "Evening (5:30 PM – 7:30 PM)",
+        participantsCount: "15 – 25 Devotees",
+        fullAddress: "Flat 202, Sri Krishna Nilayam, Kurnool, Andhra Pradesh 518002",
+        message: "Hare Krishna! This is a test notification verifying Telegram integration for House Programme bookings.",
+        status: "TEST ALERT",
+      });
+      if (ok) {
+        toast.success("Telegram test alert sent successfully to House Programmes group!");
+      } else {
+        toast.error("Failed to send test alert. Please check Telegram bot credentials.");
+      }
+    } catch {
+      toast.error("Error sending test alert to Telegram.");
+    } finally {
+      setTestingTelegram(false);
+    }
+  };
+
+  const handleSendRequestToTelegram = async (req: HouseProgrammeRequest) => {
+    setSendingTelegramId(req.id);
+    try {
+      const ok = await sendTelegramHouseProgrammeNotification({
+        name: req.name,
+        phone: req.phone,
+        locationArea: req.locationArea,
+        preferredDate: req.preferredDate,
+        preferredTime: req.preferredTime,
+        participantsCount: req.participantsCount,
+        fullAddress: req.fullAddress,
+        googleMapsUrl: req.googleMapsUrl,
+        latitude: req.latitude,
+        longitude: req.longitude,
+        message: req.message,
+        status: req.status.toUpperCase(),
+      });
+      if (ok) {
+        toast.success(`Sent details for ${req.name} to Telegram group!`);
+      } else {
+        toast.error("Failed to send details to Telegram.");
+      }
+    } catch {
+      toast.error("Error sending notification to Telegram.");
+    } finally {
+      setSendingTelegramId(null);
+    }
+  };
 
   const filteredRequests = useMemo(() => {
     return requests.filter((r) => {
@@ -355,16 +414,25 @@ function RequestsTab({
           </select>
         </div>
 
-        <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+        <div className="flex items-center gap-2 w-full md:w-auto justify-end flex-wrap">
+          <button
+            onClick={handleTestTelegram}
+            disabled={testingTelegram}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition disabled:opacity-50 cursor-pointer"
+            title="Send sample test alert to House Programmes Telegram group"
+          >
+            <Send className="h-3.5 w-3.5" />
+            {testingTelegram ? "Testing Telegram..." : "Test Telegram"}
+          </button>
           <button
             onClick={onMarkAllRead}
-            className="px-3.5 py-2 text-xs font-medium border rounded-xl hover:bg-muted transition text-foreground"
+            className="px-3.5 py-2 text-xs font-medium border rounded-xl hover:bg-muted transition text-foreground cursor-pointer"
           >
             Mark all read
           </button>
           <button
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold shadow-sm transition"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold shadow-sm transition cursor-pointer"
           >
             <Download className="h-3.5 w-3.5" /> Export CSV
           </button>
@@ -469,8 +537,17 @@ function RequestsTab({
                   </a>
 
                   <button
+                    onClick={() => handleSendRequestToTelegram(req)}
+                    disabled={sendingTelegramId === req.id}
+                    className="p-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 transition disabled:opacity-50 cursor-pointer"
+                    title="Send / Resend details to Telegram Group"
+                  >
+                    <Send className="h-4 w-4" />
+                  </button>
+
+                  <button
                     onClick={() => setSelectedRequest(req)}
-                    className="p-2 rounded-lg bg-muted hover:bg-muted/80 text-foreground transition"
+                    className="p-2 rounded-lg bg-muted hover:bg-muted/80 text-foreground transition cursor-pointer"
                     title="View Full Details"
                   >
                     <Eye className="h-4 w-4" />
@@ -600,18 +677,28 @@ function RequestsTab({
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t gap-2">
-              <a
-                href={getWhatsAppChatUrl(selectedRequest)}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition"
-              >
-                <MessageCircle className="h-4 w-4" /> Message Devotee on WhatsApp
-              </a>
+            <div className="flex items-center justify-between pt-4 border-t gap-2 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
+                <a
+                  href={getWhatsAppChatUrl(selectedRequest)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition"
+                >
+                  <MessageCircle className="h-4 w-4" /> Message Devotee on WhatsApp
+                </a>
+                <button
+                  onClick={() => handleSendRequestToTelegram(selectedRequest)}
+                  disabled={sendingTelegramId === selectedRequest.id}
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition disabled:opacity-50 cursor-pointer"
+                >
+                  <Send className="h-4 w-4" />
+                  {sendingTelegramId === selectedRequest.id ? "Sending to Telegram..." : "Send to Telegram"}
+                </button>
+              </div>
               <button
                 onClick={() => setSelectedRequest(null)}
-                className="px-5 py-2.5 rounded-xl border bg-white hover:bg-muted text-xs font-semibold transition"
+                className="px-5 py-2.5 rounded-xl border bg-white hover:bg-muted text-xs font-semibold transition cursor-pointer"
               >
                 Close
               </button>

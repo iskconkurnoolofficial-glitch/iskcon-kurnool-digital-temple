@@ -48,8 +48,8 @@ import { getOptimizedCloudinaryUrl } from "@/utils/cloudinary";
 export const Route = createFileRoute("/manage-admin-items-cd5b6222-87a8-4a88-a42c-3cf401078d4c")({
   head: () => ({
     meta: [
-      { title: "Manage Admin Items — ISKCON Kurnool" },
-      { name: "description", content: "Private admin section locking controls." },
+      { title: "Manage Admin Items — ISKCON Kurnool - OS PANEL" },
+      { name: "description", content: "Private OS PANEL section locking controls." },
       { name: "robots", content: "noindex" }
     ],
   }),
@@ -91,7 +91,8 @@ export const ALL_ADMIN_SECTIONS: AdminSectionItem[] = [
   { id: "ekadashi", label: "Ekadashi Vratam", category: "Community Focus", icon: Leaf },
   { id: "goshala", label: "Goshala Seva", category: "Community Focus", icon: Heart },
 
-  // Site Settings
+  // Site Settings & Portal Access
+  { id: "adminLogin", label: "OS PANEL Login Page", category: "Site Settings", icon: Lock },
   { id: "contacts", label: "Contact Messages", category: "Site Settings", icon: Mail },
   { id: "settings", label: "Site Settings", category: "Site Settings", icon: Settings },
   { id: "upiSettings", label: "UPI QR & Bank Settings", category: "Site Settings", icon: QrCode },
@@ -148,10 +149,13 @@ function ManageAdminItemsPage() {
 
             <div className="space-y-1">
               <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-slate-900 tracking-tight">
-                Private Admin Access
+                ISKCON Kurnool - OS PANEL
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 font-medium">
-                Log in to manage section lock permissions
+                Private Permission &amp; Security Controls
+              </p>
+              <p className="text-xs font-bold text-amber-600 pt-0.5">
+                ★ Designed and Developed by Devesh
               </p>
             </div>
           </div>
@@ -249,6 +253,17 @@ function ManageAdminItemsPage() {
   const lockedCount = ALL_ADMIN_SECTIONS.filter((sec) => isSectionLocked(sec.id)).length;
   const unlockedCount = totalCount - lockedCount;
 
+  const isLoginLocked = isSectionLocked("adminLogin");
+
+  const handleToggleLoginLock = () => {
+    toggleLockAdminSection("adminLogin");
+    if (isLoginLocked) {
+      toast.success("🔓 Admin Login Page UNLOCKED! Login portal is now active.");
+    } else {
+      toast.error("🔒 Admin Login Page LOCKED! Login page now displays: LOGIN PAGE LOCKED Currently");
+    }
+  };
+
   const handleToggleLock = (sec: AdminSectionItem) => {
     const isCurrentlyLocked = isSectionLocked(sec.id);
     toggleLockAdminSection(sec.id);
@@ -269,7 +284,7 @@ function ManageAdminItemsPage() {
               href={`/iskconkurnool-os-panel-${adminPanelUid}`}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs transition border border-slate-700"
             >
-              <ArrowLeft className="h-3.5 w-3.5" /> Back to Admin Panel
+              <ArrowLeft className="h-3.5 w-3.5" /> Back to ISKCON Kurnool - OS PANEL
             </a>
             <span className="hidden sm:inline-block text-xs font-semibold text-slate-400">|</span>
             <span className="hidden sm:inline-block text-xs font-bold text-slate-300 uppercase tracking-wider">
@@ -307,13 +322,13 @@ function ManageAdminItemsPage() {
 
             <div className="space-y-1">
               <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 text-[11px] font-extrabold uppercase tracking-widest">
-                <ShieldCheck className="h-3.5 w-3.5 text-amber-300" /> Admin Permission Manager
+                <ShieldCheck className="h-3.5 w-3.5 text-amber-300" /> Permission Manager
               </span>
               <h1 className="font-display text-2xl sm:text-3xl font-black text-white tracking-tight">
-                Admin Panel Sections
+                ISKCON Kurnool - OS PANEL
               </h1>
-              <p className="text-xs sm:text-sm text-white/80 font-sans">
-                Click the lock icon on any section to lock or unlock admin access.
+              <p className="text-xs sm:text-sm text-amber-300 font-bold font-sans">
+                ★ Designed and Developed by Devesh
               </p>
             </div>
           </div>
@@ -423,6 +438,106 @@ function ManageAdminItemsPage() {
                 <ExternalLink className="h-3.5 w-3.5" />
               </a>
             </div>
+          </div>
+        </div>
+
+        {/* Master Admin Login Page Lock Card */}
+        <div className={`rounded-3xl p-5 sm:p-7 shadow-sm border transition-all duration-300 relative overflow-hidden space-y-4 ${
+          isLoginLocked 
+            ? "bg-gradient-to-br from-red-50 via-white to-rose-50/50 border-red-300 ring-2 ring-red-400/20" 
+            : "bg-white border-slate-200/90"
+        }`}>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold shadow-md shrink-0 transition-colors ${
+                isLoginLocked 
+                  ? "bg-red-600 text-white shadow-red-500/25" 
+                  : "bg-gradient-to-tr from-amber-500 to-amber-600 text-white shadow-amber-500/20"
+              }`}>
+                {isLoginLocked ? <Lock className="h-6 w-6 animate-pulse" /> : <Unlock className="h-6 w-6" />}
+              </div>
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="font-display font-extrabold text-base sm:text-lg text-slate-900 tracking-tight">
+                    Admin Login Page Security
+                  </h2>
+                  {isLoginLocked ? (
+                    <span className="px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200 text-[10px] font-black uppercase tracking-wide flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping inline-block" />
+                      LOGIN PAGE LOCKED Currently
+                    </span>
+                  ) : (
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold uppercase tracking-wide flex items-center gap-1">
+                      <Check className="h-3 w-3" />
+                      UNLOCKED & ACTIVE
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 font-sans">
+                  {isLoginLocked 
+                    ? "The admin login portal is currently LOCKED. Visitors to the login page see: 'LOGIN PAGE LOCKED Currently'." 
+                    : "The admin login portal is currently UNLOCKED and accessible to authorized admins."}
+                </p>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2.5 shrink-0">
+              <button
+                type="button"
+                onClick={handleToggleLoginLock}
+                className={`inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-xs font-black tracking-wide uppercase transition-all shadow-md active:scale-95 cursor-pointer ${
+                  isLoginLocked
+                    ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/25 ring-2 ring-emerald-300"
+                    : "bg-red-600 hover:bg-red-700 text-white shadow-red-600/25 ring-2 ring-red-300"
+                }`}
+              >
+                {isLoginLocked ? (
+                  <>
+                    <Unlock className="h-4 w-4" />
+                    <span>UNLOCK ADMIN LOGIN PAGE</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="h-4 w-4" />
+                    <span>LOCK ADMIN LOGIN PAGE</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Status banner with preview explanation */}
+          <div className={`p-4 rounded-2xl border text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+            isLoginLocked
+              ? "bg-red-100/70 border-red-200 text-red-900"
+              : "bg-slate-50 border-slate-200 text-slate-700"
+          }`}>
+            <div className="flex items-start sm:items-center gap-2.5">
+              <ShieldCheck className={`h-4.5 w-4.5 shrink-0 ${isLoginLocked ? "text-red-600" : "text-amber-600"}`} />
+              <div>
+                <span className="font-bold">
+                  {isLoginLocked 
+                    ? "Login page status: LOCKED" 
+                    : "Login page status: ACTIVE"}
+                </span>
+                <span className="block sm:inline sm:ml-1 text-[11px] opacity-90">
+                  {isLoginLocked 
+                    ? "— When users visit the login URL, it displays 'LOGIN PAGE LOCKED Currently' and blocks login attempts." 
+                    : "— Admins can sign in normally at the login URL."}
+                </span>
+              </div>
+            </div>
+
+            <a
+              href={`/iskconkurnool-os-panel-${adminPanelUid}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-900 hover:underline shrink-0 bg-white/80 px-3 py-1.5 rounded-xl border border-slate-200"
+            >
+              <span>Preview Login Screen</span>
+              <ExternalLink className="h-3 w-3" />
+            </a>
           </div>
         </div>
 
@@ -580,10 +695,15 @@ function ManageAdminItemsPage() {
         {filteredSections.length === 0 && (
           <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-300 space-y-2">
             <AlertTriangle className="h-8 w-8 text-amber-500 mx-auto" />
-            <h4 className="font-bold text-slate-800 text-sm">No Admin Sections Found</h4>
+            <h4 className="font-bold text-slate-800 text-sm">No Sections Found</h4>
             <p className="text-xs text-slate-500">Try clearing your search term or selecting a different category filter.</p>
           </div>
         )}
+
+        {/* Developer Credit Footer */}
+        <footer className="text-center pt-6 text-xs font-bold text-slate-500">
+          ★ Designed and Developed by Devesh
+        </footer>
 
       </main>
     </div>

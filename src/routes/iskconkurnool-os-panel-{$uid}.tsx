@@ -31,26 +31,37 @@ import PrivacyManager from "@/admin/PrivacyManager";
 import ReceiptSettingsManager from "@/admin/ReceiptSettingsManager";
 import UpiSettingsManager from "@/admin/UpiSettingsManager";
 import LifePatronManager from "@/admin/LifePatronManager";
-import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, CreditCard, Video, Bell, ShieldCheck, Compass, Sun, Tv, Award, FileText, Lock, FileCheck, QrCode, Eye, EyeOff, Rocket, KeyRound, Ticket } from "lucide-react";
+import { LayoutDashboard, Image, Images, Settings, Palette, LogOut, Home, Radio, Sparkles, HandHeart, Users, Leaf, Music, BookOpen, Calendar, Heart, Mail, AlertTriangle, FileSpreadsheet, Instagram, Baby, Search, Clock, Menu, X, ArrowLeft, ChevronRight, CreditCard, Video, Bell, ShieldCheck, Compass, Sun, Tv, Award, FileText, Lock, Unlock, FileCheck, QrCode, Eye, EyeOff, Rocket, KeyRound, Ticket, RefreshCw, Phone } from "lucide-react";
 
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/iskconkurnool-os-panel-{$uid}")({
-  head: () => ({ meta: [{ title: "Admin — ISKCON Kurnool" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "ISKCON Kurnool - OS PANEL" }, { name: "robots", content: "noindex" }] }),
   staleTime: 0,
   gcTime: 0,
   loader: async () => {
     try {
       const { data } = await supabase
         .from("site_data")
-        .select("value")
-        .eq("key", "adminPanelUid")
-        .maybeSingle();
+        .select("key, value")
+        .in("key", ["adminPanelUid", "lockedAdminSections"]);
 
-      const dbUid = typeof data?.value === "string" ? data.value.trim() : null;
-      return { activeUid: dbUid || DEFAULT_ADMIN_PANEL_UID };
+      let activeUid = DEFAULT_ADMIN_PANEL_UID;
+      let lockedSections: string[] = [];
+
+      if (data) {
+        for (const row of data) {
+          if (row.key === "adminPanelUid" && typeof row.value === "string" && row.value.trim()) {
+            activeUid = row.value.trim();
+          }
+          if (row.key === "lockedAdminSections" && Array.isArray(row.value)) {
+            lockedSections = row.value.filter((s): s is string => typeof s === "string");
+          }
+        }
+      }
+      return { activeUid, lockedSections };
     } catch {
-      return { activeUid: DEFAULT_ADMIN_PANEL_UID };
+      return { activeUid: DEFAULT_ADMIN_PANEL_UID, lockedSections: [] };
     }
   },
   component: AdminPageWrapper,
@@ -296,7 +307,128 @@ function AdminPage() {
     setContacts([]);
   };
 
+  const isLoginLocked = isSectionLocked("adminLogin");
+
+  if (isLoginLocked) {
+    return (
+      <div className="min-h-screen relative overflow-hidden bg-gradient-to-b from-[#2d1254] via-[#1a0836] to-[#0d031c] grid place-items-center px-4 py-12 font-sans">
+        {/* Ambient red / warning glow */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-red-500/15 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(#ef4444_1px,transparent_1px)] [background-size:28px_28px] opacity-[0.06] pointer-events-none" />
+
+        <div className="relative w-full max-w-md bg-white/95 backdrop-blur-2xl rounded-3xl border border-red-200/90 p-8 sm:p-10 shadow-[0_20px_60px_rgba(239,68,68,0.25)] space-y-6 animate-fade-in text-center">
+          {/* Header & Logo with Lock Badge */}
+          <div className="space-y-3">
+            <div className="relative inline-block group">
+              <div className="absolute inset-0 bg-red-500/25 rounded-full blur-xl animate-pulse" />
+              {hydrated && settings.logo ? (
+                <img
+                  src={settings.logo}
+                  alt="ISKCON Kurnool Logo"
+                  className="relative h-20 w-20 rounded-full object-cover mx-auto ring-4 ring-red-500/80 shadow-xl opacity-90"
+                />
+              ) : (
+                <div className="relative h-20 w-20 rounded-full bg-gradient-to-tr from-red-600 via-rose-600 to-amber-600 grid place-items-center text-white font-display font-black text-2xl mx-auto shadow-xl ring-4 ring-red-500/80">
+                  IK
+                </div>
+              )}
+              <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md ring-2 ring-white">
+                <Lock className="h-4 w-4" />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 border border-red-200 text-red-700 text-[11px] font-black uppercase tracking-wider">
+                <span className="w-2 h-2 rounded-full bg-red-600 animate-ping inline-block" />
+                Access Restricted
+              </div>
+              <h1 className="font-display font-black text-2xl sm:text-3xl text-red-600 tracking-tight uppercase">
+                LOGIN PAGE LOCKED
+              </h1>
+              <p className="text-sm font-bold text-slate-800">
+                Currently Locked
+              </p>
+              <p className="text-xs text-slate-500 font-medium">
+                Sri Sri Puri Jagannath Temple, ISKCON Kurnool - OS PANEL
+              </p>
+              <p className="text-xs font-bold text-amber-700">
+                ★ Designed and Developed by Devesh
+              </p>
+            </div>
+          </div>
+
+          {/* Lock Notice Card */}
+          <div className="bg-red-50/80 border border-red-200/90 rounded-2xl p-4 text-xs text-red-900/90 text-left space-y-3 font-medium">
+            <div className="flex items-start gap-2.5">
+              <Lock className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
+              <p className="leading-relaxed">
+                The admin login portal is <strong>currently locked</strong> by the administrator. Administrative sign-in access and dashboard entry are temporarily suspended.
+              </p>
+            </div>
+
+            <div className="pt-2.5 border-t border-red-200/70 space-y-2">
+              <p className="text-[11px] font-bold text-slate-800">
+                If you are an authorized administrator:
+              </p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-white/80 p-3 rounded-xl border border-red-200 shadow-2xs">
+                <div className="space-y-0.5">
+                  <span className="text-[10px] uppercase tracking-wider font-extrabold text-red-600 block">
+                    Contact for Access
+                  </span>
+                  <a
+                    href="tel:+919347126877"
+                    className="text-xs sm:text-sm font-black text-slate-900 hover:text-red-600 transition flex items-center gap-1.5"
+                  >
+                    <span>+91 93471 26877</span>
+                  </a>
+                </div>
+                <div className="flex items-center gap-2">
+                  <a
+                    href="tel:+919347126877"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition shadow-2xs cursor-pointer"
+                  >
+                    <Phone className="h-3 w-3" />
+                    <span>Call</span>
+                  </a>
+                  <a
+                    href="https://wa.me/919347126877?text=Hare%20Krishna,%20requesting%20admin%20portal%20access."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shadow-2xs cursor-pointer"
+                  >
+                    <span>WhatsApp</span>
+                  </a>
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-600 font-medium pt-0.5">
+                Contact <strong>+91 93471 26877</strong> to get portal access.
+              </p>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="pt-2">
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <Link
+                to="/"
+                className="inline-flex items-center gap-1.5 font-bold text-slate-600 hover:text-amber-600 transition"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span>Back to Public Site</span>
+              </Link>
+              <span className="text-[10px] text-red-600 font-black uppercase tracking-wider">
+                Portal Locked
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!authed) {
+
     return (
       <div className="min-h-screen relative overflow-hidden bg-gradient-to-b from-[#2d1254] via-[#1a0836] to-[#0d031c] grid place-items-center px-4 py-12 font-sans">
         {/* Soft glowing ambient background light orbs */}
@@ -324,10 +456,13 @@ function AdminPage() {
 
             <div className="space-y-1">
               <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-slate-900 tracking-tight">
-                Admin Portal
+                ISKCON Kurnool - OS PANEL
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 font-medium">
                 Sri Sri Puri Jagannath Temple, ISKCON Kurnool
+              </p>
+              <p className="text-xs font-bold text-amber-600">
+                ★ Designed and Developed by Devesh
               </p>
             </div>
           </div>
@@ -336,6 +471,10 @@ function AdminPage() {
           <form
             onSubmit={async (e) => {
               e.preventDefault();
+              if (isSectionLocked("adminLogin")) {
+                setErr("LOGIN PAGE LOCKED Currently: Administrative sign-in is disabled.");
+                return;
+              }
               setBusy(true);
               setErr("");
               const res = await login(email, pw);
@@ -539,9 +678,9 @@ function AdminPage() {
               <div className="h-7 w-7 rounded-full bg-secondary text-primary font-bold text-xs flex items-center justify-center">IK</div>
             )}
             <div>
-              <h1 className="font-display text-xs font-bold leading-tight tracking-wide">ISKCON ADMIN</h1>
-              <p className="text-[10px] text-white/80 font-medium truncate max-w-[120px]">
-                {tab === "welcome" ? "Dashboard" : tabs.find(t => t.id === tab)?.label}
+              <h1 className="font-display text-xs font-bold leading-tight tracking-wide">ISKCON Kurnool - OS PANEL</h1>
+              <p className="text-[9px] text-amber-300 font-semibold truncate max-w-[150px]">
+                ★ Designed and Developed by Devesh
               </p>
             </div>
           </div>
@@ -651,8 +790,8 @@ function AdminPage() {
                   <div className="h-9 w-9 rounded-full bg-secondary text-primary font-bold text-xs flex items-center justify-center shadow-md">IK</div>
                 )}
                 <div>
-                  <h2 className="font-display font-bold text-sm">ISKCON Kurnool</h2>
-                  <p className="text-[10px] text-white/70">Admin Mobile App</p>
+                  <h2 className="font-display font-bold text-sm">ISKCON Kurnool - OS PANEL</h2>
+                  <p className="text-[10px] text-amber-300 font-semibold">★ Designed and Developed by Devesh</p>
                 </div>
               </div>
               <button
@@ -781,11 +920,14 @@ function AdminPage() {
               <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-amber-400 to-amber-200 text-slate-950 font-bold text-xs flex items-center justify-center shadow-md">IK</div>
             )}
             <div>
-              <h2 className="font-display font-bold text-sm tracking-wide text-white truncate max-w-[130px]">
-                {currentUser?.name || "ISKCON Kurnool"}
+              <h2 className="font-display font-bold text-sm tracking-wide text-white truncate max-w-[140px]">
+                ISKCON Kurnool
               </h2>
-              <span className="text-[10px] text-amber-300/90 font-semibold tracking-wider uppercase block">
-                ★ Administrator
+              <span className="text-[10px] text-amber-300 font-extrabold tracking-wider uppercase block">
+                OS PANEL
+              </span>
+              <span className="text-[9px] text-amber-200/90 font-bold tracking-wide block">
+                ★ Designed and Developed by Devesh
               </span>
             </div>
           </div>
@@ -860,14 +1002,19 @@ function AdminPage() {
           ))}
         </nav>
 
-        {/* Sidebar Footer Link */}
-        <div className="p-3 border-t border-white/10 bg-black/20 flex items-center justify-between text-xs">
-          <Link to="/" className="text-white/80 hover:text-white flex items-center gap-1.5 font-semibold transition">
-            <Home className="h-3.5 w-3.5 text-amber-300" /> Public Site
-          </Link>
-          <button onClick={logout} className="text-rose-300 hover:text-rose-200 flex items-center gap-1 font-semibold cursor-pointer transition">
-            <LogOut className="h-3.5 w-3.5" /> Logout
-          </button>
+        {/* Sidebar Footer Link & Credit */}
+        <div className="p-3 border-t border-white/10 bg-black/20 flex flex-col gap-2 text-xs">
+          <div className="flex items-center justify-between">
+            <Link to="/" className="text-white/80 hover:text-white flex items-center gap-1.5 font-semibold transition">
+              <Home className="h-3.5 w-3.5 text-amber-300" /> Public Site
+            </Link>
+            <button onClick={logout} className="text-rose-300 hover:text-rose-200 flex items-center gap-1 font-semibold cursor-pointer transition">
+              <LogOut className="h-3.5 w-3.5" /> Logout
+            </button>
+          </div>
+          <div className="text-[10px] font-bold text-amber-300/90 text-center border-t border-white/10 pt-1.5 tracking-wide">
+            ★ Designed and Developed by Devesh
+          </div>
         </div>
       </aside>
 
@@ -1180,8 +1327,11 @@ function WelcomeDashboard({
         <div className="absolute -left-12 -bottom-12 w-32 h-32 bg-primary/5 rounded-full blur-2xl pointer-events-none"></div>
         
         <h2 className="font-display text-xl sm:text-3xl font-bold text-primary relative z-10">
-          Hare Krishna! Welcome to ISKCON Kurnool OS Panel
+          Hare Krishna! Welcome to ISKCON Kurnool - OS PANEL
         </h2>
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-400/30 text-amber-800 text-xs font-bold tracking-wide relative z-10 mx-auto">
+          ★ Designed and Developed by Devesh
+        </div>
         <p className="text-muted-foreground text-xs sm:text-sm max-w-md mx-auto relative z-10 leading-relaxed">
           Manage carousel banners, sevas, class schedules, community modules, and temple settings in real-time.
         </p>
@@ -1306,6 +1456,11 @@ function WelcomeDashboard({
             ))}
           </div>
         )}
+
+        {/* Developer Credit Footer */}
+        <div className="pt-8 pb-4 text-center text-xs font-bold text-slate-400 select-none border-t border-slate-200 mt-8">
+          ★ Designed and Developed by Devesh
+        </div>
       </div>
     </div>
   );
@@ -1382,15 +1537,19 @@ function AdminIntroSplash({ onComplete }: { onComplete: () => void }) {
       >
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-400/15 border border-amber-400/30 text-amber-300 text-xs font-extrabold uppercase tracking-widest backdrop-blur-md">
           <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-spin" />
-          <span>Hare Krishna · Admin Workspace</span>
+          <span>Hare Krishna · ISKCON Kurnool - OS PANEL</span>
         </div>
 
         <h1 className="font-display text-2xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-100 tracking-tight">
-          ISKCON Kurnool
+          ISKCON Kurnool - OS PANEL
         </h1>
 
         <p className="text-xs sm:text-sm text-white/75 font-medium">
           Sri Sri Puri Jagannath Digital Temple Portal
+        </p>
+
+        <p className="text-[11px] font-semibold text-amber-300/80 pt-1">
+          ★ Designed and Developed by Devesh
         </p>
       </motion.div>
 
@@ -1408,7 +1567,7 @@ function AdminIntroSplash({ onComplete }: { onComplete: () => void }) {
           />
         </div>
         <div className="flex items-center justify-between text-[10px] font-bold text-amber-200/80 tracking-wider">
-          <span>Loading admin workspace...</span>
+          <span>Loading ISKCON Kurnool - OS PANEL...</span>
           <span>{progress}%</span>
         </div>
 

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState, useCallback, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { finalizeDonationStatus } from "@/lib/donation-status.functions";
-import { sendTelegramContactNotification } from "@/lib/telegram-notification";
+import { sendTelegramContactNotification, sendTelegramHouseProgrammeNotification } from "@/lib/telegram-notification";
 import { toast } from "sonner";
 
 export type Slide = {
@@ -3849,19 +3849,25 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    // Fast-path fetch for adminPanelUid so it resolves immediately without waiting for entire site_data table
+    // Fast-path fetch for adminPanelUid and lockedAdminSections so they resolve immediately without waiting for entire site_data table
     (async () => {
       try {
         const { data } = await supabase
           .from("site_data")
-          .select("value")
-          .eq("key", KEYS.adminPanelUid)
-          .maybeSingle();
+          .select("key, value")
+          .in("key", [KEYS.adminPanelUid, KEYS.lockedAdminSections]);
 
-        if (!mounted) return;
-        if (typeof data?.value === "string" && data.value.trim()) {
-          setAdminPanelUidState(data.value.trim());
-          setCache(KEYS.adminPanelUid, data.value.trim());
+        if (!mounted || !data) return;
+        for (const row of data) {
+          if (row.key === KEYS.adminPanelUid && typeof row.value === "string" && row.value.trim()) {
+            setAdminPanelUidState(row.value.trim());
+            setCache(KEYS.adminPanelUid, row.value.trim());
+          }
+          if (row.key === KEYS.lockedAdminSections && Array.isArray(row.value)) {
+            const sections = row.value.filter((s): s is string => typeof s === "string");
+            setLockedAdminSectionsState(sections);
+            setCache(KEYS.lockedAdminSections, sections);
+          }
         }
       } catch {}
     })();
@@ -4205,6 +4211,23 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       console.error("[HouseProgramme] Contact message insert failed:", error);
       throw new Error(error.message || "Failed to save house programme request");
     }
+
+    // Instantly dispatch Telegram notification to temple house programmes group
+    sendTelegramHouseProgrammeNotification({
+      name: req.name.trim(),
+      phone: req.phone.trim(),
+      locationArea: req.locationArea.trim(),
+      preferredDate: req.preferredDate,
+      preferredTime: req.preferredTime,
+      participantsCount: req.participantsCount,
+      fullAddress: req.fullAddress.trim(),
+      googleMapsUrl: req.googleMapsUrl,
+      latitude: req.latitude,
+      longitude: req.longitude,
+      message: req.message?.trim(),
+    }).catch((err) => {
+      console.warn("[addHouseProgrammeRequest] Telegram notification dispatch error:", err);
+    });
   };
 
   const updateHouseProgrammeRequestStatus = async (id: string, status: HouseProgrammeRequest["status"]) => {

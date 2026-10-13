@@ -34,7 +34,9 @@ import {
   Check,
   Building,
   HeartHandshake,
-  Lock
+  Lock,
+  ExternalLink,
+  RotateCw
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -81,6 +83,7 @@ function HouseProgrammesPage() {
   const [isFetchingLocation, setIsFetchingLocation] = useState(false);
   const [latitude, setLatitude] = useState<number | undefined>(undefined);
   const [longitude, setLongitude] = useState<number | undefined>(undefined);
+  const [locationAccuracy, setLocationAccuracy] = useState<number | undefined>(undefined);
   const [googleMapsUrl, setGoogleMapsUrl] = useState<string>("");
   const [locationDetected, setLocationDetected] = useState(false);
 
@@ -96,56 +99,161 @@ function HouseProgrammesPage() {
     "Hare Krishna! 🙏 I would like to inquire about arranging an ISKCON House Programme at my home."
   )}`;
 
-  // Detect GPS Location
+  // Detect GPS Location with multi-layer reverse geocoding & high-accuracy fallback
   const handleDetectLocation = () => {
-    if (!navigator.geolocation) {
+    if (typeof window === "undefined" || !navigator.geolocation) {
       toast.error("Geolocation is not supported by your browser");
       return;
     }
 
     setIsFetchingLocation(true);
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        setLatitude(lat);
-        setLongitude(lng);
-        const mapUrl = `https://maps.google.com/?q=${lat},${lng}`;
-        setGoogleMapsUrl(mapUrl);
-        setLocationDetected(true);
 
-        // Reverse geocoding with OpenStreetMap Nominatim
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`
-          );
-          if (res.ok) {
-            const geoData = await res.json();
-            if (geoData && geoData.display_name) {
-              if (!fullAddress) setFullAddress(geoData.display_name);
-              const area =
-                geoData.address?.suburb ||
-                geoData.address?.neighbourhood ||
-                geoData.address?.city_district ||
-                geoData.address?.city ||
-                "";
-              if (area && !locationArea) setLocationArea(area);
-            }
+    const onLocationSuccess = async (pos: GeolocationPosition) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const acc = Math.round(pos.coords.accuracy);
+
+      setLatitude(lat);
+      setLongitude(lng);
+      setLocationAccuracy(acc);
+      const mapUrl = `https://maps.google.com/?q=${lat},${lng}`;
+      setGoogleMapsUrl(mapUrl);
+      setLocationDetected(true);
+
+      let detectedArea = "";
+      let detectedAddress = "";
+
+      // Step 1: Query OpenStreetMap Nominatim with address details
+      try {
+        const osmRes = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&addressdetails=1&accept-language=en`,
+          { signal: AbortSignal.timeout(4500) }
+        );
+        if (osmRes.ok) {
+          const geoData = await osmRes.json();
+          if (geoData && geoData.address) {
+            const a = geoData.address;
+            const colony =
+              a.suburb ||
+              a.neighbourhood ||
+              a.residential ||
+              a.city_district ||
+              a.subdistrict ||
+              a.village ||
+              "";
+            const city = a.city || a.town || a.municipality || "Kurnool";
+            const road = a.road || a.pedestrian || a.street || "";
+            const postcode = a.postcode || "";
+
+            detectedArea = colony ? `${colony}, ${city}` : city;
+            detectedAddress =
+              geoData.display_name ||
+              [road, colony, city, a.state || "Andhra Pradesh", postcode].filter(Boolean).join(", ");
           }
-        } catch (e) {
-          // optional reverse geocode
         }
+      } catch {
+        // Continue to fallback Layer 2
+      }
 
+      // Step 2: Query BigDataCloud client API (CORS-friendly browser reverse geocoding)
+      if (!detectedArea) {
+        try {
+          const bdcRes = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`,
+            { signal: AbortSignal.timeout(4000) }
+          );
+          if (bdcRes.ok) {
+            const bdcData = await bdcRes.json();
+            const city = bdcData.city || bdcData.locality || "Kurnool";
+            const info = Array.isArray(bdcData.localityInfo?.informative)
+              ? bdcData.localityInfo.informative
+              : [];
+            const admin = Array.isArray(bdcData.localityInfo?.administrative)
+              ? bdcData.localityInfo.administrative
+              : [];
+
+            const localName =
+              info.find(
+                (i: any) =>
+                  i.name &&
+                  ![
+                    "Asia",
+                    "India",
+                    "Andhra Pradesh",
+                    "Kurnool",
+                    "Kurnool district",
+                    "Indian subcontinent",
+                    "Mainland India",
+                    "Krishna River basin",
+                    "South Central Railway",
+                    "Asia/Kolkata",
+                  ].includes(i.name)
+              )?.name ||
+              admin.find((ad: any) => ad.adminLevel >= 7)?.name ||
+              bdcData.locality ||
+              city;
+
+            const state = bdcData.principalSubdivision || "Andhra Pradesh";
+            const postcode = bdcData.postcode || "";
+
+            detectedArea = localName && localName !== city ? `${localName}, ${city}` : city;
+            detectedAddress = [localName !== city ? localName : "", city, state, postcode]
+              .filter(Boolean)
+              .join(", ");
+          }
+        } catch {
+          // Both external reverse geocoders unreachable
+        }
+      }
+
+      // Apply detected area and address directly into form fields
+      if (detectedArea) {
+        setLocationArea(detectedArea);
+      }
+      if (detectedAddress) {
+        setFullAddress(detectedAddress);
+      } else if (!fullAddress) {
+        setFullAddress(`Near ${detectedArea || "Kurnool"}, GPS: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+      }
+
+      setIsFetchingLocation(false);
+      toast.success(
+        `Exact location attached: ${detectedArea || "GPS Position"} (±${acc}m accuracy)!`
+      );
+    };
+
+    const onLocationError = (err: GeolocationPositionError) => {
+      // If high-accuracy timed out, retry immediately with standard accuracy
+      if (err.code === err.TIMEOUT || err.code === err.POSITION_UNAVAILABLE) {
+        navigator.geolocation.getCurrentPosition(
+          onLocationSuccess,
+          (fallbackErr) => {
+            setIsFetchingLocation(false);
+            console.error("Fallback geolocation error", fallbackErr);
+            if (fallbackErr.code === fallbackErr.PERMISSION_DENIED) {
+              toast.error("Location permission denied. Please allow location access in your browser settings.");
+            } else {
+              toast.error("Unable to obtain GPS signal. Please type your location manually.");
+            }
+          },
+          { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 }
+        );
+      } else {
         setIsFetchingLocation(false);
-        toast.success("Exact GPS location captured successfully!");
-      },
-      (err) => {
-        setIsFetchingLocation(false);
-        console.error("Location error", err);
-        toast.error("Unable to retrieve location. Please check device permissions.");
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
+        if (err.code === err.PERMISSION_DENIED) {
+          toast.error("Location permission denied. Please allow location access in your browser settings.");
+        } else {
+          toast.error("Unable to retrieve location. Please check device permissions.");
+        }
+      }
+    };
+
+    // First attempt: High accuracy GPS
+    navigator.geolocation.getCurrentPosition(onLocationSuccess, onLocationError, {
+      enableHighAccuracy: true,
+      timeout: 8000,
+      maximumAge: 0,
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -196,6 +304,7 @@ function HouseProgrammesPage() {
     setMessage("");
     setLatitude(undefined);
     setLongitude(undefined);
+    setLocationAccuracy(undefined);
     setGoogleMapsUrl("");
     setLocationDetected(false);
     setSubmitted(false);
@@ -1038,16 +1147,25 @@ function HouseProgrammesPage() {
                         {/* Location / Area & Number of participants */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-xs font-semibold text-foreground mb-1.5">
-                              Location / Area in Kurnool <span className="text-rose-500">*</span>
-                            </label>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <label className="block text-xs font-semibold text-foreground">
+                                Location / Area in Kurnool <span className="text-rose-500">*</span>
+                              </label>
+                              {locationDetected && (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                                  <Check className="h-3 w-3" /> Auto-filled
+                                </span>
+                              )}
+                            </div>
                             <input
                               type="text"
                               required
-                              placeholder="e.g. Nandyal Checkpost, Kurnool"
+                              placeholder="e.g. Bangar Pet, Nandyal Checkpost, Kurnool"
                               value={locationArea}
                               onChange={(e) => setLocationArea(e.target.value)}
-                              className="w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
+                              className={`w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition bg-white ${
+                                locationDetected ? "border-emerald-300 ring-1 ring-emerald-200/50" : ""
+                              }`}
                             />
                           </div>
 
@@ -1104,7 +1222,7 @@ function HouseProgrammesPage() {
 
                         {/* Full Address & GPS Auto-detect */}
                         <div>
-                          <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
                             <label className="block text-xs font-semibold text-foreground">
                               Full Home Address <span className="text-rose-500">*</span>
                             </label>
@@ -1113,19 +1231,23 @@ function HouseProgrammesPage() {
                               type="button"
                               onClick={handleDetectLocation}
                               disabled={isFetchingLocation}
-                              className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition border border-blue-200 cursor-pointer"
+                              className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-xl transition border shadow-2xs cursor-pointer ${
+                                locationDetected
+                                  ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-300"
+                                  : "bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 text-blue-700 border-blue-200"
+                              }`}
                             >
                               {isFetchingLocation ? (
                                 <>
-                                  <Loader2 className="h-3 w-3 animate-spin" /> Fetching GPS...
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600" /> Detecting Location...
                                 </>
                               ) : locationDetected ? (
                                 <>
-                                  <CheckCircle2 className="h-3 w-3 text-emerald-600" /> GPS Attached
+                                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> GPS & Address Attached
                                 </>
                               ) : (
                                 <>
-                                  <LocateFixed className="h-3 w-3" /> 📍 Auto-Detect Exact Location
+                                  <LocateFixed className="h-3.5 w-3.5 text-blue-600" /> 📍 Auto-Detect Exact Location
                                 </>
                               )}
                             </button>
@@ -1136,12 +1258,53 @@ function HouseProgrammesPage() {
                             placeholder="House / Flat No., Street, Landmark, Kurnool..."
                             value={fullAddress}
                             onChange={(e) => setFullAddress(e.target.value)}
-                            className="w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition bg-white"
+                            className={`w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition bg-white ${
+                              locationDetected ? "border-emerald-300 ring-1 ring-emerald-200/50" : ""
+                            }`}
                           />
                           {locationDetected && latitude && longitude && (
-                            <div className="text-[11px] text-emerald-700 flex items-center gap-1.5 mt-1 font-medium bg-emerald-50 p-2 rounded-lg border border-emerald-200">
-                              <Navigation className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                              Exact GPS coordinates ({latitude.toFixed(6)}, {longitude.toFixed(6)}) captured for temple team.
+                            <div className="mt-2 p-3 bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50/70 rounded-xl border border-emerald-200/90 text-xs text-emerald-950 space-y-2">
+                              <div className="flex items-center justify-between flex-wrap gap-2">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+                                  <span className="font-bold text-emerald-900 flex items-center gap-1">
+                                    <Navigation className="h-3.5 w-3.5 text-emerald-700" />
+                                    Exact GPS Location Captured
+                                  </span>
+                                  {locationAccuracy !== undefined && (
+                                    <span className="px-1.5 py-0.5 rounded bg-emerald-200/60 text-[10px] font-mono font-semibold text-emerald-800">
+                                      ±{locationAccuracy}m precision
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  <a
+                                    href={googleMapsUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 hover:text-blue-900 bg-white px-2.5 py-1 rounded-lg border border-blue-200 hover:bg-blue-50 transition shadow-2xs"
+                                    title="Verify exact pin on Google Maps"
+                                  >
+                                    <ExternalLink className="h-3 w-3" /> View on Maps
+                                  </a>
+                                  <button
+                                    type="button"
+                                    onClick={handleDetectLocation}
+                                    disabled={isFetchingLocation}
+                                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white px-2 py-1 rounded-lg border border-slate-200 hover:bg-slate-50 transition cursor-pointer"
+                                    title="Refresh GPS reading"
+                                  >
+                                    <RotateCw className={`h-3 w-3 ${isFetchingLocation ? "animate-spin" : ""}`} />
+                                    Refresh
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div className="text-[11px] text-emerald-800 leading-relaxed font-sans">
+                                📍 Coordinates: <strong className="font-mono text-emerald-950">{latitude.toFixed(6)}, {longitude.toFixed(6)}</strong>.
+                                {" "}Your exact GPS coordinates and Google Maps route will be forwarded to the ISKCON team on Telegram & WhatsApp. You may add specific flat or door numbers above.
+                              </div>
                             </div>
                           )}
                         </div>

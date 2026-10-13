@@ -253,3 +253,166 @@ export async function sendTelegramContactNotification(data: TelegramContactData)
     return false;
   }
 }
+
+export interface TelegramHouseProgrammeData {
+  name: string;
+  phone: string;
+  locationArea: string;
+  preferredDate: string;
+  preferredTime?: string;
+  participantsCount?: string;
+  fullAddress?: string;
+  googleMapsUrl?: string;
+  latitude?: number;
+  longitude?: number;
+  message?: string;
+  date?: string;
+  time?: string;
+  status?: string;
+}
+
+const DEFAULT_HOUSE_PROGRAMMES_BOT_TOKEN = "8536876498:AAHXfEyyS4Tsc4Ul2b8qT5OrxkgmfuPE9Y0";
+const DEFAULT_HOUSE_PROGRAMMES_CHAT_ID = "-5563362339";
+
+/**
+ * Sends a rich notification to Telegram whenever a devotee requests a House Programme.
+ * Includes all details, quick WhatsApp reply links, Google Maps / live GPS links,
+ * and optionally sends a native interactive Telegram map pin if GPS coordinates are provided.
+ */
+export async function sendTelegramHouseProgrammeNotification(
+  data: TelegramHouseProgrammeData
+): Promise<boolean> {
+  try {
+    const botToken =
+      (typeof process !== "undefined" && process.env?.TELEGRAM_HOUSE_PROGRAMMES_BOT_TOKEN) ||
+      (typeof import.meta !== "undefined" && (import.meta as any).env?.VITE_TELEGRAM_HOUSE_PROGRAMMES_BOT_TOKEN) ||
+      DEFAULT_HOUSE_PROGRAMMES_BOT_TOKEN;
+
+    const chatId =
+      (typeof process !== "undefined" && process.env?.TELEGRAM_HOUSE_PROGRAMMES_CHAT_ID) ||
+      (typeof import.meta !== "undefined" && (import.meta as any).env?.VITE_TELEGRAM_HOUSE_PROGRAMMES_CHAT_ID) ||
+      DEFAULT_HOUSE_PROGRAMMES_CHAT_ID;
+
+    if (!botToken || !chatId) {
+      console.warn("[Telegram House Programme] Bot token or chat ID is missing.");
+      return false;
+    }
+
+    const now = new Date();
+    const formattedDate =
+      data.date ||
+      now.toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        timeZone: "Asia/Kolkata",
+      });
+
+    const formattedTime =
+      data.time ||
+      now.toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: "Asia/Kolkata",
+      });
+
+    const name = data.name?.trim() || "Devotee";
+    const phone = data.phone?.trim() || "N/A";
+    const locationArea = data.locationArea?.trim() || "Kurnool";
+    const fullAddress = data.fullAddress?.trim() || `${locationArea}, Kurnool`;
+    const preferredDate = data.preferredDate || "Not specified";
+    const preferredTime = data.preferredTime || "Evening (5:30 PM – 7:30 PM)";
+    const participantsCount = data.participantsCount || "10 – 25 Devotees";
+    const userMessage = data.message?.trim();
+    const status = data.status || "Pending Confirmation";
+
+    let messageText = `🏠 NEW HOUSE PROGRAMME REQUEST\n`;
+    messageText += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
+    messageText += `👤 Devotee Name: ${name}\n`;
+    messageText += `📱 Mobile Number: ${phone}\n`;
+    messageText += `📍 Locality / Area: ${locationArea}\n`;
+    messageText += `🏡 Full Address: ${fullAddress}\n\n`;
+    messageText += `📅 Preferred Date: ${preferredDate}\n`;
+    messageText += `⏰ Preferred Time: ${preferredTime}\n`;
+    messageText += `👥 Expected Devotees: ${participantsCount}\n\n`;
+
+    if (userMessage) {
+      messageText += `💬 Devotee Notes / Message:\n${userMessage}\n\n`;
+    }
+
+    messageText += `📅 Submitted On: ${formattedDate} at ${formattedTime}\n`;
+    messageText += `📋 Status: ${status}\n\n`;
+    messageText += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+    // 1. Quick WhatsApp Reply Link
+    const cleanDigits = phone.replace(/\D/g, "");
+    if (cleanDigits.length >= 10) {
+      const waNumber = cleanDigits.length === 10 ? `91${cleanDigits}` : cleanDigits;
+      const waMsg = encodeURIComponent(
+        `Hare Krishna ${name} ji! 🙏 We received your ISKCON Kurnool House Programme request for ${preferredDate} (${preferredTime}). We are pleased to connect and confirm your programme schedule.`
+      );
+      messageText += `💬 Quick WhatsApp Reply:\nhttps://wa.me/${waNumber}?text=${waMsg}\n\n`;
+      messageText += `📱 Direct WhatsApp Chat:\nhttps://wa.me/${waNumber}\n\n`;
+    }
+
+    // 2. Location Link
+    const hasGps =
+      typeof data.latitude === "number" &&
+      typeof data.longitude === "number" &&
+      !isNaN(data.latitude) &&
+      !isNaN(data.longitude);
+
+    if (data.googleMapsUrl) {
+      messageText += `📍 Live GPS Location Link:\n${data.googleMapsUrl}\n\n`;
+    } else if (hasGps) {
+      messageText += `📍 Live GPS Location Link:\nhttps://maps.google.com/?q=${data.latitude},${data.longitude}\n\n`;
+    }
+
+    const searchAddress = fullAddress || `${locationArea}, Kurnool`;
+    messageText += `🗺️ Google Maps Address Link:\nhttps://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchAddress)}\n\n`;
+
+    messageText += `🏛️ ISKCON Kurnool - OS PANEL`;
+
+    // Send main text notification
+    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: messageText,
+      }),
+    });
+
+    const resData = (await response.json()) as { ok: boolean; description?: string };
+    if (!response.ok || !resData.ok) {
+      console.warn("[Telegram House Programme] Telegram API response issue:", resData);
+      return false;
+    }
+
+    console.log(`[Telegram House Programme] Successfully notified for devotee: ${name}`);
+
+    // If exact GPS coordinates exist, also drop an interactive Telegram Map Pin in the group
+    if (hasGps) {
+      try {
+        await fetch(`https://api.telegram.org/bot${botToken}/sendLocation`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: chatId,
+            latitude: data.latitude,
+            longitude: data.longitude,
+          }),
+        });
+      } catch (pinErr) {
+        console.warn("[Telegram House Programme] sendLocation pin error:", pinErr);
+      }
+    }
+
+    return true;
+  } catch (err) {
+    console.warn("[Telegram House Programme] Error sending notification:", err);
+    return false;
+  }
+}
+
